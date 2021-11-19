@@ -30,6 +30,11 @@ ut_sources = [
   'png/ut-png-encoder.c',
   'png/ut-png-error.c',
   'png/ut-png-image.c',
+  'jpeg/ut-jpeg.c',
+  'jpeg/ut-jpeg-decoder.c',
+  'jpeg/ut-jpeg-encoder.c',
+  'jpeg/ut-jpeg-error.c',
+  'jpeg/ut-jpeg-image.c',
   'json/ut-json.c',
   'json/ut-json-encoder.c',
   'ut-assert.c',
@@ -308,6 +313,16 @@ png_encoder_test = executable('ut-png-encoder-test',
                               'png/ut-png-encoder-test.c',
                               link_with: ut_lib)
 test('PNG Encoder', png_encoder_test)
+
+jpeg_decoder_test = executable('ut-jpeg-decoder-test',
+                              'jpeg/ut-jpeg-decoder-test.c',
+                              link_with: ut_lib)
+test('JPEG Decoder', jpeg_decoder_test)
+
+jpeg_encoder_test = executable('ut-jpeg-encoder-test',
+                              'jpeg/ut-jpeg-encoder-test.c',
+                              link_with: ut_lib)
+test('JPEG Encoder', jpeg_encoder_test)
 
 event_loop_test = executable('ut-event-loop-test',
                              'ut-event-loop-test.c',

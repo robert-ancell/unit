@@ -3,6 +3,11 @@ executable('png2pnm',
            include_directories: ut_include,
            link_with: ut_lib)
 
+executable('jpeg2pnm',
+           'jpeg2pnm.c',
+           include_directories: ut_include,
+           link_with: ut_lib)
+
 executable('x11',
            'x11.c',
            include_directories: ut_include,
