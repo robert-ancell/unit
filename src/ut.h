@@ -6,6 +6,7 @@
 #include "dbus/ut-dbus-struct.h"
 #include "deflate/ut-deflate-decoder.h"
 #include "deflate/ut-deflate-error.h"
+#include "dns/ut-dns-client.h"
 #include "gzip/ut-gzip-decoder.h"
 #include "gzip/ut-gzip-error.h"
 #include "http/ut-http-client.h"
