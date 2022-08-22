@@ -1,7 +1,5 @@
-#include <arpa/inet.h>
 #include <assert.h>
 #include <errno.h>
-#include <netdb.h>
 #include <netinet/in.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -16,55 +14,30 @@
 #include "ut-fd-output-stream.h"
 #include "ut-file-descriptor.h"
 #include "ut-input-stream.h"
+#include "ut-ip-address-resolver.h"
+#include "ut-ipv4-address.h"
+#include "ut-list.h"
 #include "ut-output-stream.h"
 #include "ut-tcp-client.h"
 
 typedef struct {
   UtObject object;
   char *address;
+  UtObject *address_resolver;
   uint16_t port;
   UtObject *fd;
   bool connecting;
   bool connected;
+  UtTcpClientConnectCallback connect_callback;
+  void *connect_user_data;
+  UtObject *connect_cancel;
   UtObject *input_stream;
   UtObject *output_stream;
+  UtObject *cancel;
 } UtTcpClient;
 
-typedef struct {
-  UtTcpClient *self;
-  char *address;
-  int port;
-  UtObject *watch_cancel;
-  UtTcpClientConnectCallback callback;
-  void *user_data;
-  UtObject *cancel;
-} ConnectData;
-
-static ConnectData *connect_data_new(UtTcpClient *self, const char *address,
-                                     int port,
-                                     UtTcpClientConnectCallback callback,
-                                     void *user_data, UtObject *cancel) {
-  ConnectData *data = malloc(sizeof(ConnectData));
-  data->self = self;
-  data->address = strdup(address);
-  data->port = port;
-  data->watch_cancel = ut_cancel_new();
-  data->callback = callback;
-  data->user_data = user_data;
-  data->cancel = ut_object_ref(cancel);
-  return data;
-}
-
-static void connect_data_free(ConnectData *data) {
-  free(data->address);
-  ut_object_unref(data->watch_cancel);
-  ut_object_unref(data->cancel);
-  free(data);
-}
-
 static void connect_cb(void *user_data) {
-  ConnectData *data = user_data;
-  UtTcpClient *self = data->self;
+  UtTcpClient *self = user_data;
 
   self->connected = true;
 
@@ -77,42 +50,32 @@ static void connect_cb(void *user_data) {
              &error_length);
   assert(error == 0);
 
-  if (!ut_cancel_is_active(data->cancel) && data->callback != NULL) {
-    data->callback(data->user_data);
+  if (!ut_cancel_is_active(self->connect_cancel) &&
+      self->connect_callback != NULL) {
+    self->connect_callback(self->connect_user_data);
   }
-
-  ut_cancel_activate(data->watch_cancel);
-  connect_data_free(data);
 }
 
-static void *lookup_thread_cb(void *data_) {
-  ConnectData *data = data_;
+static void lookup_cb(void *user_data, UtObject *addresses) {
+  UtTcpClient *self = user_data;
 
-  char port_string[6];
-  snprintf(port_string, 6, "%d", data->port);
-  struct addrinfo *addresses;
-  getaddrinfo(data->address, port_string, NULL, &addresses);
-  return addresses;
-}
+  UtObjectRef address = ut_list_get_first(addresses);
 
-static void lookup_result_cb(void *user_data, void *result) {
-  ConnectData *data = user_data;
-  UtTcpClient *self = data->self;
-  struct addrinfo *addresses = result;
-
-  assert(addresses != NULL);
-  struct addrinfo *address = addresses;
-
-  int fd = socket(address->ai_family, SOCK_STREAM | SOCK_NONBLOCK, 0);
+  int fd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
   assert(fd >= 0);
   self->fd = ut_file_descriptor_new(fd);
 
-  ut_event_loop_add_write_watch(self->fd, connect_cb, data, data->watch_cancel);
+  ut_event_loop_add_write_watch(self->fd, connect_cb, self, self->cancel);
 
-  int connect_result = connect(fd, address->ai_addr, address->ai_addrlen);
+  struct sockaddr_in addr;
+  addr.sin_family = AF_INET;
+  addr.sin_addr.s_addr = htonl(ut_ipv4_address_get_address(address));
+  addr.sin_port = htons(self->port);
+  int connect_result = connect(fd, (struct sockaddr *)&addr, sizeof(addr));
   assert(connect_result == 0 || errno == EINPROGRESS);
 
-  freeaddrinfo(addresses);
+  ut_object_unref(self->address_resolver);
+  self->address_resolver = NULL;
 }
 
 static void disconnect_client(UtTcpClient *self) {
@@ -125,20 +88,29 @@ static void disconnect_client(UtTcpClient *self) {
 static void ut_tcp_client_init(UtObject *object) {
   UtTcpClient *self = (UtTcpClient *)object;
   self->address = NULL;
+  self->address_resolver = NULL;
   self->port = 0;
   self->fd = NULL;
   self->connecting = false;
   self->connected = false;
+  self->connect_callback = NULL;
+  self->connect_user_data = NULL;
+  self->connect_cancel = NULL;
   self->input_stream = NULL;
   self->output_stream = NULL;
+  self->cancel = NULL;
 }
 
 static void ut_tcp_client_cleanup(UtObject *object) {
   UtTcpClient *self = (UtTcpClient *)object;
+  ut_cancel_activate(self->cancel);
   free(self->address);
+  ut_object_unref(self->address_resolver);
   ut_object_unref(self->fd);
+  ut_object_unref(self->connect_cancel);
   ut_object_unref(self->input_stream);
   ut_object_unref(self->output_stream);
+  ut_object_unref(self->cancel);
   disconnect_client(self);
 }
 
@@ -199,12 +171,13 @@ void ut_tcp_client_connect(UtObject *object,
   assert(!self->connecting);
   self->connecting = true;
 
-  // Lookup address.
-  // FIXME: Cancel thread if this UtTcpClient is deleted.
-  ConnectData *data = connect_data_new(self, self->address, self->port,
-                                       callback, user_data, cancel);
-  ut_event_loop_add_worker_thread(lookup_thread_cb, data, NULL,
-                                  lookup_result_cb, data, NULL);
+  self->connect_callback = callback;
+  self->connect_user_data = user_data;
+  self->connect_cancel = ut_object_ref(cancel);
+
+  self->address_resolver = ut_ip_address_resolver_new();
+  ut_ip_address_resolver_lookup(self->address_resolver, self->address,
+                                lookup_cb, self, self->cancel);
 }
 
 void ut_tcp_client_disconnect(UtObject *object) {
