@@ -22,8 +22,8 @@ int main(int argc, char **argv) {
   ut_assert_cstring_equal(ut_string_get_text(single_result_string), "!");
 
   UtObjectRef hello_data =
-      ut_uint8_list_new_from_elements(13, 0x78, 0x9c, 0xcb, 0x48, 0xcd, 0xc9, 0xc9,
-                                  0x07, 0x00, 0x06, 0x2c, 0x02, 0x15
+      ut_uint8_list_new_from_elements(13, 0x78, 0x9c, 0xcb, 0x48, 0xcd, 0xc9,
+                                      0xc9, 0x07, 0x00, 0x06, 0x2c, 0x02, 0x15
 
       );
   UtObjectRef hello_data_stream = ut_list_input_stream_new(hello_data);
