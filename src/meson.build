@@ -50,6 +50,7 @@ ut_sources = [
   'ut-int32-list.c',
   'ut-int32-subarray.c',
   'ut-int64.c',
+  'ut-ipv4-address.c',
   'ut-list.c',
   'ut-list-input-stream.c',
   'ut-local-file.c',
@@ -242,6 +243,11 @@ memory_mapped_file_test = executable('ut-memory-mapped-file-test',
                                      'ut-memory-mapped-file-test.c',
                                      link_with: ut_lib)
 #test('Memory Mapped File', memory_mapped_file_test)
+
+ipv4_address_test = executable('ut-ipv4-address-test',
+                               'ut-ipv4-address-test.c',
+                               link_with: ut_lib)
+test('IPv4 Address', ipv4_address_test)
 
 tcp_client_test = executable('ut-tcp-client-test',
                              'ut-tcp-client-test.c',
