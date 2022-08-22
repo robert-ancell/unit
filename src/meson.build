@@ -13,6 +13,7 @@ ut_sources = [
   'dbus/ut-dbus-signature.c',
   'dbus/ut-dbus-struct.c',
   'dbus/ut-dbus-variant.c',
+  'dns/ut-dns-client.c',
   'gzip/ut-gzip-decoder.c',
   'gzip/ut-gzip-error.c',
   'http/ut-http-client.c',
@@ -273,6 +274,11 @@ unix_domain_socket_client_test = executable('ut-unix-domain-socket-client-test',
                                             'ut-unix-domain-socket-client-test.c',
                                             link_with: ut_lib)
 #test('Unix Domain Socket Client', unix_domain_socket_client_test)
+
+dns_client_test = executable('ut-dns-client-test',
+                              'dns/ut-dns-client-test.c',
+                              link_with: ut_lib)
+test('DNS Client', dns_client_test)
 
 http_client_test = executable('ut-http-client-test',
                               'http/ut-http-client-test.c',
