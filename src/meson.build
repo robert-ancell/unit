@@ -50,6 +50,7 @@ ut_sources = [
   'ut-int32-list.c',
   'ut-int32-subarray.c',
   'ut-int64.c',
+  'ut-ip-address-resolver.c',
   'ut-ipv4-address.c',
   'ut-list.c',
   'ut-list-input-stream.c',
@@ -249,6 +250,11 @@ ipv4_address_test = executable('ut-ipv4-address-test',
                                link_with: ut_lib)
 test('IPv4 Address', ipv4_address_test)
 
+ip_address_resolver_test = executable('ut-ip-address-resolver-test',
+                                      'ut-ip-address-resolver-test.c',
+                                      link_with: ut_lib)
+#test('IP Address Resolver', ip_address_resolver_test)
+
 tcp_client_test = executable('ut-tcp-client-test',
                              'ut-tcp-client-test.c',
                              link_with: ut_lib)
@@ -271,7 +277,7 @@ x11_client_test = executable('ut-x11-client-test',
 
 dbus_message_encoder_test = executable('ut-dbus-message-encoder-test',
                                        'dbus/ut-dbus-message-encoder-test.c',
-				       link_with: ut_lib)
+                                       link_with: ut_lib)
 test('DBus Message Encoder', dbus_message_encoder_test)
 
 dbus_client_test = executable('ut-dbus-client-test',
