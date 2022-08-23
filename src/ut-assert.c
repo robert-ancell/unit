@@ -169,8 +169,8 @@ void _ut_assert_uint8_list_equal(const char *file, int line, const char *a_name,
 }
 
 void _ut_assert_uint8_array_equal(const char *file, int line,
-                                  const char *a_name, uint8_t *a_value,
-                                  size_t a_length, uint8_t *b_value,
+                                  const char *a_name, const uint8_t *a_value,
+                                  size_t a_length, const uint8_t *b_value,
                                   size_t b_length) {
   if (a_length == b_length) {
     bool match = true;
@@ -214,8 +214,8 @@ void _ut_assert_uint8_array_equal(const char *file, int line,
 }
 
 void _ut_assert_uint16_array_equal(const char *file, int line,
-                                   const char *a_name, uint16_t *a_value,
-                                   size_t a_length, uint16_t *b_value,
+                                   const char *a_name, const uint16_t *a_value,
+                                   size_t a_length, const uint16_t *b_value,
                                    size_t b_length) {
   if (a_length == b_length) {
     bool match = true;

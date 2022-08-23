@@ -36,6 +36,7 @@
 #include "ut-ip-address-resolver.h"
 #include "ut-ip-address.h"
 #include "ut-ipv4-address.h"
+#include "ut-ipv6-address.h"
 #include "ut-list-input-stream.h"
 #include "ut-list.h"
 #include "ut-local-file.h"

@@ -16,6 +16,7 @@
 #include "ut-input-stream.h"
 #include "ut-ip-address-resolver.h"
 #include "ut-ipv4-address.h"
+#include "ut-ipv6-address.h"
 #include "ut-list.h"
 #include "ut-output-stream.h"
 #include "ut-tcp-client.h"
@@ -59,19 +60,48 @@ static void connect_cb(void *user_data) {
 static void lookup_cb(void *user_data, UtObject *addresses) {
   UtTcpClient *self = user_data;
 
+  if (ut_list_get_length(addresses) == 0) {
+    // FIXME: Fail connect.
+    return;
+  }
   UtObjectRef address = ut_list_get_first(addresses);
 
-  int fd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
+  sa_family_t family;
+  if (ut_object_is_ipv4_address(address)) {
+    family = AF_INET;
+  } else if (ut_object_is_ipv6_address(address)) {
+    family = AF_INET6;
+  } else {
+    assert(false);
+  }
+
+  int fd = socket(family, SOCK_STREAM | SOCK_NONBLOCK, 0);
   assert(fd >= 0);
   self->fd = ut_file_descriptor_new(fd);
 
   ut_event_loop_add_write_watch(self->fd, connect_cb, self, self->cancel);
 
-  struct sockaddr_in addr;
-  addr.sin_family = AF_INET;
-  addr.sin_addr.s_addr = htonl(ut_ipv4_address_get_address(address));
-  addr.sin_port = htons(self->port);
-  int connect_result = connect(fd, (struct sockaddr *)&addr, sizeof(addr));
+  struct sockaddr_in addr4;
+  struct sockaddr_in6 addr6;
+  struct sockaddr *addr;
+  socklen_t addrlen;
+  if (family == AF_INET) {
+    addr4.sin_family = AF_INET;
+    addr4.sin_addr.s_addr = htonl(ut_ipv4_address_get_address(address));
+    addr4.sin_port = htons(self->port);
+    addr = (struct sockaddr *)&addr4;
+    addrlen = sizeof(addr4);
+  } else {
+    addr6.sin6_family = AF_INET6;
+    const uint8_t *address6 = ut_ipv6_address_get_address(address);
+    for (size_t i = 0; i < 16; i++) {
+      addr6.sin6_addr.s6_addr[i] = address6[i];
+    }
+    addr6.sin6_port = htons(self->port);
+    addr = (struct sockaddr *)&addr6;
+    addrlen = sizeof(addr6);
+  }
+  int connect_result = connect(fd, addr, addrlen);
   assert(connect_result == 0 || errno == EINPROGRESS);
 
   ut_object_unref(self->address_resolver);

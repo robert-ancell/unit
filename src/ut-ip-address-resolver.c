@@ -7,6 +7,7 @@
 #include "ut-event-loop.h"
 #include "ut-ip-address-resolver.h"
 #include "ut-ipv4-address.h"
+#include "ut-ipv6-address.h"
 #include "ut-list.h"
 
 typedef struct {
@@ -58,6 +59,10 @@ static void lookup_result_cb(void *user_data, void *result) {
     if (address->ai_family == AF_INET) {
       struct sockaddr_in *a = (struct sockaddr_in *)address->ai_addr;
       UtObjectRef ip_address = ut_ipv4_address_new(ntohl(a->sin_addr.s_addr));
+      ut_list_append(ip_addresses, ip_address);
+    } else if (address->ai_family == AF_INET6) {
+      struct sockaddr_in6 *a = (struct sockaddr_in6 *)address->ai_addr;
+      UtObjectRef ip_address = ut_ipv6_address_new(a->sin6_addr.s6_addr);
       ut_list_append(ip_addresses, ip_address);
     }
   }

@@ -53,6 +53,7 @@ ut_sources = [
   'ut-ip-address.c',
   'ut-ip-address-resolver.c',
   'ut-ipv4-address.c',
+  'ut-ipv6-address.c',
   'ut-list.c',
   'ut-list-input-stream.c',
   'ut-local-file.c',
@@ -250,6 +251,11 @@ ipv4_address_test = executable('ut-ipv4-address-test',
                                'ut-ipv4-address-test.c',
                                link_with: ut_lib)
 test('IPv4 Address', ipv4_address_test)
+
+ipv6_address_test = executable('ut-ipv6-address-test',
+                               'ut-ipv6-address-test.c',
+                               link_with: ut_lib)
+test('IPv6 Address', ipv6_address_test)
 
 ip_address_resolver_test = executable('ut-ip-address-resolver-test',
                                       'ut-ip-address-resolver-test.c',
