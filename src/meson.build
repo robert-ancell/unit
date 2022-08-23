@@ -50,6 +50,7 @@ ut_sources = [
   'ut-int32-list.c',
   'ut-int32-subarray.c',
   'ut-int64.c',
+  'ut-ip-address.c',
   'ut-ip-address-resolver.c',
   'ut-ipv4-address.c',
   'ut-list.c',

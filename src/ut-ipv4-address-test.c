@@ -9,6 +9,8 @@ int main(int argc, char **argv) {
 
   UtObjectRef a2 = ut_ipv4_address_new_from_quad(192, 168, 1, 42);
   assert(ut_ipv4_address_get_address(a2) == 0xc0a8012a);
+  ut_cstring_ref text = ut_ip_address_to_string(a2);
+  ut_assert_cstring_equal(text, "192.168.1.42");
 
   UtObjectRef a3 = ut_ipv4_address_new_from_string("192.168.1.42");
   assert(ut_ipv4_address_get_address(a3) == 0xc0a8012a);

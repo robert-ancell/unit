@@ -2,7 +2,9 @@
 
 #include "ut-cstring.h"
 #include "ut-error.h"
+#include "ut-ip-address.h"
 #include "ut-ipv4-address.h"
+#include "ut-uint8-array.h"
 
 typedef struct {
   UtObject object;
@@ -13,6 +15,11 @@ static char *address_to_string(uint32_t address) {
   return ut_cstring_new_printf("%d.%d.%d.%d", address >> 24,
                                (address >> 16) & 0xff, (address >> 8) & 0xff,
                                address & 0xff);
+}
+
+static char *ut_ipv4_address_to_string(UtObject *object) {
+  UtIPv4Address *self = (UtIPv4Address *)object;
+  return address_to_string(self->address);
 }
 
 static char *ut_ipv4_address_to_object_string(UtObject *object) {
@@ -26,11 +33,14 @@ static void ut_ipv4_address_init(UtObject *object) {
   self->address = 0;
 }
 
+static UtIPAddressInterface ip_address_interface = {
+    .to_string = ut_ipv4_address_to_string};
+
 static UtObjectInterface object_interface = {
     .type_name = "UtIPv4Address",
     .to_string = ut_ipv4_address_to_object_string,
     .init = ut_ipv4_address_init,
-    .interfaces = {{NULL, NULL}}};
+    .interfaces = {{&ut_ip_address_id, &ip_address_interface}, {NULL, NULL}}};
 
 UtObject *ut_ipv4_address_new(uint32_t address) {
   UtObject *object = ut_object_new(sizeof(UtIPv4Address), &object_interface);
@@ -87,12 +97,6 @@ uint32_t ut_ipv4_address_get_address(UtObject *object) {
   assert(ut_object_is_ipv4_address(object));
   UtIPv4Address *self = (UtIPv4Address *)object;
   return self->address;
-}
-
-char *ut_ipv4_address_to_string(UtObject *object) {
-  assert(ut_object_is_ipv4_address(object));
-  UtIPv4Address *self = (UtIPv4Address *)object;
-  return address_to_string(self->address);
 }
 
 bool ut_object_is_ipv4_address(UtObject *object) {

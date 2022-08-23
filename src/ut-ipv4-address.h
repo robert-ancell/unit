@@ -14,6 +14,4 @@ UtObject *ut_ipv4_address_new_from_string(const char *address);
 
 uint32_t ut_ipv4_address_get_address(UtObject *object);
 
-char *ut_ipv4_address_to_string(UtObject *object);
-
 bool ut_object_is_ipv4_address(UtObject *object);
