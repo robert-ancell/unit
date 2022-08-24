@@ -5,6 +5,7 @@
 static void resolve_cb(void *user_data, UtObject *addresses) {
   ut_cstring_ref text = ut_object_to_string(addresses);
   printf("%s\n", text);
+  ut_event_loop_return(NULL);
 }
 
 int main(int argc, char **argv) {
