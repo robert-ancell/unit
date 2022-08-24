@@ -76,15 +76,15 @@ UtObject *ut_ipv4_address_new_from_string(const char *address) {
       if (quads[quad_index] == -1) {
         return ut_error_new("Empty value in IPv4 address");
       }
+      quad_index++;
       if (*c == '\0') {
-        if (quad_index != 3) {
+        if (quad_index != 4) {
           return ut_error_new("Insufficient number of values in IPv4 address");
         }
         return ut_ipv4_address_new_from_quad(quads[0], quads[1], quads[2],
                                              quads[3]);
       }
-      quad_index++;
-      if (quad_index > 3) {
+      if (quad_index >= 4) {
         return ut_error_new("Too many values in IPv4 address");
       }
     } else {
