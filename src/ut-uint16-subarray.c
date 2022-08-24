@@ -64,14 +64,6 @@ static UtObject *ut_uint16_subarray_copy(UtObject *object) {
   return copy;
 }
 
-static void ut_uint16_subarray_init(UtObject *object) {
-  UtUint16Subarray *self = (UtUint16Subarray *)object;
-  self->parent = NULL;
-  self->parent_length = 0;
-  self->start = 0;
-  self->length = 0;
-}
-
 static char *ut_uint16_subarray_to_string(UtObject *object) {
   UtUint16Subarray *self = (UtUint16Subarray *)object;
   uint16_t *data = get_data(self);
@@ -105,7 +97,6 @@ static UtListInterface list_interface = {
 
 static UtObjectInterface object_interface = {
     .type_name = "UtUint16Subarray",
-    .init = ut_uint16_subarray_init,
     .to_string = ut_uint16_subarray_to_string,
     .cleanup = ut_uint16_subarray_cleanup,
     .interfaces = {{&ut_uint16_list_id, &uint16_list_interface},

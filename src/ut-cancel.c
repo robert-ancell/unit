@@ -5,13 +5,7 @@ typedef struct {
   bool is_active;
 } UtCancel;
 
-static void ut_cancel_init(UtObject *object) {
-  UtCancel *self = (UtCancel *)object;
-  self->is_active = false;
-}
-
-static UtObjectInterface object_interface = {.type_name = "UtCancel",
-                                             .init = ut_cancel_init};
+static UtObjectInterface object_interface = {.type_name = "UtCancel"};
 
 UtObject *ut_cancel_new() {
   return ut_object_new(sizeof(UtCancel), &object_interface);

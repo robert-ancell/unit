@@ -78,20 +78,12 @@ static char *ut_ipv6_address_to_object_string(UtObject *object) {
   return ut_cstring_new_printf("<UtIPv6Address>(\"%s\")", address_text);
 }
 
-static void ut_ipv6_address_init(UtObject *object) {
-  UtIPv6Address *self = (UtIPv6Address *)object;
-  for (size_t i = 0; i < 16; i++) {
-    self->address[i] = 0;
-  }
-}
-
 static UtIPAddressInterface ip_address_interface = {
     .to_string = ut_ipv6_address_to_string};
 
 static UtObjectInterface object_interface = {
     .type_name = "UtIPv6Address",
     .to_string = ut_ipv6_address_to_object_string,
-    .init = ut_ipv6_address_init,
     .interfaces = {{&ut_ip_address_id, &ip_address_interface}, {NULL, NULL}}};
 
 UtObject *ut_ipv6_address_new(uint8_t *address) {

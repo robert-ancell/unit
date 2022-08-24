@@ -25,14 +25,6 @@ typedef struct {
   UtObject *output_stream;
 } UtLocalFile;
 
-static void ut_local_file_init(UtObject *object) {
-  UtLocalFile *self = (UtLocalFile *)object;
-  self->path = NULL;
-  self->fd = NULL;
-  self->input_stream = NULL;
-  self->output_stream = NULL;
-}
-
 static void ut_local_file_cleanup(UtObject *object) {
   UtLocalFile *self = (UtLocalFile *)object;
   // FIXME: Cancel read/writes
@@ -108,7 +100,6 @@ static UtOutputStreamInterface output_stream_interface = {
 
 static UtObjectInterface object_interface = {
     .type_name = "UtLocalFile",
-    .init = ut_local_file_init,
     .cleanup = ut_local_file_cleanup,
     .interfaces = {{&ut_file_id, &file_interface},
                    {&ut_input_stream_id, &input_stream_interface},

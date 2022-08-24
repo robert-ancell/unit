@@ -81,13 +81,6 @@ static UtObject *ut_shared_memory_array_copy(UtObject *object) {
   return copy;
 }
 
-static void ut_shared_memory_array_init(UtObject *object) {
-  UtSharedMemoryArray *self = (UtSharedMemoryArray *)object;
-  self->fd = NULL;
-  self->data = NULL;
-  self->data_length = 0;
-}
-
 static char *ut_shared_memory_array_to_string(UtObject *object) {
   UtSharedMemoryArray *self = (UtSharedMemoryArray *)object;
   return ut_cstring_new_printf("<UtSharedMemoryArray>(length: %zi)",
@@ -113,7 +106,6 @@ static UtListInterface list_interface = {
 
 static UtObjectInterface object_interface = {
     .type_name = "UtSharedMemoryArray",
-    .init = ut_shared_memory_array_init,
     .to_string = ut_shared_memory_array_to_string,
     .cleanup = ut_shared_memory_array_cleanup,
     .interfaces = {{&ut_uint8_list_id, &uint8_list_interface},

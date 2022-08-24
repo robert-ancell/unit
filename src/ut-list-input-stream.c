@@ -61,17 +61,6 @@ static void ut_list_input_stream_set_active(UtObject *object, bool active) {
   }
 }
 
-static void ut_list_input_stream_init(UtObject *object) {
-  UtListInputStream *self = (UtListInputStream *)object;
-  self->data = NULL;
-  self->callback = NULL;
-  self->user_data = NULL;
-  self->cancel = NULL;
-  self->active = false;
-  self->offset = 0;
-  self->in_callback = false;
-}
-
 static void ut_list_input_stream_cleanup(UtObject *object) {
   UtListInputStream *self = (UtListInputStream *)object;
   ut_object_unref(self->data);
@@ -84,7 +73,6 @@ static UtInputStreamInterface input_stream_interface = {
 
 static UtObjectInterface object_interface = {
     .type_name = "UtListInputStream",
-    .init = ut_list_input_stream_init,
     .cleanup = ut_list_input_stream_cleanup,
     .interfaces = {{&ut_input_stream_id, &input_stream_interface},
                    {NULL, NULL}}};

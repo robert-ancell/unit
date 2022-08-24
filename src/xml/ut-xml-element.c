@@ -11,13 +11,6 @@ typedef struct {
   UtObject *content;
 } UtXmlElement;
 
-static void ut_xml_element_init(UtObject *object) {
-  UtXmlElement *self = (UtXmlElement *)object;
-  self->name = NULL;
-  self->attributes = NULL;
-  self->content = NULL;
-}
-
 static void ut_xml_element_cleanup(UtObject *object) {
   UtXmlElement *self = (UtXmlElement *)object;
   free(self->name);
@@ -26,7 +19,6 @@ static void ut_xml_element_cleanup(UtObject *object) {
 }
 
 static UtObjectInterface object_interface = {.type_name = "UtXmlElement",
-                                             .init = ut_xml_element_init,
                                              .cleanup = ut_xml_element_cleanup};
 
 UtObject *ut_xml_element_new(const char *name, UtObject *attributes,

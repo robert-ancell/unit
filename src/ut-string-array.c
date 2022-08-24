@@ -99,8 +99,6 @@ static char **ut_string_array_take_data(UtObject *object) {
 static void ut_string_array_init(UtObject *object) {
   UtStringArray *self = (UtStringArray *)object;
   self->data = malloc(sizeof(char *) * 1);
-  self->data[0] = NULL;
-  self->data_length = 0;
 }
 
 static void ut_string_array_cleanup(UtObject *object) {

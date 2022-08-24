@@ -33,12 +33,7 @@ static const char *colour_type_to_string(UtPngColourType colour_type) {
 
 static void ut_png_image_init(UtObject *object) {
   UtPngImage *self = (UtPngImage *)object;
-  self->width = 0;
-  self->height = 0;
-  self->bit_depth = 0;
-  self->colour_type = 0;
   self->interlace_method = UT_PNG_INTERLACE_METHOD_NONE;
-  self->data = NULL;
 }
 
 static void ut_png_image_cleanup(UtObject *object) {

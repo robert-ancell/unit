@@ -78,12 +78,6 @@ static UtObject *ut_object_array_copy(UtObject *object) {
   return (UtObject *)copy;
 }
 
-static void ut_object_array_init(UtObject *object) {
-  UtObjectArray *self = (UtObjectArray *)object;
-  self->data = NULL;
-  self->data_length = 0;
-}
-
 static void ut_object_array_cleanup(UtObject *object) {
   UtObjectArray *self = (UtObjectArray *)object;
   for (size_t i = 0; i < self->data_length; i++) {
@@ -107,7 +101,6 @@ static UtListInterface list_interface = {
 
 static UtObjectInterface object_interface = {
     .type_name = "UtObjectArray",
-    .init = ut_object_array_init,
     .to_string = ut_list_to_string,
     .cleanup = ut_object_array_cleanup,
     .interfaces = {{&ut_object_list_id, &object_list_interface},

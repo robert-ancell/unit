@@ -117,18 +117,7 @@ static void disconnect_client(UtTcpClient *self) {
 
 static void ut_tcp_client_init(UtObject *object) {
   UtTcpClient *self = (UtTcpClient *)object;
-  self->address = NULL;
-  self->address_resolver = NULL;
-  self->port = 0;
-  self->fd = NULL;
-  self->connecting = false;
-  self->connected = false;
-  self->connect_callback = NULL;
-  self->connect_user_data = NULL;
-  self->connect_cancel = NULL;
-  self->input_stream = NULL;
-  self->output_stream = NULL;
-  self->cancel = NULL;
+  self->cancel = ut_cancel_new();
 }
 
 static void ut_tcp_client_cleanup(UtObject *object) {

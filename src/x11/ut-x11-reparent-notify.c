@@ -13,21 +13,10 @@ typedef struct {
   bool override_redirect;
 } UtX11ReparentNotify;
 
-static void ut_x11_reparent_notify_init(UtObject *object) {
-  UtX11ReparentNotify *self = (UtX11ReparentNotify *)object;
-  self->event = 0;
-  self->window = 0;
-  self->parent = 0;
-  self->x = 0;
-  self->y = 0;
-  self->override_redirect = false;
-}
-
 static UtX11EventInterface x11_event_interface = {};
 
 static UtObjectInterface object_interface = {
     .type_name = "UtX11ReparentNotify",
-    .init = ut_x11_reparent_notify_init,
     .interfaces = {{&ut_x11_event_id, &x11_event_interface}}};
 
 UtObject *ut_x11_reparent_notify_new(uint32_t event, uint32_t window,

@@ -78,12 +78,8 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
 
 static void ut_input_stream_multiplexer_init(UtObject *object) {
   UtInputStreamMultiplexer *self = (UtInputStreamMultiplexer *)object;
-  self->input_stream = NULL;
   self->streams = ut_list_new();
-  self->active_stream = NULL;
   self->cancel = ut_cancel_new();
-  self->reading = false;
-  self->stream_changed = false;
 }
 
 static void ut_input_stream_multiplexer_cleanup(UtObject *object) {

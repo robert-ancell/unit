@@ -53,11 +53,6 @@ static void enable_error_cb(UtObject *object, UtObject *error) {
   }
 }
 
-static void ut_x11_present_extension_init(UtObject *object) {
-  UtX11PresentExtension *self = (UtX11PresentExtension *)object;
-  self->major_opcode = 0;
-}
-
 static UtObject *ut_x11_present_extension_decode_event(UtObject *object,
                                                        UtObject *data) {
   return NULL;
@@ -80,7 +75,6 @@ static UtX11ExtensionInterface x11_extension_interface = {
 
 static UtObjectInterface object_interface = {
     .type_name = "UtX11PresentExtension",
-    .init = ut_x11_present_extension_init,
     .interfaces = {{&ut_x11_extension_id, &x11_extension_interface},
                    {NULL, NULL}}};
 

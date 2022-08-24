@@ -221,17 +221,9 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
 
 static void ut_gzip_decoder_init(UtObject *object) {
   UtGzipDecoder *self = (UtGzipDecoder *)object;
-  self->multiplexer = NULL;
-  self->gzip_input_stream = NULL;
-  self->deflate_input_stream = NULL;
   self->read_cancel = ut_cancel_new();
-  self->callback = NULL;
-  self->user_data = NULL;
-  self->cancel = NULL;
   self->state = DECODER_STATE_MEMBER_HEADER;
-  self->deflate_decoder = NULL;
   self->buffer = ut_uint8_list_new();
-  self->error = NULL;
 }
 
 static void ut_gzip_decoder_cleanup(UtObject *object) {

@@ -30,13 +30,6 @@ static void map(UtMemoryMappedFile *self, int prot) {
   self->data = mmap(NULL, self->data_length, prot, MAP_SHARED, fd, 0);
 }
 
-static void ut_memory_mapped_file_init(UtObject *object) {
-  UtMemoryMappedFile *self = (UtMemoryMappedFile *)object;
-  self->file = NULL;
-  self->data = NULL;
-  self->data_length = 0;
-}
-
 static void ut_memory_mapped_file_cleanup(UtObject *object) {
   UtMemoryMappedFile *self = (UtMemoryMappedFile *)object;
   ut_object_unref(self->file);
@@ -120,7 +113,6 @@ static UtListInterface list_interface = {
 
 static UtObjectInterface object_interface = {
     .type_name = "UtMemoryMappedFile",
-    .init = ut_memory_mapped_file_init,
     .cleanup = ut_memory_mapped_file_cleanup,
     .interfaces = {{&ut_file_id, &file_interface},
                    {&ut_uint8_list_id, &uint8_list_interface},

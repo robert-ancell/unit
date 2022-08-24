@@ -97,12 +97,6 @@ static UtObject *ut_float64_array_copy(UtObject *object) {
   return copy;
 }
 
-static void ut_float64_array_init(UtObject *object) {
-  UtFloat64Array *self = (UtFloat64Array *)object;
-  self->data = NULL;
-  self->data_length = 0;
-}
-
 static char *ut_float64_array_to_string(UtObject *object) {
   UtFloat64Array *self = (UtFloat64Array *)object;
   UtObjectRef string = ut_string_new("<float64>[");
@@ -138,7 +132,6 @@ static UtListInterface list_interface = {
 
 static UtObjectInterface object_interface = {
     .type_name = "UtFloat64Array",
-    .init = ut_float64_array_init,
     .to_string = ut_float64_array_to_string,
     .cleanup = ut_float64_array_cleanup,
     .interfaces = {{&ut_float64_list_id, &float64_list_interface},

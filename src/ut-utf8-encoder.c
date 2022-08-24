@@ -17,10 +17,7 @@ typedef struct {
 
 static void ut_utf8_encoder_init(UtObject *object) {
   UtUtf8Encoder *self = (UtUtf8Encoder *)object;
-  self->input = NULL;
   self->buffer = ut_uint8_list_new();
-  self->callback = NULL;
-  self->user_data = NULL;
 }
 
 static void ut_utf8_encoder_cleanup(UtObject *object) {

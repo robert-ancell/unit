@@ -14,16 +14,6 @@ typedef struct {
   UtObject *cancel;
 } UtWritableInputStream;
 
-static void ut_writable_input_stream_init(UtObject *object) {
-  UtWritableInputStream *self = (UtWritableInputStream *)object;
-  self->reading_callback = NULL;
-  self->reading_user_data = NULL;
-  self->reading_cancel = NULL;
-  self->callback = NULL;
-  self->user_data = NULL;
-  self->cancel = NULL;
-}
-
 static void ut_writable_input_stream_cleanup(UtObject *object) {
   UtWritableInputStream *self = (UtWritableInputStream *)object;
   ut_object_unref(self->reading_cancel);
@@ -52,7 +42,6 @@ static UtInputStreamInterface input_stream_interface = {
 
 static UtObjectInterface object_interface = {
     .type_name = "UtWritableInputStream",
-    .init = ut_writable_input_stream_init,
     .cleanup = ut_writable_input_stream_cleanup,
     .interfaces = {{&ut_input_stream_id, &input_stream_interface},
                    {NULL, NULL}}};

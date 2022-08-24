@@ -520,10 +520,7 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
 
 static void ut_dbus_message_decoder_init(UtObject *object) {
   UtDBusMessageDecoder *self = (UtDBusMessageDecoder *)object;
-  self->input_stream = NULL;
   self->messages = ut_object_list_new();
-  self->callback = NULL;
-  self->user_data = NULL;
 }
 
 static void ut_dbus_message_decoder_cleanup(UtObject *object) {

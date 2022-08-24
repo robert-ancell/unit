@@ -42,17 +42,6 @@ struct _UtX11MitShmExtension {
   bool shared_pixmaps;
 };
 
-static void ut_x11_mit_shm_extension_init(UtObject *object) {
-  UtX11MitShmExtension *self = (UtX11MitShmExtension *)object;
-  self->major_opcode = 0;
-  self->first_event = 0;
-  self->first_error = 0;
-  self->uid = 0;
-  self->gid = 0;
-  self->pixmap_format = 0;
-  self->shared_pixmaps = 0;
-}
-
 static void decode_shm_query_version_reply(UtObject *user_data, uint8_t data0,
                                            UtObject *data) {
   CallbackData *callback_data = (CallbackData *)user_data;
@@ -145,7 +134,6 @@ static UtX11ExtensionInterface x11_extension_interface = {
 
 static UtObjectInterface object_interface = {
     .type_name = "UtX11MitShmExtension",
-    .init = ut_x11_mit_shm_extension_init,
     .interfaces = {{&ut_x11_extension_id, &x11_extension_interface},
                    {NULL, NULL}}};
 

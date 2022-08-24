@@ -524,23 +524,9 @@ static void sync_cb(void *user_data, UtObject *image) {
 
 static void ut_png_decoder_init(UtObject *object) {
   UtPngDecoder *self = (UtPngDecoder *)object;
-  self->input_stream = NULL;
   self->read_cancel = ut_cancel_new();
-  self->callback = NULL;
-  self->user_data = NULL;
-  self->cancel = NULL;
   self->state = DECODER_STATE_SIGNATURE;
-  self->error = NULL;
-  self->prev_line = NULL;
-  self->line = NULL;
   self->line_filter = FILTER_TYPE_NONE;
-  self->width = 0;
-  self->height = 0;
-  self->bit_depth = 0;
-  self->colour_type = 0;
-  self->interlace_method = 0;
-  self->n_channels = 0;
-  self->rowstride = 0;
   self->data = ut_uint8_array_new(); // FIXME: Do later at the required size
 }
 

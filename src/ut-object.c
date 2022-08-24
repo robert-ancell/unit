@@ -8,6 +8,7 @@
 
 UtObject *ut_object_new(size_t object_size, UtObjectInterface *interface) {
   UtObject *object = malloc(object_size);
+  memset(object, 0, object_size);
   object->interface = interface;
   object->ref_count = 1;
 

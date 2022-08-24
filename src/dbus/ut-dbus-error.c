@@ -15,12 +15,6 @@ typedef struct {
   UtObject *args;
 } UtDBusError;
 
-static void ut_dbus_error_init(UtObject *object) {
-  UtDBusError *self = (UtDBusError *)object;
-  self->error_name = NULL;
-  self->args = NULL;
-}
-
 static char *ut_dbus_error_to_string(UtObject *object) {
   UtDBusError *self = (UtDBusError *)object;
   return ut_cstring_new_printf("<UtDBusError>(%s)", self->error_name);
@@ -49,7 +43,6 @@ static UtErrorInterface error_interface = {.get_description =
 
 static UtObjectInterface object_interface = {
     .type_name = "UtDBusError",
-    .init = ut_dbus_error_init,
     .to_string = ut_dbus_error_to_string,
     .cleanup = ut_dbus_error_cleanup,
     .interfaces = {{&ut_error_id, &error_interface}, {NULL, NULL}}};

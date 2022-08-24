@@ -104,17 +104,10 @@ static void read_cb(void *user_data) {
 
 static void ut_fd_input_stream_init(UtObject *object) {
   UtFdInputStream *self = (UtFdInputStream *)object;
-  self->fd = NULL;
-  self->receive_fds = false;
   self->read_buffer = ut_uint8_array_new();
   self->fds = ut_list_new();
-  self->active = false;
-  self->complete = false;
   self->block_size = 4096;
   self->watch_cancel = ut_cancel_new();
-  self->callback = NULL;
-  self->user_data = NULL;
-  self->cancel = NULL;
 }
 
 static void ut_fd_input_stream_cleanup(UtObject *object) {

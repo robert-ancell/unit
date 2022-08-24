@@ -65,14 +65,6 @@ static UtObject *ut_uint64_subarray_copy(UtObject *object) {
   return copy;
 }
 
-static void ut_uint64_subarray_init(UtObject *object) {
-  UtUint64Subarray *self = (UtUint64Subarray *)object;
-  self->parent = NULL;
-  self->parent_length = 0;
-  self->start = 0;
-  self->length = 0;
-}
-
 static char *ut_uint64_subarray_to_string(UtObject *object) {
   UtUint64Subarray *self = (UtUint64Subarray *)object;
   uint64_t *data = get_data(self);
@@ -107,7 +99,6 @@ static UtListInterface list_interface = {
 
 static UtObjectInterface object_interface = {
     .type_name = "UtUint64Subarray",
-    .init = ut_uint64_subarray_init,
     .to_string = ut_uint64_subarray_to_string,
     .cleanup = ut_uint64_subarray_cleanup,
     .interfaces = {{&ut_uint64_list_id, &uint64_list_interface},

@@ -16,8 +16,6 @@ typedef struct {
 
 static void ut_dbus_dict_init(UtObject *object) {
   UtDBusDict *self = (UtDBusDict *)object;
-  self->key_signature = NULL;
-  self->value_signature = NULL;
   self->data = ut_map_new();
 }
 

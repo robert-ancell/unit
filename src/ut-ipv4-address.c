@@ -28,18 +28,12 @@ static char *ut_ipv4_address_to_object_string(UtObject *object) {
   return ut_cstring_new_printf("<UtIPv4Address>(\"%s\")", address_text);
 }
 
-static void ut_ipv4_address_init(UtObject *object) {
-  UtIPv4Address *self = (UtIPv4Address *)object;
-  self->address = 0;
-}
-
 static UtIPAddressInterface ip_address_interface = {
     .to_string = ut_ipv4_address_to_string};
 
 static UtObjectInterface object_interface = {
     .type_name = "UtIPv4Address",
     .to_string = ut_ipv4_address_to_object_string,
-    .init = ut_ipv4_address_init,
     .interfaces = {{&ut_ip_address_id, &ip_address_interface}, {NULL, NULL}}};
 
 UtObject *ut_ipv4_address_new(uint32_t address) {

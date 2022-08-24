@@ -9,11 +9,6 @@ typedef struct {
   uint8_t code;
 } UtX11UnknownEvent;
 
-static void ut_x11_unknown_event_init(UtObject *object) {
-  UtX11UnknownEvent *self = (UtX11UnknownEvent *)object;
-  self->code = 0;
-}
-
 static char *ut_x11_unknown_event_to_string(UtObject *object) {
   UtX11UnknownEvent *self = (UtX11UnknownEvent *)object;
   return ut_cstring_new_printf("<UtX11UnknownEvent>(%d)", self->code);
@@ -23,7 +18,6 @@ static UtX11EventInterface x11_event_interface = {};
 
 static UtObjectInterface object_interface = {
     .type_name = "UtX11UnknownEvent",
-    .init = ut_x11_unknown_event_init,
     .to_string = ut_x11_unknown_event_to_string,
     .interfaces = {{&ut_x11_event_id, &x11_event_interface}}};
 

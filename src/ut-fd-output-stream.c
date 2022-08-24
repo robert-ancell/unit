@@ -153,14 +153,6 @@ static void write_cb(void *user_data) {
   }
 }
 
-static void ut_fd_output_stream_init(UtObject *object) {
-  UtFdOutputStream *self = (UtFdOutputStream *)object;
-  self->fd = NULL;
-  self->watch_cancel = NULL;
-  self->blocks = NULL;
-  self->last_block = NULL;
-}
-
 static void ut_fd_output_stream_cleanup(UtObject *object) {
   UtFdOutputStream *self = (UtFdOutputStream *)object;
   ut_object_unref(self->fd);
@@ -191,7 +183,6 @@ static UtOutputStreamInterface output_stream_interface = {
 
 static UtObjectInterface object_interface = {
     .type_name = "UtFdOutputStream",
-    .init = ut_fd_output_stream_init,
     .cleanup = ut_fd_output_stream_cleanup,
     .interfaces = {{&ut_output_stream_id, &output_stream_interface},
                    {NULL, NULL}}};

@@ -104,12 +104,6 @@ static UtObject *ut_int32_array_copy(UtObject *object) {
   return copy;
 }
 
-static void ut_int32_array_init(UtObject *object) {
-  UtInt32Array *self = (UtInt32Array *)object;
-  self->data = NULL;
-  self->data_length = 0;
-}
-
 static char *ut_int32_array_to_string(UtObject *object) {
   UtInt32Array *self = (UtInt32Array *)object;
   UtObjectRef string = ut_string_new("<int32>[");
@@ -146,7 +140,6 @@ static UtListInterface list_interface = {
 
 static UtObjectInterface object_interface = {
     .type_name = "UtInt32Array",
-    .init = ut_int32_array_init,
     .to_string = ut_int32_array_to_string,
     .cleanup = ut_int32_array_cleanup,
     .interfaces = {{&ut_int32_list_id, &int32_list_interface},

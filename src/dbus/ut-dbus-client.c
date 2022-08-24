@@ -242,19 +242,9 @@ static void call_method(UtDBusClient *self, const char *destination,
 static void ut_dbus_client_init(UtObject *object) {
   UtDBusClient *self = (UtDBusClient *)object;
   self->cancel = ut_cancel_new();
-  self->address = NULL;
-  self->socket = NULL;
-  self->multiplexer = NULL;
-  self->auth_input_stream = NULL;
-  self->message_input_stream = NULL;
-  self->auth_client = NULL;
-  self->message_decoder = NULL;
   self->message_encoder = ut_dbus_message_encoder_new();
-  self->authenticated = false;
   self->read_cancel = ut_cancel_new();
-  self->last_serial = 0;
   self->message_queue = ut_object_list_new();
-  self->unique_name = NULL;
 }
 
 static void ut_dbus_client_cleanup(UtObject *object) {

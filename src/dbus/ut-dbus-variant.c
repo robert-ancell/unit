@@ -9,11 +9,6 @@ typedef struct {
   UtObject *value;
 } UtDBusVariant;
 
-static void ut_dbus_variant_init(UtObject *object) {
-  UtDBusVariant *self = (UtDBusVariant *)object;
-  self->value = NULL;
-}
-
 static char *ut_dbus_variant_to_string(UtObject *object) {
   UtDBusVariant *self = (UtDBusVariant *)object;
   ut_cstring_ref value_string = ut_object_to_string(self->value);
@@ -26,7 +21,6 @@ static void ut_dbus_variant_cleanup(UtObject *object) {
 }
 
 static UtObjectInterface object_interface = {.type_name = "UtDBusVariant",
-                                             .init = ut_dbus_variant_init,
                                              .to_string =
                                                  ut_dbus_variant_to_string,
                                              .cleanup = ut_dbus_variant_cleanup,

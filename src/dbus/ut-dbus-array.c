@@ -15,7 +15,6 @@ typedef struct {
 
 static void ut_dbus_array_init(UtObject *object) {
   UtDBusArray *self = (UtDBusArray *)object;
-  self->value_signature = NULL;
   self->values = ut_list_new();
 }
 

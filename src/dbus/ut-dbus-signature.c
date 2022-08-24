@@ -12,11 +12,6 @@ typedef struct {
   char *value;
 } UtDBusSignature;
 
-static void ut_dbus_signature_init(UtObject *object) {
-  UtDBusSignature *self = (UtDBusSignature *)object;
-  self->value = NULL;
-}
-
 static char *ut_dbus_signature_to_string(UtObject *object) {
   UtDBusSignature *self = (UtDBusSignature *)object;
   return ut_cstring_new_printf("<UtDBusSignature>(\"%s\")", self->value);
@@ -29,7 +24,6 @@ static void ut_dbus_signature_cleanup(UtObject *object) {
 
 static UtObjectInterface object_interface = {
     .type_name = "UtDBusSignature",
-    .init = ut_dbus_signature_init,
     .to_string = ut_dbus_signature_to_string,
     .cleanup = ut_dbus_signature_cleanup,
     .interfaces = {{NULL, NULL}}};

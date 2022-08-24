@@ -32,14 +32,6 @@ static void disconnect_client(UtUnixDomainSocketClient *self) {
   }
 }
 
-static void ut_unix_domain_socket_client_init(UtObject *object) {
-  UtUnixDomainSocketClient *self = (UtUnixDomainSocketClient *)object;
-  self->path = NULL;
-  self->fd = NULL;
-  self->input_stream = NULL;
-  self->output_stream = NULL;
-}
-
 static void ut_unix_domain_socket_client_cleanup(UtObject *object) {
   UtUnixDomainSocketClient *self = (UtUnixDomainSocketClient *)object;
   free(self->path);
@@ -79,7 +71,6 @@ static UtOutputStreamInterface output_stream_interface = {
 
 static UtObjectInterface object_interface = {
     .type_name = "UtUnixDomainSocketClient",
-    .init = ut_unix_domain_socket_client_init,
     .cleanup = ut_unix_domain_socket_client_cleanup,
     .interfaces = {{&ut_input_stream_id, &input_stream_interface},
                    {&ut_output_stream_id, &output_stream_interface},

@@ -10,11 +10,6 @@ typedef struct {
   char *value;
 } UtDBusObjectPath;
 
-static void ut_dbus_object_path_init(UtObject *object) {
-  UtDBusObjectPath *self = (UtDBusObjectPath *)object;
-  self->value = NULL;
-}
-
 static char *ut_dbus_object_path_to_string(UtObject *object) {
   UtDBusObjectPath *self = (UtDBusObjectPath *)object;
   return ut_cstring_new_printf("<UtDBusObjectPath>(\"%s\")", self->value);
@@ -27,7 +22,6 @@ static void ut_dbus_object_path_cleanup(UtObject *object) {
 
 static UtObjectInterface object_interface = {
     .type_name = "UtDBusObjectPath",
-    .init = ut_dbus_object_path_init,
     .to_string = ut_dbus_object_path_to_string,
     .cleanup = ut_dbus_object_path_cleanup,
     .interfaces = {{NULL, NULL}}};

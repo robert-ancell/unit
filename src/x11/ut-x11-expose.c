@@ -12,20 +12,10 @@ typedef struct {
   uint16_t height;
 } UtX11Expose;
 
-static void ut_x11_expose_init(UtObject *object) {
-  UtX11Expose *self = (UtX11Expose *)object;
-  self->window = 0;
-  self->x = 0;
-  self->y = 0;
-  self->width = 0;
-  self->height = 0;
-}
-
 static UtX11EventInterface x11_event_interface = {};
 
 static UtObjectInterface object_interface = {
     .type_name = "UtX11Expose",
-    .init = ut_x11_expose_init,
     .interfaces = {{&ut_x11_event_id, &x11_event_interface}}};
 
 UtObject *ut_x11_expose_new(uint32_t window, uint16_t x, uint16_t y,

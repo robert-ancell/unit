@@ -121,18 +121,6 @@ static void start_read(UtHttpResponse *self, UtInputStreamCallback callback,
   ut_input_stream_read(self->tcp_client, read_cb, self, self->read_cancel);
 }
 
-static void ut_http_response_init(UtObject *object) {
-  UtHttpResponse *self = (UtHttpResponse *)object;
-  self->status_code = 0;
-  self->reason_phrase = NULL;
-  self->headers = NULL;
-  self->tcp_client = NULL;
-  self->n_read = 0;
-  self->callback = NULL;
-  self->user_data = NULL;
-  self->cancel = NULL;
-}
-
 static void ut_http_response_cleanup(UtObject *object) {
   UtHttpResponse *self = (UtHttpResponse *)object;
   free(self->reason_phrase);
@@ -155,7 +143,6 @@ static UtInputStreamInterface input_stream_interface = {
 
 static UtObjectInterface object_interface = {
     .type_name = "HttpResponse",
-    .init = ut_http_response_init,
     .cleanup = ut_http_response_cleanup,
     .interfaces = {{&ut_input_stream_id, &input_stream_interface},
                    {NULL, NULL}}};

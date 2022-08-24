@@ -11,19 +11,10 @@ typedef struct {
   int16_t y;
 } UtX11KeyPress;
 
-static void ut_x11_key_press_init(UtObject *object) {
-  UtX11KeyPress *self = (UtX11KeyPress *)object;
-  self->window = 0;
-  self->keycode = 0;
-  self->x = 0;
-  self->y = 0;
-}
-
 static UtX11EventInterface x11_event_interface = {};
 
 static UtObjectInterface object_interface = {
     .type_name = "UtX11KeyPress",
-    .init = ut_x11_key_press_init,
     .interfaces = {{&ut_x11_event_id, &x11_event_interface}}};
 
 UtObject *ut_x11_key_press_new(uint32_t window, uint8_t keycode, int16_t x,

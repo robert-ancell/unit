@@ -164,12 +164,6 @@ static void ut_uint8_array_write(UtObject *object, UtObject *data,
   }
 }
 
-static void ut_uint8_array_init(UtObject *object) {
-  UtUint8Array *self = (UtUint8Array *)object;
-  self->data = NULL;
-  self->data_length = 0;
-}
-
 static char *ut_uint8_array_to_string(UtObject *object) {
   UtUint8Array *self = (UtUint8Array *)object;
   UtObjectRef string = ut_string_new("<uint8>[");
@@ -211,7 +205,6 @@ static UtOutputStreamInterface output_stream_interface = {
 
 static UtObjectInterface object_interface = {
     .type_name = "UtUint8Array",
-    .init = ut_uint8_array_init,
     .to_string = ut_uint8_array_to_string,
     .cleanup = ut_uint8_array_cleanup,
     .interfaces = {{&ut_uint8_list_id, &uint8_list_interface},

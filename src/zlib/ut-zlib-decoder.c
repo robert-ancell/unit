@@ -255,20 +255,9 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
 
 static void ut_zlib_decoder_init(UtObject *object) {
   UtZlibDecoder *self = (UtZlibDecoder *)object;
-  self->multiplexer = NULL;
-  self->zlib_input_stream = NULL;
-  self->deflate_input_stream = NULL;
   self->read_cancel = ut_cancel_new();
-  self->callback = NULL;
-  self->user_data = NULL;
-  self->cancel = NULL;
   self->state = DECODER_STATE_HEADER;
-  self->window_size = 0;
-  self->compression_level = 0;
-  self->dictionary_checksum = 0;
-  self->deflate_decoder = NULL;
   self->buffer = ut_uint8_list_new();
-  self->error = NULL;
 }
 
 static void ut_zlib_decoder_cleanup(UtObject *object) {

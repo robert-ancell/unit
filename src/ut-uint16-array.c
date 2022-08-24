@@ -104,12 +104,6 @@ static UtObject *ut_uint16_array_copy(UtObject *object) {
   return copy;
 }
 
-static void ut_uint16_array_init(UtObject *object) {
-  UtUint16Array *self = (UtUint16Array *)object;
-  self->data = NULL;
-  self->data_length = 0;
-}
-
 static char *ut_uint16_array_to_string(UtObject *object) {
   UtUint16Array *self = (UtUint16Array *)object;
   UtObjectRef string = ut_string_new("<uint16>[");
@@ -146,7 +140,6 @@ static UtListInterface list_interface = {
 
 static UtObjectInterface object_interface = {
     .type_name = "UtUint16Array",
-    .init = ut_uint16_array_init,
     .to_string = ut_uint16_array_to_string,
     .cleanup = ut_uint16_array_cleanup,
     .interfaces = {{&ut_uint16_list_id, &uint16_list_interface},

@@ -1168,29 +1168,8 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
 static void ut_x11_client_init(UtObject *object) {
   UtX11Client *self = (UtX11Client *)object;
   self->cancel = ut_cancel_new();
-  self->socket = NULL;
   self->read_cancel = ut_cancel_new();
   self->extensions = ut_object_list_new();
-  self->mit_shm_extension = NULL;
-  self->present_extension = NULL;
-  self->event_callback = NULL;
-  self->callback_user_data = NULL;
-  self->callback_cancel = NULL;
-  self->connect_callback = NULL;
-  self->connect_user_data = NULL;
-  self->connect_cancel = NULL;
-  self->setup_complete = false;
-  self->vendor = NULL;
-  self->release_number = 0;
-  self->resource_id_base = 0;
-  self->resource_id_mask = 0;
-  self->maximum_request_length = 0;
-  self->pixmap_formats = NULL;
-  self->pixmap_formats_length = 0;
-  self->screens = NULL;
-  self->screens_length = 0;
-  self->next_resource_id = 0;
-  self->sequence_number = 0;
   self->requests = ut_object_list_new();
 }
 

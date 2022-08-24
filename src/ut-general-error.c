@@ -11,11 +11,6 @@ typedef struct {
   char *description;
 } UtGeneralError;
 
-static void ut_general_error_init(UtObject *object) {
-  UtGeneralError *self = (UtGeneralError *)object;
-  self->description = NULL;
-}
-
 static char *ut_general_error_to_string(UtObject *object) {
   UtGeneralError *self = (UtGeneralError *)object;
   return ut_cstring_new_printf("<UtGeneralError>(\"%s\")", self->description);
@@ -36,7 +31,6 @@ static UtErrorInterface error_interface = {
 
 static UtObjectInterface object_interface = {
     .type_name = "UtGeneralError",
-    .init = ut_general_error_init,
     .to_string = ut_general_error_to_string,
     .cleanup = ut_general_error_cleanup,
     .interfaces = {{&ut_error_id, &error_interface}, {NULL, NULL}}};

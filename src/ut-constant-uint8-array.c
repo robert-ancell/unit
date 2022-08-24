@@ -54,12 +54,6 @@ static UtObject *ut_constant_uint8_array_copy(UtObject *object) {
   return copy;
 }
 
-static void ut_constant_uint8_array_init(UtObject *object) {
-  UtConstantUint8Array *self = (UtConstantUint8Array *)object;
-  self->data = NULL;
-  self->data_length = 0;
-}
-
 static char *ut_constant_uint8_array_to_string(UtObject *object) {
   UtConstantUint8Array *self = (UtConstantUint8Array *)object;
   UtObjectRef string = ut_string_new("<uint8>[");
@@ -86,7 +80,6 @@ static UtListInterface list_interface = {
 
 static UtObjectInterface object_interface = {
     .type_name = "UtConstantUint8Array",
-    .init = ut_constant_uint8_array_init,
     .to_string = ut_constant_uint8_array_to_string,
     .interfaces = {{&ut_uint8_list_id, &uint8_list_interface},
                    {&ut_list_id, &list_interface},

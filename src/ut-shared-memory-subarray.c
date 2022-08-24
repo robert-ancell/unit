@@ -67,14 +67,6 @@ static UtObject *ut_shared_memory_subarray_copy(UtObject *object) {
   return copy;
 }
 
-static void ut_shared_memory_subarray_init(UtObject *object) {
-  UtSharedMemorySubarray *self = (UtSharedMemorySubarray *)object;
-  self->parent = NULL;
-  self->parent_length = 0;
-  self->start = 0;
-  self->length = 0;
-}
-
 static char *ut_shared_memory_subarray_to_string(UtObject *object) {
   UtSharedMemorySubarray *self = (UtSharedMemorySubarray *)object;
   return ut_cstring_new_printf("<UtSharedMemorySubarray>(length: %zi)",
@@ -99,7 +91,6 @@ static UtListInterface list_interface = {
 
 static UtObjectInterface object_interface = {
     .type_name = "UtSharedMemorySubarray",
-    .init = ut_shared_memory_subarray_init,
     .to_string = ut_shared_memory_subarray_to_string,
     .cleanup = ut_shared_memory_subarray_cleanup,
     .interfaces = {{&ut_uint8_list_id, &uint8_list_interface},

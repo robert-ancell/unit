@@ -50,12 +50,6 @@ static UtObject *ut_uint8_array_with_fds_copy(UtObject *object) {
   return ut_uint8_array_with_fds_new(data_copy, fds_copy);
 }
 
-static void ut_uint8_array_with_fds_init(UtObject *object) {
-  UtUint8ArrayWithFds *self = (UtUint8ArrayWithFds *)object;
-  self->data = NULL;
-  self->fds = NULL;
-}
-
 static char *ut_uint8_array_with_fds_to_string(UtObject *object) {
   UtUint8ArrayWithFds *self = (UtUint8ArrayWithFds *)object;
   ut_cstring_ref data_string = ut_object_to_string(self->data);
@@ -84,7 +78,6 @@ static UtListInterface list_interface = {
 
 static UtObjectInterface object_interface = {
     .type_name = "UtUint8ArrayWithFds",
-    .init = ut_uint8_array_with_fds_init,
     .to_string = ut_uint8_array_with_fds_to_string,
     .cleanup = ut_uint8_array_with_fds_cleanup,
     .interfaces = {{&ut_uint8_list_id, &uint8_list_interface},

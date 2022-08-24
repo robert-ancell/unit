@@ -371,23 +371,8 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
 
 static void ut_deflate_decoder_init(UtObject *object) {
   UtDeflateDecoder *self = (UtDeflateDecoder *)object;
-  self->input_stream = NULL;
   self->read_cancel = ut_cancel_new();
-  self->callback = NULL;
-  self->user_data = NULL;
-  self->cancel = NULL;
-  self->bit_buffer = 0x00;
-  self->bit_count = 0;
   self->state = DECODER_STATE_BLOCK_HEADER;
-  self->error = NULL;
-  self->is_last_block = false;
-  self->code = 0;
-  self->code_width = 0;
-  self->length = 0;
-  self->length_symbol = 0;
-  self->distance_symbol = 0;
-  self->literal_or_length_decoder = NULL;
-  self->distance_decoder = NULL;
   self->buffer = ut_uint8_array_new();
 }
 

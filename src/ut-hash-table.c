@@ -36,12 +36,6 @@ static UtMapItemInterface map_item_interface = {
     .get_key = ut_hash_table_item_get_key,
     .get_value = ut_hash_table_item_get_value};
 
-static void ut_hash_table_item_init(UtObject *object) {
-  UtHashTableItem *self = (UtHashTableItem *)object;
-  self->key = NULL;
-  self->value = NULL;
-}
-
 static void ut_hash_table_item_cleanup(UtObject *object) {
   UtHashTableItem *self = (UtHashTableItem *)object;
   ut_object_unref(self->key);
@@ -51,7 +45,6 @@ static void ut_hash_table_item_cleanup(UtObject *object) {
 
 static UtObjectInterface item_object_interface = {
     .type_name = "UtHashTableItem",
-    .init = ut_hash_table_item_init,
     .cleanup = ut_hash_table_item_cleanup,
     .interfaces = {{&ut_map_item_id, &map_item_interface}, {NULL, NULL}}};
 
@@ -170,11 +163,6 @@ static UtMapInterface map_interface = {.get_length = ut_hash_table_get_length,
                                        .get_keys = ut_hash_table_get_keys,
                                        .get_values = ut_hash_table_get_values};
 
-static void ut_hash_table_init(UtObject *object) {
-  UtHashTable *self = (UtHashTable *)object;
-  self->items = NULL;
-}
-
 static void ut_hash_table_cleanup(UtObject *object) {
   UtHashTable *self = (UtHashTable *)object;
   UtHashTableItem *next_item;
@@ -188,7 +176,6 @@ static void ut_hash_table_cleanup(UtObject *object) {
 
 static UtObjectInterface object_interface = {
     .type_name = "UtHashTable",
-    .init = ut_hash_table_init,
     .to_string = ut_map_to_string,
     .cleanup = ut_hash_table_cleanup,
     .interfaces = {{&ut_map_id, &map_interface}, {NULL, NULL}}};

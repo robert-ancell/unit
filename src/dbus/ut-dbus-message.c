@@ -23,22 +23,6 @@ typedef struct {
   UtObject *args;
 } UtDBusMessage;
 
-static void ut_dbus_message_init(UtObject *object) {
-  UtDBusMessage *self = (UtDBusMessage *)object;
-  self->type = 0;
-  self->flags = 0;
-  self->serial = 0;
-  self->path = NULL;
-  self->interface = NULL;
-  self->member = NULL;
-  self->error_name = NULL;
-  self->has_reply_serial = false;
-  self->reply_serial = 0;
-  self->destination = NULL;
-  self->sender = NULL;
-  self->args = NULL;
-}
-
 static char *ut_dbus_message_to_string(UtObject *object) {
   UtDBusMessage *self = (UtDBusMessage *)object;
   UtObjectRef parameters = ut_string_list_new();
@@ -86,7 +70,6 @@ static void ut_dbus_message_cleanup(UtObject *object) {
 }
 
 static UtObjectInterface object_interface = {.type_name = "UtDBusMessage",
-                                             .init = ut_dbus_message_init,
                                              .to_string =
                                                  ut_dbus_message_to_string,
                                              .cleanup = ut_dbus_message_cleanup,

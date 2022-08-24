@@ -10,12 +10,6 @@ typedef struct {
   uint16_t code;
 } UtX11UnknownGenericEvent;
 
-static void ut_x11_unknown_generic_event_init(UtObject *object) {
-  UtX11UnknownGenericEvent *self = (UtX11UnknownGenericEvent *)object;
-  self->major_opcode = 0;
-  self->code = 0;
-}
-
 static char *ut_x11_unknown_generic_event_to_string(UtObject *object) {
   UtX11UnknownGenericEvent *self = (UtX11UnknownGenericEvent *)object;
   return ut_cstring_new_printf("<UtX11UnknownGenericEvent>(%d, %d)",
@@ -26,7 +20,6 @@ static UtX11EventInterface x11_event_interface = {};
 
 static UtObjectInterface object_interface = {
     .type_name = "UtX11UnknownGenericEvent",
-    .init = ut_x11_unknown_generic_event_init,
     .to_string = ut_x11_unknown_generic_event_to_string,
     .interfaces = {{&ut_x11_event_id, &x11_event_interface}}};
 

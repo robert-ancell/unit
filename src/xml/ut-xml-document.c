@@ -410,20 +410,13 @@ static bool encode_element(UtObject *buffer, UtObject *element) {
   return true;
 }
 
-static void ut_xml_document_init(UtObject *object) {
-  UtXmlDocument *self = (UtXmlDocument *)object;
-  self->root = NULL;
-}
-
 static void ut_xml_document_cleanup(UtObject *object) {
   UtXmlDocument *self = (UtXmlDocument *)object;
   ut_object_unref(self->root);
 }
 
-static UtObjectInterface object_interface = {.type_name = "UtXmlDocument",
-                                             .init = ut_xml_document_init,
-                                             .cleanup =
-                                                 ut_xml_document_cleanup};
+static UtObjectInterface object_interface = {
+    .type_name = "UtXmlDocument", .cleanup = ut_xml_document_cleanup};
 
 UtObject *ut_xml_document_new(UtObject *root) {
   assert(ut_object_is_xml_element(root));

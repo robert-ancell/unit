@@ -12,20 +12,10 @@ typedef struct {
   uint16_t height;
 } UtX11ConfigureNotify;
 
-static void ut_x11_configure_notify_init(UtObject *object) {
-  UtX11ConfigureNotify *self = (UtX11ConfigureNotify *)object;
-  self->window = 0;
-  self->x = 0;
-  self->y = 0;
-  self->width = 0;
-  self->height = 0;
-}
-
 static UtX11EventInterface x11_event_interface = {};
 
 static UtObjectInterface object_interface = {
     .type_name = "UtX11ConfigureNotify",
-    .init = ut_x11_configure_notify_init,
     .interfaces = {{&ut_x11_event_id, &x11_event_interface}}};
 
 UtObject *ut_x11_configure_notify_new(uint32_t window, int16_t x, int16_t y,

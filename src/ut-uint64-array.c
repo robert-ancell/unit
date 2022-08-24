@@ -105,12 +105,6 @@ static UtObject *ut_uint64_array_copy(UtObject *object) {
   return copy;
 }
 
-static void ut_uint64_array_init(UtObject *object) {
-  UtUint64Array *self = (UtUint64Array *)object;
-  self->data = NULL;
-  self->data_length = 0;
-}
-
 static char *ut_uint64_array_to_string(UtObject *object) {
   UtUint64Array *self = (UtUint64Array *)object;
   UtObjectRef string = ut_string_new("<uint64>[");
@@ -148,7 +142,6 @@ static UtListInterface list_interface = {
 
 static UtObjectInterface object_interface = {
     .type_name = "UtUint64Array",
-    .init = ut_uint64_array_init,
     .to_string = ut_uint64_array_to_string,
     .cleanup = ut_uint64_array_cleanup,
     .interfaces = {{&ut_uint64_list_id, &uint64_list_interface},

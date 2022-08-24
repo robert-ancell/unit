@@ -162,17 +162,8 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
 
 static void ut_dbus_auth_client_init(UtObject *object) {
   UtDBusAuthClient *self = (UtDBusAuthClient *)object;
-  self->input_stream = NULL;
-  self->output_stream = NULL;
-  self->negotiate_unix_fd = false;
   self->read_cancel = ut_cancel_new();
   self->state = AUTH_STATE_IDLE;
-  self->unix_fd_supported = false;
-  self->guid = NULL;
-  self->error = NULL;
-  self->complete_callback = NULL;
-  self->complete_user_data = NULL;
-  self->complete_cancel = NULL;
 }
 
 static void ut_dbus_auth_client_cleanup(UtObject *object) {
