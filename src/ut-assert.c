@@ -167,3 +167,93 @@ void _ut_assert_uint8_list_equal(const char *file, int line, const char *a_name,
 
   abort();
 }
+
+void _ut_assert_uint8_array_equal(const char *file, int line,
+                                  const char *a_name, uint8_t *a_value,
+                                  size_t a_length, uint8_t *b_value,
+                                  size_t b_length) {
+  if (a_length == b_length) {
+    bool match = true;
+    for (size_t i = 0; i < a_length; i++) {
+      if (a_value[i] != b_value[i]) {
+        match = false;
+        break;
+      }
+    }
+
+    if (match) {
+      return;
+    }
+  }
+
+  UtObjectRef a_value_string = ut_string_new("<uint8>[");
+  UtObjectRef b_value_string = ut_string_new("<uint8>[");
+  for (size_t i = 0; i < a_length; i++) {
+    if (i != 0) {
+      ut_string_append(a_value_string, ", ");
+    }
+    ut_string_append_printf(a_value_string, "%d", a_value[i]);
+  }
+  for (size_t i = 0; i < b_length; i++) {
+    if (i != 0) {
+      ut_string_append(b_value_string, ", ");
+    }
+    ut_string_append_printf(b_value_string, "%d", b_value[i]);
+  }
+  ut_string_append(a_value_string, "]");
+  ut_string_append(b_value_string, "]");
+
+  fprintf(stderr,
+          "%s:%d Array %s doesn't have expected content:\n"
+          "  %s\n"
+          "  %s\n",
+          file, line, a_name, ut_string_get_text(a_value_string),
+          ut_string_get_text(b_value_string));
+
+  abort();
+}
+
+void _ut_assert_uint16_array_equal(const char *file, int line,
+                                   const char *a_name, uint16_t *a_value,
+                                   size_t a_length, uint16_t *b_value,
+                                   size_t b_length) {
+  if (a_length == b_length) {
+    bool match = true;
+    for (size_t i = 0; i < a_length; i++) {
+      if (a_value[i] != b_value[i]) {
+        match = false;
+        break;
+      }
+    }
+
+    if (match) {
+      return;
+    }
+  }
+
+  UtObjectRef a_value_string = ut_string_new("<uint16>[");
+  UtObjectRef b_value_string = ut_string_new("<uint16>[");
+  for (size_t i = 0; i < a_length; i++) {
+    if (i != 0) {
+      ut_string_append(a_value_string, ", ");
+    }
+    ut_string_append_printf(a_value_string, "%d", a_value[i]);
+  }
+  for (size_t i = 0; i < b_length; i++) {
+    if (i != 0) {
+      ut_string_append(b_value_string, ", ");
+    }
+    ut_string_append_printf(b_value_string, "%d", b_value[i]);
+  }
+  ut_string_append(a_value_string, "]");
+  ut_string_append(b_value_string, "]");
+
+  fprintf(stderr,
+          "%s:%d Array %s doesn't have expected content:\n"
+          "  %s\n"
+          "  %s\n",
+          file, line, a_name, ut_string_get_text(a_value_string),
+          ut_string_get_text(b_value_string));
+
+  abort();
+}
