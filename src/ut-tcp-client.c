@@ -37,8 +37,12 @@ typedef struct {
   UtObject *cancel;
 } UtTcpClient;
 
-static void connect_cb(void *user_data) {
+static void write_cb(void *user_data) {
   UtTcpClient *self = user_data;
+
+  if (self->connected) {
+    return;
+  }
 
   self->connected = true;
 
@@ -79,7 +83,7 @@ static void lookup_cb(void *user_data, UtObject *addresses) {
   assert(fd >= 0);
   self->fd = ut_file_descriptor_new(fd);
 
-  ut_event_loop_add_write_watch(self->fd, connect_cb, self, self->cancel);
+  ut_event_loop_add_write_watch(self->fd, write_cb, self, self->cancel);
 
   struct sockaddr_in addr4;
   struct sockaddr_in6 addr6;
