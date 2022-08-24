@@ -43,8 +43,10 @@ static void lookup_data_free(void *data) {
 static void *lookup_thread_cb(void *data_) {
   LookupData *data = data_;
 
+  struct addrinfo hints = {.ai_socktype = SOCK_STREAM,
+                           .ai_protocol = IPPROTO_TCP};
   struct addrinfo *addresses;
-  getaddrinfo(data->name, NULL, NULL, &addresses);
+  getaddrinfo(data->name, NULL, &hints, &addresses);
   return addresses;
 }
 
