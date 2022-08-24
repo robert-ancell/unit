@@ -87,6 +87,10 @@ UtObject *ut_ipv4_address_new_from_string(const char *address) {
   }
 }
 
+UtObject *ut_ipv4_address_new_loopback() {
+  return ut_ipv4_address_new_from_quad(127, 0, 0, 1);
+}
+
 uint32_t ut_ipv4_address_get_address(UtObject *object) {
   assert(ut_object_is_ipv4_address(object));
   UtIPv4Address *self = (UtIPv4Address *)object;

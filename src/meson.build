@@ -71,6 +71,8 @@ ut_sources = [
   'ut-string-array.c',
   'ut-string-list.c',
   'ut-tcp-client.c',
+  'ut-udp-datagram.c',
+  'ut-udp-socket.c',
   'ut-uint16.c',
   'ut-uint16-array.c',
   'ut-uint16-list.c',
@@ -276,6 +278,11 @@ http_client_test = executable('ut-http-client-test',
                               'http/ut-http-client-test.c',
                               link_with: ut_lib)
 #test('HTTP Client', http_client_test)
+
+udp_socket_test = executable('ut-udp-socket-test',
+                             'ut-udp-socket-test.c',
+                             link_with: ut_lib)
+test('UDP Socket', udp_socket_test)
 
 x11_client_test = executable('ut-x11-client-test',
                              'x11/ut-x11-client-test.c',
