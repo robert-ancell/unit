@@ -117,9 +117,7 @@ static char *ut_uint16_array_to_string(UtObject *object) {
     if (i != 0) {
       ut_string_append(string, ", ");
     }
-    char value_string[6];
-    snprintf(value_string, 6, "%d", self->data[i]);
-    ut_string_append(string, value_string);
+    ut_string_append_printf(string, "%d", self->data[i]);
   }
   ut_string_append(string, "]");
 

@@ -79,9 +79,7 @@ static char *ut_uint8_subarray_to_string(UtObject *object) {
     if (i != 0) {
       ut_string_append(string, ", ");
     }
-    char value_string[4];
-    snprintf(value_string, 4, "%d", data[i]);
-    ut_string_append(string, value_string);
+    ut_string_append_printf(string, "%d", data[i]);
   }
   ut_string_append(string, "]");
 
