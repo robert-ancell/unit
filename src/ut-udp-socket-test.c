@@ -36,8 +36,7 @@ int main(int argc, char **argv) {
   UtObjectRef address = ut_ipv4_address_new_loopback();
   UtObjectRef data = ut_uint8_array_new_from_elements(8, 0x01, 0x23, 0x45, 0x67,
                                                       0x89, 0xab, 0xcd, 0xef);
-  UtObjectRef datagram = ut_udp_datagram_new(address, echo_port, data);
-  ut_output_stream_write(udp_socket, datagram);
+  ut_udp_socket_send(udp_socket, address, echo_port, data);
 
   ut_event_loop_run();
 

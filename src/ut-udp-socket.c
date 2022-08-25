@@ -242,6 +242,13 @@ uint16_t ut_udp_socket_get_port(UtObject *object) {
   return self->port;
 }
 
+void ut_udp_socket_send(UtObject *object, UtObject *address, uint16_t port,
+                        UtObject *data) {
+  assert(ut_object_is_udp_socket(object));
+  UtObjectRef datagram = ut_udp_datagram_new(address, port, data);
+  ut_output_stream_write(object, datagram);
+}
+
 bool ut_object_is_udp_socket(UtObject *object) {
   return ut_object_is_type(object, &object_interface);
 }
