@@ -7,6 +7,7 @@
 
 typedef struct {
   uint8_t (*get_element)(UtObject *object, size_t index);
+  const uint8_t *(*get_data)(UtObject *object);
   uint8_t *(*take_data)(UtObject *object);
   void (*insert)(UtObject *object, size_t index, const uint8_t *data,
                  size_t data_length);
@@ -50,6 +51,10 @@ int64_t ut_uint8_list_get_int64_be(UtObject *object, size_t index);
 double ut_uint8_list_get_float64_le(UtObject *object, size_t index);
 
 double ut_uint8_list_get_float64_be(UtObject *object, size_t index);
+
+const uint8_t *ut_uint8_list_get_data(UtObject *object);
+
+uint8_t *ut_uint8_list_copy_data(UtObject *object);
 
 uint8_t *ut_uint8_list_take_data(UtObject *object);
 

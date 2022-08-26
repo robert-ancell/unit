@@ -70,6 +70,7 @@ static char *ut_constant_uint8_array_to_string(UtObject *object) {
 
 static UtUint8ListInterface uint8_list_interface = {
     .get_element = ut_constant_uint8_array_get_element,
+    .get_data = ut_constant_uint8_array_get_data,
     .take_data = ut_constant_uint8_array_take_data};
 
 static UtListInterface list_interface = {

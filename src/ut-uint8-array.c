@@ -4,7 +4,6 @@
 #include <stdlib.h>
 
 #include "ut-cancel.h"
-#include "ut-constant-uint8-array.h"
 #include "ut-list.h"
 #include "ut-output-stream.h"
 #include "ut-string.h"
@@ -30,6 +29,11 @@ static void resize_list(UtUint8Array *self, size_t length) {
 static uint8_t ut_uint8_array_get_element(UtObject *object, size_t index) {
   UtUint8Array *self = (UtUint8Array *)object;
   return self->data[index];
+}
+
+static const uint8_t *ut_uint8_array_get_const_data(UtObject *object) {
+  UtUint8Array *self = (UtUint8Array *)object;
+  return self->data;
 }
 
 static uint8_t *ut_uint8_array_take_data(UtObject *object) {
@@ -185,6 +189,7 @@ static void ut_uint8_array_cleanup(UtObject *object) {
 
 static UtUint8ListInterface uint8_list_interface = {
     .get_element = ut_uint8_array_get_element,
+    .get_data = ut_uint8_array_get_const_data,
     .take_data = ut_uint8_array_take_data,
     .insert = ut_uint8_array_insert,
     .append = ut_uint8_array_append};

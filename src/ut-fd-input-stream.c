@@ -6,7 +6,6 @@
 #include <unistd.h>
 
 #include "ut-cancel.h"
-#include "ut-constant-uint8-array.h"
 #include "ut-event-loop.h"
 #include "ut-fd-input-stream.h"
 #include "ut-file-descriptor.h"

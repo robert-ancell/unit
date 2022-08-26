@@ -6,7 +6,6 @@
 #include <unistd.h>
 
 #include "ut-cancel.h"
-#include "ut-constant-uint8-array.h"
 #include "ut-event-loop.h"
 #include "ut-fd-output-stream.h"
 #include "ut-file-descriptor.h"
@@ -83,16 +82,9 @@ static void write_cb(void *user_data) {
   }
   const uint8_t *buffer;
   uint8_t *allocated_buffer = NULL;
-  if (ut_object_is_uint8_array(data)) {
-    buffer = ut_uint8_array_get_data(data) + block->n_written;
-  } else if (ut_object_is_constant_uint8_array(data)) {
-    buffer = ut_constant_uint8_array_get_data(data) + block->n_written;
-  } else {
-    allocated_buffer = malloc(sizeof(uint8_t) * n_to_write);
-    for (size_t i = 0; i < n_to_write; i++) {
-      allocated_buffer[i] =
-          ut_uint8_list_get_element(data, block->n_written + i);
-    }
+  buffer = ut_uint8_list_get_data(data);
+  if (buffer == NULL) {
+    allocated_buffer = ut_uint8_list_copy_data(data);
     buffer = allocated_buffer;
   }
   ssize_t n_written;
@@ -100,7 +92,7 @@ static void write_cb(void *user_data) {
       ut_list_get_length(file_descriptors) > 0) {
     size_t file_descriptors_length = ut_list_get_length(file_descriptors);
     struct iovec iov;
-    iov.iov_base = (void *)buffer;
+    iov.iov_base = (void *)(buffer + block->n_written);
     iov.iov_len = n_to_write;
     uint8_t control_data[CMSG_SPACE(sizeof(int) * file_descriptors_length)];
     struct msghdr msg;
@@ -126,7 +118,8 @@ static void write_cb(void *user_data) {
       block->sent_fds = true;
     }
   } else {
-    n_written = write(ut_file_descriptor_get_fd(self->fd), buffer, n_to_write);
+    n_written = write(ut_file_descriptor_get_fd(self->fd),
+                      buffer + block->n_written, n_to_write);
   }
   free(allocated_buffer);
   assert(n_written >= 0);

@@ -111,6 +111,37 @@ double ut_uint8_list_get_float64_be(UtObject *object, size_t index) {
   return *value_pointer;
 }
 
+const uint8_t *ut_uint8_list_get_data(UtObject *object) {
+  UtUint8ListInterface *uint8_list_interface =
+      ut_object_get_interface(object, &ut_uint8_list_id);
+  assert(uint8_list_interface != NULL);
+  if (uint8_list_interface->take_data != NULL) {
+    return uint8_list_interface->take_data(object);
+  } else {
+    return NULL;
+  }
+}
+
+uint8_t *ut_uint8_list_copy_data(UtObject *object) {
+  UtUint8ListInterface *uint8_list_interface =
+      ut_object_get_interface(object, &ut_uint8_list_id);
+  assert(uint8_list_interface != NULL);
+  const uint8_t *data = ut_uint8_list_get_data(object);
+  size_t data_length = ut_list_get_length(object);
+  uint8_t *data_copy = malloc(data_length);
+  if (data != NULL) {
+    for (size_t i = 0; i < data_length; i++) {
+      data_copy[i] = data[i];
+    }
+  } else {
+    for (size_t i = 0; i < data_length; i++) {
+      data_copy[i] = uint8_list_interface->get_element(object, i);
+    }
+  }
+
+  return data_copy;
+}
+
 uint8_t *ut_uint8_list_take_data(UtObject *object) {
   UtUint8ListInterface *uint8_list_interface =
       ut_object_get_interface(object, &ut_uint8_list_id);

@@ -9,7 +9,6 @@
 #include <unistd.h>
 
 #include "ut-cancel.h"
-#include "ut-constant-uint8-array.h"
 #include "ut-event-loop.h"
 #include "ut-file-descriptor.h"
 #include "ut-input-stream.h"
@@ -144,21 +143,13 @@ static void ut_udp_socket_write(UtObject *object, UtObject *datagram,
   ssize_t data_length = ut_list_get_length(data);
   const uint8_t *buffer;
   uint8_t *allocated_buffer = NULL;
-  if (ut_object_is_uint8_array(data)) {
-    buffer = ut_uint8_array_get_data(data);
-  } else if (ut_object_is_constant_uint8_array(data)) {
-    buffer = ut_constant_uint8_array_get_data(data);
-  } else {
-    allocated_buffer = malloc(sizeof(uint8_t) * ut_list_get_length(data));
-    for (size_t i = 0; i < data_length; i++) {
-      allocated_buffer[i] = ut_uint8_list_get_element(data, i);
-    }
+  buffer = ut_uint8_list_get_data(data);
+  if (buffer == NULL) {
+    allocated_buffer = ut_uint8_list_copy_data(data);
     buffer = allocated_buffer;
   }
-
   assert(sendto(ut_file_descriptor_get_fd(self->fd), buffer, data_length, 0,
                 address, address_length) == data_length);
-
   free(allocated_buffer);
 }
 

@@ -3,7 +3,6 @@
 #include <string.h>
 #include <sys/types.h>
 
-#include "ut-constant-uint8-array.h"
 #include "ut-list.h"
 #include "ut-string.h"
 #include "ut-uint8-array.h"
@@ -174,12 +173,9 @@ UtObject *ut_utf8_string_new_sized(const char *text, size_t length) {
 UtObject *ut_utf8_string_new_from_data(UtObject *data) {
   assert(data != NULL);
   size_t data_length = ut_list_get_length(data);
-  if (ut_object_is_uint8_array(data)) {
-    return ut_utf8_string_new_sized((const char *)ut_uint8_array_get_data(data),
-                                    data_length);
-  } else if (ut_object_is_constant_uint8_array(data)) {
-    return ut_utf8_string_new_sized(
-        (const char *)ut_constant_uint8_array_get_data(data), data_length);
+  const uint8_t *d = ut_uint8_list_get_data(data);
+  if (d != NULL) {
+    return ut_utf8_string_new_sized((char *)d, data_length);
   } else {
     assert(ut_object_implements_uint8_list(data));
     UtObject *object = ut_string_new("");
