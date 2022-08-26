@@ -12,14 +12,14 @@
 #include "ut-input-stream.h"
 #include "ut-list.h"
 #include "ut-object-list.h"
-#include "ut-tcp-client.h"
+#include "ut-tcp-socket.h"
 
 typedef struct {
   UtObject object;
   unsigned int status_code;
   char *reason_phrase;
   UtObject *headers;
-  UtObject *tcp_client;
+  UtObject *tcp_socket;
   size_t n_read;
   UtObject *read_cancel;
   UtInputStreamCallback callback;
@@ -118,14 +118,14 @@ static void start_read(UtHttpResponse *self, UtInputStreamCallback callback,
   self->user_data = user_data;
   self->cancel = ut_object_ref(cancel);
 
-  ut_input_stream_read(self->tcp_client, read_cb, self, self->read_cancel);
+  ut_input_stream_read(self->tcp_socket, read_cb, self, self->read_cancel);
 }
 
 static void ut_http_response_cleanup(UtObject *object) {
   UtHttpResponse *self = (UtHttpResponse *)object;
   free(self->reason_phrase);
   ut_object_unref(self->headers);
-  ut_object_unref(self->tcp_client);
+  ut_object_unref(self->tcp_socket);
   ut_object_unref(self->cancel);
 }
 
@@ -149,13 +149,13 @@ static UtObjectInterface object_interface = {
 
 UtObject *ut_http_response_new(unsigned int status_code,
                                const char *reason_phrase, UtObject *headers,
-                               UtObject *tcp_client) {
+                               UtObject *tcp_socket) {
   UtObject *object = ut_object_new(sizeof(UtHttpResponse), &object_interface);
   UtHttpResponse *self = (UtHttpResponse *)object;
   self->status_code = status_code;
   self->reason_phrase = strdup(reason_phrase);
   self->headers = ut_object_ref(headers);
-  self->tcp_client = ut_object_ref(tcp_client);
+  self->tcp_socket = ut_object_ref(tcp_socket);
   return object;
 }
 

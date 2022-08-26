@@ -7,7 +7,7 @@
 
 UtObject *ut_http_response_new(unsigned int status_code,
                                const char *reason_phrase, UtObject *headers,
-                               UtObject *tcp_client);
+                               UtObject *tcp_socket);
 
 unsigned int ut_http_response_get_status_code(UtObject *object);
 

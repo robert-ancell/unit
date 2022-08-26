@@ -71,7 +71,6 @@ ut_sources = [
   'ut-string.c',
   'ut-string-array.c',
   'ut-string-list.c',
-  'ut-tcp-client.c',
   'ut-tcp-server-socket.c',
   'ut-tcp-socket.c',
   'ut-udp-datagram.c',
@@ -267,11 +266,6 @@ ip_address_resolver_test = executable('ut-ip-address-resolver-test',
                                       'ut-ip-address-resolver-test.c',
                                       link_with: ut_lib)
 #test('IP Address Resolver', ip_address_resolver_test)
-
-tcp_client_test = executable('ut-tcp-client-test',
-                             'ut-tcp-client-test.c',
-                             link_with: ut_lib)
-#test('TCP Client', tcp_client_test)
 
 unix_domain_socket_client_test = executable('ut-unix-domain-socket-client-test',
                                             'ut-unix-domain-socket-client-test.c',

@@ -11,29 +11,26 @@
 #include "ut-http-response.h"
 #include "ut-input-stream-multiplexer.h"
 #include "ut-input-stream.h"
+#include "ut-ip-address-resolver.h"
 #include "ut-list.h"
 #include "ut-object-array.h"
 #include "ut-output-stream.h"
 #include "ut-string.h"
-#include "ut-tcp-client.h"
-#include "ut-uint8-array.h"
+#include "ut-tcp-socket.h"
 #include "ut-uint8-list.h"
 
 typedef struct {
-  UtObject object;
-} UtHttpClient;
-
-typedef struct {
-  UtHttpClient *client;
-  UtObject *tcp_client;
+  UtObject *tcp_socket;
   UtObject *multiplexer;
   UtObject *header_stream;
   UtObject *content_stream;
   char *host;
+  uint16_t port;
   char *method;
   char *path;
   UtHttpResponseCallback callback;
   void *callback_user_data;
+  UtObject *callback_cancel;
   unsigned int response_status_code;
   char *reason_phrase;
   UtObject *response_headers;
@@ -43,19 +40,16 @@ typedef struct {
 HttpRequest *http_request_new(const char *host, uint16_t port,
                               const char *method, const char *path,
                               UtHttpResponseCallback callback,
-                              void *callback_user_data) {
+                              void *callback_user_data,
+                              UtObject *callback_cancel) {
   HttpRequest *request = malloc(sizeof(HttpRequest));
-  request->tcp_client = ut_tcp_client_new(host, port);
-  request->multiplexer = ut_input_stream_multiplexer_new(request->tcp_client);
-  request->header_stream =
-      ut_input_stream_multiplexer_add(request->multiplexer);
-  request->content_stream =
-      ut_input_stream_multiplexer_add(request->multiplexer);
   request->host = strdup(host);
+  request->port = port;
   request->method = strdup(method);
   request->path = strdup(path);
   request->callback = callback;
   request->callback_user_data = callback_user_data;
+  request->callback_cancel = ut_object_ref(callback_cancel);
   request->response_status_code = 0;
   request->reason_phrase = NULL;
   request->response_headers = ut_object_array_new();
@@ -64,17 +58,33 @@ HttpRequest *http_request_new(const char *host, uint16_t port,
 }
 
 void http_request_free(HttpRequest *request) {
-  ut_object_unref(request->tcp_client);
+  ut_object_unref(request->tcp_socket);
   ut_object_unref(request->multiplexer);
   ut_object_unref(request->header_stream);
   ut_object_unref(request->content_stream);
   free(request->host);
   free(request->method);
   free(request->path);
+  ut_object_unref(request->callback_cancel);
   free(request->reason_phrase);
   ut_object_unref(request->response_headers);
   ut_object_unref(request->header_read_cancel);
   free(request);
+}
+
+typedef struct {
+  UtObject object;
+  UtObject *ip_address_resolver;
+} UtHttpClient;
+
+static void ut_http_client_init(UtObject *object) {
+  UtHttpClient *self = (UtHttpClient *)object;
+  self->ip_address_resolver = ut_ip_address_resolver_new();
+}
+
+static void ut_http_client_cleanup(UtObject *object) {
+  UtHttpClient *self = (UtHttpClient *)object;
+  ut_object_unref(self->ip_address_resolver);
 }
 
 static bool parse_uri(const char *uri, char **scheme, char **user_info,
@@ -286,8 +296,15 @@ static void response_cb(void *user_data) {
 static size_t read_cb(void *user_data, UtObject *data, bool complete) {
   HttpRequest *request = user_data;
 
-  const uint8_t *buffer = ut_uint8_array_get_data(data);
   size_t buffer_length = ut_list_get_length(data);
+  const uint8_t *buffer;
+  uint8_t *allocated_buffer = NULL;
+  buffer = ut_uint8_list_get_data(data);
+  if (buffer == NULL) {
+    allocated_buffer = ut_uint8_list_copy_data(data);
+    buffer = allocated_buffer;
+  }
+
   size_t offset = 0;
   while (true) {
     size_t line_start = offset;
@@ -314,6 +331,8 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
     }
   }
 
+  free(allocated_buffer);
+
   return offset;
 }
 
@@ -329,14 +348,30 @@ static void connect_cb(void *user_data) {
   ut_string_append(header, "\r\n");
   ut_string_append(header, "\r\n");
   UtObjectRef utf8 = ut_string_get_utf8(header);
-  ut_output_stream_write(request->tcp_client, utf8);
+  ut_output_stream_write(request->tcp_socket, utf8);
   ut_input_stream_read(request->header_stream, read_cb, request,
                        request->header_read_cancel);
   ut_input_stream_multiplexer_set_active(request->multiplexer,
                                          request->header_stream);
 }
 
-static UtObjectInterface object_interface = {.type_name = "HttpClient"};
+static void lookup_cb(void *user_data, UtObject *addresses) {
+  HttpRequest *request = user_data;
+
+  UtObjectRef address = ut_list_get_first(addresses);
+  request->tcp_socket = ut_tcp_socket_new(address, request->port);
+  request->multiplexer = ut_input_stream_multiplexer_new(request->tcp_socket);
+  request->header_stream =
+      ut_input_stream_multiplexer_add(request->multiplexer);
+  request->content_stream =
+      ut_input_stream_multiplexer_add(request->multiplexer);
+  ut_tcp_socket_connect(request->tcp_socket, connect_cb, request,
+                        request->callback_cancel);
+}
+
+static UtObjectInterface object_interface = {.type_name = "HttpClient",
+                                             .init = ut_http_client_init,
+                                             .cleanup = ut_http_client_cleanup};
 
 UtObject *ut_http_client_new() {
   return ut_object_new(sizeof(UtHttpClient), &object_interface);
@@ -347,7 +382,7 @@ void ut_http_client_send_request(UtObject *object, const char *method,
                                  UtHttpResponseCallback callback,
                                  void *user_data, UtObject *cancel) {
   assert(ut_object_is_http_client(object));
-  // UtHttpClient *self = (UtHttpClient *)object;
+  UtHttpClient *self = (UtHttpClient *)object;
 
   ut_cstring_ref scheme = NULL;
   ut_cstring_ref host = NULL;
@@ -364,8 +399,9 @@ void ut_http_client_send_request(UtObject *object, const char *method,
   }
 
   HttpRequest *request =
-      http_request_new(host, port, method, path, callback, user_data);
-  ut_tcp_client_connect(request->tcp_client, connect_cb, request, cancel);
+      http_request_new(host, port, method, path, callback, user_data, cancel);
+  ut_ip_address_resolver_lookup(self->ip_address_resolver, host, lookup_cb,
+                                request, cancel);
 }
 
 bool ut_object_is_http_client(UtObject *object) {
