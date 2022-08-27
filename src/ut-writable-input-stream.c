@@ -89,15 +89,17 @@ size_t ut_writable_input_stream_write(UtObject *object, UtObject *data,
   return self->callback(self->user_data, data, complete);
 }
 
-void ut_writable_input_stream_close(UtObject *object, UtObject *data) {
+size_t ut_writable_input_stream_close(UtObject *object, UtObject *data) {
   assert(ut_object_is_writable_input_stream(object));
   UtWritableInputStream *self = (UtWritableInputStream *)object;
 
   assert(self->callback != NULL);
 
   if (!ut_cancel_is_active(self->cancel)) {
-    self->closed_callback(self->user_data, data);
+    return self->closed_callback(self->user_data, data);
   }
+
+  return 0;
 }
 
 bool ut_object_is_writable_input_stream(UtObject *object) {

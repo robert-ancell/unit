@@ -96,6 +96,10 @@ static void read_cb(void *user_data) {
   assert(n_used <= buffer_length);
   ut_list_remove(self->read_buffer, 0, n_used);
 
+  if (n_read == 0) {
+    self->closed_callback(self->user_data, buffer);
+  }
+
   // Stop listening for read events when consumer no longer wants them.
   if (ut_cancel_is_active(self->cancel)) {
     ut_cancel_activate(self->watch_cancel);

@@ -370,7 +370,13 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
   return offset;
 }
 
-static size_t closed_cb(void *user_data, UtObject *data) { return 0; }
+static size_t closed_cb(void *user_data, UtObject *data) {
+  UtDeflateDecoder *self = user_data;
+  if (!ut_cancel_is_active(self->cancel)) {
+    self->closed_callback(self->user_data, self->buffer);
+  }
+  return 0;
+}
 
 static void ut_deflate_decoder_init(UtObject *object) {
   UtDeflateDecoder *self = (UtDeflateDecoder *)object;

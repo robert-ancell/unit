@@ -51,7 +51,7 @@ static size_t deflate_read_cb(void *user_data, UtObject *data, bool complete) {
         total_used == 0
             ? ut_object_ref(data)
             : ut_list_get_sublist(data, total_used, data_length - total_used);
-    size_t n_used = self->callback(self->user_data, data, complete);
+    size_t n_used = self->callback(self->user_data, data, false);
     total_used += n_used;
   } while (!ut_cancel_is_active(self->cancel) && total_used < data_length);
 
@@ -62,16 +62,20 @@ static size_t deflate_read_cb(void *user_data, UtObject *data, bool complete) {
     return 0;
   }
 
-  if (complete) {
-    self->state = DECODER_STATE_MEMBER_TRAILER;
-    ut_input_stream_multiplexer_set_active(self->multiplexer,
-                                           self->gzip_input_stream);
-  }
-
   return total_used;
 }
 
-static size_t deflate_closed_cb(void *user_data, UtObject *data) { return 0; }
+static size_t deflate_closed_cb(void *user_data, UtObject *data) {
+  UtGzipDecoder *self = user_data;
+
+  assert(ut_list_get_length(data) == 0);
+
+  self->state = DECODER_STATE_MEMBER_TRAILER;
+  ut_input_stream_multiplexer_set_active(self->multiplexer,
+                                         self->gzip_input_stream);
+
+  return 0;
+}
 
 static char *read_string(UtObject *data, size_t *offset) {
   size_t data_length = ut_list_get_length(data);
@@ -187,6 +191,7 @@ static bool read_member_trailer(UtGzipDecoder *self, UtObject *data,
 static size_t read_cb(void *user_data, UtObject *data, bool complete) {
   UtGzipDecoder *self = user_data;
 
+  printf("read_cb\n");
   size_t offset = 0;
   bool decoding = true;
   while (decoding) {
@@ -197,22 +202,25 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
 
     switch (self->state) {
     case DECODER_STATE_MEMBER_HEADER:
-      decoding = read_member_header(self, data, &offset, complete);
+      decoding = read_member_header(self, data, &offset, false);
       break;
     case DECODER_STATE_MEMBER_DATA:
       // Will be processed in other stream.
       return offset;
     case DECODER_STATE_MEMBER_TRAILER:
-      decoding = read_member_trailer(self, data, &offset, complete);
+      decoding = read_member_trailer(self, data, &offset, false);
       break;
     case DECODER_STATE_DONE:
       ut_cancel_activate(self->read_cancel);
       decoding = false;
+      if (!ut_cancel_is_active(self->cancel)) {
+        self->closed_callback(self->user_data, self->buffer);
+      }
       break;
     case DECODER_STATE_ERROR:
       ut_cancel_activate(self->read_cancel);
       if (!ut_cancel_is_active(self->cancel)) {
-        self->callback(self->user_data, self->error, true);
+        self->callback(self->user_data, self->error, false);
       }
       decoding = false;
       break;
@@ -222,7 +230,17 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
   return offset;
 }
 
-static size_t closed_cb(void *user_data, UtObject *data) { return 0; }
+static size_t closed_cb(void *user_data, UtObject *data) {
+  UtGzipDecoder *self = user_data;
+  printf("closed_cb\n");
+
+  if (self->state != DECODER_STATE_DONE && !ut_cancel_is_active(self->cancel)) {
+    // FIXME: Error
+    self->closed_callback(self->user_data, self->buffer);
+  }
+
+  return 0;
+}
 
 static void ut_gzip_decoder_init(UtObject *object) {
   UtGzipDecoder *self = (UtGzipDecoder *)object;

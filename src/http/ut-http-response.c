@@ -102,7 +102,10 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
   return n_used;
 }
 
-static size_t closed_cb(void *user_data, UtObject *data) { return 0; }
+static size_t closed_cb(void *user_data, UtObject *data) {
+  UtHttpResponse *self = user_data;
+  return self->closed_callback(self->user_data, data);
+}
 
 static void start_read(UtHttpResponse *self, UtInputStreamDataCallback callback,
                        UtInputStreamClosedCallback closed_callback,

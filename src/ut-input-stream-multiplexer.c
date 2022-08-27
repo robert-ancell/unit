@@ -78,7 +78,27 @@ static size_t read_data_cb(void *user_data, UtObject *data, bool complete) {
   return total_used;
 }
 
-static size_t read_closed_cb(void *user_data, UtObject *data) { return 0; }
+static size_t read_closed_cb(void *user_data, UtObject *data) {
+  UtInputStreamMultiplexer *self = user_data;
+
+  size_t total_used = 0;
+  size_t data_length = ut_list_get_length(data);
+
+  do {
+    self->stream_changed = false;
+
+    UtObjectRef d =
+        total_used == 0
+            ? ut_object_ref(data)
+            : ut_list_get_sublist(data, total_used, data_length - total_used);
+    size_t n_used = ut_writable_input_stream_close(self->active_stream, d);
+    total_used += n_used;
+  } while (self->stream_changed &&
+           ut_writable_input_stream_get_reading(self->active_stream) &&
+           total_used < data_length);
+
+  return total_used;
+}
 
 static void ut_input_stream_multiplexer_init(UtObject *object) {
   UtInputStreamMultiplexer *self = (UtInputStreamMultiplexer *)object;

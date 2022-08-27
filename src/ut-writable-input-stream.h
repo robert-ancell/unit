@@ -19,6 +19,6 @@ bool ut_writable_input_stream_get_reading(UtObject *object);
 size_t ut_writable_input_stream_write(UtObject *object, UtObject *data,
                                       bool complete);
 
-void ut_writable_input_stream_close(UtObject *object, UtObject *data);
+size_t ut_writable_input_stream_close(UtObject *object, UtObject *data);
 
 bool ut_object_is_writable_input_stream(UtObject *object);
