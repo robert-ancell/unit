@@ -4,7 +4,6 @@
 #include "ut-error.h"
 #include "ut-ip-address.h"
 #include "ut-ipv4-address.h"
-#include "ut-uint8-array.h"
 
 typedef struct {
   UtObject object;
