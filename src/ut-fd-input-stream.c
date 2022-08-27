@@ -21,7 +21,6 @@ typedef struct {
   bool receive_fds;
   UtObject *read_buffer;
   UtObject *fds;
-  bool active;
   bool complete;
   size_t block_size;
   UtObject *watch_cancel;
@@ -134,40 +133,11 @@ static void ut_fd_input_stream_read(UtObject *object,
   self->user_data = user_data;
   self->cancel = ut_object_ref(cancel);
 
-  self->active = true;
   ut_event_loop_add_read_watch(self->fd, read_cb, self, self->watch_cancel);
 }
 
-static void ut_fd_input_stream_set_active(UtObject *object, bool active) {
-  UtFdInputStream *self = (UtFdInputStream *)object;
-
-  active = active ? true : false;
-  if (self->active == active) {
-    return;
-  }
-  self->active = active;
-
-  if (self->callback == NULL) {
-    return;
-  }
-
-  if (active) {
-    ut_event_loop_add_read_watch(self->fd, read_cb, self, self->watch_cancel);
-    if (ut_list_get_length(self->read_buffer) > 0) {
-      size_t n_used =
-          self->callback(self->user_data, self->read_buffer, self->complete);
-      ut_list_remove(self->read_buffer, 0, n_used);
-    }
-  } else {
-    ut_cancel_activate(self->watch_cancel);
-    ut_object_unref(self->watch_cancel);
-    self->watch_cancel = ut_cancel_new();
-  }
-}
-
 static UtInputStreamInterface input_stream_interface = {
-    .read = ut_fd_input_stream_read,
-    .set_active = ut_fd_input_stream_set_active};
+    .read = ut_fd_input_stream_read};
 
 static UtObjectInterface object_interface = {
     .type_name = "UtFdInputStream",

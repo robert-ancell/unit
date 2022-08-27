@@ -43,7 +43,6 @@ static void reading_cb(void *user_data, UtObject *stream) {
   UtInputStreamMultiplexer *self = user_data;
   if (stream == self->active_stream) {
     start_read(self);
-    ut_input_stream_set_active(self->input_stream, true);
   }
 }
 
@@ -127,9 +126,6 @@ void ut_input_stream_multiplexer_set_active(UtObject *object,
     if (ut_writable_input_stream_get_reading(stream)) {
       start_read(self);
     }
-  } else {
-    ut_input_stream_set_active(self->input_stream,
-                               ut_writable_input_stream_get_reading(stream));
   }
 }
 
