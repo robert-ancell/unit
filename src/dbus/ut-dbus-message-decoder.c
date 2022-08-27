@@ -512,14 +512,17 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
   }
 
   if (ut_list_get_length(self->messages) > 0) {
-    size_t n_used = self->callback(self->user_data, self->messages, complete);
+    size_t n_used = self->callback(self->user_data, self->messages, false);
     ut_list_remove(self->messages, 0, n_used);
   }
 
   return offset;
 }
 
-static size_t closed_cb(void *user_data, UtObject *data) { return 0; }
+static size_t closed_cb(void *user_data, UtObject *data) {
+  UtDBusMessageDecoder *self = user_data;
+  return self->closed_callback(self->user_data, self->messages);
+}
 
 static void ut_dbus_message_decoder_init(UtObject *object) {
   UtDBusMessageDecoder *self = (UtDBusMessageDecoder *)object;

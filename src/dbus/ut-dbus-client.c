@@ -138,6 +138,7 @@ static size_t messages_cb(void *user_data, UtObject *messages, bool complete) {
 }
 
 static size_t messages_closed_cb(void *user_data, UtObject *messages) {
+  // FIXME
   return 0;
 }
 
