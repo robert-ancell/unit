@@ -45,13 +45,16 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
     }
   }
 
-  size_t n_used = self->callback(self->user_data, self->buffer, complete);
+  size_t n_used = self->callback(self->user_data, self->buffer, false);
   ut_list_remove(self->buffer, 0, n_used);
 
   return code_points_length;
 }
 
-static size_t closed_cb(void *user_data, UtObject *data) { return 0; }
+static size_t closed_cb(void *user_data, UtObject *data) {
+  UtUtf16Encoder *self = user_data;
+  return self->closed_callback(self->user_data, self->buffer);
+}
 
 static void ut_utf16_encoder_read(UtObject *object,
                                   UtInputStreamDataCallback callback,

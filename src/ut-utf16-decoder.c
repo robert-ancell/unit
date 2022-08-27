@@ -59,13 +59,16 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
     ut_uint32_list_append(self->buffer, code_point);
   }
 
-  size_t n_used = self->callback(self->user_data, self->buffer, complete);
+  size_t n_used = self->callback(self->user_data, self->buffer, false);
   ut_list_remove(self->buffer, 0, n_used);
 
   return offset;
 }
 
-static size_t closed_cb(void *user_data, UtObject *data) { return 0; }
+static size_t closed_cb(void *user_data, UtObject *data) {
+  UtUtf16Decoder *self = user_data;
+  return self->closed_callback(self->user_data, self->buffer);
+}
 
 static void ut_utf16_decoder_read(UtObject *object,
                                   UtInputStreamDataCallback callback,
