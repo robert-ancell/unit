@@ -29,14 +29,16 @@ static bool is_multiplexer_stream(UtInputStreamMultiplexer *self,
   return false;
 }
 
-static size_t read_cb(void *user_data, UtObject *data, bool complete);
+static size_t read_data_cb(void *user_data, UtObject *data, bool complete);
+static size_t read_closed_cb(void *user_data, UtObject *data);
 
 static void start_read(UtInputStreamMultiplexer *self) {
   if (self->reading) {
     return;
   }
   self->reading = true;
-  ut_input_stream_read(self->input_stream, read_cb, self, self->cancel);
+  ut_input_stream_read(self->input_stream, read_data_cb, read_closed_cb, self,
+                       self->cancel);
 }
 
 static void reading_cb(void *user_data, UtObject *stream) {
@@ -47,7 +49,7 @@ static void reading_cb(void *user_data, UtObject *stream) {
   }
 }
 
-static size_t read_cb(void *user_data, UtObject *data, bool complete) {
+static size_t read_data_cb(void *user_data, UtObject *data, bool complete) {
   UtInputStreamMultiplexer *self = user_data;
 
   if (ut_object_implements_error(data)) {
@@ -75,6 +77,8 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
 
   return total_used;
 }
+
+static size_t read_closed_cb(void *user_data, UtObject *data) { return 0; }
 
 static void ut_input_stream_multiplexer_init(UtObject *object) {
   UtInputStreamMultiplexer *self = (UtInputStreamMultiplexer *)object;

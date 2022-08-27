@@ -8,7 +8,8 @@
 typedef struct {
   UtObject object;
   UtObject *data;
-  UtInputStreamCallback callback;
+  UtInputStreamDataCallback callback;
+  UtInputStreamClosedCallback closed_callback;
   void *user_data;
   UtObject *cancel;
   bool active;
@@ -33,13 +34,15 @@ static void feed_data(UtListInputStream *self) {
   assert(self->offset <= data_length);
 }
 
-static void ut_list_input_stream_read(UtObject *object,
-                                      UtInputStreamCallback callback,
-                                      void *user_data, UtObject *cancel) {
+static void
+ut_list_input_stream_read(UtObject *object, UtInputStreamDataCallback callback,
+                          UtInputStreamClosedCallback closed_callback,
+                          void *user_data, UtObject *cancel) {
   UtListInputStream *self = (UtListInputStream *)object;
   assert(self->callback == NULL);
 
   self->callback = callback;
+  self->closed_callback = closed_callback;
   self->user_data = user_data;
   self->cancel = ut_object_ref(cancel);
 

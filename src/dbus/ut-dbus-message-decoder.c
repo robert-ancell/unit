@@ -32,7 +32,8 @@ typedef struct {
   UtObject object;
   UtObject *input_stream;
   UtObject *messages;
-  UtInputStreamCallback callback;
+  UtInputStreamDataCallback callback;
+  UtInputStreamClosedCallback closed_callback;
   void *user_data;
 } UtDBusMessageDecoder;
 
@@ -518,6 +519,8 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
   return offset;
 }
 
+static size_t closed_cb(void *user_data, UtObject *data) { return 0; }
+
 static void ut_dbus_message_decoder_init(UtObject *object) {
   UtDBusMessageDecoder *self = (UtDBusMessageDecoder *)object;
   self->messages = ut_object_list_new();
@@ -529,17 +532,17 @@ static void ut_dbus_message_decoder_cleanup(UtObject *object) {
   ut_object_unref(self->messages);
 }
 
-static void
-ut_dbus_message_decoder_input_stream_read(UtObject *object,
-                                          UtInputStreamCallback callback,
-                                          void *user_data, UtObject *cancel) {
+static void ut_dbus_message_decoder_input_stream_read(
+    UtObject *object, UtInputStreamDataCallback callback,
+    UtInputStreamClosedCallback closed_callback, void *user_data,
+    UtObject *cancel) {
   UtDBusMessageDecoder *self = (UtDBusMessageDecoder *)object;
   assert(callback != NULL);
 
   assert(self->callback == NULL);
   self->callback = callback;
   self->user_data = user_data;
-  ut_input_stream_read(self->input_stream, read_cb, self, cancel);
+  ut_input_stream_read(self->input_stream, read_cb, closed_cb, self, cancel);
 }
 
 static UtInputStreamInterface input_stream_interface = {

@@ -11,12 +11,12 @@ int ut_input_stream_id = 0;
 
 typedef struct {
   UtObject *read_cancel;
-  UtInputStreamCallback callback;
+  UtInputStreamDataCallback callback;
   void *user_data;
   UtObject *cancel;
 } ReadAllData;
 
-static ReadAllData *read_all_data_new(UtInputStreamCallback callback,
+static ReadAllData *read_all_data_new(UtInputStreamDataCallback callback,
                                       void *user_data, UtObject *cancel) {
   ReadAllData *d = malloc(sizeof(ReadAllData));
   d->read_cancel = ut_cancel_new();
@@ -32,7 +32,7 @@ static void read_all_data_free(ReadAllData *d) {
   free(d);
 }
 
-static size_t read_all_cb(void *user_data, UtObject *data, bool complete) {
+static size_t read_all_data_cb(void *user_data, UtObject *data, bool complete) {
   ReadAllData *d = user_data;
 
   if (ut_cancel_is_active(d->cancel)) {
@@ -56,7 +56,7 @@ static size_t read_all_cb(void *user_data, UtObject *data, bool complete) {
   }
 }
 
-static size_t sync_cb(void *user_data, UtObject *data, bool complete) {
+static size_t sync_data_cb(void *user_data, UtObject *data, bool complete) {
   UtObject **result = user_data;
   if (ut_object_implements_error(data)) {
     *result = ut_object_ref(data);
@@ -71,24 +71,40 @@ static size_t sync_cb(void *user_data, UtObject *data, bool complete) {
   }
 }
 
-void ut_input_stream_read(UtObject *object, UtInputStreamCallback callback,
+static size_t default_data_cb(void *user_data, UtObject *data, bool complete) {
+  return 0;
+}
+
+static size_t default_closed_cb(void *user_data, UtObject *data) { return 0; }
+
+void ut_input_stream_read(UtObject *object,
+                          UtInputStreamDataCallback data_callback,
+                          UtInputStreamClosedCallback closed_callback,
                           void *user_data, UtObject *cancel) {
   UtInputStreamInterface *stream_interface =
       ut_object_get_interface(object, &ut_input_stream_id);
   assert(stream_interface != NULL);
-  stream_interface->read(object, callback, user_data, cancel);
+  if (data_callback == NULL) {
+    data_callback = default_data_cb;
+  }
+  if (closed_callback == NULL) {
+    closed_callback = default_closed_cb;
+  }
+  stream_interface->read(object, data_callback, closed_callback, user_data,
+                         cancel);
 }
 
-void ut_input_stream_read_all(UtObject *object, UtInputStreamCallback callback,
+void ut_input_stream_read_all(UtObject *object,
+                              UtInputStreamDataCallback callback,
                               void *user_data, UtObject *cancel) {
   ReadAllData *d = read_all_data_new(callback, user_data, cancel);
-  ut_input_stream_read(object, read_all_cb, d, d->read_cancel);
+  ut_input_stream_read(object, read_all_data_cb, NULL, d, d->read_cancel);
 }
 
 UtObject *ut_input_stream_read_sync(UtObject *object) {
   UtObject *result = NULL;
   UtObjectRef cancel = ut_cancel_new();
-  ut_input_stream_read(object, sync_cb, &result, cancel);
+  ut_input_stream_read(object, sync_data_cb, NULL, &result, cancel);
   ut_cancel_activate(cancel);
   if (result == NULL) {
     result = ut_general_error_new("Sync call did not complete");

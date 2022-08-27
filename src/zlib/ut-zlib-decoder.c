@@ -27,7 +27,8 @@ typedef struct {
   UtObject *zlib_input_stream;
   UtObject *deflate_input_stream;
   UtObject *read_cancel;
-  UtInputStreamCallback callback;
+  UtInputStreamDataCallback callback;
+  UtInputStreamClosedCallback closed_callback;
   void *user_data;
   UtObject *cancel;
   DecoderState state;
@@ -96,6 +97,8 @@ static size_t deflate_read_cb(void *user_data, UtObject *data, bool complete) {
   return total_used;
 }
 
+static size_t deflate_closed_cb(void *user_data, UtObject *data) { return 0; }
+
 static bool read_header(UtZlibDecoder *self, UtObject *data, size_t *offset,
                         bool complete) {
   size_t data_length = ut_list_get_length(data);
@@ -151,8 +154,8 @@ static bool read_header(UtZlibDecoder *self, UtObject *data, size_t *offset,
     self->deflate_decoder = ut_deflate_decoder_new(self->deflate_input_stream);
     ut_input_stream_multiplexer_set_active(self->multiplexer,
                                            self->deflate_input_stream);
-    ut_input_stream_read(self->deflate_decoder, deflate_read_cb, self,
-                         self->read_cancel);
+    ut_input_stream_read(self->deflate_decoder, deflate_read_cb,
+                         deflate_closed_cb, self, self->read_cancel);
   }
 
   return true;
@@ -253,6 +256,8 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
   return offset;
 }
 
+static size_t closed_cb(void *user_data, UtObject *data) { return 0; }
+
 static void ut_zlib_decoder_init(UtObject *object) {
   UtZlibDecoder *self = (UtZlibDecoder *)object;
   self->read_cancel = ut_cancel_new();
@@ -274,17 +279,19 @@ static void ut_zlib_decoder_cleanup(UtObject *object) {
 }
 
 static void ut_zlib_decoder_read(UtObject *object,
-                                 UtInputStreamCallback callback,
+                                 UtInputStreamDataCallback callback,
+                                 UtInputStreamClosedCallback closed_callback,
                                  void *user_data, UtObject *cancel) {
   UtZlibDecoder *self = (UtZlibDecoder *)object;
   assert(callback != NULL);
   assert(self->callback == NULL);
   self->callback = callback;
+  self->closed_callback = closed_callback;
   self->user_data = user_data;
   self->cancel = ut_object_ref(cancel);
   ut_input_stream_multiplexer_set_active(self->multiplexer,
                                          self->zlib_input_stream);
-  ut_input_stream_read(self->zlib_input_stream, read_cb, self,
+  ut_input_stream_read(self->zlib_input_stream, read_cb, closed_cb, self,
                        self->read_cancel);
 }
 

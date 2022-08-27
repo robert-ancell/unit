@@ -27,7 +27,8 @@ typedef struct {
   uint16_t port;
   UtObject *fd;
   UtObject *watch_cancel;
-  UtInputStreamCallback read_callback;
+  UtInputStreamDataCallback read_callback;
+  UtInputStreamClosedCallback read_closed_callback;
   void *read_user_data;
   UtObject *read_cancel;
 } UtUdpSocket;
@@ -87,7 +88,9 @@ static void read_cb(void *user_data) {
   assert(n_used == 1);
 }
 
-static void ut_udp_socket_read(UtObject *object, UtInputStreamCallback callback,
+static void ut_udp_socket_read(UtObject *object,
+                               UtInputStreamDataCallback callback,
+                               UtInputStreamClosedCallback closed_callback,
                                void *user_data, UtObject *cancel) {
   assert(ut_object_is_udp_socket(object));
   UtUdpSocket *self = (UtUdpSocket *)object;
@@ -96,6 +99,7 @@ static void ut_udp_socket_read(UtObject *object, UtInputStreamCallback callback,
   assert(callback != NULL);
 
   self->read_callback = callback;
+  self->read_closed_callback = closed_callback;
   self->read_user_data = user_data;
   self->read_cancel = ut_object_ref(cancel);
 

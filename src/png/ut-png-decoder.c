@@ -516,6 +516,8 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
   }
 }
 
+static size_t closed_cb(void *user_data, UtObject *data) { return 0; }
+
 static void sync_cb(void *user_data, UtObject *image) {
   UtObject **result = user_data;
   assert(*result == NULL);
@@ -566,7 +568,8 @@ void ut_png_decoder_decode(UtObject *object, UtPngDecodeCallback callback,
   self->user_data = user_data;
   self->cancel = ut_object_ref(cancel);
 
-  ut_input_stream_read(self->input_stream, read_cb, self, self->read_cancel);
+  ut_input_stream_read(self->input_stream, read_cb, closed_cb, self,
+                       self->read_cancel);
 }
 
 UtObject *ut_png_decoder_decode_sync(UtObject *object) {

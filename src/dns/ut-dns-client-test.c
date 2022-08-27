@@ -44,6 +44,8 @@ static size_t dns_read_cb(void *user_data, UtObject *datagram, bool complete) {
   return 1;
 }
 
+static size_t dns_closed_cb(void *user_data, UtObject *datagram) { return 0; }
+
 static void lookup_cb(void *user_data, UtObject *address) {
   ut_cstring_ref address_string = ut_ip_address_to_string(address);
 
@@ -55,7 +57,8 @@ static void lookup_cb(void *user_data, UtObject *address) {
 int main(int argc, char **argv) {
   // Make a mock DNS server
   UtObjectRef dns_socket = ut_udp_socket_new_ipv4();
-  ut_input_stream_read(dns_socket, dns_read_cb, dns_socket, NULL);
+  ut_input_stream_read(dns_socket, dns_read_cb, dns_closed_cb, dns_socket,
+                       NULL);
   ut_udp_socket_bind(dns_socket, 0);
   uint16_t dns_port = ut_udp_socket_get_port(dns_socket);
 

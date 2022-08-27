@@ -63,12 +63,15 @@ static void ut_local_file_close(UtObject *object) {
   ut_file_descriptor_close(self->fd);
 }
 
-static void ut_local_file_read(UtObject *object, UtInputStreamCallback callback,
+static void ut_local_file_read(UtObject *object,
+                               UtInputStreamDataCallback callback,
+                               UtInputStreamClosedCallback closed_callback,
                                void *user_data, UtObject *cancel) {
   UtLocalFile *self = (UtLocalFile *)object;
   assert(self->input_stream != NULL);
 
-  ut_input_stream_read(self->input_stream, callback, user_data, cancel);
+  ut_input_stream_read(self->input_stream, callback, closed_callback, user_data,
+                       cancel);
 }
 
 static void ut_local_file_set_active(UtObject *object, bool active) {

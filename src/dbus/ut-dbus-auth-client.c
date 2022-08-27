@@ -160,6 +160,8 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
   return offset;
 }
 
+static size_t closed_cb(void *user_data, UtObject *data) { return 0; }
+
 static void ut_dbus_auth_client_init(UtObject *object) {
   UtDBusAuthClient *self = (UtDBusAuthClient *)object;
   self->read_cancel = ut_cancel_new();
@@ -211,7 +213,8 @@ void ut_dbus_auth_client_run(UtObject *object, UtAuthCompleteCallback callback,
   self->complete_user_data = user_data;
   self->complete_cancel = ut_object_ref(cancel);
 
-  ut_input_stream_read(self->input_stream, read_cb, self, self->read_cancel);
+  ut_input_stream_read(self->input_stream, read_cb, closed_cb, self,
+                       self->read_cancel);
 
   // Send empty byte, which was used for sending credentials (no longer
   // required).

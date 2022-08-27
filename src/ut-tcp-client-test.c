@@ -17,7 +17,7 @@ static void http_connect_cb(void *user_data) {
       ut_string_new_constant("GET / HTTP/1.1\nHost: example.com\n\n");
   UtObjectRef utf8 = ut_string_get_utf8(request);
   ut_output_stream_write(tcp_client, utf8);
-  ut_input_stream_read(tcp_client, http_read_cb, NULL, NULL);
+  ut_input_stream_read(tcp_client, http_read_cb, NULL, NULL, NULL);
 }
 
 int main(int argc, char **argv) {

@@ -25,7 +25,8 @@ typedef struct {
   bool complete;
   size_t block_size;
   UtObject *watch_cancel;
-  UtInputStreamCallback callback;
+  UtInputStreamDataCallback callback;
+  UtInputStreamClosedCallback closed_callback;
   void *user_data;
   UtObject *cancel;
 } UtFdInputStream;
@@ -123,7 +124,8 @@ static void ut_fd_input_stream_cleanup(UtObject *object) {
 }
 
 static void ut_fd_input_stream_read(UtObject *object,
-                                    UtInputStreamCallback callback,
+                                    UtInputStreamDataCallback callback,
+                                    UtInputStreamClosedCallback closed_callback,
                                     void *user_data, UtObject *cancel) {
   UtFdInputStream *self = (UtFdInputStream *)object;
   assert(callback != NULL);
@@ -131,6 +133,7 @@ static void ut_fd_input_stream_read(UtObject *object,
   assert(self->callback == NULL);
 
   self->callback = callback;
+  self->closed_callback = closed_callback;
   self->user_data = user_data;
   self->cancel = ut_object_ref(cancel);
 

@@ -137,13 +137,16 @@ static void ut_tcp_client_cleanup(UtObject *object) {
   disconnect_client(self);
 }
 
-static void ut_tcp_client_read(UtObject *object, UtInputStreamCallback callback,
+static void ut_tcp_client_read(UtObject *object,
+                               UtInputStreamDataCallback callback,
+                               UtInputStreamClosedCallback closed_callback,
                                void *user_data, UtObject *cancel) {
   assert(ut_object_is_tcp_client(object));
   UtTcpClient *self = (UtTcpClient *)object;
   assert(self->input_stream != NULL);
 
-  ut_input_stream_read(self->input_stream, callback, user_data, cancel);
+  ut_input_stream_read(self->input_stream, callback, closed_callback, user_data,
+                       cancel);
 }
 
 static void ut_tcp_client_set_active(UtObject *object, bool active) {

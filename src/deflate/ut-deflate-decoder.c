@@ -26,7 +26,8 @@ typedef struct {
   UtObject object;
   UtObject *input_stream;
   UtObject *read_cancel;
-  UtInputStreamCallback callback;
+  UtInputStreamDataCallback callback;
+  UtInputStreamClosedCallback closed_callback;
   void *user_data;
   UtObject *cancel;
 
@@ -369,6 +370,8 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
   return offset;
 }
 
+static size_t closed_cb(void *user_data, UtObject *data) { return 0; }
+
 static void ut_deflate_decoder_init(UtObject *object) {
   UtDeflateDecoder *self = (UtDeflateDecoder *)object;
   self->read_cancel = ut_cancel_new();
@@ -389,7 +392,8 @@ static void ut_deflate_decoder_cleanup(UtObject *object) {
 }
 
 static void ut_deflate_decoder_read(UtObject *object,
-                                    UtInputStreamCallback callback,
+                                    UtInputStreamDataCallback callback,
+                                    UtInputStreamClosedCallback closed_callback,
                                     void *user_data, UtObject *cancel) {
   UtDeflateDecoder *self = (UtDeflateDecoder *)object;
   assert(callback != NULL);
@@ -397,7 +401,8 @@ static void ut_deflate_decoder_read(UtObject *object,
   self->callback = callback;
   self->user_data = user_data;
   self->cancel = ut_object_ref(cancel);
-  ut_input_stream_read(self->input_stream, read_cb, self, self->read_cancel);
+  ut_input_stream_read(self->input_stream, read_cb, closed_cb, self,
+                       self->read_cancel);
 }
 
 static UtInputStreamInterface input_stream_interface = {

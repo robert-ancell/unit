@@ -41,15 +41,17 @@ static void ut_unix_domain_socket_client_cleanup(UtObject *object) {
   disconnect_client(self);
 }
 
-static void ut_unix_domain_socket_client_read(UtObject *object,
-                                              UtInputStreamCallback callback,
-                                              void *user_data,
-                                              UtObject *cancel) {
+static void
+ut_unix_domain_socket_client_read(UtObject *object,
+                                  UtInputStreamDataCallback callback,
+                                  UtInputStreamClosedCallback closed_callback,
+                                  void *user_data, UtObject *cancel) {
   assert(ut_object_is_unix_domain_socket_client(object));
   UtUnixDomainSocketClient *self = (UtUnixDomainSocketClient *)object;
   assert(self->input_stream != NULL);
 
-  ut_input_stream_read(self->input_stream, callback, user_data, cancel);
+  ut_input_stream_read(self->input_stream, callback, closed_callback, user_data,
+                       cancel);
 }
 
 static UtInputStreamInterface input_stream_interface = {

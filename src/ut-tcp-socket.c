@@ -32,7 +32,8 @@ typedef struct {
   UtObject *connect_cancel;
   UtObject *read_buffer;
   size_t n_read;
-  UtInputStreamCallback read_callback;
+  UtInputStreamDataCallback read_callback;
+  UtInputStreamClosedCallback read_closed_callback;
   void *read_user_data;
   UtObject *read_cancel;
 } UtTcpSocket;
@@ -117,7 +118,9 @@ static void set_active(UtTcpSocket *self, bool active) {
   }
 }
 
-static void ut_tcp_socket_read(UtObject *object, UtInputStreamCallback callback,
+static void ut_tcp_socket_read(UtObject *object,
+                               UtInputStreamDataCallback callback,
+                               UtInputStreamClosedCallback closed_callback,
                                void *user_data, UtObject *cancel) {
   UtTcpSocket *self = (UtTcpSocket *)object;
 
@@ -125,6 +128,7 @@ static void ut_tcp_socket_read(UtObject *object, UtInputStreamCallback callback,
   assert(callback != NULL);
 
   self->read_callback = callback;
+  self->read_closed_callback = closed_callback;
   self->read_user_data = user_data;
   self->read_cancel = ut_object_ref(cancel);
 

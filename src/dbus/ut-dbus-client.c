@@ -137,6 +137,10 @@ static size_t messages_cb(void *user_data, UtObject *messages, bool complete) {
   return messages_length;
 }
 
+static size_t messages_closed_cb(void *user_data, UtObject *messages) {
+  return 0;
+}
+
 static void auth_complete_cb(void *user_data, const char *guid,
                              bool unix_fd_supported, UtObject *error) {
   UtDBusClient *self = user_data;
@@ -147,8 +151,8 @@ static void auth_complete_cb(void *user_data, const char *guid,
       ut_dbus_message_decoder_new(self->message_input_stream);
   ut_input_stream_multiplexer_set_active(self->multiplexer,
                                          self->message_input_stream);
-  ut_input_stream_read(self->message_decoder, messages_cb, self,
-                       self->read_cancel);
+  ut_input_stream_read(self->message_decoder, messages_cb, messages_closed_cb,
+                       self, self->read_cancel);
 
   // Send any queued messages.
   size_t message_queue_length = ut_list_get_length(self->message_queue);

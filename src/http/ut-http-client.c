@@ -317,6 +317,8 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
   return offset;
 }
 
+static size_t closed_cb(void *user_data, UtObject *data) { return 0; }
+
 static void connect_cb(void *user_data) {
   HttpRequest *request = user_data;
 
@@ -330,7 +332,7 @@ static void connect_cb(void *user_data) {
   ut_string_append(header, "\r\n");
   UtObjectRef utf8 = ut_string_get_utf8(header);
   ut_output_stream_write(request->tcp_client, utf8);
-  ut_input_stream_read(request->header_stream, read_cb, request,
+  ut_input_stream_read(request->header_stream, read_cb, closed_cb, request,
                        request->header_read_cancel);
   ut_input_stream_multiplexer_set_active(request->multiplexer,
                                          request->header_stream);

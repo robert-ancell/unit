@@ -22,7 +22,8 @@ typedef struct {
   UtObject *tcp_client;
   size_t n_read;
   UtObject *read_cancel;
-  UtInputStreamCallback callback;
+  UtInputStreamDataCallback callback;
+  UtInputStreamClosedCallback closed_callback;
   void *user_data;
   UtObject *cancel;
 } UtHttpResponse;
@@ -101,7 +102,10 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
   return n_used;
 }
 
-static void start_read(UtHttpResponse *self, UtInputStreamCallback callback,
+static size_t closed_cb(void *user_data, UtObject *data) { return 0; }
+
+static void start_read(UtHttpResponse *self, UtInputStreamDataCallback callback,
+                       UtInputStreamClosedCallback closed_callback,
                        void *user_data, UtObject *cancel) {
   // Clean up after the previous read.
   if (ut_cancel_is_active(self->cancel)) {
@@ -115,10 +119,12 @@ static void start_read(UtHttpResponse *self, UtInputStreamCallback callback,
 
   self->read_cancel = ut_cancel_new();
   self->callback = callback;
+  self->closed_callback = closed_callback;
   self->user_data = user_data;
   self->cancel = ut_object_ref(cancel);
 
-  ut_input_stream_read(self->tcp_client, read_cb, self, self->read_cancel);
+  ut_input_stream_read(self->tcp_client, read_cb, closed_cb, self,
+                       self->read_cancel);
 }
 
 static void ut_http_response_cleanup(UtObject *object) {
@@ -130,12 +136,13 @@ static void ut_http_response_cleanup(UtObject *object) {
 }
 
 static void ut_http_response_read(UtObject *object,
-                                  UtInputStreamCallback callback,
+                                  UtInputStreamDataCallback callback,
+                                  UtInputStreamClosedCallback closed_callback,
                                   void *user_data, UtObject *cancel) {
   UtHttpResponse *self = (UtHttpResponse *)object;
   assert(callback != NULL);
 
-  start_read(self, callback, user_data, cancel);
+  start_read(self, callback, closed_callback, user_data, cancel);
 }
 
 static UtInputStreamInterface input_stream_interface = {

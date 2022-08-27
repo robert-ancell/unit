@@ -11,7 +11,8 @@ typedef struct {
   UtObject *input;
   UtObject *buffer;
 
-  UtInputStreamCallback callback;
+  UtInputStreamDataCallback callback;
+  UtInputStreamClosedCallback closed_callback;
   void *user_data;
 } UtUtf8Encoder;
 
@@ -57,15 +58,19 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
   return code_points_length;
 }
 
+static size_t closed_cb(void *user_data, UtObject *data) { return 0; }
+
 static void ut_utf8_encoder_read(UtObject *object,
-                                 UtInputStreamCallback callback,
+                                 UtInputStreamDataCallback callback,
+                                 UtInputStreamClosedCallback closed_callback,
                                  void *user_data, UtObject *cancel) {
   UtUtf8Encoder *self = (UtUtf8Encoder *)object;
   assert(callback != NULL);
   assert(self->callback == NULL);
   self->callback = callback;
+  self->closed_callback = closed_callback;
   self->user_data = user_data;
-  ut_input_stream_read(self->input, read_cb, self, cancel);
+  ut_input_stream_read(self->input, read_cb, closed_cb, self, cancel);
 }
 
 static UtInputStreamInterface input_stream_interface = {

@@ -1165,6 +1165,8 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
   return offset;
 }
 
+static size_t closed_cb(void *user_data, UtObject *data) { return 0; }
+
 static void ut_x11_client_init(UtObject *object) {
   UtX11Client *self = (UtX11Client *)object;
   self->cancel = ut_cancel_new();
@@ -1241,7 +1243,8 @@ void ut_x11_client_connect(UtObject *object,
   self->connect_cancel = ut_object_ref(cancel);
 
   ut_unix_domain_socket_client_connect(self->socket);
-  ut_input_stream_read(self->socket, read_cb, self, self->read_cancel);
+  ut_input_stream_read(self->socket, read_cb, closed_cb, self,
+                       self->read_cancel);
 
   UtObjectRef setup = ut_x11_buffer_new();
   ut_x11_buffer_append_card8(setup, 0x6c); // Little endian.
