@@ -93,15 +93,32 @@ static void read_cb(void *user_data) {
 
   self->n_read += n_read;
   UtObjectRef data = ut_list_get_sublist(self->read_buffer, 0, self->n_read);
-  size_t n_used = self->read_callback(self->read_user_data, data, false);
+  size_t n_used = self->read_callback(self->read_user_data, data, n_read > 0);
   assert(n_used <= self->n_read);
   ut_list_remove(self->read_buffer, 0, n_used);
   self->n_read -= n_used;
 }
 
+static void set_active(UtTcpSocket *self, bool active) {
+  assert(self->read_callback != NULL);
+
+  if (active) {
+    if (self->read_watch_cancel == NULL) {
+      self->read_watch_cancel = ut_cancel_new();
+      ut_event_loop_add_read_watch(self->fd, read_cb, self,
+                                   self->read_watch_cancel);
+    }
+  } else {
+    if (self->read_watch_cancel != NULL) {
+      ut_cancel_activate(self->read_watch_cancel);
+      ut_object_unref(self->read_watch_cancel);
+      self->read_watch_cancel = NULL;
+    }
+  }
+}
+
 static void ut_tcp_socket_read(UtObject *object, UtInputStreamCallback callback,
                                void *user_data, UtObject *cancel) {
-  assert(ut_object_is_tcp_socket(object));
   UtTcpSocket *self = (UtTcpSocket *)object;
 
   assert(self->read_callback == NULL);
@@ -112,13 +129,19 @@ static void ut_tcp_socket_read(UtObject *object, UtInputStreamCallback callback,
   self->read_cancel = ut_object_ref(cancel);
 
   self->read_buffer = ut_uint8_array_new();
-  self->read_watch_cancel = ut_cancel_new();
-  ut_event_loop_add_read_watch(self->fd, read_cb, self,
-                               self->read_watch_cancel);
+  set_active(self, true);
+}
+
+static void ut_tcp_socket_set_active(UtObject *object, bool active) {
+  UtTcpSocket *self = (UtTcpSocket *)object;
+
+  assert(self->read_callback != NULL);
+
+  set_active(self, active);
 }
 
 static UtInputStreamInterface input_stream_interface = {
-    .read = ut_tcp_socket_read}; // FIXME: .set_active
+    .read = ut_tcp_socket_read, .set_active = ut_tcp_socket_set_active};
 
 static void ut_tcp_socket_write(UtObject *object, UtObject *data,
                                 UtOutputStreamCallback callback,
