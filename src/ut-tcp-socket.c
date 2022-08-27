@@ -93,11 +93,17 @@ static void read_cb(void *user_data) {
   assert(n_read >= 0);
 
   self->n_read += n_read;
-  UtObjectRef data = ut_list_get_sublist(self->read_buffer, 0, self->n_read);
-  size_t n_used = self->read_callback(self->read_user_data, data, n_read > 0);
-  assert(n_used <= self->n_read);
-  ut_list_remove(self->read_buffer, 0, n_used);
-  self->n_read -= n_used;
+
+  if (n_read == 0) {
+    ut_cancel_activate(self->read_watch_cancel);
+    self->read_closed_callback(self->read_user_data, self->read_buffer);
+  } else {
+    UtObjectRef data = ut_list_get_sublist(self->read_buffer, 0, self->n_read);
+    size_t n_used = self->read_callback(self->read_user_data, data, false);
+    assert(n_used <= self->n_read);
+    ut_list_remove(self->read_buffer, 0, n_used);
+    self->n_read -= n_used;
+  }
 }
 
 static void set_active(UtTcpSocket *self, bool active) {
