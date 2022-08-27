@@ -8,68 +8,33 @@
 typedef struct {
   UtObject object;
   UtObject *data;
-  UtInputStreamCallback callback;
-  void *user_data;
-  UtObject *cancel;
-  bool active;
-  size_t offset;
-  bool in_callback;
+  bool read;
 } UtListInputStream;
-
-static void feed_data(UtListInputStream *self) {
-  size_t data_length = ut_list_get_length(self->data);
-
-  while (!ut_cancel_is_active(self->cancel) && self->active &&
-         self->offset < data_length) {
-    self->in_callback = true;
-    UtObjectRef data = self->offset == 0
-                           ? ut_object_ref(self->data)
-                           : ut_list_get_sublist(self->data, self->offset,
-                                                 data_length - self->offset);
-    self->offset += self->callback(self->user_data, data, true);
-    self->in_callback = false;
-  }
-
-  assert(self->offset <= data_length);
-}
 
 static void ut_list_input_stream_read(UtObject *object,
                                       UtInputStreamCallback callback,
                                       void *user_data, UtObject *cancel) {
   UtListInputStream *self = (UtListInputStream *)object;
-  assert(self->callback == NULL);
 
-  self->callback = callback;
-  self->user_data = user_data;
-  self->cancel = ut_object_ref(cancel);
+  assert(!self->read);
+  self->read = true;
 
-  self->active = true;
-  feed_data(self);
-}
-
-static void ut_list_input_stream_set_active(UtObject *object, bool active) {
-  UtListInputStream *self = (UtListInputStream *)object;
-
-  active = active ? true : false;
-  if (self->active == active) {
+  if (ut_cancel_is_active(cancel)) {
     return;
   }
-  self->active = active;
 
-  if (self->active && !self->in_callback) {
-    feed_data(self);
-  }
+  size_t data_length = ut_list_get_length(self->data);
+  size_t n_used = callback(user_data, self->data, true);
+  assert(n_used <= data_length);
 }
 
 static void ut_list_input_stream_cleanup(UtObject *object) {
   UtListInputStream *self = (UtListInputStream *)object;
   ut_object_unref(self->data);
-  ut_object_unref(self->cancel);
 }
 
 static UtInputStreamInterface input_stream_interface = {
-    .read = ut_list_input_stream_read,
-    .set_active = ut_list_input_stream_set_active};
+    .read = ut_list_input_stream_read};
 
 static UtObjectInterface object_interface = {
     .type_name = "UtListInputStream",
