@@ -56,6 +56,19 @@ static size_t read_all_data_cb(void *user_data, UtObject *data, bool complete) {
   }
 }
 
+static size_t read_all_closed_cb(void *user_data, UtObject *data) {
+  ReadAllData *d = user_data;
+
+  size_t n_used = 0;
+  if (!ut_cancel_is_active(d->cancel)) {
+    n_used = d->callback(d->user_data, data, true);
+  }
+
+  read_all_data_free(d);
+
+  return n_used;
+}
+
 static size_t sync_data_cb(void *user_data, UtObject *data, bool complete) {
   UtObject **result = user_data;
   if (ut_object_implements_error(data)) {
@@ -69,6 +82,13 @@ static size_t sync_data_cb(void *user_data, UtObject *data, bool complete) {
     // Wait for all data.
     return 0;
   }
+}
+
+static size_t sync_closed_cb(void *user_data, UtObject *data) {
+  UtObject **result = user_data;
+  assert(*result == NULL);
+  *result = ut_list_copy(data);
+  return ut_list_get_length(data);
 }
 
 static size_t default_data_cb(void *user_data, UtObject *data, bool complete) {
@@ -98,13 +118,14 @@ void ut_input_stream_read_all(UtObject *object,
                               UtInputStreamDataCallback callback,
                               void *user_data, UtObject *cancel) {
   ReadAllData *d = read_all_data_new(callback, user_data, cancel);
-  ut_input_stream_read(object, read_all_data_cb, NULL, d, d->read_cancel);
+  ut_input_stream_read(object, read_all_data_cb, read_all_closed_cb, d,
+                       d->read_cancel);
 }
 
 UtObject *ut_input_stream_read_sync(UtObject *object) {
   UtObject *result = NULL;
   UtObjectRef cancel = ut_cancel_new();
-  ut_input_stream_read(object, sync_data_cb, NULL, &result, cancel);
+  ut_input_stream_read(object, sync_data_cb, sync_closed_cb, &result, cancel);
   ut_cancel_activate(cancel);
   if (result == NULL) {
     result = ut_general_error_new("Sync call did not complete");

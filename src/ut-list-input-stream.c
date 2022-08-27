@@ -30,8 +30,15 @@ static void feed_data(UtListInputStream *self) {
     self->offset += self->callback(self->user_data, data, true);
     self->in_callback = false;
   }
-
   assert(self->offset <= data_length);
+
+  if (!ut_cancel_is_active(self->cancel)) {
+    UtObjectRef data = self->offset == 0
+                           ? ut_object_ref(self->data)
+                           : ut_list_get_sublist(self->data, self->offset,
+                                                 data_length - self->offset);
+    self->closed_callback(self->user_data, data);
+  }
 }
 
 static void

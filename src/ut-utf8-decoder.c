@@ -86,13 +86,17 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
     ut_uint32_list_append(self->buffer, code_point);
   }
 
-  size_t n_used = self->callback(self->user_data, self->buffer, complete);
+  size_t n_used = self->callback(self->user_data, self->buffer, false);
   ut_list_remove(self->buffer, 0, n_used);
 
   return offset;
 }
 
-static size_t closed_cb(void *user_data, UtObject *data) { return 0; }
+static size_t closed_cb(void *user_data, UtObject *data) {
+  UtUtf8Decoder *self = user_data;
+  self->closed_callback(self->user_data, self->buffer);
+  return 0;
+}
 
 static void ut_utf8_decoder_read(UtObject *object,
                                  UtInputStreamDataCallback callback,
