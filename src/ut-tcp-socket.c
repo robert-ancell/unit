@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
+#include <sys/un.h>
 #include <unistd.h>
 
 #include "ut-cancel.h"
@@ -19,6 +20,7 @@
 #include "ut-tcp-socket.h"
 #include "ut-uint8-array.h"
 #include "ut-uint8-list.h"
+#include "ut-unix-socket-address.h"
 
 typedef struct {
   UtObject object;
@@ -195,6 +197,13 @@ UtObject *ut_tcp_socket_new_from_fd(UtObject *fd) {
                        (struct sockaddr *)&address6, &address_length) == 0);
     self->address = ut_ipv6_address_new(address6.sin6_addr.s6_addr);
     self->port = ntohs(address6.sin6_port);
+  } else if (family == AF_UNIX) {
+    struct sockaddr_un address_unix;
+    address_length = sizeof(address_unix);
+    assert(getpeername(ut_file_descriptor_get_fd(fd),
+                       (struct sockaddr *)&address_unix, &address_length) == 0);
+    self->address = ut_unix_socket_address_new(address_unix.sun_path);
+    self->port = 0;
   } else {
     assert(false);
   }
@@ -209,7 +218,6 @@ UtObject *ut_tcp_socket_new(UtObject *address, uint16_t port) {
   UtTcpSocket *self = (UtTcpSocket *)object;
 
   assert(address != NULL);
-  assert(port > 0);
 
   self->address = ut_object_ref(address);
   self->port = port;
@@ -217,8 +225,12 @@ UtObject *ut_tcp_socket_new(UtObject *address, uint16_t port) {
   sa_family_t family;
   if (ut_object_is_ipv4_address(address)) {
     family = AF_INET;
+    assert(port > 0);
   } else if (ut_object_is_ipv6_address(address)) {
     family = AF_INET6;
+    assert(port > 0);
+  } else if (ut_object_is_unix_socket_address(address)) {
+    family = AF_UNIX;
   } else {
     assert(false);
   }
@@ -251,6 +263,7 @@ void ut_tcp_socket_connect(UtObject *object,
 
   struct sockaddr_in address4;
   struct sockaddr_in6 address6;
+  struct sockaddr_un address_unix;
   struct sockaddr *socket_address;
   socklen_t socket_address_length;
   if (ut_object_is_ipv4_address(self->address)) {
@@ -271,6 +284,13 @@ void ut_tcp_socket_connect(UtObject *object,
     address6.sin6_port = htons(self->port);
     socket_address = (struct sockaddr *)&address6;
     socket_address_length = sizeof(address6);
+  } else if (ut_object_is_unix_socket_address(self->address)) {
+    memset(&address_unix, 0, sizeof(address_unix));
+    address_unix.sun_family = AF_UNIX;
+    snprintf(address_unix.sun_path, sizeof(address_unix.sun_path), "%s",
+             ut_unix_socket_address_get_path(self->address));
+    socket_address = (struct sockaddr *)&address_unix;
+    socket_address_length = sizeof(address_unix);
   } else {
     assert(false);
   }
@@ -304,6 +324,8 @@ uint16_t ut_tcp_socket_get_local_port(UtObject *object) {
   } else if (ut_object_is_ipv6_address(self->address)) {
     socket_address = (struct sockaddr *)&address6;
     socket_address_length = sizeof(address6);
+  } else if (ut_object_is_unix_socket_address(self->address)) {
+    return 0;
   } else {
     assert(false);
   }
@@ -314,6 +336,8 @@ uint16_t ut_tcp_socket_get_local_port(UtObject *object) {
     return ntohs(address4.sin_port);
   } else if (family == AF_INET6) {
     return ntohs(address6.sin6_port);
+  } else if (family == AF_UNIX) {
+    return 0;
   } else {
     assert(false);
   }

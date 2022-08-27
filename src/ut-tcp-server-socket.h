@@ -12,6 +12,8 @@ UtObject *ut_tcp_server_socket_new_ipv4(uint16_t port);
 
 UtObject *ut_tcp_server_socket_new_ipv6(uint16_t port);
 
+UtObject *ut_tcp_server_socket_new_unix(const char *path);
+
 void ut_tcp_server_socket_listen(UtObject *object,
                                  UtTcpServerSocketListenCallback callback,
                                  void *user_data, UtObject *cancel);

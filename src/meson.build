@@ -95,6 +95,7 @@ ut_sources = [
   'ut-uint64-list.c',
   'ut-uint64-subarray.c',
   'ut-unix-domain-socket-client.c',
+  'ut-unix-socket-address.c',
   'ut-utf16-decoder.c',
   'ut-utf16-encoder.c',
   'ut-utf8-decoder.c',
@@ -291,6 +292,11 @@ tcp_socket_test = executable('ut-tcp-socket-test',
                              'ut-tcp-socket-test.c',
                              link_with: ut_lib)
 test('TCP Socket', tcp_socket_test)
+
+tcp_socket_unix_test = executable('ut-tcp-socket-unix-test',
+                                  'ut-tcp-socket-unix-test.c',
+                                  link_with: ut_lib)
+test('Unix TCP Socket', tcp_socket_unix_test)
 
 udp_socket_test = executable('ut-udp-socket-test',
                              'ut-udp-socket-test.c',
