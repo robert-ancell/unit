@@ -286,7 +286,7 @@ test('DNS Client', dns_client_test)
 http_client_test = executable('ut-http-client-test',
                               'http/ut-http-client-test.c',
                               link_with: ut_lib)
-#test('HTTP Client', http_client_test)
+test('HTTP Client', http_client_test)
 
 tcp_socket_test = executable('ut-tcp-socket-test',
                              'ut-tcp-socket-test.c',
