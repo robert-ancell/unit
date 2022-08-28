@@ -118,6 +118,22 @@ void _ut_assert_int_equal(const char *file, int line, const char *a_name,
   abort();
 }
 
+void _ut_assert_float_equal(const char *file, int line, const char *a_name,
+                            double a_value, const char *b_name,
+                            double b_value) {
+  if (a_value == b_value) {
+    return;
+  }
+
+  fprintf(stderr,
+          "%s:%d Floating point numbers %s and %s are not equal:\n"
+          "  %f\n"
+          "  %f\n",
+          file, line, a_name, b_name, a_value, b_value);
+
+  abort();
+}
+
 void _ut_assert_cstring_equal(const char *file, int line, const char *a_name,
                               const char *a_value, const char *b_name,
                               const char *b_value) {
