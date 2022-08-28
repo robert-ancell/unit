@@ -101,7 +101,7 @@ UtObject *ut_dbus_message_new_method_return(uint32_t reply_serial,
                                             UtObject *out_args) {
   UtObject *object = ut_object_new(sizeof(UtDBusMessage), &object_interface);
   UtDBusMessage *self = (UtDBusMessage *)object;
-  self->type = UT_DBUS_MESSAGE_TYPE_METHOD_CALL;
+  self->type = UT_DBUS_MESSAGE_TYPE_METHOD_RETURN;
   self->has_reply_serial = true;
   self->reply_serial = reply_serial;
   self->args = ut_object_ref(out_args);
