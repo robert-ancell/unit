@@ -27,6 +27,7 @@ typedef struct {
   uint16_t port;
   UtObject *fd;
   UtObject *watch_cancel;
+  UtObject *read_buffer;
   UtInputStreamCallback read_callback;
   void *read_user_data;
   UtObject *read_cancel;
@@ -82,9 +83,11 @@ static void read_cb(void *user_data) {
   }
 
   UtObjectRef datagram = ut_udp_datagram_new(address, port, data);
-  size_t n_used = self->read_callback(self->read_user_data, datagram, false);
-  // FIXME: Support queuing messages.
-  assert(n_used == 1);
+  ut_list_append(self->read_buffer, datagram);
+  size_t n_used =
+      self->read_callback(self->read_user_data, self->read_buffer, false);
+  assert(n_used <= ut_list_get_length(self->read_buffer));
+  ut_list_remove(self->read_buffer, 0, n_used);
 }
 
 static void ut_udp_socket_read(UtObject *object, UtInputStreamCallback callback,
@@ -99,12 +102,25 @@ static void ut_udp_socket_read(UtObject *object, UtInputStreamCallback callback,
   self->read_user_data = user_data;
   self->read_cancel = ut_object_ref(cancel);
 
+  self->read_buffer = ut_list_new();
   self->watch_cancel = ut_cancel_new();
   ut_event_loop_add_read_watch(self->fd, read_cb, self, self->watch_cancel);
 }
 
-static UtInputStreamInterface input_stream_interface = {.read =
-                                                            ut_udp_socket_read};
+static void ut_udp_socket_check_buffer(UtObject *object) {
+  assert(ut_object_is_udp_socket(object));
+  UtUdpSocket *self = (UtUdpSocket *)object;
+
+  if (ut_list_get_length(self->read_buffer) > 0) {
+    size_t n_used =
+        self->read_callback(self->read_user_data, self->read_buffer, false);
+    assert(n_used <= ut_list_get_length(self->read_buffer));
+    ut_list_remove(self->read_buffer, 0, n_used);
+  }
+}
+
+static UtInputStreamInterface input_stream_interface = {
+    .read = ut_udp_socket_read, .check_buffer = ut_udp_socket_check_buffer};
 
 static void ut_udp_socket_write(UtObject *object, UtObject *datagram,
                                 UtOutputStreamCallback callback,

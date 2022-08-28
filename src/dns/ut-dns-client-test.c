@@ -3,9 +3,10 @@
 #include "ut.h"
 
 // Handle DNS requests and send back.
-static size_t dns_read_cb(void *user_data, UtObject *datagram, bool complete) {
+static size_t dns_read_cb(void *user_data, UtObject *datagrams, bool complete) {
   UtObject *socket = user_data;
 
+  UtObjectRef datagram = ut_list_get_element(datagrams, 0);
   UtObject *request = ut_udp_datagram_get_data(datagram);
   uint16_t id = ut_uint8_list_get_uint16_be(request, 0);
 
@@ -41,7 +42,7 @@ static size_t dns_read_cb(void *user_data, UtObject *datagram, bool complete) {
 
   ut_udp_socket_send(socket, ut_udp_datagram_get_address(datagram),
                      ut_udp_datagram_get_port(datagram), reply);
-  return 1;
+  return ut_list_get_length(datagrams);
 }
 
 static void lookup_cb(void *user_data, UtObject *address) {

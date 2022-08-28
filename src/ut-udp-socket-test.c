@@ -3,14 +3,23 @@
 #include "ut.h"
 
 // Handle echo requests and send back.
-static size_t echo_read_cb(void *user_data, UtObject *datagram, bool complete) {
+static size_t echo_read_cb(void *user_data, UtObject *datagrams,
+                           bool complete) {
   UtObject *socket = user_data;
-  ut_output_stream_write(socket, datagram);
-  return 1;
+
+  size_t datagrams_length = ut_list_get_length(datagrams);
+  for (size_t i = 0; i < datagrams_length; i++) {
+    UtObjectRef datagram = ut_list_get_element(datagrams, i);
+    ut_output_stream_write(socket, datagram);
+  }
+
+  return datagrams_length;
 }
 
 // Get the response from the echo server
-static size_t read_cb(void *user_data, UtObject *datagram, bool complete) {
+static size_t read_cb(void *user_data, UtObject *datagrams, bool complete) {
+  ut_assert_int_equal(ut_list_get_length(datagrams), 1);
+  UtObjectRef datagram = ut_list_get_element(datagrams, 0);
   UtObject *data = ut_udp_datagram_get_data(datagram);
 
   uint8_t expected_data[8] = {0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef};
