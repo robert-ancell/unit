@@ -11,12 +11,15 @@ typedef size_t (*UtInputStreamCallback)(void *user_data, UtObject *data,
 typedef struct {
   void (*read)(UtObject *object, UtInputStreamCallback callback,
                void *user_data, UtObject *cancel);
+  void (*check_buffer)(UtObject *object);
 } UtInputStreamInterface;
 
 extern int ut_input_stream_id;
 
 void ut_input_stream_read(UtObject *object, UtInputStreamCallback callback,
                           void *user_data, UtObject *cancel);
+
+void ut_input_stream_check_buffer(UtObject *object);
 
 void ut_input_stream_read_all(UtObject *object, UtInputStreamCallback callback,
                               void *user_data, UtObject *cancel);

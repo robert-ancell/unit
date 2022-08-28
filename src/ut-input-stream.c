@@ -79,6 +79,15 @@ void ut_input_stream_read(UtObject *object, UtInputStreamCallback callback,
   stream_interface->read(object, callback, user_data, cancel);
 }
 
+void ut_input_stream_check_buffer(UtObject *object) {
+  UtInputStreamInterface *stream_interface =
+      ut_object_get_interface(object, &ut_input_stream_id);
+  assert(stream_interface != NULL);
+  if (stream_interface->check_buffer != NULL) {
+    stream_interface->check_buffer(object);
+  }
+}
+
 void ut_input_stream_read_all(UtObject *object, UtInputStreamCallback callback,
                               void *user_data, UtObject *cancel) {
   ReadAllData *d = read_all_data_new(callback, user_data, cancel);

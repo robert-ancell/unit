@@ -33,6 +33,7 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete);
 
 static void start_read(UtInputStreamMultiplexer *self) {
   if (self->reading) {
+    ut_input_stream_check_buffer(self->input_stream);
     return;
   }
   self->reading = true;
