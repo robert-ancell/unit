@@ -101,7 +101,7 @@ void ut_tcp_server_socket_listen(UtObject *object,
 
   self->listen_callback = callback;
   self->listen_user_data = user_data;
-  self->listen_cancel = cancel;
+  self->listen_cancel = ut_object_ref(cancel);
 
   struct sockaddr_in address4;
   struct sockaddr_in6 address6;
