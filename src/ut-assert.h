@@ -18,6 +18,11 @@ void _ut_assert_is_error(const char *file, int line, const char *name,
 void _ut_assert_is_not_error(const char *file, int line, const char *name,
                              UtObject *value);
 
+#define ut_assert_int_equal(a, b)                                              \
+  _ut_assert_int_equal(__FILE__, __LINE__, #a, a, #b, b)
+void _ut_assert_int_equal(const char *file, int line, const char *a_name,
+                          int a_value, const char *b_name, int b_value);
+
 #define ut_assert_cstring_equal(a, b)                                          \
   _ut_assert_cstring_equal(__FILE__, __LINE__, #a, a, #b, b)
 void _ut_assert_cstring_equal(const char *file, int line, const char *a_name,
