@@ -176,7 +176,8 @@ static void write_value(UtObject *buffer, UtObject *value) {
     write_align_padding(buffer, 8);
     ut_uint8_list_append_uint64_le(buffer, ut_uint64_get_value(value));
   } else if (ut_object_is_float64(value)) {
-    assert(false);
+    write_align_padding(buffer, 8);
+    ut_uint8_list_append_float64_le(buffer, ut_float64_get_value(value));
   } else if (ut_object_is_dbus_object_path(value)) {
     write_string(buffer, ut_dbus_object_path_get_value(value));
   } else if (ut_object_is_dbus_signature(value)) {
