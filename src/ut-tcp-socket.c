@@ -196,6 +196,7 @@ UtObject *ut_tcp_socket_new_from_fd(UtObject *fd) {
     self->port = ntohs(address6.sin6_port);
   } else if (family == AF_UNIX) {
     struct sockaddr_un address_unix;
+    address_unix.sun_path[0] = '\0';
     address_length = sizeof(address_unix);
     assert(getpeername(ut_file_descriptor_get_fd(fd),
                        (struct sockaddr *)&address_unix, &address_length) == 0);
