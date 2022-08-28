@@ -25,7 +25,6 @@
 #include "ut-uint32.h"
 #include "ut-uint64.h"
 #include "ut-uint8-list.h"
-#include "ut-uint8-subarray.h"
 #include "ut-uint8.h"
 
 typedef struct {
@@ -498,7 +497,7 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
   size_t offset = 0;
   size_t data_length = ut_list_get_length(data);
   while (true) {
-    UtObjectRef d = ut_uint8_subarray_new(data, offset, data_length - offset);
+    UtObjectRef d = ut_list_get_sublist(data, offset, data_length - offset);
     size_t o = 0;
     UtObjectRef message = read_message(d, &o);
     if (message == NULL) {
