@@ -34,6 +34,7 @@ typedef struct {
   UtObject *connect_cancel;
   UtObject *read_buffer;
   size_t n_read;
+  bool is_complete;
   UtInputStreamCallback read_callback;
   void *read_user_data;
   UtObject *read_cancel;
@@ -93,9 +94,14 @@ static void read_cb(void *user_data) {
       ut_uint8_array_get_data(self->read_buffer) + self->n_read, block_size, 0);
   assert(n_read >= 0);
 
+  if (n_read == 0) {
+    self->is_complete = true;
+  }
+
   self->n_read += n_read;
   UtObjectRef data = ut_list_get_sublist(self->read_buffer, 0, self->n_read);
-  size_t n_used = self->read_callback(self->read_user_data, data, n_read > 0);
+  size_t n_used =
+      self->read_callback(self->read_user_data, data, self->is_complete);
   assert(n_used <= self->n_read);
   ut_list_remove(self->read_buffer, 0, n_used);
   self->n_read -= n_used;
@@ -118,8 +124,23 @@ static void ut_tcp_socket_read(UtObject *object, UtInputStreamCallback callback,
                                self->read_watch_cancel);
 }
 
-static UtInputStreamInterface input_stream_interface = {.read =
-                                                            ut_tcp_socket_read};
+static void ut_tcp_socket_check_buffer(UtObject *object) {
+  UtTcpSocket *self = (UtTcpSocket *)object;
+
+  assert(self->read_callback != NULL);
+
+  if (self->n_read > 0) {
+    UtObjectRef data = ut_list_get_sublist(self->read_buffer, 0, self->n_read);
+    size_t n_used =
+        self->read_callback(self->read_user_data, data, self->is_complete);
+    assert(n_used <= self->n_read);
+    ut_list_remove(self->read_buffer, 0, n_used);
+    self->n_read -= n_used;
+  }
+}
+
+static UtInputStreamInterface input_stream_interface = {
+    .read = ut_tcp_socket_read, .check_buffer = ut_tcp_socket_check_buffer};
 
 static void ut_tcp_socket_write(UtObject *object, UtObject *data,
                                 UtOutputStreamCallback callback,
