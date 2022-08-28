@@ -3,6 +3,7 @@ ut_sources = [
   'deflate/ut-deflate-error.c',
   'dbus/ut-dbus-array.c',
   'dbus/ut-dbus-auth-client.c',
+  'dbus/ut-dbus-auth-server.c',
   'dbus/ut-dbus-client.c',
   'dbus/ut-dbus-dict.c',
   'dbus/ut-dbus-error.c',
@@ -10,6 +11,7 @@ ut_sources = [
   'dbus/ut-dbus-message-decoder.c',
   'dbus/ut-dbus-message-encoder.c',
   'dbus/ut-dbus-object-path.c',
+  'dbus/ut-dbus-server.c',
   'dbus/ut-dbus-signature.c',
   'dbus/ut-dbus-struct.c',
   'dbus/ut-dbus-variant.c',
@@ -310,4 +312,4 @@ test('DBus Message Encoder', dbus_message_encoder_test)
 dbus_client_test = executable('ut-dbus-client-test',
                              'dbus/ut-dbus-client-test.c',
                              link_with: ut_lib)
-#test('DBus Client', dbus_client_test)
+test('DBus Client', dbus_client_test)
