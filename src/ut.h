@@ -3,6 +3,7 @@
 #include "dbus/ut-dbus-dict.h"
 #include "dbus/ut-dbus-message.h"
 #include "dbus/ut-dbus-object-path.h"
+#include "dbus/ut-dbus-server.h"
 #include "dbus/ut-dbus-signature.h"
 #include "dbus/ut-dbus-struct.h"
 #include "deflate/ut-deflate-decoder.h"
