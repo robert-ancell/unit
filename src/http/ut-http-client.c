@@ -123,7 +123,7 @@ static bool parse_uri(const char *uri, char **scheme, char **user_info,
       host_end++;
     }
     if (host != NULL) {
-      *host = strndup(userinfo_start, userinfo_end - userinfo_start);
+      *host = strndup(userinfo_start, host_end - userinfo_start);
     }
 
     if (*host_end == ':') {
