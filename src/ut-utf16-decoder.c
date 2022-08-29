@@ -1,11 +1,6 @@
 #include <assert.h>
 
-#include "ut-input-stream.h"
-#include "ut-list.h"
-#include "ut-uint16-list.h"
-#include "ut-uint32-array.h"
-#include "ut-uint32-list.h"
-#include "ut-utf16-decoder.h"
+#include "ut.h"
 
 typedef struct {
   UtObject object;

@@ -3,17 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "ut-boolean.h"
-#include "ut-float64.h"
-#include "ut-hash-table.h"
-#include "ut-int64.h"
-#include "ut-json.h"
-#include "ut-list.h"
-#include "ut-map-item.h"
-#include "ut-map.h"
-#include "ut-null.h"
-#include "ut-object-array.h"
-#include "ut-string.h"
+#include "ut.h"
 
 static UtObject *decode_value(const char *text, size_t *offset);
 

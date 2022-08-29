@@ -3,8 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "ut-object.h"
-#include "ut-string.h"
+#include "ut.h"
 
 UtObject *ut_object_new(size_t object_size, UtObjectInterface *interface) {
   UtObject *object = malloc(object_size);

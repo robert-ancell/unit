@@ -5,15 +5,8 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-#include "ut-cancel.h"
-#include "ut-event-loop.h"
 #include "ut-fd-output-stream.h"
-#include "ut-file-descriptor.h"
-#include "ut-list.h"
-#include "ut-output-stream.h"
-#include "ut-uint8-array-with-fds.h"
-#include "ut-uint8-array.h"
-#include "ut-uint8-list.h"
+#include "ut.h"
 
 typedef struct _WriteBlock WriteBlock;
 

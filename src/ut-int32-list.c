@@ -1,8 +1,6 @@
 #include <assert.h>
 
-#include "ut-int32-array.h"
-#include "ut-int32-list.h"
-#include "ut-list.h"
+#include "ut.h"
 
 int ut_int32_list_id = 0;
 

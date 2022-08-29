@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "ut-boolean.h"
+#include "ut.h"
 
 typedef struct {
   UtObject object;

@@ -1,8 +1,6 @@
 #include <assert.h>
 
-#include "ut-cstring.h"
-#include "ut-x11-event.h"
-#include "ut-x11-unknown-event.h"
+#include "ut.h"
 
 typedef struct {
   UtObject object;

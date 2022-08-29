@@ -3,11 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "ut-cstring.h"
-#include "ut-list.h"
-#include "ut-string-array.h"
-#include "ut-string-list.h"
-#include "ut-string.h"
+#include "ut.h"
 
 int ut_string_list_id = 0;
 

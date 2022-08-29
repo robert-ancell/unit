@@ -1,11 +1,7 @@
 #include <assert.h>
 #include <stdlib.h>
 
-#include "ut-cancel.h"
-#include "ut-error.h"
-#include "ut-general-error.h"
-#include "ut-input-stream.h"
-#include "ut-list.h"
+#include "ut.h"
 
 int ut_input_stream_id = 0;
 

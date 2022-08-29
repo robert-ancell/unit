@@ -1,14 +1,7 @@
 #include <assert.h>
 
-#include "ut-cancel.h"
-#include "ut-deflate-decoder.h"
-#include "ut-deflate-error.h"
 #include "ut-huffman-decoder.h"
-#include "ut-input-stream.h"
-#include "ut-list.h"
-#include "ut-uint16-list.h"
-#include "ut-uint8-array.h"
-#include "ut-uint8-list.h"
+#include "ut.h"
 
 typedef enum {
   DECODER_STATE_BLOCK_HEADER,

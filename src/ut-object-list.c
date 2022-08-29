@@ -1,7 +1,6 @@
 #include <assert.h>
 
-#include "ut-object-array.h"
-#include "ut-object-list.h"
+#include "ut.h"
 
 int ut_object_list_id = 0;
 

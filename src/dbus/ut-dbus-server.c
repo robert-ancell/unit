@@ -2,22 +2,10 @@
 #include <string.h>
 #include <sys/types.h>
 
-#include "ut-cancel.h"
-#include "ut-cstring.h"
 #include "ut-dbus-auth-server.h"
 #include "ut-dbus-message-decoder.h"
 #include "ut-dbus-message-encoder.h"
-#include "ut-dbus-message.h"
-#include "ut-dbus-server.h"
-#include "ut-input-stream-multiplexer.h"
-#include "ut-input-stream.h"
-#include "ut-list.h"
-#include "ut-object-list.h"
-#include "ut-output-stream.h"
-#include "ut-string-list.h"
-#include "ut-string.h"
-#include "ut-tcp-server-socket.h"
-#include "ut-unix-domain-socket-client.h"
+#include "ut.h"
 
 typedef struct _UtDBusServer UtDBusServer;
 

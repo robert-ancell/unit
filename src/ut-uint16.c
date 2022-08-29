@@ -1,8 +1,7 @@
 #include <assert.h>
 #include <stdio.h>
 
-#include "ut-cstring.h"
-#include "ut-uint16.h"
+#include "ut.h"
 
 typedef struct {
   UtObject object;

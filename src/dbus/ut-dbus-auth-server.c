@@ -2,15 +2,8 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "ut-cancel.h"
-#include "ut-cstring.h"
 #include "ut-dbus-auth-server.h"
-#include "ut-general-error.h"
-#include "ut-input-stream.h"
-#include "ut-list.h"
-#include "ut-output-stream.h"
-#include "ut-string.h"
-#include "ut-uint8-list.h"
+#include "ut.h"
 
 typedef enum {
   AUTH_STATE_IDLE,

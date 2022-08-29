@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "ut-cstring.h"
+#include "ut.h"
 
 char *ut_cstring_new(const char *value) { return strdup(value); }
 

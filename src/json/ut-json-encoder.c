@@ -1,16 +1,7 @@
 #include <assert.h>
 #include <stdio.h>
 
-#include "ut-boolean.h"
-#include "ut-float64.h"
-#include "ut-int64.h"
-#include "ut-json-encoder.h"
-#include "ut-list.h"
-#include "ut-map-item.h"
-#include "ut-map.h"
-#include "ut-null.h"
-#include "ut-string.h"
-#include "ut-uint32-list.h"
+#include "ut.h"
 
 typedef struct {
   UtObject object;

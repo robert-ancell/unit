@@ -1,7 +1,6 @@
 #include <assert.h>
 
-#include "ut-x11-button-release.h"
-#include "ut-x11-event.h"
+#include "ut.h"
 
 typedef struct {
   UtObject object;

@@ -1,18 +1,6 @@
 #include <assert.h>
 
-#include "ut-cancel.h"
-#include "ut-cstring.h"
-#include "ut-dns-client.h"
-#include "ut-input-stream.h"
-#include "ut-ipv4-address.h"
-#include "ut-ipv6-address.h"
-#include "ut-list.h"
-#include "ut-udp-datagram.h"
-#include "ut-udp-socket.h"
-#include "ut-uint8-array.h"
-#include "ut-uint8-list.h"
-
-#include <stdio.h>
+#include "ut.h"
 
 typedef struct {
   UtObject object;

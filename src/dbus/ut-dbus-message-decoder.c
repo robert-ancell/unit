@@ -1,31 +1,7 @@
 #include <assert.h>
 #include <string.h>
 
-#include "ut-boolean.h"
-#include "ut-cstring.h"
-#include "ut-dbus-array.h"
-#include "ut-dbus-dict.h"
-#include "ut-dbus-message-decoder.h"
-#include "ut-dbus-message.h"
-#include "ut-dbus-object-path.h"
-#include "ut-dbus-signature.h"
-#include "ut-dbus-struct.h"
-#include "ut-dbus-variant.h"
-#include "ut-file-descriptor.h"
-#include "ut-float64.h"
-#include "ut-input-stream.h"
-#include "ut-int16.h"
-#include "ut-int32.h"
-#include "ut-int64.h"
-#include "ut-list.h"
-#include "ut-map.h"
-#include "ut-object-list.h"
-#include "ut-string.h"
-#include "ut-uint16.h"
-#include "ut-uint32.h"
-#include "ut-uint64.h"
-#include "ut-uint8-list.h"
-#include "ut-uint8.h"
+#include "ut.h"
 
 typedef struct {
   UtObject object;

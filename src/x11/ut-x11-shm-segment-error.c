@@ -1,7 +1,6 @@
 #include <assert.h>
 
-#include "ut-x11-error.h"
-#include "ut-x11-shm-segment-error.h"
+#include "ut.h"
 
 typedef struct {
   UtObject object;

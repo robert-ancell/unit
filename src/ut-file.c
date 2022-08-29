@@ -1,6 +1,6 @@
 #include <assert.h>
 
-#include "ut-file.h"
+#include "ut.h"
 
 int ut_file_id = 0;
 

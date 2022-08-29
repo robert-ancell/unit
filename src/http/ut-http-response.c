@@ -4,15 +4,7 @@
 #include <strings.h>
 #include <sys/types.h>
 
-#include "ut-cancel.h"
-#include "ut-error.h"
-#include "ut-general-error.h"
-#include "ut-http-header.h"
-#include "ut-http-response.h"
-#include "ut-input-stream.h"
-#include "ut-list.h"
-#include "ut-object-list.h"
-#include "ut-tcp-socket.h"
+#include "ut.h"
 
 typedef struct {
   UtObject object;

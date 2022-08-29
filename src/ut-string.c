@@ -3,14 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "ut-constant-utf8-string.h"
-#include "ut-cstring.h"
-#include "ut-general-error.h"
-#include "ut-list.h"
-#include "ut-string.h"
-#include "ut-uint16-list.h"
-#include "ut-uint32-list.h"
-#include "ut-utf8-string.h"
+#include "ut.h"
 
 int ut_string_id = 0;
 

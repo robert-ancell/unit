@@ -1,11 +1,7 @@
 #include <assert.h>
 #include <string.h>
 
-#include "ut-cstring.h"
-#include "ut-dbus-message.h"
-#include "ut-map.h"
-#include "ut-string-list.h"
-#include "ut-string.h"
+#include "ut.h"
 
 typedef struct {
   UtObject object;

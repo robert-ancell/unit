@@ -3,12 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "ut-list.h"
-#include "ut-string.h"
-#include "ut-uint16-array.h"
-#include "ut-uint16-list.h"
 #include "ut-uint16-subarray.h"
-#include "ut-uint16.h"
+#include "ut.h"
 
 typedef struct {
   UtObject object;

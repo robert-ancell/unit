@@ -9,13 +9,7 @@
 #include <sys/un.h>
 #include <unistd.h>
 
-#include "ut-cancel.h"
-#include "ut-event-loop.h"
-#include "ut-file-descriptor.h"
-#include "ut-ipv4-address.h"
-#include "ut-ipv6-address.h"
-#include "ut-tcp-server-socket.h"
-#include "ut-tcp-socket.h"
+#include "ut.h"
 
 typedef struct {
   UtObject object;

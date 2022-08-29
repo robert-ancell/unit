@@ -8,14 +8,9 @@
 #include <sys/un.h>
 #include <unistd.h>
 
-#include "ut-cancel.h"
-#include "ut-event-loop.h"
 #include "ut-fd-input-stream.h"
 #include "ut-fd-output-stream.h"
-#include "ut-file-descriptor.h"
-#include "ut-input-stream.h"
-#include "ut-output-stream.h"
-#include "ut-unix-domain-socket-client.h"
+#include "ut.h"
 
 typedef struct {
   UtObject object;

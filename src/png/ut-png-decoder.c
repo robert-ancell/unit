@@ -1,16 +1,6 @@
 #include <assert.h>
 
-#include "ut-cancel.h"
-#include "ut-general-error.h"
-#include "ut-input-stream.h"
-#include "ut-list-input-stream.h"
-#include "ut-list.h"
-#include "ut-png-decoder.h"
-#include "ut-png-error.h"
-#include "ut-png-image.h"
-#include "ut-uint8-array.h"
-#include "ut-uint8-list.h"
-#include "zlib/ut-zlib-decoder.h"
+#include "ut.h"
 
 typedef enum {
   IMAGE_HEADER = 0x49484452,

@@ -1,6 +1,7 @@
 #include <assert.h>
 
 #include "ut-x11-extension.h"
+#include "ut.h"
 
 int ut_x11_extension_id = 0;
 

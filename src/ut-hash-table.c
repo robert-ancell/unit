@@ -2,11 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "ut-hash-table.h"
-#include "ut-list.h"
-#include "ut-map-item.h"
-#include "ut-map.h"
-#include "ut-object-array.h"
+#include "ut.h"
 
 typedef struct _UtHashTableItem UtHashTableItem;
 

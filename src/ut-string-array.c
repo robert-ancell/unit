@@ -3,10 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "ut-list.h"
-#include "ut-string-array.h"
-#include "ut-string-list.h"
-#include "ut-string.h"
+#include "ut.h"
 
 typedef struct {
   UtObject object;

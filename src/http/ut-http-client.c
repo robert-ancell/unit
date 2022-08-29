@@ -3,21 +3,7 @@
 #include <string.h>
 #include <sys/types.h>
 
-#include "ut-cancel.h"
-#include "ut-cstring.h"
-#include "ut-event-loop.h"
-#include "ut-http-client.h"
-#include "ut-http-header.h"
-#include "ut-http-response.h"
-#include "ut-input-stream-multiplexer.h"
-#include "ut-input-stream.h"
-#include "ut-ip-address-resolver.h"
-#include "ut-list.h"
-#include "ut-object-array.h"
-#include "ut-output-stream.h"
-#include "ut-string.h"
-#include "ut-tcp-socket.h"
-#include "ut-uint8-list.h"
+#include "ut.h"
 
 typedef struct {
   UtObject *tcp_socket;

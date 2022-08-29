@@ -1,6 +1,6 @@
 #include <assert.h>
 
-#include "ut-ip-address.h"
+#include "ut.h"
 
 int ut_ip_address_id = 0;
 

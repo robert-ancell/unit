@@ -2,9 +2,7 @@
 #include <stdlib.h>
 
 #include "ut-huffman-decoder.h"
-#include "ut-list.h"
-#include "ut-uint16-list.h"
-#include "ut-uint8-list.h"
+#include "ut.h"
 
 typedef struct {
   UtObject object;

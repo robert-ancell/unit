@@ -4,8 +4,7 @@
 #include "ut-x11-buffer.h"
 #include "ut-x11-client-private.h"
 #include "ut-x11-extension.h"
-#include "ut-x11-mit-shm-extension.h"
-#include "ut-x11-shm-segment-error.h"
+#include "ut.h"
 
 typedef struct _UtX11MitShmExtension UtX11MitShmExtension;
 

@@ -1,6 +1,6 @@
 #include <assert.h>
 
-#include "ut-x11-event.h"
+#include "ut.h"
 
 int ut_x11_event_id = 0;
 

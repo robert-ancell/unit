@@ -2,13 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "ut-cstring.h"
-#include "ut-list.h"
-#include "ut-map-item.h"
-#include "ut-map.h"
-#include "ut-string.h"
-#include "ut-xml-document.h"
-#include "ut-xml-element.h"
+#include "ut.h"
 
 typedef struct {
   UtObject object;

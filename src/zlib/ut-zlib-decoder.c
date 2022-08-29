@@ -1,16 +1,7 @@
 #include <assert.h>
 #include <stdint.h>
 
-#include "deflate/ut-deflate-decoder.h"
-#include "ut-cancel.h"
-#include "ut-cstring.h"
-#include "ut-error.h"
-#include "ut-input-stream-multiplexer.h"
-#include "ut-input-stream.h"
-#include "ut-list.h"
-#include "ut-uint8-list.h"
-#include "ut-zlib-decoder.h"
-#include "ut-zlib-error.h"
+#include "ut.h"
 
 typedef enum {
   DECODER_STATE_HEADER,

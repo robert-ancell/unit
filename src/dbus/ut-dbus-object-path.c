@@ -2,8 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "ut-cstring.h"
-#include "ut-dbus-object-path.h"
+#include "ut.h"
 
 typedef struct {
   UtObject object;

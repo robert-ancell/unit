@@ -2,9 +2,7 @@
 #include <stdarg.h>
 #include <stdlib.h>
 
-#include "ut-list.h"
-#include "ut-object-array.h"
-#include "ut-object-list.h"
+#include "ut.h"
 
 typedef struct {
   UtObject object;

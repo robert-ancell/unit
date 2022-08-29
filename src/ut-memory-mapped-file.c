@@ -4,14 +4,7 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 
-#include "ut-file-descriptor.h"
-#include "ut-file.h"
-#include "ut-list.h"
-#include "ut-local-file.h"
-#include "ut-memory-mapped-file.h"
-#include "ut-uint8-array.h"
-#include "ut-uint8-list.h"
-#include "ut-uint8.h"
+#include "ut.h"
 
 typedef struct {
   UtObject object;

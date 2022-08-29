@@ -3,12 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "ut-cancel.h"
-#include "ut-event-loop.h"
-#include "ut-ip-address-resolver.h"
-#include "ut-ipv4-address.h"
-#include "ut-ipv6-address.h"
-#include "ut-list.h"
+#include "ut.h"
 
 typedef struct {
   UtObject object;

@@ -2,10 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "ut-cstring.h"
-#include "ut-list.h"
-#include "ut-object-array.h"
-#include "ut-string.h"
+#include "ut.h"
 
 int ut_list_id = 0;
 

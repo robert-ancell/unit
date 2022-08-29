@@ -1,11 +1,6 @@
 #include <assert.h>
 
-#include "ut-cstring.h"
-#include "ut-list.h"
-#include "ut-object-list.h"
-#include "ut-uint8-array-with-fds.h"
-#include "ut-uint8-array.h"
-#include "ut-uint8-list.h"
+#include "ut.h"
 
 typedef struct {
   UtObject object;

@@ -2,9 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "ut-cstring.h"
-#include "ut-error.h"
-#include "ut-general-error.h"
+#include "ut.h"
 
 typedef struct {
   UtObject object;

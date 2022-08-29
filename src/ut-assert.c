@@ -2,12 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "ut-assert.h"
-#include "ut-cstring.h"
-#include "ut-error.h"
-#include "ut-list.h"
-#include "ut-string.h"
-#include "ut-uint8-list.h"
+#include "ut.h"
 
 static char *append_string(char *value, const char *suffix) {
   size_t value_length = value != NULL ? strlen(value) : 0;

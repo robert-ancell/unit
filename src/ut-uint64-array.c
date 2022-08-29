@@ -4,13 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "ut-cstring.h"
-#include "ut-list.h"
-#include "ut-string.h"
-#include "ut-uint64-array.h"
-#include "ut-uint64-list.h"
 #include "ut-uint64-subarray.h"
-#include "ut-uint64.h"
+#include "ut.h"
 
 typedef struct {
   UtObject object;

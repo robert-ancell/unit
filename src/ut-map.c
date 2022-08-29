@@ -2,12 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "ut-cstring.h"
-#include "ut-hash-table.h"
-#include "ut-list.h"
-#include "ut-map-item.h"
-#include "ut-map.h"
-#include "ut-string.h"
+#include "ut.h"
 
 int ut_map_id = 0;
 

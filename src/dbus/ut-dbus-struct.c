@@ -2,10 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "ut-cstring.h"
-#include "ut-dbus-struct.h"
-#include "ut-list.h"
-#include "ut-object-list.h"
+#include "ut.h"
 
 typedef struct {
   UtObject object;

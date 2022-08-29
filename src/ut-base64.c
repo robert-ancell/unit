@@ -1,11 +1,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "ut-base64.h"
-#include "ut-general-error.h"
-#include "ut-list.h"
-#include "ut-string.h"
-#include "ut-uint8-list.h"
+#include "ut.h"
 
 #define PADDING '='
 

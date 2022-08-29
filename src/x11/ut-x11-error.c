@@ -1,6 +1,6 @@
 #include <assert.h>
 
-#include "ut-x11-error.h"
+#include "ut.h"
 
 int ut_x11_error_id = 0;
 

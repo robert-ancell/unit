@@ -7,9 +7,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "ut-cancel.h"
-#include "ut-event-loop.h"
-#include "ut-file-descriptor.h"
+#include "ut.h"
 
 typedef struct _Timeout Timeout;
 struct _Timeout {

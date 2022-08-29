@@ -1,8 +1,7 @@
 #include <assert.h>
 #include <string.h>
 
-#include "ut-error.h"
-#include "ut-gzip-error.h"
+#include "ut.h"
 
 typedef struct {
   UtObject object;

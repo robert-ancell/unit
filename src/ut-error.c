@@ -1,7 +1,6 @@
 #include <assert.h>
 
-#include "ut-error.h"
-#include "ut-general-error.h"
+#include "ut.h"
 
 int ut_error_id = 0;
 

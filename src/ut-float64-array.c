@@ -3,11 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "ut-float64-array.h"
-#include "ut-float64-list.h"
-#include "ut-float64.h"
-#include "ut-list.h"
-#include "ut-string.h"
+#include "ut.h"
 
 typedef struct {
   UtObject object;

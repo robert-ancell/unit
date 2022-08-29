@@ -1,11 +1,7 @@
 #include <assert.h>
 
-#include "ut-file-descriptor.h"
-#include "ut-list.h"
-#include "ut-uint8-array-with-fds.h"
-#include "ut-uint8-array.h"
-#include "ut-uint8-list.h"
 #include "ut-x11-buffer.h"
+#include "ut.h"
 
 UtObject *ut_x11_buffer_new() {
   UtObjectRef data = ut_uint8_array_new();

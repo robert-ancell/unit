@@ -4,18 +4,9 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "ut-cancel.h"
-#include "ut-event-loop.h"
 #include "ut-fd-input-stream.h"
 #include "ut-fd-output-stream.h"
-#include "ut-file-descriptor.h"
-#include "ut-file.h"
-#include "ut-input-stream.h"
-#include "ut-list.h"
-#include "ut-local-file.h"
-#include "ut-output-stream.h"
-#include "ut-uint8-array.h"
-#include "ut-uint8-list.h"
+#include "ut.h"
 
 typedef struct {
   UtObject object;

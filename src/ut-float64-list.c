@@ -1,8 +1,6 @@
 #include <assert.h>
 
-#include "ut-float64-array.h"
-#include "ut-float64-list.h"
-#include "ut-list.h"
+#include "ut.h"
 
 int ut_float64_list_id = 0;
 

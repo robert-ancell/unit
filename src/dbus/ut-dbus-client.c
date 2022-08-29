@@ -3,21 +3,10 @@
 #include <string.h>
 #include <sys/types.h>
 
-#include "ut-cancel.h"
-#include "ut-cstring.h"
 #include "ut-dbus-auth-client.h"
-#include "ut-dbus-client.h"
-#include "ut-dbus-error.h"
 #include "ut-dbus-message-decoder.h"
 #include "ut-dbus-message-encoder.h"
-#include "ut-dbus-message.h"
-#include "ut-input-stream-multiplexer.h"
-#include "ut-input-stream.h"
-#include "ut-list.h"
-#include "ut-object-list.h"
-#include "ut-output-stream.h"
-#include "ut-string.h"
-#include "ut-unix-domain-socket-client.h"
+#include "ut.h"
 
 typedef struct {
   UtObject object;

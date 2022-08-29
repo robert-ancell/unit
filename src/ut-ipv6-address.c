@@ -1,11 +1,6 @@
 #include <assert.h>
 
-#include "ut-cstring.h"
-#include "ut-error.h"
-#include "ut-ip-address.h"
-#include "ut-ipv6-address.h"
-#include "ut-string.h"
-#include "ut-uint8-array.h"
+#include "ut.h"
 
 typedef struct {
   UtObject object;

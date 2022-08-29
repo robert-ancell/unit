@@ -1,9 +1,6 @@
 #include <assert.h>
 
-#include "ut-cancel.h"
-#include "ut-input-stream.h"
-#include "ut-list-input-stream.h"
-#include "ut-list.h"
+#include "ut.h"
 
 typedef struct {
   UtObject object;
