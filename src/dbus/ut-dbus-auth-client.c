@@ -124,11 +124,12 @@ static char *read_line(UtObject *data, size_t *offset) {
   for (size_t end = *offset; end < length - 1; end++) {
     if (ut_uint8_list_get_element(data, end) == '\r' &&
         ut_uint8_list_get_element(data, end + 1) == '\n') {
-      char *line = malloc(sizeof(char) * (end + 1));
-      for (size_t i = 0; i < end; i++) {
+      size_t length = end - *offset;
+      char *line = malloc(sizeof(char) * (length + 1));
+      for (size_t i = 0; i < length; i++) {
         line[i] = ut_uint8_list_get_element(data, *offset + i);
       }
-      line[end] = '\0';
+      line[length] = '\0';
       *offset = end + 2;
       return line;
     }
