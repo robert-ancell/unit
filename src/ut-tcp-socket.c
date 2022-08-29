@@ -78,10 +78,39 @@ static void read_cb(void *user_data) {
   if (ut_list_get_length(self->read_buffer) < self->n_read + block_size) {
     ut_list_resize(self->read_buffer, self->n_read + block_size);
   }
-  ssize_t n_read = recv(
-      ut_file_descriptor_get_fd(self->fd),
-      ut_uint8_array_get_data(self->read_buffer) + self->n_read, block_size, 0);
+
+  struct iovec iov;
+  iov.iov_base = ut_uint8_array_get_data(self->read_buffer) + self->n_read;
+  iov.iov_len = block_size;
+  uint8_t control_data[CMSG_SPACE(sizeof(int) * 1024)];
+  struct msghdr msg;
+  msg.msg_name = NULL;
+  msg.msg_namelen = 0;
+  msg.msg_iov = &iov;
+  msg.msg_iovlen = 1;
+  msg.msg_control = control_data;
+  msg.msg_controllen = sizeof(control_data);
+  msg.msg_flags = 0;
+  ssize_t n_read = recvmsg(ut_file_descriptor_get_fd(self->fd), &msg, 0);
   assert(n_read >= 0);
+
+  UtObjectRef fds = NULL;
+  for (struct cmsghdr *cmsg = CMSG_FIRSTHDR(&msg); cmsg != NULL;
+       cmsg = CMSG_NXTHDR(&msg, cmsg)) {
+    if (cmsg->cmsg_level == SOL_SOCKET && cmsg->cmsg_type == SCM_RIGHTS) {
+      size_t data_length =
+          cmsg->cmsg_len - ((uint8_t *)CMSG_DATA(cmsg) - (uint8_t *)cmsg);
+      size_t cmsg_fds_length = data_length / sizeof(int);
+      int cmsg_fds[cmsg_fds_length];
+      memcpy(cmsg_fds, CMSG_DATA(cmsg), cmsg->cmsg_len);
+      for (size_t i = 0; i < cmsg_fds_length; i++) {
+        if (fds == NULL) {
+          fds = ut_list_new();
+        }
+        ut_list_append_take(fds, ut_file_descriptor_new(cmsg_fds[i]));
+      }
+    }
+  }
 
   if (n_read == 0) {
     self->is_complete = true;
@@ -89,8 +118,13 @@ static void read_cb(void *user_data) {
 
   self->n_read += n_read;
   UtObjectRef data = ut_list_get_sublist(self->read_buffer, 0, self->n_read);
-  size_t n_used =
-      self->read_callback(self->read_user_data, data, self->is_complete);
+  UtObjectRef data_with_fds = NULL;
+  if (fds != NULL) {
+    data_with_fds = ut_uint8_array_with_fds_new(data, fds);
+  }
+  size_t n_used = self->read_callback(
+      self->read_user_data, data_with_fds != NULL ? data_with_fds : data,
+      self->is_complete);
   assert(n_used <= self->n_read);
   ut_list_remove(self->read_buffer, 0, n_used);
   self->n_read -= n_used;
@@ -141,16 +175,55 @@ static void ut_tcp_socket_write(UtObject *object, UtObject *data,
                                 void *user_data, UtObject *cancel) {
   UtTcpSocket *self = (UtTcpSocket *)object;
 
-  ssize_t data_length = ut_list_get_length(data);
+  UtObject *d;
+  UtObject *file_descriptors = NULL;
+  if (ut_object_is_uint8_array_with_fds(data)) {
+    d = ut_uint8_array_with_fds_get_data(data);
+    file_descriptors = ut_uint8_array_with_fds_get_fds(data);
+  } else {
+    d = data;
+  }
+
+  ssize_t data_length = ut_list_get_length(d);
   const uint8_t *buffer;
   uint8_t *allocated_buffer = NULL;
-  buffer = ut_uint8_list_get_data(data);
+  buffer = ut_uint8_list_get_data(d);
   if (buffer == NULL) {
-    allocated_buffer = ut_uint8_list_copy_data(data);
+    allocated_buffer = ut_uint8_list_copy_data(d);
     buffer = allocated_buffer;
   }
-  assert(send(ut_file_descriptor_get_fd(self->fd), buffer, data_length, 0) ==
-         data_length);
+
+  if (file_descriptors != NULL && ut_list_get_length(file_descriptors) > 0) {
+    size_t file_descriptors_length = ut_list_get_length(file_descriptors);
+    struct iovec iov;
+    iov.iov_base = (void *)buffer;
+    iov.iov_len = data_length;
+    uint8_t control_data[CMSG_SPACE(sizeof(int) * file_descriptors_length)];
+    struct msghdr msg;
+    msg.msg_name = NULL;
+    msg.msg_namelen = 0;
+    msg.msg_iov = &iov;
+    msg.msg_iovlen = 1;
+    msg.msg_control = control_data;
+    msg.msg_controllen = sizeof(control_data);
+    msg.msg_flags = 0;
+    struct cmsghdr *cmsg = CMSG_FIRSTHDR(&msg);
+    cmsg->cmsg_level = SOL_SOCKET;
+    cmsg->cmsg_type = SCM_RIGHTS;
+    cmsg->cmsg_len = CMSG_LEN(sizeof(int) * file_descriptors_length);
+    int cmsg_fds[file_descriptors_length];
+    for (size_t i = 0; i < file_descriptors_length; i++) {
+      UtObjectRef fd = ut_list_get_element(file_descriptors, i);
+      cmsg_fds[i] = ut_file_descriptor_get_fd(fd);
+    }
+    memcpy(CMSG_DATA(cmsg), cmsg_fds, sizeof(cmsg_fds));
+    assert(sendmsg(ut_file_descriptor_get_fd(self->fd), &msg, 0) ==
+           data_length);
+  } else {
+    assert(send(ut_file_descriptor_get_fd(self->fd), buffer, data_length, 0) ==
+           data_length);
+  }
+
   free(allocated_buffer);
 }
 
