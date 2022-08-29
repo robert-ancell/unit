@@ -79,7 +79,6 @@
 #include "ut-uint8-array.h"
 #include "ut-uint8-list.h"
 #include "ut-uint8.h"
-#include "ut-unix-domain-socket-client.h"
 #include "ut-unix-socket-address.h"
 #include "ut-utf16-decoder.h"
 #include "ut-utf16-encoder.h"
