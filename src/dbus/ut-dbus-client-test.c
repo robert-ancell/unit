@@ -1,5 +1,4 @@
 #include <assert.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -18,7 +17,6 @@ static void client2_echo_cb(void *user_data, UtObject *out_args) {
   assert(ut_object_is_uint32(arg1));
   ut_assert_float_equal(ut_uint32_get_value(arg1), 999);
 
-  printf("%s\n", ut_object_to_string(out_args));
   ut_event_loop_return(NULL);
 }
 
