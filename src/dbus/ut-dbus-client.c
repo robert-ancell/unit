@@ -175,6 +175,13 @@ static void hello_cb(void *user_data, UtObject *out_args) {
       strdup(ut_string_get_text(ut_object_list_get_element(out_args, 0)));
 }
 
+static void connect_cb(void *user_data) {
+  UtDBusClient *self = (UtDBusClient *)user_data;
+
+  ut_dbus_auth_client_run(self->auth_client, auth_complete_cb, self,
+                          self->cancel);
+}
+
 static void connect(UtDBusClient *self) {
   if (self->socket != NULL) {
     return;
@@ -184,8 +191,8 @@ static void connect(UtDBusClient *self) {
   ut_cstring_ref path =
       ut_cstring_substring(self->address, 10, strlen(self->address));
 
-  self->socket = ut_unix_domain_socket_client_new(path);
-  ut_unix_domain_socket_client_connect(self->socket);
+  UtObjectRef address = ut_unix_socket_address_new(path);
+  self->socket = ut_tcp_socket_new(address, 0);
 
   self->multiplexer = ut_input_stream_multiplexer_new(self->socket);
   self->auth_input_stream = ut_input_stream_multiplexer_add(self->multiplexer);
@@ -201,8 +208,7 @@ static void connect(UtDBusClient *self) {
               "org.freedesktop.DBus", "Hello", NULL, hello_cb, self,
               self->cancel);
 
-  ut_dbus_auth_client_run(self->auth_client, auth_complete_cb, self,
-                          self->cancel);
+  ut_tcp_socket_connect(self->socket, connect_cb, self, self->cancel);
 }
 
 static void send_message(UtDBusClient *self, UtObject *message,
