@@ -113,10 +113,8 @@ static void ut_tcp_socket_read(UtObject *object, UtInputStreamCallback callback,
                                self->read_watch_cancel);
 }
 
-static void ut_tcp_socket_check_buffer(UtObject *object) {
-  UtTcpSocket *self = (UtTcpSocket *)object;
-
-  assert(self->read_callback != NULL);
+static void check_buffer_idle_cb(void *user_data) {
+  UtTcpSocket *self = (UtTcpSocket *)user_data;
 
   if (self->n_read > 0) {
     UtObjectRef data = ut_list_get_sublist(self->read_buffer, 0, self->n_read);
@@ -126,6 +124,13 @@ static void ut_tcp_socket_check_buffer(UtObject *object) {
     ut_list_remove(self->read_buffer, 0, n_used);
     self->n_read -= n_used;
   }
+}
+
+static void ut_tcp_socket_check_buffer(UtObject *object) {
+  UtTcpSocket *self = (UtTcpSocket *)object;
+
+  assert(self->read_callback != NULL);
+  ut_event_loop_add_delay(0, check_buffer_idle_cb, self, self->read_cancel);
 }
 
 static UtInputStreamInterface input_stream_interface = {

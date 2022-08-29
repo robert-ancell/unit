@@ -96,9 +96,8 @@ static void ut_udp_socket_read(UtObject *object, UtInputStreamCallback callback,
   ut_event_loop_add_read_watch(self->fd, read_cb, self, self->watch_cancel);
 }
 
-static void ut_udp_socket_check_buffer(UtObject *object) {
-  assert(ut_object_is_udp_socket(object));
-  UtUdpSocket *self = (UtUdpSocket *)object;
+static void check_buffer_idle_cb(void *user_data) {
+  UtUdpSocket *self = (UtUdpSocket *)user_data;
 
   if (ut_list_get_length(self->read_buffer) > 0) {
     size_t n_used =
@@ -106,6 +105,13 @@ static void ut_udp_socket_check_buffer(UtObject *object) {
     assert(n_used <= ut_list_get_length(self->read_buffer));
     ut_list_remove(self->read_buffer, 0, n_used);
   }
+}
+
+static void ut_udp_socket_check_buffer(UtObject *object) {
+  UtUdpSocket *self = (UtUdpSocket *)object;
+
+  assert(self->read_callback != NULL);
+  ut_event_loop_add_delay(0, check_buffer_idle_cb, self, self->read_cancel);
 }
 
 static UtInputStreamInterface input_stream_interface = {
