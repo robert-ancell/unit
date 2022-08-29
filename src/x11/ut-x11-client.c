@@ -1119,6 +1119,25 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
   return offset;
 }
 
+static void connect_cb(void *user_data) {
+  UtX11Client *self = user_data;
+
+  UtObjectRef setup = ut_x11_buffer_new();
+  ut_x11_buffer_append_card8(setup, 0x6c); // Little endian.
+  ut_x11_buffer_append_padding(setup, 1);
+  ut_x11_buffer_append_card16(setup, 11); // Protocol major version.
+  ut_x11_buffer_append_card16(setup, 0);  // Protocol minor version.
+  ut_x11_buffer_append_card16(setup, 0);  // Authorizaton protocol name length.
+  ut_x11_buffer_append_card16(setup, 0);  // Authorizaton protocol data length.
+  ut_x11_buffer_append_padding(setup, 2);
+  // Authorization protocol name.
+  ut_x11_buffer_append_align_padding(setup, 4);
+  // Authorization protocol data.
+  ut_x11_buffer_append_align_padding(setup, 4);
+
+  ut_output_stream_write(self->socket, setup);
+}
+
 static void ut_x11_client_init(UtObject *object) {
   UtX11Client *self = (UtX11Client *)object;
   self->cancel = ut_cancel_new();
@@ -1173,7 +1192,8 @@ UtObject *ut_x11_client_new(UtX11ClientEventCallback event_callback,
                             void *user_data, UtObject *cancel) {
   UtObject *object = ut_object_new(sizeof(UtX11Client), &object_interface);
   UtX11Client *self = (UtX11Client *)object;
-  self->socket = ut_unix_domain_socket_client_new("/tmp/.X11-unix/X0");
+  UtObjectRef address = ut_unix_socket_address_new("/tmp/.X11-unix/X0");
+  self->socket = ut_tcp_socket_new(address, 0);
   self->event_callback = event_callback;
   self->error_callback = error_callback;
   self->callback_user_data = user_data;
@@ -1194,23 +1214,8 @@ void ut_x11_client_connect(UtObject *object,
   self->connect_user_data = user_data;
   self->connect_cancel = ut_object_ref(cancel);
 
-  ut_unix_domain_socket_client_connect(self->socket);
+  ut_tcp_socket_connect(self->socket, connect_cb, self, self->cancel);
   ut_input_stream_read(self->socket, read_cb, self, self->read_cancel);
-
-  UtObjectRef setup = ut_x11_buffer_new();
-  ut_x11_buffer_append_card8(setup, 0x6c); // Little endian.
-  ut_x11_buffer_append_padding(setup, 1);
-  ut_x11_buffer_append_card16(setup, 11); // Protocol major version.
-  ut_x11_buffer_append_card16(setup, 0);  // Protocol minor version.
-  ut_x11_buffer_append_card16(setup, 0);  // Authorizaton protocol name length.
-  ut_x11_buffer_append_card16(setup, 0);  // Authorizaton protocol data length.
-  ut_x11_buffer_append_padding(setup, 2);
-  // Authorization protocol name.
-  ut_x11_buffer_append_align_padding(setup, 4);
-  // Authorization protocol data.
-  ut_x11_buffer_append_align_padding(setup, 4);
-
-  ut_output_stream_write(self->socket, setup);
 }
 
 uint32_t ut_x11_client_create_resource_id(UtObject *object) {
