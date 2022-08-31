@@ -5,8 +5,8 @@
 #include "ut.h"
 
 static char *append_string(char *value, const char *suffix) {
-  size_t value_length = value != NULL ? strlen(value) : 0;
-  size_t suffix_length = strlen(suffix);
+  size_t value_length = value != NULL ? ut_cstring_get_length(value) : 0;
+  size_t suffix_length = ut_cstring_get_length(suffix);
 
   value = realloc(value, value_length + suffix_length + 1);
   memcpy(value + value_length, suffix, suffix_length + 1);
@@ -15,7 +15,7 @@ static char *append_string(char *value, const char *suffix) {
 }
 
 static char *escape_character(char *value, char c) {
-  size_t value_length = strlen(value);
+  size_t value_length = ut_cstring_get_length(value);
 
   value_length++;
   value = realloc(value, value_length);

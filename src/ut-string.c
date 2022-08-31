@@ -1,7 +1,6 @@
 #include <assert.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <string.h>
 
 #include "ut.h"
 
@@ -77,7 +76,7 @@ char *ut_string_take_text(UtObject *object) {
 
 UtObject *ut_string_get_code_points(UtObject *object) {
   const char *text = ut_string_get_text(object);
-  size_t text_length = strlen(text);
+  size_t text_length = ut_cstring_get_length(text);
   UtObjectRef code_points = ut_uint32_list_new();
   size_t offset = 0;
   while (offset < text_length) {

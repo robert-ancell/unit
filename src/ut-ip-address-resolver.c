@@ -1,7 +1,6 @@
 #include <assert.h>
 #include <netdb.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include "ut.h"
 

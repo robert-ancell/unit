@@ -1,5 +1,3 @@
-#include <string.h>
-
 #include "ut.h"
 
 typedef struct {

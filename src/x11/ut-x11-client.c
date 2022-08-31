@@ -1,5 +1,4 @@
 #include <assert.h>
-#include <string.h>
 
 #include "ut-x11-buffer.h"
 #include "ut-x11-client-private.h"
@@ -296,7 +295,7 @@ static void handle_query_extension_error(UtObject *object, UtObject *error) {
 
 static void query_extension(UtX11Client *self, const char *name) {
   UtObjectRef request = ut_x11_buffer_new();
-  ut_x11_buffer_append_card16(request, strlen(name));
+  ut_x11_buffer_append_card16(request, ut_cstring_get_length(name));
   ut_x11_buffer_append_padding(request, 2);
   ut_x11_buffer_append_string8(request, name);
   ut_x11_buffer_append_align_padding(request, 4);
@@ -1323,7 +1322,7 @@ void ut_x11_client_intern_atom(UtObject *object, const char *name,
   assert(ut_object_is_x11_client(object));
 
   UtObjectRef request = ut_x11_buffer_new();
-  ut_x11_buffer_append_card16(request, strlen(name));
+  ut_x11_buffer_append_card16(request, ut_cstring_get_length(name));
   ut_x11_buffer_append_padding(request, 2);
   ut_x11_buffer_append_string8(request, name);
   ut_x11_buffer_append_align_padding(request, 4);

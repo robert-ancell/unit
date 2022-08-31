@@ -1,5 +1,4 @@
 #include <assert.h>
-#include <string.h>
 #include <sys/types.h>
 
 #include "ut-dbus-auth-server.h"

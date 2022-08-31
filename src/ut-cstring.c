@@ -50,6 +50,8 @@ char *ut_cstring_take(char **string) {
   return result;
 }
 
+size_t ut_cstring_get_length(const char *value) { return strlen(value); }
+
 bool ut_cstring_equal(const char *value1, const char *value2) {
   size_t i = 0;
   while (value1[i] == value2[i] && value1[i] != '\0') {
@@ -73,8 +75,8 @@ bool ut_cstring_ends_with(const char *value, const char *suffix) {
   assert(value != NULL);
   assert(suffix != NULL);
 
-  size_t value_length = strlen(value);
-  size_t suffix_length = strlen(suffix);
+  size_t value_length = ut_cstring_get_length(value);
+  size_t suffix_length = ut_cstring_get_length(suffix);
   if (suffix_length > value_length) {
     return false;
   }
@@ -89,8 +91,8 @@ char *ut_cstring_join(const char *separator, const char *value0, ...) {
     return ut_cstring_new("");
   }
 
-  size_t separator_length = strlen(separator);
-  size_t value0_length = strlen(value0);
+  size_t separator_length = ut_cstring_get_length(separator);
+  size_t value0_length = ut_cstring_get_length(value0);
 
   size_t value_length = 1;
   size_t result_length = value0_length;
@@ -105,11 +107,11 @@ char *ut_cstring_join(const char *separator, const char *value0, ...) {
       break;
     }
     value_length++;
-    result_length += strlen(v);
+    result_length += ut_cstring_get_length(v);
   }
   va_end(ap2);
 
-  result_length += (value_length - 1) * strlen(separator);
+  result_length += (value_length - 1) * ut_cstring_get_length(separator);
   char *result = malloc(sizeof(char) * (result_length + 1));
   memcpy(result, value0, value0_length);
   size_t offset = value0_length;
@@ -118,7 +120,7 @@ char *ut_cstring_join(const char *separator, const char *value0, ...) {
     memcpy(result + offset, separator, separator_length);
     offset += separator_length;
     const char *v = va_arg(ap, const char *);
-    size_t v_length = strlen(v);
+    size_t v_length = ut_cstring_get_length(v);
     memcpy(result + offset, v, v_length);
     offset += v_length;
   }

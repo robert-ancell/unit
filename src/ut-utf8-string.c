@@ -73,7 +73,7 @@ static void ut_utf8_string_clear(UtObject *object) {
 static void ut_utf8_string_prepend(UtObject *object, const char *text) {
   assert(ut_object_is_utf8_string(object));
   UtUtf8String *self = (UtUtf8String *)object;
-  size_t text_length = strlen(text);
+  size_t text_length = ut_cstring_get_length(text);
   size_t orig_length = ut_list_get_length(self->data);
   ut_list_resize(self->data, ut_list_get_length(self->data) + text_length);
   uint8_t *data = ut_uint8_array_get_data(self->data);
@@ -102,7 +102,7 @@ static void ut_utf8_string_prepend_code_point(UtObject *object,
 static void ut_utf8_string_append(UtObject *object, const char *text) {
   assert(ut_object_is_utf8_string(object));
   UtUtf8String *self = (UtUtf8String *)object;
-  size_t text_length = strlen(text);
+  size_t text_length = ut_cstring_get_length(text);
   size_t orig_length = ut_list_get_length(self->data);
   ut_list_resize(self->data, orig_length + text_length);
   memcpy(ut_uint8_array_get_data(self->data) + orig_length - 1, text,
@@ -153,7 +153,7 @@ static UtObjectInterface object_interface = {
     .interfaces = {{&ut_string_id, &string_interface}, {NULL, NULL}}};
 
 UtObject *ut_utf8_string_new(const char *text) {
-  return ut_utf8_string_new_sized(text, strlen(text));
+  return ut_utf8_string_new_sized(text, ut_cstring_get_length(text));
 }
 
 UtObject *ut_utf8_string_new_sized(const char *text, size_t length) {

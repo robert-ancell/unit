@@ -1,6 +1,5 @@
 #include <assert.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include "ut.h"
 
@@ -17,7 +16,7 @@ static const char *ut_constant_utf8_string_get_text(UtObject *object) {
 static UtObject *ut_constant_utf8_string_get_utf8(UtObject *object) {
   UtConstantUtf8String *self = (UtConstantUtf8String *)object;
   return ut_constant_uint8_array_new((const uint8_t *)self->text,
-                                     strlen(self->text) + 1);
+                                     ut_cstring_get_length(self->text) + 1);
 }
 
 static UtStringInterface string_interface = {

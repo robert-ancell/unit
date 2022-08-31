@@ -1,5 +1,4 @@
 #include <assert.h>
-#include <string.h>
 
 #include "ut-dbus-message-encoder.h"
 #include "ut.h"
@@ -64,13 +63,13 @@ static void rewrite_length(UtObject *buffer, size_t length_offset,
 }
 
 static void write_signature(UtObject *buffer, const char *value) {
-  size_t value_length = strlen(value);
+  size_t value_length = ut_cstring_get_length(value);
   ut_uint8_list_append(buffer, value_length);
   ut_uint8_list_append_block(buffer, (const uint8_t *)value, value_length + 1);
 }
 
 static void write_string(UtObject *buffer, const char *value) {
-  size_t value_length = strlen(value);
+  size_t value_length = ut_cstring_get_length(value);
   write_align_padding(buffer, 4);
   ut_uint8_list_append_uint32_le(buffer, value_length);
   ut_uint8_list_append_block(buffer, (const uint8_t *)value, value_length + 1);

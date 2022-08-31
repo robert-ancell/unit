@@ -1,6 +1,5 @@
 #include <assert.h>
 #include <stdlib.h>
-#include <string.h>
 #include <sys/types.h>
 
 #include "ut-dbus-auth-client.h"
@@ -188,8 +187,8 @@ static void connect(UtDBusClient *self) {
   }
 
   assert(ut_cstring_starts_with(self->address, "unix:path="));
-  ut_cstring_ref path =
-      ut_cstring_substring(self->address, 10, strlen(self->address));
+  ut_cstring_ref path = ut_cstring_substring(
+      self->address, 10, ut_cstring_get_length(self->address));
 
   UtObjectRef address = ut_unix_socket_address_new(path);
   self->socket = ut_tcp_socket_new(address, 0);
