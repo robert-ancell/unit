@@ -26,6 +26,12 @@ static uint8_t ut_shared_memory_subarray_get_element(UtObject *object,
   return data[index];
 }
 
+static const uint8_t *
+ut_shared_memory_subarray_get_const_data(UtObject *object) {
+  UtSharedMemorySubarray *self = (UtSharedMemorySubarray *)object;
+  return get_data(self);
+}
+
 static uint8_t *ut_shared_memory_subarray_take_data(UtObject *object) {
   UtSharedMemorySubarray *self = (UtSharedMemorySubarray *)object;
   uint8_t *data = get_data(self);
@@ -75,6 +81,7 @@ static void ut_shared_memory_subarray_cleanup(UtObject *object) {
 
 static UtUint8ListInterface uint8_list_interface = {
     .get_element = ut_shared_memory_subarray_get_element,
+    .get_data = ut_shared_memory_subarray_get_const_data,
     .take_data = ut_shared_memory_subarray_take_data};
 
 static UtListInterface list_interface = {

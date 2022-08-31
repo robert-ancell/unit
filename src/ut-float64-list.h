@@ -7,6 +7,7 @@
 
 typedef struct {
   double (*get_element)(UtObject *object, size_t index);
+  const double *(*get_data)(UtObject *object);
   double *(*take_data)(UtObject *object);
   void (*insert)(UtObject *object, size_t index, const double *data,
                  size_t data_length);
@@ -19,6 +20,8 @@ UtObject *ut_float64_list_new();
 UtObject *ut_float64_list_new_from_elements(size_t length, ...);
 
 double ut_float64_list_get_element(UtObject *object, size_t index);
+
+const double *ut_float64_list_get_data(UtObject *object);
 
 double *ut_float64_list_take_data(UtObject *object);
 

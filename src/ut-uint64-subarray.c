@@ -26,6 +26,11 @@ static uint64_t ut_uint64_subarray_get_element(UtObject *object, size_t index) {
   return data[index];
 }
 
+static const uint64_t *ut_uint64_subarray_get_const_data(UtObject *object) {
+  UtUint64Subarray *self = (UtUint64Subarray *)object;
+  return get_data(self);
+}
+
 static uint64_t *ut_uint64_subarray_take_data(UtObject *object) {
   UtUint64Subarray *self = (UtUint64Subarray *)object;
   uint64_t *data = get_data(self);
@@ -83,6 +88,7 @@ static void ut_uint64_subarray_cleanup(UtObject *object) {
 
 static UtUint64ListInterface uint64_list_interface = {
     .get_element = ut_uint64_subarray_get_element,
+    .get_data = ut_uint64_subarray_get_const_data,
     .take_data = ut_uint64_subarray_take_data};
 
 static UtListInterface list_interface = {

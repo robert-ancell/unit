@@ -25,6 +25,11 @@ static uint16_t ut_uint16_array_get_element(UtObject *object, size_t index) {
   return self->data[index];
 }
 
+static const uint16_t *ut_uint16_array_get_const_data(UtObject *object) {
+  UtUint16Array *self = (UtUint16Array *)object;
+  return self->data;
+}
+
 static uint16_t *ut_uint16_array_take_data(UtObject *object) {
   UtUint16Array *self = (UtUint16Array *)object;
   uint16_t *result = self->data;
@@ -121,6 +126,7 @@ static void ut_uint16_array_cleanup(UtObject *object) {
 
 static UtUint16ListInterface uint16_list_interface = {
     .get_element = ut_uint16_array_get_element,
+    .get_data = ut_uint16_array_get_const_data,
     .take_data = ut_uint16_array_take_data,
     .insert = ut_uint16_array_insert};
 

@@ -26,6 +26,11 @@ static uint32_t ut_uint32_subarray_get_element(UtObject *object, size_t index) {
   return data[index];
 }
 
+static const uint32_t *ut_uint32_subarray_get_const_data(UtObject *object) {
+  UtUint32Subarray *self = (UtUint32Subarray *)object;
+  return get_data(self);
+}
+
 static uint32_t *ut_uint32_subarray_take_data(UtObject *object) {
   UtUint32Subarray *self = (UtUint32Subarray *)object;
   uint32_t *data = get_data(self);
@@ -82,6 +87,7 @@ static void ut_uint32_subarray_cleanup(UtObject *object) {
 
 static UtUint32ListInterface uint32_list_interface = {
     .get_element = ut_uint32_subarray_get_element,
+    .get_data = ut_uint32_subarray_get_const_data,
     .take_data = ut_uint32_subarray_take_data};
 
 static UtListInterface list_interface = {

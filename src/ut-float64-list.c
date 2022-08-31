@@ -20,6 +20,13 @@ double ut_float64_list_get_element(UtObject *object, size_t index) {
   return float64_list_interface->get_element(object, index);
 }
 
+const double *ut_float64_list_get_data(UtObject *object) {
+  UtFloat64ListInterface *float64_list_interface =
+      ut_object_get_interface(object, &ut_float64_list_id);
+  assert(float64_list_interface != NULL);
+  return float64_list_interface->get_data(object);
+}
+
 double *ut_float64_list_take_data(UtObject *object) {
   UtFloat64ListInterface *float64_list_interface =
       ut_object_get_interface(object, &ut_float64_list_id);
