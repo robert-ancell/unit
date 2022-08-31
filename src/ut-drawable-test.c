@@ -5,11 +5,9 @@
 int main(int argc, char **argv) {
   UtObjectRef buffer = ut_rgba8888_buffer_new(100, 100);
 
-  UtObjectRef bg_color =
-      ut_color_new(0x77 / 255.0, 0x21 / 255.0, 0x6f / 255.0, 1.0);
+  UtObjectRef bg_color = ut_color_new_from_hex_string("#77216f");
   ut_drawable_clear(buffer, bg_color);
-  UtObjectRef fg_color =
-      ut_color_new(0xe9 / 255.0, 0x54 / 255.0, 0x20 / 255.0, 1.0);
+  UtObjectRef fg_color = ut_color_new_from_hex_string("#e95420");
   ut_drawable_render_box(buffer, 25, 25, 50, 50, fg_color);
 
   size_t width = ut_image_buffer_get_width(buffer);

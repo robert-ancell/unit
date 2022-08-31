@@ -4,7 +4,10 @@
 
 #pragma once
 
-UtObject *ut_color_new(double red, double green, double blue, double alpha);
+UtObject *ut_color_new_rgba(double red, double green, double blue,
+                            double alpha);
+
+UtObject *ut_color_new_from_hex_string(const char *hex_string);
 
 double ut_color_get_red(UtObject *object);
 
