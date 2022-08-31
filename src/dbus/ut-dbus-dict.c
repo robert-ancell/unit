@@ -86,8 +86,8 @@ UtObject *ut_dbus_dict_new(const char *key_signature,
                            const char *value_signature) {
   UtObject *object = ut_object_new(sizeof(UtDBusDict), &object_interface);
   UtDBusDict *self = (UtDBusDict *)object;
-  self->key_signature = strdup(key_signature);
-  self->value_signature = strdup(value_signature);
+  self->key_signature = ut_cstring_new(key_signature);
+  self->value_signature = ut_cstring_new(value_signature);
   return object;
 }
 

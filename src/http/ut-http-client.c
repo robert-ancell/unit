@@ -29,10 +29,10 @@ HttpRequest *http_request_new(const char *host, uint16_t port,
                               void *callback_user_data,
                               UtObject *callback_cancel) {
   HttpRequest *request = malloc(sizeof(HttpRequest));
-  request->host = strdup(host);
+  request->host = ut_cstring_new(host);
   request->port = port;
-  request->method = strdup(method);
-  request->path = strdup(path);
+  request->method = ut_cstring_new(method);
+  request->path = ut_cstring_new(path);
   request->callback = callback;
   request->callback_user_data = callback_user_data;
   request->callback_cancel = ut_object_ref(callback_cancel);

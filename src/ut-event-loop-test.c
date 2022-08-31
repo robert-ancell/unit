@@ -19,7 +19,7 @@ static void timer_cb(void *user_data) { printf("timer\n"); }
 
 static void *thread_cb(void *data) {
   sleep(2);
-  return strdup("Hello World");
+  return ut_cstring_new("Hello World");
 }
 
 static void thread_result_cb(void *user_data, void *result) {

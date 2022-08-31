@@ -17,7 +17,7 @@ static void resize(UtStringArray *self, size_t length) {
   }
   self->data = realloc(self->data, sizeof(char *) * (length + 1));
   for (size_t i = self->data_length; i < length; i++) {
-    self->data[i] = strdup("");
+    self->data[i] = ut_cstring_new("");
   }
   self->data[length] = NULL;
   self->data_length = length;
@@ -29,7 +29,7 @@ static void insert(UtStringArray *self, size_t index, const char *value) {
   for (size_t i = self->data_length - 1; i > index; i--) {
     self->data[i] = self->data[i - 1];
   }
-  self->data[index] = strdup(value);
+  self->data[index] = ut_cstring_new(value);
   self->data[self->data_length] = NULL;
 }
 
@@ -50,7 +50,7 @@ static UtObject *ut_string_array_copy(UtObject *object) {
   copy->data = malloc(sizeof(char *) * (self->data_length + 1));
   copy->data_length = self->data_length;
   for (size_t i = 0; i < self->data_length; i++) {
-    copy->data[i] = strdup(self->data[i]);
+    copy->data[i] = ut_cstring_new(self->data[i]);
   }
   copy->data[copy->data_length] = NULL;
   return (UtObject *)copy;

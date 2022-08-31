@@ -72,7 +72,7 @@ char *ut_string_take_text(UtObject *object) {
     return string_interface->take_text(object);
   }
 
-  return strdup(ut_string_get_text(object));
+  return ut_cstring_new(ut_string_get_text(object));
 }
 
 UtObject *ut_string_get_code_points(UtObject *object) {

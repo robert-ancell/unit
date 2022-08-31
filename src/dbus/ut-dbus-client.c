@@ -171,8 +171,8 @@ static void auth_complete_cb(void *user_data, const char *guid,
 static void hello_cb(void *user_data, UtObject *out_args) {
   UtDBusClient *self = user_data;
 
-  self->unique_name =
-      strdup(ut_string_get_text(ut_object_list_get_element(out_args, 0)));
+  self->unique_name = ut_cstring_new(
+      ut_string_get_text(ut_object_list_get_element(out_args, 0)));
 }
 
 static void connect_cb(void *user_data) {
@@ -281,7 +281,7 @@ static UtObjectInterface object_interface = {.type_name = "UtDBusClient",
 UtObject *ut_dbus_client_new(const char *address) {
   UtObject *object = ut_object_new(sizeof(UtDBusClient), &object_interface);
   UtDBusClient *self = (UtDBusClient *)object;
-  self->address = strdup(address);
+  self->address = ut_cstring_new(address);
   return object;
 }
 

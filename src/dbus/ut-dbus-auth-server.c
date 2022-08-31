@@ -47,11 +47,11 @@ static void process_auth(UtDBusAuthServer *self, const char *args) {
   ut_cstring_ref mechanism = NULL;
   ut_cstring_ref auth_args = NULL;
   if (mechanism_end == NULL) {
-    mechanism = strdup(args);
-    auth_args = strdup("");
+    mechanism = ut_cstring_new(args);
+    auth_args = ut_cstring_new("");
   } else {
     mechanism = ut_cstring_new_sized(args, mechanism_end - args);
-    auth_args = strdup(mechanism_end + 1);
+    auth_args = ut_cstring_new(mechanism_end + 1);
   }
 
   if (ut_cstring_equal(mechanism, "")) {
@@ -79,11 +79,11 @@ static void process_line(UtDBusAuthServer *self, const char *line) {
   ut_cstring_ref command = NULL;
   ut_cstring_ref args = NULL;
   if (command_end == NULL) {
-    command = strdup(line);
-    args = strdup("");
+    command = ut_cstring_new(line);
+    args = ut_cstring_new("");
   } else {
     command = ut_cstring_new_sized(line, command_end - line);
-    args = strdup(command_end + 1);
+    args = ut_cstring_new(command_end + 1);
   }
 
   if (ut_cstring_equal(command, "AUTH")) {

@@ -21,7 +21,7 @@ static void ut_general_error_cleanup(UtObject *object) {
 
 static char *ut_general_error_dup_description(UtObject *object) {
   UtGeneralError *self = (UtGeneralError *)object;
-  return strdup(self->description);
+  return ut_cstring_new(self->description);
 }
 
 static UtErrorInterface error_interface = {
@@ -52,7 +52,7 @@ UtObject *ut_general_error_new_valist(const char *format, va_list ap) {
 UtObject *ut_general_error_new_literal(const char *description) {
   UtObject *object = ut_object_new(sizeof(UtGeneralError), &object_interface);
   UtGeneralError *self = (UtGeneralError *)object;
-  self->description = strdup(description);
+  self->description = ut_cstring_new(description);
   return object;
 }
 

@@ -28,7 +28,7 @@ static UtObjectInterface object_interface = {
 UtObject *ut_dbus_signature_new(const char *value) {
   UtObject *object = ut_object_new(sizeof(UtDBusSignature), &object_interface);
   UtDBusSignature *self = (UtDBusSignature *)object;
-  self->value = strdup(value);
+  self->value = ut_cstring_new(value);
   return object;
 }
 

@@ -73,11 +73,11 @@ static void process_line(UtDBusAuthClient *self, const char *line) {
   ut_cstring_ref command = NULL;
   ut_cstring_ref args = NULL;
   if (command_end == NULL) {
-    command = strdup(line);
-    args = strdup("");
+    command = ut_cstring_new(line);
+    args = ut_cstring_new("");
   } else {
     command = ut_cstring_new_sized(line, command_end - line);
-    args = strdup(command_end + 1);
+    args = ut_cstring_new(command_end + 1);
   }
 
   if (ut_cstring_equal(command, "REJECTED")) {
@@ -91,7 +91,7 @@ static void process_line(UtDBusAuthClient *self, const char *line) {
   } else if (ut_cstring_equal(command, "OK")) {
     assert(self->state == AUTH_STATE_AUTH_EXTERNAL);
     free(self->guid);
-    self->guid = strdup(args);
+    self->guid = ut_cstring_new(args);
     if (self->negotiate_unix_fd) {
       self->state = AUTH_STATE_NEGOTIATE_UNIX_FD;
       send_negotiate_unix_fd(self);

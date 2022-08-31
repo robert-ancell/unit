@@ -78,29 +78,29 @@ static void write_string(UtObject *buffer, const char *value) {
 
 static char *get_signature(UtObject *value) {
   if (ut_object_is_uint8(value)) {
-    return strdup("y");
+    return ut_cstring_new("y");
   } else if (ut_object_is_boolean(value)) {
-    return strdup("b");
+    return ut_cstring_new("b");
   } else if (ut_object_is_int16(value)) {
-    return strdup("n");
+    return ut_cstring_new("n");
   } else if (ut_object_is_uint16(value)) {
-    return strdup("q");
+    return ut_cstring_new("q");
   } else if (ut_object_is_int32(value)) {
-    return strdup("i");
+    return ut_cstring_new("i");
   } else if (ut_object_is_uint32(value)) {
-    return strdup("u");
+    return ut_cstring_new("u");
   } else if (ut_object_is_int64(value)) {
-    return strdup("x");
+    return ut_cstring_new("x");
   } else if (ut_object_is_uint64(value)) {
-    return strdup("t");
+    return ut_cstring_new("t");
   } else if (ut_object_is_float64(value)) {
-    return strdup("d");
+    return ut_cstring_new("d");
   } else if (ut_object_is_dbus_object_path(value)) {
-    return strdup("o");
+    return ut_cstring_new("o");
   } else if (ut_object_is_dbus_signature(value)) {
-    return strdup("g");
+    return ut_cstring_new("g");
   } else if (ut_object_implements_string(value)) {
-    return strdup("s");
+    return ut_cstring_new("s");
   } else if (ut_object_is_dbus_array(value)) {
     return ut_cstring_new_printf("a%s",
                                  ut_dbus_array_get_value_signature(value));
@@ -119,9 +119,9 @@ static char *get_signature(UtObject *value) {
                                  ut_dbus_dict_get_key_signature(value),
                                  ut_dbus_dict_get_value_signature(value));
   } else if (ut_object_is_dbus_variant(value)) {
-    return strdup("v");
+    return ut_cstring_new("v");
   } else if (ut_object_is_file_descriptor(value)) {
-    return strdup("h");
+    return ut_cstring_new("h");
   } else {
     assert(false);
   }

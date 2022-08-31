@@ -34,7 +34,7 @@ void ut_cstring_set(char **string, const char *value) {
   if (*string != NULL) {
     free(*string);
   }
-  *string = value != NULL ? strdup(value) : NULL;
+  *string = value != NULL ? ut_cstring_new(value) : NULL;
 }
 
 void ut_cstring_clear(char **string) {
@@ -86,7 +86,7 @@ char *ut_cstring_join(const char *separator, const char *value0, ...) {
     separator = "";
   }
   if (value0 == NULL) {
-    return strdup("");
+    return ut_cstring_new("");
   }
 
   size_t separator_length = strlen(separator);

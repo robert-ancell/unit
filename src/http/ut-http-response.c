@@ -145,7 +145,7 @@ UtObject *ut_http_response_new(unsigned int status_code,
   UtObject *object = ut_object_new(sizeof(UtHttpResponse), &object_interface);
   UtHttpResponse *self = (UtHttpResponse *)object;
   self->status_code = status_code;
-  self->reason_phrase = strdup(reason_phrase);
+  self->reason_phrase = ut_cstring_new(reason_phrase);
   self->headers = ut_object_ref(headers);
   self->tcp_socket = ut_object_ref(tcp_socket);
   return object;

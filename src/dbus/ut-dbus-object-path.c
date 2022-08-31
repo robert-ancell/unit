@@ -28,7 +28,7 @@ static UtObjectInterface object_interface = {
 UtObject *ut_dbus_object_path_new(const char *value) {
   UtObject *object = ut_object_new(sizeof(UtDBusObjectPath), &object_interface);
   UtDBusObjectPath *self = (UtDBusObjectPath *)object;
-  self->value = strdup(value);
+  self->value = ut_cstring_new(value);
   return object;
 }
 

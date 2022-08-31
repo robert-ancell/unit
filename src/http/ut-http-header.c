@@ -22,8 +22,8 @@ static UtObjectInterface object_interface = {.type_name = "HttpHeader",
 UtObject *ut_http_header_new(const char *name, const char *value) {
   UtObject *object = ut_object_new(sizeof(UtHttpHeader), &object_interface);
   UtHttpHeader *self = (UtHttpHeader *)object;
-  self->name = strdup(name);
-  self->value = strdup(value);
+  self->name = ut_cstring_new(name);
+  self->value = ut_cstring_new(value);
   return object;
 }
 

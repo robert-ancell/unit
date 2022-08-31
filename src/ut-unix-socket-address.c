@@ -28,7 +28,7 @@ UtObject *ut_unix_socket_address_new(const char *path) {
   UtObject *object =
       ut_object_new(sizeof(UtUnixSocketAddress), &object_interface);
   UtUnixSocketAddress *self = (UtUnixSocketAddress *)object;
-  self->path = strdup(path);
+  self->path = ut_cstring_new(path);
   return object;
 }
 

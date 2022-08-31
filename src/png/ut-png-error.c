@@ -8,7 +8,7 @@ typedef struct {
 } UtPngError;
 
 static char *ut_png_error_get_description(UtObject *object) {
-  return strdup("PNG Error");
+  return ut_cstring_new("PNG Error");
 }
 
 static UtErrorInterface error_interface = {.get_description =

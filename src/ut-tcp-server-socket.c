@@ -63,7 +63,7 @@ static UtObject *socket_new(sa_family_t family, const char *path,
   UtTcpServerSocket *self = (UtTcpServerSocket *)object;
 
   self->family = family;
-  self->unix_path = path != NULL ? strdup(path) : NULL;
+  self->unix_path = path != NULL ? ut_cstring_new(path) : NULL;
   self->port = port;
   int fd = socket(family, SOCK_STREAM | SOCK_NONBLOCK, 0);
   assert(fd >= 0);

@@ -36,7 +36,7 @@ static char *escape_character(char *value, char c) {
 
 static char *escape_string(const char *value) {
   if (value == NULL) {
-    return strdup("NULL");
+    return ut_cstring_new("NULL");
   }
   char *escaped = append_string(NULL, "\"");
   for (const char *c = value; *c != '\0'; c++) {
@@ -56,9 +56,9 @@ void _ut_assert_equal(const char *file, int line, const char *a_name,
   }
 
   ut_cstring_ref a_value_string =
-      a_value != NULL ? ut_object_to_string(a_value) : strdup("NULL");
+      a_value != NULL ? ut_object_to_string(a_value) : ut_cstring_new("NULL");
   ut_cstring_ref b_value_string =
-      b_value != NULL ? ut_object_to_string(b_value) : strdup("NULL");
+      b_value != NULL ? ut_object_to_string(b_value) : ut_cstring_new("NULL");
   fprintf(stderr,
           "%s:%d Objects %s and %s are not equal:\n"
           "  %s\n"

@@ -8,7 +8,7 @@ typedef struct {
 } UtZlibError;
 
 static char *ut_zlib_error_get_description(UtObject *object) {
-  return strdup("zlib Error");
+  return ut_cstring_new("zlib Error");
 }
 
 static UtErrorInterface error_interface = {.get_description =

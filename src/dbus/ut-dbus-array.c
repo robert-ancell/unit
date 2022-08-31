@@ -90,7 +90,7 @@ static UtObjectInterface object_interface = {
 UtObject *ut_dbus_array_new(const char *value_signature) {
   UtObject *object = ut_object_new(sizeof(UtDBusArray), &object_interface);
   UtDBusArray *self = (UtDBusArray *)object;
-  self->value_signature = strdup(value_signature);
+  self->value_signature = ut_cstring_new(value_signature);
   return object;
 }
 

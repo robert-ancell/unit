@@ -25,7 +25,7 @@ UtObject *ut_xml_element_new(const char *name, UtObject *attributes,
                              UtObject *content) {
   UtObject *object = ut_object_new(sizeof(UtXmlElement), &object_interface);
   UtXmlElement *self = (UtXmlElement *)object;
-  self->name = strdup(name);
+  self->name = ut_cstring_new(name);
   self->attributes = ut_object_ref(attributes);
   self->content = ut_object_ref(content);
   return object;

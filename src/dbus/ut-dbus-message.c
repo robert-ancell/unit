@@ -85,10 +85,10 @@ UtObject *ut_dbus_message_new_method_call(const char *destination,
   UtObject *object = ut_object_new(sizeof(UtDBusMessage), &object_interface);
   UtDBusMessage *self = (UtDBusMessage *)object;
   self->type = UT_DBUS_MESSAGE_TYPE_METHOD_CALL;
-  self->destination = strdup(destination);
-  self->path = strdup(path);
-  self->interface = strdup(interface);
-  self->member = strdup(name);
+  self->destination = ut_cstring_new(destination);
+  self->path = ut_cstring_new(path);
+  self->interface = ut_cstring_new(interface);
+  self->member = ut_cstring_new(name);
   self->args = ut_object_ref(args);
   return object;
 }
@@ -108,7 +108,7 @@ UtObject *ut_dbus_message_new_error(const char *error_name, UtObject *args) {
   UtObject *object = ut_object_new(sizeof(UtDBusMessage), &object_interface);
   UtDBusMessage *self = (UtDBusMessage *)object;
   self->type = UT_DBUS_MESSAGE_TYPE_ERROR;
-  self->error_name = strdup(error_name);
+  self->error_name = ut_cstring_new(error_name);
   self->args = ut_object_ref(args);
   return object;
 }
@@ -118,9 +118,9 @@ UtObject *ut_dbus_message_new_signal(const char *path, const char *interface,
   UtObject *object = ut_object_new(sizeof(UtDBusMessage), &object_interface);
   UtDBusMessage *self = (UtDBusMessage *)object;
   self->type = UT_DBUS_MESSAGE_TYPE_SIGNAL;
-  self->path = strdup(path);
-  self->interface = strdup(interface);
-  self->member = strdup(name);
+  self->path = ut_cstring_new(path);
+  self->interface = ut_cstring_new(interface);
+  self->member = ut_cstring_new(name);
   self->args = ut_object_ref(args);
   return object;
 }

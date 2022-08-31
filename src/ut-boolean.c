@@ -11,7 +11,7 @@ typedef struct {
 
 static char *ut_boolean_to_string(UtObject *object) {
   UtBoolean *self = (UtBoolean *)object;
-  return strdup(self->value ? "true" : "false");
+  return ut_cstring_new(self->value ? "true" : "false");
 }
 
 static bool ut_boolean_equal(UtObject *object, UtObject *other) {

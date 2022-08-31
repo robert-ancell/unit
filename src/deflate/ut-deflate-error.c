@@ -8,7 +8,7 @@ typedef struct {
 } UtDeflateError;
 
 static char *ut_deflate_error_get_description(UtObject *object) {
-  return strdup("Deflate Error");
+  return ut_cstring_new("Deflate Error");
 }
 
 static UtErrorInterface error_interface = {

@@ -83,7 +83,7 @@ static UtObject *query_extension_data_new(UtX11Client *client,
                                    &query_extension_data_object_interface);
   QueryExtensionData *self = (QueryExtensionData *)object;
   self->client = client;
-  self->name = strdup(name);
+  self->name = ut_cstring_new(name);
   return object;
 }
 

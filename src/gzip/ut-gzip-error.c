@@ -8,7 +8,7 @@ typedef struct {
 } UtGzipError;
 
 static char *ut_gzip_error_get_description(UtObject *object) {
-  return strdup("GZip Error");
+  return ut_cstring_new("GZip Error");
 }
 
 static UtErrorInterface error_interface = {.get_description =

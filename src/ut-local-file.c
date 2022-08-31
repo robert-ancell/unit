@@ -93,7 +93,7 @@ static UtObjectInterface object_interface = {
 UtObject *ut_local_file_new(const char *path) {
   UtObject *object = ut_object_new(sizeof(UtLocalFile), &object_interface);
   UtLocalFile *self = (UtLocalFile *)object;
-  self->path = strdup(path);
+  self->path = ut_cstring_new(path);
   return object;
 }
 

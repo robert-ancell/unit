@@ -45,7 +45,7 @@ static UtObjectInterface object_interface = {
 UtObject *ut_dbus_error_new(const char *error_name, UtObject *args) {
   UtObject *object = ut_object_new(sizeof(UtDBusError), &object_interface);
   UtDBusError *self = (UtDBusError *)object;
-  self->error_name = strdup(error_name);
+  self->error_name = ut_cstring_new(error_name);
   self->args = ut_object_ref(args);
   return object;
 }

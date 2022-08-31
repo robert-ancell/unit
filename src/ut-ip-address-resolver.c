@@ -21,7 +21,7 @@ static LookupData *lookup_data_new(const char *name,
                                    UtIPAddressResolverLookupCallback callback,
                                    void *user_data, UtObject *cancel) {
   LookupData *data = malloc(sizeof(LookupData));
-  data->name = strdup(name);
+  data->name = ut_cstring_new(name);
   data->callback = callback;
   data->user_data = user_data;
   data->cancel = ut_object_ref(cancel);
