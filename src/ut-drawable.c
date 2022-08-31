@@ -19,6 +19,14 @@ void ut_drawable_render_box(UtObject *object, double x, double y, double width,
   drawable_interface->render_box(object, x, y, width, height, color);
 }
 
+void ut_drawable_render_mesh(UtObject *object, UtObject *vertices,
+                             UtObject *triangles, UtObject *color) {
+  UtDrawableInterface *drawable_interface =
+      ut_object_get_interface(object, &ut_drawable_id);
+  assert(drawable_interface != NULL);
+  drawable_interface->render_mesh(object, vertices, triangles, color);
+}
+
 bool ut_object_implements_drawable(UtObject *object) {
   return ut_object_get_interface(object, &ut_drawable_id) != NULL;
 }
