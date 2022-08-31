@@ -5,7 +5,9 @@
 int main(int argc, char **argv) {
   UtObjectRef buffer = ut_rgba8888_buffer_new(100, 100);
 
-  ut_drawable_clear(buffer, 0xe9 / 255.0, 0x54 / 255.0, 0x20 / 255.0, 0);
+  UtObjectRef color =
+      ut_color_new(0xe9 / 255.0, 0x54 / 255.0, 0x20 / 255.0, 1.0);
+  ut_drawable_clear(buffer, color);
 
   size_t width = ut_image_buffer_get_width(buffer);
   size_t height = ut_image_buffer_get_height(buffer);

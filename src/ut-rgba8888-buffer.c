@@ -47,13 +47,12 @@ static uint8_t quantize_channel(double value) {
   return (int)v;
 }
 
-static void ut_rgba8888_buffer_clear(UtObject *object, double red, double green,
-                                     double blue, double alpha) {
+static void ut_rgba8888_buffer_clear(UtObject *object, UtObject *color) {
   UtRgba8888Buffer *self = (UtRgba8888Buffer *)object;
-  uint8_t red8 = quantize_channel(red);
-  uint8_t green8 = quantize_channel(green);
-  uint8_t blue8 = quantize_channel(blue);
-  uint8_t alpha8 = quantize_channel(alpha);
+  uint8_t red8 = quantize_channel(ut_color_get_red(color));
+  uint8_t green8 = quantize_channel(ut_color_get_green(color));
+  uint8_t blue8 = quantize_channel(ut_color_get_blue(color));
+  uint8_t alpha8 = quantize_channel(ut_color_get_alpha(color));
 
   uint8_t *data = ut_uint8_array_get_data(self->data);
   size_t i = 0;

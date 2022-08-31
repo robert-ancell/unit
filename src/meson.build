@@ -30,6 +30,7 @@ ut_sources = [
   'ut-base64.c',
   'ut-boolean.c',
   'ut-cancel.c',
+  'ut-color.c',
   'ut-constant-utf8-string.c',
   'ut-constant-uint8-array.c',
   'ut-cstring.c',
