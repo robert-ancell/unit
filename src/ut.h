@@ -40,6 +40,8 @@
 #include "ut-image-buffer.h"
 #include "ut-input-stream-multiplexer.h"
 #include "ut-input-stream.h"
+#include "ut-int16-array.h"
+#include "ut-int16-list.h"
 #include "ut-int16.h"
 #include "ut-int32-array.h"
 #include "ut-int32-list.h"
