@@ -11,16 +11,6 @@ typedef struct {
   UtObject *data;
 } UtRgba8888Buffer;
 
-static double clamp(double value, double max) {
-  if (value < 0) {
-    return 0;
-  } else if (value > max) {
-    return max;
-  } else {
-    return value;
-  }
-}
-
 static uint8_t quantize_channel(double value) {
   double v = value * 255.0;
   if (v > 255.0) {
@@ -36,6 +26,7 @@ static size_t get_offset(UtRgba8888Buffer *self, size_t x, size_t y) {
   return (y * self->width * 4) + (x * 4);
 }
 
+// FIXME: Set entire row to be more efficient
 static void set_pixel(UtRgba8888Buffer *self, uint8_t *data, size_t x, size_t y,
                       uint8_t red8, uint8_t green8, uint8_t blue8,
                       uint8_t alpha8) {
@@ -44,28 +35,6 @@ static void set_pixel(UtRgba8888Buffer *self, uint8_t *data, size_t x, size_t y,
   data[i + 1] = green8;
   data[i + 2] = blue8;
   data[i + 3] = alpha8;
-}
-
-static void render_box(UtRgba8888Buffer *self, size_t left, size_t top,
-                       size_t right, size_t bottom, UtObject *color) {
-  uint8_t red8 = quantize_channel(ut_color_get_red(color));
-  uint8_t green8 = quantize_channel(ut_color_get_green(color));
-  uint8_t blue8 = quantize_channel(ut_color_get_blue(color));
-  uint8_t alpha8 = quantize_channel(ut_color_get_alpha(color));
-
-  uint8_t *data = ut_uint8_list_get_writable_data(self->data);
-  size_t row_step = (self->width - (right - left)) * 4;
-  size_t i = (top * self->width * 4) + (left * 4);
-  for (size_t y = top; y < bottom; y++) {
-    for (size_t x = left; x < right; x++) {
-      data[i + 0] = red8;
-      data[i + 1] = green8;
-      data[i + 2] = blue8;
-      data[i + 3] = alpha8;
-      i += 4;
-    }
-    i += row_step;
-  }
 }
 
 static void ut_rgba8888_buffer_cleanup(UtObject *object) {
@@ -96,20 +65,141 @@ static UtObject *ut_rgba8888_buffer_get_data(UtObject *object) {
 
 static void ut_rgba8888_buffer_clear(UtObject *object, UtObject *color) {
   UtRgba8888Buffer *self = (UtRgba8888Buffer *)object;
-  render_box(self, 0, 0, self->width, self->height, color);
+
+  uint8_t *data = ut_uint8_list_get_writable_data(self->data);
+
+  uint8_t red8 = quantize_channel(ut_color_get_red(color));
+  uint8_t green8 = quantize_channel(ut_color_get_green(color));
+  uint8_t blue8 = quantize_channel(ut_color_get_blue(color));
+  uint8_t alpha8 = quantize_channel(ut_color_get_alpha(color));
+
+  size_t i = 0;
+  for (size_t y = 0; y < self->height; y++) {
+    for (size_t x = 0; x < self->width; x++) {
+      data[i + 0] = red8;
+      data[i + 1] = green8;
+      data[i + 2] = blue8;
+      data[i + 3] = alpha8;
+      i += 4;
+    }
+  }
 }
 
-static void ut_rgba8888_buffer_render_box(UtObject *object, double x, double y,
-                                          double width, double height,
-                                          UtObject *color) {
+static void get_vertex(UtObject *verticies, uint16_t index, double *x,
+                       double *y) {
+  *x = ut_float64_list_get_element(verticies, index * 2);
+  *y = ut_float64_list_get_element(verticies, (index * 2) + 1);
+}
+
+static void get_triangle(UtObject *verticies, UtObject *triangles, size_t index,
+                         double *x0, double *y0, double *x1, double *y1,
+                         double *x2, double *y2) {
+  uint16_t v0 = ut_uint16_list_get_element(triangles, index * 3);
+  uint16_t v1 = ut_uint16_list_get_element(triangles, (index * 3) + 1);
+  uint16_t v2 = ut_uint16_list_get_element(triangles, (index * 3) + 2);
+
+  get_vertex(verticies, v0, x0, y0);
+  get_vertex(verticies, v1, x1, y1);
+  get_vertex(verticies, v2, x2, y2);
+}
+
+static void swap_coords(double *x0, double *y0, double *x1, double *y1) {
+  double tx = *x0;
+  *x0 = *x1;
+  *x1 = tx;
+  double ty = *y0;
+  *y0 = *y1;
+  *y1 = ty;
+}
+
+static void render_row(UtRgba8888Buffer *self, uint8_t *data, double x0,
+                       double x1, size_t y, uint8_t red8, uint8_t green8,
+                       uint8_t blue8, uint8_t alpha8) {
+  size_t x0_i = (size_t)(x0 + 0.5);
+  size_t x1_i = (size_t)(x1 + 0.5);
+  for (size_t x = x0_i; x < x1_i; x++) {
+    set_pixel(self, data, x, y, red8, green8, blue8, alpha8);
+  }
+}
+
+static void render_triangle(UtRgba8888Buffer *self, uint8_t *data,
+                            UtObject *verticies, UtObject *triangles,
+                            size_t index, uint8_t red8, uint8_t green8,
+                            uint8_t blue8, uint8_t alpha8) {
+  double x0, y0, x1, y1, x2, y2;
+  get_triangle(verticies, triangles, index, &x0, &y0, &x1, &y1, &x2, &y2);
+
+  // Order top to bottom.
+  if (y1 < y0) {
+    swap_coords(&x1, &y1, &x0, &y0);
+  }
+  if (y2 < y0) {
+    swap_coords(&x2, &y2, &x0, &y0);
+  }
+  if (y2 < y1) {
+    swap_coords(&x2, &y2, &x1, &y1);
+  }
+
+  // FIXME: Clip
+
+  size_t y0_i = (size_t)(y0 + 0.5);
+  size_t y1_i = (size_t)(y1 + 0.5);
+  double m_left, m_right;
+
+  if (y0 != y1 && y0 != y2) {
+    if (x1 < x2) {
+      m_left = (x1 - x0) / (y1 - y0);
+      m_right = (x2 - x0) / (y2 - y0);
+    } else {
+      m_left = (x2 - x0) / (y2 - y0);
+      m_right = (x1 - x0) / (y1 - y0);
+    }
+    for (size_t y = y0_i; y < y1_i; y++) {
+      double dy = (y + 0.5) - y0;
+      double x_left = x0 + (m_left * dy);
+      double x_right = x0 + (m_right * dy);
+      render_row(self, data, x_left, x_right, y, red8, green8, blue8, alpha8);
+    }
+  }
+
+  if (y2 != y1 && y2 != y0) {
+    if (x1 < x2) {
+      m_left = (x1 - x2) / (y2 - y1);
+      m_right = (x0 - x2) / (y2 - y0);
+    } else {
+      m_left = (x0 - x2) / (y2 - y0);
+      m_right = (x1 - x2) / (y2 - y1);
+    }
+    size_t y2_i = (size_t)(y2 + 0.5);
+    for (size_t y = y1_i; y < y2_i; y++) {
+      double dy = y2 - (y + 0.5);
+      double x_left = x2 + (m_left * dy);
+      double x_right = x2 + (m_right * dy);
+      render_row(self, data, x_left, x_right, y, red8, green8, blue8, alpha8);
+    }
+  }
+}
+
+static void ut_rgba8888_buffer_render_mesh(UtObject *object,
+                                           UtObject *verticies,
+                                           UtObject *triangles,
+                                           UtObject *color) {
   UtRgba8888Buffer *self = (UtRgba8888Buffer *)object;
 
-  double left = clamp(x, self->width);
-  double top = clamp(y, self->height);
-  double right = clamp(x + width, self->width);
-  double bottom = clamp(y + height, self->height);
+  uint8_t *data = ut_uint8_list_get_writable_data(self->data);
 
-  render_box(self, round(left), round(top), round(right), round(bottom), color);
+  uint8_t red8 = quantize_channel(ut_color_get_red(color));
+  uint8_t green8 = quantize_channel(ut_color_get_green(color));
+  uint8_t blue8 = quantize_channel(ut_color_get_blue(color));
+  uint8_t alpha8 = quantize_channel(ut_color_get_alpha(color));
+
+  // FIXME: Validate size_t verticies_length = ut_list_get_length(verticies);
+
+  size_t n_triangles = ut_list_get_length(triangles) / 3;
+  for (size_t i = 0; i < n_triangles; i++) {
+    render_triangle(self, data, verticies, triangles, i, red8, green8, blue8,
+                    alpha8);
+  }
 }
 
 static UtImageBufferInterface image_buffer_interface = {
@@ -118,7 +208,8 @@ static UtImageBufferInterface image_buffer_interface = {
     .get_data = ut_rgba8888_buffer_get_data};
 
 static UtDrawableInterface drawable_interface = {
-    .clear = ut_rgba8888_buffer_clear, ut_rgba8888_buffer_render_box};
+    .clear = ut_rgba8888_buffer_clear,
+    .render_mesh = ut_rgba8888_buffer_render_mesh};
 
 static UtObjectInterface object_interface = {
     .type_name = "UtRgba8888Buffer",

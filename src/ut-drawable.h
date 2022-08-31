@@ -6,8 +6,8 @@
 
 typedef struct {
   void (*clear)(UtObject *object, UtObject *color);
-  void (*render_box)(UtObject *object, double x, double y, double width,
-                     double height, UtObject *color);
+  void (*render_mesh)(UtObject *object, UtObject *verticies,
+                      UtObject *triangles, UtObject *color);
 } UtDrawableInterface;
 
 extern int ut_drawable_id;
@@ -22,6 +22,14 @@ void ut_drawable_clear(UtObject *object, UtObject *color);
 /// !arg-type color UtColor
 void ut_drawable_render_box(UtObject *object, double x, double y, double width,
                             double height, UtObject *color);
+
+/// Draws [triangles] using [verticies] filled with [color].
+///
+/// !arg-type verticies UtFloat64List
+/// !arg-type triangles UtUint16List
+/// !arg-type color UtColor
+void ut_drawable_render_mesh(UtObject *object, UtObject *verticies,
+                             UtObject *triangles, UtObject *color);
 
 /// Returns [true] if [object] is a [UtDrawable].
 bool ut_object_implements_drawable(UtObject *object);
