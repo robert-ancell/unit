@@ -50,13 +50,13 @@ static void process_auth(UtDBusAuthServer *self, const char *args) {
     mechanism = strdup(args);
     auth_args = strdup("");
   } else {
-    mechanism = strndup(args, mechanism_end - args);
+    mechanism = ut_cstring_new_sized(args, mechanism_end - args);
     auth_args = strdup(mechanism_end + 1);
   }
 
-  if (strcmp(mechanism, "") == 0) {
+  if (ut_cstring_equal(mechanism, "")) {
     send_auth_message(self, "REJECTED EXTERNAL");
-  } else if (strcmp(mechanism, "EXTERNAL") == 0) {
+  } else if (ut_cstring_equal(mechanism, "EXTERNAL")) {
     // FIXME: Actually to the authentication...
     self->authenticated = true;
     send_auth_message(self, "OK");
@@ -82,13 +82,13 @@ static void process_line(UtDBusAuthServer *self, const char *line) {
     command = strdup(line);
     args = strdup("");
   } else {
-    command = strndup(line, command_end - line);
+    command = ut_cstring_new_sized(line, command_end - line);
     args = strdup(command_end + 1);
   }
 
-  if (strcmp(command, "AUTH") == 0) {
+  if (ut_cstring_equal(command, "AUTH")) {
     process_auth(self, args);
-  } else if (strcmp(command, "BEGIN") == 0) {
+  } else if (ut_cstring_equal(command, "BEGIN")) {
     process_begin(self, args);
   } else {
     assert(false);

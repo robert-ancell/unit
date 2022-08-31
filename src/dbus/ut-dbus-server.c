@@ -75,7 +75,7 @@ static const char *get_unique_name(UtDBusServerClient *self) {
 static bool client_has_name(UtDBusServerClient *self, const char *name) {
   size_t n_names = ut_list_get_length(self->names);
   for (size_t i = 0; i < n_names; i++) {
-    if (strcmp(ut_string_list_get_element(self->names, i), name) == 0) {
+    if (ut_cstring_equal(ut_string_list_get_element(self->names, i), name)) {
       return true;
     }
   }
@@ -129,8 +129,8 @@ static void process_server_method_call(UtDBusServerClient *self,
     interface = "";
   }
 
-  if (strcmp(interface, "org.freedesktop.DBus") == 0) {
-    if (strcmp(method_name, "Hello") == 0) {
+  if (ut_cstring_equal(interface, "org.freedesktop.DBus")) {
+    if (ut_cstring_equal(method_name, "Hello")) {
       const char *unique_name = get_unique_name(self);
       UtObjectRef args =
           ut_list_new_from_elements_take(ut_string_new(unique_name), NULL);
@@ -141,7 +141,7 @@ static void process_server_method_call(UtDBusServerClient *self,
       ut_dbus_message_set_serial(message, self->server->next_message_serial);
       self->server->next_message_serial++;
       send_message(self->server, message);
-    } else if (strcmp(method_name, "Ping") == 0) {
+    } else if (ut_cstring_equal(method_name, "Ping")) {
       send_reply(self->server, message, NULL);
     } else {
     }
@@ -165,7 +165,7 @@ static void process_message(UtDBusServerClient *self, UtObject *message) {
   }
 
   const char *destination = ut_dbus_message_get_destination(message);
-  if (strcmp(destination, "org.freedesktop.DBus") == 0) {
+  if (ut_cstring_equal(destination, "org.freedesktop.DBus")) {
     process_server_message(self, message);
   } else {
     send_message(self->server, message);

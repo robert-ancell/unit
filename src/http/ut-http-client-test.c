@@ -40,7 +40,7 @@ static void http_response_cb(void *user_data, UtObject *response) {
   const char *content_type = NULL;
   for (size_t i = 0; i < ut_list_get_length(headers); i++) {
     UtObject *header = ut_object_list_get_element(headers, i);
-    if (strcmp(ut_http_header_get_name(header), "Content-Type") == 0) {
+    if (ut_cstring_equal(ut_http_header_get_name(header), "Content-Type")) {
       content_type = ut_http_header_get_value(header);
     }
   }

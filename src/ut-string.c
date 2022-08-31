@@ -265,7 +265,8 @@ bool ut_string_equal(UtObject *object, UtObject *other) {
   if (!ut_object_implements_string(other)) {
     return false;
   }
-  return strcmp(ut_string_get_text(object), ut_string_get_text(other)) == 0;
+  return ut_cstring_equal(ut_string_get_text(object),
+                          ut_string_get_text(other));
 }
 
 int ut_string_hash(UtObject *object) {

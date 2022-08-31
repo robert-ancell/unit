@@ -258,24 +258,25 @@ static void decode_query_extension_reply(UtObject *object, uint8_t data0,
   ut_x11_buffer_get_padding(data, &offset, 20);
 
   if (present) {
-    if (strcmp(query_extension_data->name, "Generic Event Extension") == 0) {
+    if (ut_cstring_equal(query_extension_data->name,
+                         "Generic Event Extension")) {
       ut_x11_client_send_request_with_reply(
           (UtObject *)self, major_opcode, 0, NULL,
           decode_generic_event_enable_reply, handle_generic_event_enable_error,
           (void *)self, self->cancel);
-    } else if (strcmp(query_extension_data->name, "BIG-REQUESTS") == 0) {
+    } else if (ut_cstring_equal(query_extension_data->name, "BIG-REQUESTS")) {
       ut_x11_client_send_request_with_reply(
           (UtObject *)self, major_opcode, 0, NULL,
           decode_big_requests_enable_reply, handle_big_requests_enable_error,
           (void *)self, self->cancel);
-    } else if (strcmp(query_extension_data->name, "MIT-SHM") == 0) {
+    } else if (ut_cstring_equal(query_extension_data->name, "MIT-SHM")) {
       self->mit_shm_extension = ut_x11_mit_shm_extension_new(
           (UtObject *)self, major_opcode, first_event, first_error);
       ut_list_append(self->extensions, self->mit_shm_extension);
 
       ut_x11_mit_shm_extension_enable(self->mit_shm_extension,
                                       mit_shm_enable_cb, self, self->cancel);
-    } else if (strcmp(query_extension_data->name, "Present") == 0) {
+    } else if (ut_cstring_equal(query_extension_data->name, "Present")) {
       self->present_extension =
           ut_x11_present_extension_new((UtObject *)self, major_opcode);
       ut_list_append(self->extensions, self->present_extension);

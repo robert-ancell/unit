@@ -286,45 +286,45 @@ static UtObject *read_dict(UtObject *data, size_t *offset,
 
 static UtObject *read_value(UtObject *data, size_t *offset,
                             const char *signature) {
-  if (strcmp(signature, "y") == 0) {
+  if (ut_cstring_equal(signature, "y")) {
     return read_byte(data, offset);
-  } else if (strcmp(signature, "b") == 0) {
+  } else if (ut_cstring_equal(signature, "b")) {
     return read_boolean(data, offset);
-  } else if (strcmp(signature, "n") == 0) {
+  } else if (ut_cstring_equal(signature, "n")) {
     return read_int16(data, offset);
-  } else if (strcmp(signature, "q") == 0) {
+  } else if (ut_cstring_equal(signature, "q")) {
     return read_uint16(data, offset);
-  } else if (strcmp(signature, "i") == 0) {
+  } else if (ut_cstring_equal(signature, "i")) {
     return read_int32(data, offset);
-  } else if (strcmp(signature, "u") == 0) {
+  } else if (ut_cstring_equal(signature, "u")) {
     return read_uint32(data, offset);
-  } else if (strcmp(signature, "x") == 0) {
+  } else if (ut_cstring_equal(signature, "x")) {
     return read_int64(data, offset);
-  } else if (strcmp(signature, "t") == 0) {
+  } else if (ut_cstring_equal(signature, "t")) {
     return read_uint64(data, offset);
-  } else if (strcmp(signature, "d") == 0) {
+  } else if (ut_cstring_equal(signature, "d")) {
     return read_double(data, offset);
-  } else if (strcmp(signature, "s") == 0) {
+  } else if (ut_cstring_equal(signature, "s")) {
     return read_string(data, offset);
-  } else if (strcmp(signature, "o") == 0) {
+  } else if (ut_cstring_equal(signature, "o")) {
     return read_object_path(data, offset);
-  } else if (strcmp(signature, "g") == 0) {
+  } else if (ut_cstring_equal(signature, "g")) {
     return read_signature(data, offset);
-  } else if (strncmp(signature, "(", 1) == 0) {
+  } else if (ut_cstring_starts_with(signature, "(")) {
     assert(ut_cstring_ends_with(signature, ")"));
     ut_cstring_ref struct_signature =
         ut_cstring_substring(signature, 1, strlen(signature) - 1);
     return read_struct(data, offset, struct_signature);
-  } else if (strncmp(signature, "a{", 2) == 0) {
+  } else if (ut_cstring_starts_with(signature, "a{")) {
     assert(ut_cstring_ends_with(signature, "}"));
     ut_cstring_ref element_signature =
         ut_cstring_substring(signature, 2, strlen(signature) - 1);
     return read_dict(data, offset, element_signature);
-  } else if (strncmp(signature, "a", 1) == 0) {
+  } else if (ut_cstring_starts_with(signature, "a")) {
     return read_array(data, offset, signature + 1);
-  } else if (strcmp(signature, "v") == 0) {
+  } else if (ut_cstring_equal(signature, "v")) {
     return read_variant(data, offset);
-  } else if (strcmp(signature, "h") == 0) {
+  } else if (ut_cstring_equal(signature, "h")) {
     return read_unix_fd(data, offset);
   } else {
     assert(false);

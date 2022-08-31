@@ -135,7 +135,8 @@ void _ut_assert_cstring_equal(const char *file, int line, const char *a_name,
   if (a_value == NULL && b_value == NULL) {
     return;
   }
-  if (a_value != NULL && b_value != NULL && strcmp(a_value, b_value) == 0) {
+  if (a_value != NULL && b_value != NULL &&
+      ut_cstring_equal(a_value, b_value)) {
     return;
   }
 

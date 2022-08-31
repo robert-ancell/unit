@@ -49,7 +49,7 @@ static char *decode_name(const char *text, size_t *offset) {
     end++;
   }
 
-  char *name = strndup(text + *offset, end - *offset);
+  char *name = ut_cstring_new_sized(text + *offset, end - *offset);
   *offset = end;
   return name;
 }
@@ -88,15 +88,15 @@ static char *decode_reference(const char *text, size_t *offset) {
 }
 
 static UtObject *reference_to_character_data(const char *name) {
-  if (strcmp(name, "lt") == 0) {
+  if (ut_cstring_equal(name, "lt")) {
     return ut_string_new("<");
-  } else if (strcmp(name, "gt") == 0) {
+  } else if (ut_cstring_equal(name, "gt")) {
     return ut_string_new(">");
-  } else if (strcmp(name, "amp") == 0) {
+  } else if (ut_cstring_equal(name, "amp")) {
     return ut_string_new("&");
-  } else if (strcmp(name, "apos") == 0) {
+  } else if (ut_cstring_equal(name, "apos")) {
     return ut_string_new("'");
-  } else if (strcmp(name, "quot") == 0) {
+  } else if (ut_cstring_equal(name, "quot")) {
     return ut_string_new("\"");
   } else {
     // FIXME: Throw error
@@ -159,7 +159,7 @@ static char *decode_attribute_value(const char *text, size_t *offset) {
       return NULL;
     } else if (text[end] == quote) {
       *offset = end + 1;
-      return strndup(text + start, end - start);
+      return ut_cstring_new_sized(text + start, end - start);
     }
     end++;
   }
@@ -272,8 +272,7 @@ static UtObject *decode_element(const char *text, size_t *offset) {
     if (!end_name) {
       return NULL;
     }
-    bool name_matches = strcmp(name, end_name) == 0;
-    if (!name_matches) {
+    if (!ut_cstring_equal(name, end_name)) {
       return NULL;
     }
   }

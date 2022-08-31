@@ -84,11 +84,11 @@ static bool parse_uri(const char *uri, char **scheme, char **user_info,
     return false;
   }
   if (scheme != NULL) {
-    *scheme = strndup(scheme_start, scheme_end - scheme_start);
+    *scheme = ut_cstring_new_sized(scheme_start, scheme_end - scheme_start);
   }
 
   const char *hier_part_start = scheme_end + 1, *hier_part_end;
-  if (strncmp(hier_part_start, "//", 2) == 0) {
+  if (ut_cstring_starts_with(hier_part_start, "//")) {
     const char *authority_start = hier_part_start + 2,
                *authority_end = authority_start;
     while (*authority_end != '\0' && *authority_end != '/' &&
@@ -104,7 +104,8 @@ static bool parse_uri(const char *uri, char **scheme, char **user_info,
     const char *host_start = userinfo_end;
     if (userinfo_end != authority_end) {
       if (user_info != NULL) {
-        *user_info = strndup(userinfo_start, userinfo_end - userinfo_start);
+        *user_info =
+            ut_cstring_new_sized(userinfo_start, userinfo_end - userinfo_start);
       }
       host_start = userinfo_end + 1;
     } else {
@@ -119,13 +120,14 @@ static bool parse_uri(const char *uri, char **scheme, char **user_info,
       host_end++;
     }
     if (host != NULL) {
-      *host = strndup(userinfo_start, host_end - userinfo_start);
+      *host = ut_cstring_new_sized(userinfo_start, host_end - userinfo_start);
     }
 
     if (*host_end == ':') {
       const char *port_start = host_end + 1, *port_end = authority_end;
       if (port != NULL) {
-        ut_cstring_ref port_string = strndup(port_start, port_end - port_start);
+        ut_cstring_ref port_string =
+            ut_cstring_new_sized(port_start, port_end - port_start);
         *port = atoi(port_string);
       }
     } else {
@@ -152,7 +154,7 @@ static bool parse_uri(const char *uri, char **scheme, char **user_info,
     path_end++;
   }
   if (path != NULL) {
-    *path = strndup(path_start, path_end - path_start);
+    *path = ut_cstring_new_sized(path_start, path_end - path_start);
   }
 
   if (*path_end == '?') {
@@ -161,7 +163,7 @@ static bool parse_uri(const char *uri, char **scheme, char **user_info,
       query_end++;
     }
     if (query != NULL) {
-      *query = strndup(query_start, query_end - query_start);
+      *query = ut_cstring_new_sized(query_start, query_end - query_start);
     }
     path_start = query_end;
   } else {
@@ -176,7 +178,8 @@ static bool parse_uri(const char *uri, char **scheme, char **user_info,
       fragment_end++;
     }
     if (fragment != NULL) {
-      *fragment = strndup(fragment_start, fragment_end - fragment_start);
+      *fragment =
+          ut_cstring_new_sized(fragment_start, fragment_end - fragment_start);
     }
     path_start = fragment_end;
   } else {
@@ -217,7 +220,7 @@ static char *get_string(const uint8_t *data, size_t start, size_t end) {
   while (end > start && data[end - 1] == ' ') {
     end--;
   }
-  return strndup((const char *)data + start, end - start);
+  return ut_cstring_new_sized((const char *)data + start, end - start);
 }
 
 static bool parse_status_line(HttpRequest *request, const uint8_t *data,
@@ -375,9 +378,9 @@ void ut_http_client_send_request(UtObject *object, const char *method,
   ut_cstring_ref path = NULL;
   uint16_t port;
   assert(parse_uri(uri, &scheme, NULL, &host, &port, &path, NULL, NULL));
-  assert(strcmp(scheme, "http") == 0);
+  assert(ut_cstring_equal(scheme, "http"));
   assert(host != NULL);
-  if (strcmp(path, "") == 0) {
+  if (ut_cstring_equal(path, "")) {
     ut_cstring_set(&path, "/");
   }
   if (port == 0) {

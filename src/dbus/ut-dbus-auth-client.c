@@ -76,11 +76,11 @@ static void process_line(UtDBusAuthClient *self, const char *line) {
     command = strdup(line);
     args = strdup("");
   } else {
-    command = strndup(line, command_end - line);
+    command = ut_cstring_new_sized(line, command_end - line);
     args = strdup(command_end + 1);
   }
 
-  if (strcmp(command, "REJECTED") == 0) {
+  if (ut_cstring_equal(command, "REJECTED")) {
     if (self->state == AUTH_STATE_PROBE_MECHANISMS) {
       self->state = AUTH_STATE_AUTH_EXTERNAL;
       send_auth_external(self);
@@ -88,7 +88,7 @@ static void process_line(UtDBusAuthClient *self, const char *line) {
       self->error = ut_general_error_new("No supported auth mechanism");
       done(self);
     }
-  } else if (strcmp(command, "OK") == 0) {
+  } else if (ut_cstring_equal(command, "OK")) {
     assert(self->state == AUTH_STATE_AUTH_EXTERNAL);
     free(self->guid);
     self->guid = strdup(args);
@@ -99,12 +99,12 @@ static void process_line(UtDBusAuthClient *self, const char *line) {
       send_auth_end(self);
       done(self);
     }
-  } else if (strcmp(command, "AGREE_UNIX_FD") == 0) {
+  } else if (ut_cstring_equal(command, "AGREE_UNIX_FD")) {
     assert(self->state == AUTH_STATE_NEGOTIATE_UNIX_FD);
     self->unix_fd_supported = true;
     send_auth_end(self);
     done(self);
-  } else if (strcmp(command, "ERROR") == 0) {
+  } else if (ut_cstring_equal(command, "ERROR")) {
     if (self->state == AUTH_STATE_NEGOTIATE_UNIX_FD) {
       send_auth_end(self);
       done(self);

@@ -6,6 +6,10 @@
 
 char *ut_cstring_new(const char *value) { return strdup(value); }
 
+char *ut_cstring_new_sized(const char *value, size_t length) {
+  return strndup(value, length);
+}
+
 char *ut_cstring_new_printf(const char *format, ...) {
   va_list ap;
   va_start(ap, format);
@@ -44,6 +48,14 @@ char *ut_cstring_take(char **string) {
   char *result = *string;
   *string = NULL;
   return result;
+}
+
+bool ut_cstring_equal(const char *value1, const char *value2) {
+  size_t i = 0;
+  while (value1[i] == value2[i] && value1[i] != '\0') {
+    i++;
+  }
+  return value1[i] == '\0' && value2[i] == '\0';
 }
 
 bool ut_cstring_starts_with(const char *value, const char *prefix) {
