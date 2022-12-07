@@ -159,7 +159,9 @@ static void seat_capabilities_cb(void *user_data, uint32_t capabilities) {
 static UtWaylandSeatCallbacks seat_callbacks = {.capabilities =
                                                     seat_capabilities_cb};
 
-static UtXdgToplevelCallbacks toplevel_callbacks = {};
+static void toplevel_close_cb(void *user_data) { ut_event_loop_return(NULL); }
+
+static UtXdgToplevelCallbacks toplevel_callbacks = {.close = toplevel_close_cb};
 
 static UtWaylandSurfaceCallbacks surface_callbacks = {};
 
