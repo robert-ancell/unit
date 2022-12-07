@@ -38,8 +38,8 @@ struct _UtX11MitShmExtension {
   uint8_t first_error;
 };
 
-static void decode_shm_query_version_reply(UtObject *user_data, uint8_t data0,
-                                           UtObject *data) {
+static void decode_shm_enable_reply(UtObject *user_data, uint8_t data0,
+                                    UtObject *data) {
   CallbackData *callback_data = (CallbackData *)user_data;
 
   size_t offset = 0;
@@ -59,8 +59,7 @@ static void decode_shm_query_version_reply(UtObject *user_data, uint8_t data0,
   }
 }
 
-static void handle_shm_query_version_error(UtObject *user_data,
-                                           UtObject *error) {
+static void handle_shm_enable_error(UtObject *user_data, UtObject *error) {
   CallbackData *callback_data = (CallbackData *)user_data;
 
   if (callback_data->callback != NULL) {
@@ -149,7 +148,7 @@ void ut_x11_mit_shm_extension_query_version(
   UtObjectRef request = ut_x11_buffer_new();
   ut_x11_client_send_request_with_reply(
       (UtObject *)self->client, self->major_opcode, 0, request,
-      decode_shm_query_version_reply, handle_shm_query_version_error,
+      decode_shm_enable_reply, handle_shm_enable_error,
       callback_data_new(self, callback, user_data), cancel);
 }
 

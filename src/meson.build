@@ -154,6 +154,7 @@ ut_sources = [
   'x11/ut-x11-name-error.c',
   'x11/ut-x11-pixmap-error.c',
   'x11/ut-x11-present-extension.c',
+  'x11/ut-x11-randr-extension.c',
   'x11/ut-x11-rectangle.c',
   'x11/ut-x11-request-error.c',
   'x11/ut-x11-shape-extension.c',

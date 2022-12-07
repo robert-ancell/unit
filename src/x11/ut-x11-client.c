@@ -9,6 +9,7 @@
 #include "ut-x11-generic-event-extension.h"
 #include "ut-x11-mit-shm-extension.h"
 #include "ut-x11-present-extension.h"
+#include "ut-x11-randr-extension.h"
 #include "ut-x11-shape-extension.h"
 #include "ut-x11-sync-extension.h"
 #include "ut-x11-xfixes-extension.h"
@@ -122,6 +123,7 @@ struct _UtX11Client {
   UtObject *sync_extension;
   UtObject *xfixes_extension;
   UtObject *present_extension;
+  UtObject *randr_extension;
 
   const UtX11EventCallbacks *event_callbacks;
   UtX11ClientErrorCallback error_callback;
@@ -188,6 +190,9 @@ static void sync_initialize_cb(void *user_data, uint8_t version_major,
 
 static void xfixes_query_version_cb(void *user_data, uint32_t version_major,
                                     uint32_t version_minor, UtObject *error) {}
+
+static void randr_query_version_cb(void *user_data, uint32_t version_major,
+                                   uint32_t version_minor, UtObject *error) {}
 
 static void present_query_version_cb(void *user_data, uint32_t version_major,
                                      uint32_t version_minor, UtObject *error) {}
@@ -295,6 +300,22 @@ static void query_xfixes_cb(void *user_data, bool present, uint8_t major_opcode,
 
     ut_x11_xfixes_extension_query_version(
         self->xfixes_extension, xfixes_query_version_cb, self, self->cancel);
+  }
+}
+
+static void query_randr_cb(void *user_data, bool present, uint8_t major_opcode,
+                           uint8_t first_event, uint8_t first_error,
+                           UtObject *error) {
+  UtX11Client *self = user_data;
+
+  if (present) {
+    self->randr_extension = ut_x11_randr_extension_new(
+        (UtObject *)self, major_opcode, first_event, first_error,
+        self->event_callbacks, self->callback_user_data, self->callback_cancel);
+    ut_list_append(self->extensions, self->randr_extension);
+
+    ut_x11_randr_extension_query_version(
+        self->randr_extension, randr_query_version_cb, self, self->cancel);
   }
 }
 
@@ -497,6 +518,8 @@ static size_t decode_setup_success(UtX11Client *self, UtObject *data) {
   ut_x11_core_query_extension(self->core, "SYNC", query_sync_cb, self,
                               self->cancel);
   ut_x11_core_query_extension(self->core, "XFIXES", query_xfixes_cb, self,
+                              self->cancel);
+  ut_x11_core_query_extension(self->core, "RANDR", query_randr_cb, self,
                               self->cancel);
   ut_x11_core_query_extension(self->core, "Present", query_present_cb, self,
                               self->cancel);
@@ -751,6 +774,7 @@ static void ut_x11_client_cleanup(UtObject *object) {
   ut_object_unref(self->mit_shm_extension);
   ut_object_unref(self->sync_extension);
   ut_object_unref(self->xfixes_extension);
+  ut_object_unref(self->randr_extension);
   ut_object_unref(self->present_extension);
   ut_object_unref(self->callback_cancel);
   ut_object_unref(self->connect_cancel);
