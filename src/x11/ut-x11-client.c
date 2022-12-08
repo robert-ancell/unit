@@ -1010,7 +1010,7 @@ static UtObject *decode_generic_event(UtX11Client *self, UtObject *data,
   }
 
   *length = total_length;
-  return event;
+  return ut_object_ref(event);
 }
 
 static size_t decode_event(UtX11Client *self, UtObject *data) {
