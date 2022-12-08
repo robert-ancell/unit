@@ -242,7 +242,8 @@ static void handle_big_requests_enable_error(UtObject *object,
 
 static void mit_shm_enable_cb(void *user_data, UtObject *error) {}
 
-static void present_enable_cb(void *user_data, UtObject *error) {}
+static void present_query_version_cb(void *user_data, uint32_t version_major,
+                                     uint32_t version_minor, UtObject *error) {}
 
 static void decode_query_extension_reply(UtObject *object, uint8_t data0,
                                          UtObject *data) {
@@ -280,8 +281,9 @@ static void decode_query_extension_reply(UtObject *object, uint8_t data0,
           ut_x11_present_extension_new((UtObject *)self, major_opcode);
       ut_list_append(self->extensions, self->present_extension);
 
-      ut_x11_present_extension_enable(self->present_extension,
-                                      present_enable_cb, self, self->cancel);
+      ut_x11_present_extension_query_version(self->present_extension,
+                                             present_query_version_cb, self,
+                                             self->cancel);
 
       // FIXME: More reliably do this on the last setup request.
       self->connect_callback(self->connect_user_data, NULL);

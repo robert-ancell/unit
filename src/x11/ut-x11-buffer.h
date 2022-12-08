@@ -25,6 +25,8 @@ void ut_x11_buffer_append_int16(UtObject *object, int16_t value);
 
 void ut_x11_buffer_append_card32(UtObject *object, uint32_t value);
 
+void ut_x11_buffer_append_card64(UtObject *object, uint64_t value);
+
 void ut_x11_buffer_append_value_card16(UtObject *object, uint16_t value);
 
 void ut_x11_buffer_append_value_int16(UtObject *object, int16_t value);
@@ -50,6 +52,8 @@ uint16_t ut_x11_buffer_get_card16(UtObject *object, size_t *offset);
 int16_t ut_x11_buffer_get_int16(UtObject *object, size_t *offset);
 
 uint32_t ut_x11_buffer_get_card32(UtObject *object, size_t *offset);
+
+uint64_t ut_x11_buffer_get_card64(UtObject *object, size_t *offset);
 
 char *ut_x11_buffer_get_string8(UtObject *object, size_t *offset,
                                 size_t length);

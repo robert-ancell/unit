@@ -74,6 +74,14 @@ static void connect_cb(void *user_data, UtObject *error) {
   ut_x11_client_list_extensions(client, list_extensions_cb, NULL, NULL);
 
   window = ut_x11_client_create_window(client, 0, 0, width, height);
+
+  UtObject *present = ut_x11_client_get_present_extension(client);
+  ut_x11_present_extension_select_input(
+      present, window,
+      UT_X11_PRESENT_CONFIGURE_NOTIFY_MASK |
+          UT_X11_PRESENT_COMPLETE_NOTIFY_MASK |
+          UT_X11_PRESENT_IDLE_NOTIFY_MASK);
+
   ut_x11_client_map_window(client, window);
 
   UtObject *shm = ut_x11_client_get_mit_shm_extension(client);
