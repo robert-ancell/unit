@@ -27,6 +27,9 @@ typedef struct {
   UtObject object;
   UtObject *client;
   uint8_t major_opcode;
+  const UtX11PresentEventCallbacks *event_callbacks;
+  void *user_data;
+  UtObject *cancel;
 } UtX11PresentExtension;
 
 static void query_version_reply_cb(UtObject *object, uint8_t data0,
@@ -54,7 +57,8 @@ static void query_version_error_cb(UtObject *object, UtObject *error) {
   }
 }
 
-static UtObject *decode_configure_notify(UtObject *data) {
+static void decode_configure_notify(UtX11PresentExtension *self,
+                                    UtObject *data) {
   size_t offset = 0;
   ut_x11_buffer_get_padding(data, &offset, 2);
   uint32_t event_id = ut_x11_buffer_get_card32(data, &offset);
@@ -68,12 +72,17 @@ static UtObject *decode_configure_notify(UtObject *data) {
   uint16_t pixmap_width = ut_x11_buffer_get_card16(data, &offset);
   uint16_t pixmap_height = ut_x11_buffer_get_card16(data, &offset);
   uint32_t pixmap_flags = ut_x11_buffer_get_card16(data, &offset);
-  return ut_x11_present_configure_notify_new(event_id, window, x, y, width,
-                                             height, off_x, off_y, pixmap_width,
-                                             pixmap_height, pixmap_flags);
+
+  if (self->event_callbacks->configure_notify != NULL &&
+      !ut_cancel_is_active(self->cancel)) {
+    self->event_callbacks->configure_notify(
+        self->user_data, event_id, window, x, y, width, height, off_x, off_y,
+        pixmap_width, pixmap_height, pixmap_flags);
+  }
 }
 
-static UtObject *decode_complete_notify(UtObject *data) {
+static void decode_complete_notify(UtX11PresentExtension *self,
+                                   UtObject *data) {
   size_t offset = 0;
   uint8_t kind = ut_x11_buffer_get_card8(data, &offset);
   uint8_t mode = ut_x11_buffer_get_card8(data, &offset);
@@ -82,11 +91,15 @@ static UtObject *decode_complete_notify(UtObject *data) {
   uint32_t serial = ut_x11_buffer_get_card32(data, &offset);
   uint64_t ust = ut_x11_buffer_get_card64(data, &offset);
   uint64_t msc = ut_x11_buffer_get_card64(data, &offset);
-  return ut_x11_present_complete_notify_new(kind, mode, event_id, window,
-                                            serial, ust, msc);
+
+  if (self->event_callbacks->complete_notify != NULL &&
+      !ut_cancel_is_active(self->cancel)) {
+    self->event_callbacks->complete_notify(self->user_data, kind, mode,
+                                           event_id, window, serial, ust, msc);
+  }
 }
 
-static UtObject *decode_idle_notify(UtObject *data) {
+static void decode_idle_notify(UtX11PresentExtension *self, UtObject *data) {
   size_t offset = 0;
   ut_x11_buffer_get_padding(data, &offset, 2);
   uint32_t event_id = ut_x11_buffer_get_card32(data, &offset);
@@ -94,32 +107,42 @@ static UtObject *decode_idle_notify(UtObject *data) {
   uint32_t serial = ut_x11_buffer_get_card32(data, &offset);
   uint32_t pixmap = ut_x11_buffer_get_card32(data, &offset);
   uint32_t idle_fence = ut_x11_buffer_get_card32(data, &offset);
-  return ut_x11_present_idle_notify_new(event_id, window, serial, pixmap,
-                                        idle_fence);
+
+  if (self->event_callbacks->idle_notify != NULL &&
+      !ut_cancel_is_active(self->cancel)) {
+    self->event_callbacks->idle_notify(self->user_data, event_id, window,
+                                       serial, pixmap, idle_fence);
+  }
 }
 
-static UtObject *ut_x11_present_extension_decode_generic_event(
-    UtObject *object, uint8_t major_opcode, uint16_t code, UtObject *data) {
+static bool ut_x11_present_extension_decode_generic_event(UtObject *object,
+                                                          uint8_t major_opcode,
+                                                          uint16_t code,
+                                                          UtObject *data) {
   UtX11PresentExtension *self = (UtX11PresentExtension *)object;
 
   if (major_opcode != self->major_opcode) {
-    return NULL;
+    return false;
   }
 
   switch (code) {
   case 0:
-    return decode_configure_notify(data);
+    decode_configure_notify(self, data);
+    return true;
   case 1:
-    return decode_complete_notify(data);
+    decode_complete_notify(self, data);
+    return true;
   case 2:
-    return decode_idle_notify(data);
+    decode_idle_notify(self, data);
+    return true;
   default:
-    return NULL;
+    return false;
   }
 }
 
 static UtObject *ut_x11_present_extension_decode_error(UtObject *object,
                                                        UtObject *data) {
+  // FIXME
   return NULL;
 }
 
@@ -138,12 +161,18 @@ static UtObjectInterface object_interface = {
     .interfaces = {{&ut_x11_extension_id, &x11_extension_interface},
                    {NULL, NULL}}};
 
-UtObject *ut_x11_present_extension_new(UtObject *client, uint8_t major_opcode) {
+UtObject *
+ut_x11_present_extension_new(UtObject *client, uint8_t major_opcode,
+                             const UtX11PresentEventCallbacks *event_callbacks,
+                             void *user_data, UtObject *cancel) {
   UtObject *object =
       ut_object_new(sizeof(UtX11PresentExtension), &object_interface);
   UtX11PresentExtension *self = (UtX11PresentExtension *)object;
   self->client = client;
   self->major_opcode = major_opcode;
+  self->event_callbacks = event_callbacks;
+  self->user_data = user_data;
+  self->cancel = cancel;
   return object;
 }
 

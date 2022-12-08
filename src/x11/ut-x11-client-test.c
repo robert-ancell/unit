@@ -13,34 +13,92 @@ static uint32_t window = 0;
 static uint32_t pixmap = 0;
 static uint32_t gc = 0;
 
-static void event_cb(void *user_data, UtObject *event) {
-  if (ut_object_is_x11_enter_notify(event)) {
-    printf("EnterNotify\n");
-  } else if (ut_object_is_x11_leave_notify(event)) {
-    printf("LeaveNotify\n");
-  } else if (ut_object_is_x11_motion_notify(event)) {
-    printf("MotionNotify (%d,%d)\n", ut_x11_motion_notify_get_x(event),
-           ut_x11_motion_notify_get_y(event));
-  } else if (ut_object_is_x11_button_press(event)) {
-    printf("ButtonPress %d\n", ut_x11_button_press_get_button(event));
-  } else if (ut_object_is_x11_button_release(event)) {
-    printf("ButtonRelease %d\n", ut_x11_button_release_get_button(event));
-  } else if (ut_object_is_x11_focus_in(event)) {
-    printf("FocusIn\n");
-  } else if (ut_object_is_x11_focus_out(event)) {
-    printf("FocusOut\n");
-  } else if (ut_object_is_x11_key_press(event)) {
-    printf("KeyPress %d\n", ut_x11_key_press_get_keycode(event));
-  } else if (ut_object_is_x11_key_release(event)) {
-    printf("KeyRelease %d\n", ut_x11_key_release_get_keycode(event));
-  } else if (ut_object_is_x11_expose(event)) {
-    ut_x11_client_copy_area(client, pixmap, window, gc, 0, 0, 0, 0, width,
-                            height);
-  } else {
-    ut_cstring_ref s = ut_object_to_string(event);
-    printf("%s\n", s);
-  }
+static void enter_notify_cb(void *user_data, uint32_t window, int16_t x,
+                            int16_t y) {
+  printf("EnterNotify\n");
 }
+
+static void leave_notify_cb(void *user_data, uint32_t window, int16_t x,
+                            int16_t y) {
+  printf("LeaveNotify\n");
+}
+
+static void motion_notify_cb(void *user_data, uint32_t window, int16_t x,
+                             int16_t y) {
+  printf("MotionNotify (%d,%d)\n", x, y);
+}
+
+static void button_press_cb(void *user_data, uint32_t window, uint8_t button,
+                            int16_t x, int16_t y) {
+  printf("ButtonPress %d\n", button);
+}
+
+static void button_release_cb(void *user_data, uint32_t window, uint8_t button,
+                              int16_t x, int16_t y) {
+  printf("ButtonRelease %d\n", button);
+}
+
+static void focus_in_cb(void *user_data, uint32_t window) {
+  printf("FocusIn\n");
+}
+
+static void focus_out_cb(void *user_data, uint32_t window) {
+  printf("FocusOut\n");
+}
+
+static void key_press_cb(void *user_datao, uint32_t window, uint8_t keycode,
+                         int16_t x, int16_t y) {
+  printf("KeyPress %d\n", keycode);
+}
+
+static void key_release_cb(void *user_data, uint32_t window, uint8_t keycode,
+                           int16_t x, int16_t y) {
+  printf("KeyRelease %d\n", keycode);
+}
+
+static void expose_cb(void *user_data, uint32_t window, uint16_t x, uint16_t y,
+                      uint16_t width, uint16_t height) {
+  ut_x11_client_copy_area(client, pixmap, window, gc, 0, 0, 0, 0, width,
+                          height);
+}
+
+static UtX11EventCallbacks event_callbacks = {.enter_notify = enter_notify_cb,
+                                              .leave_notify = leave_notify_cb,
+                                              .motion_notify = motion_notify_cb,
+                                              .button_press = button_press_cb,
+                                              .button_release =
+                                                  button_release_cb,
+                                              .focus_in = focus_in_cb,
+                                              .focus_out = focus_out_cb,
+                                              .key_press = key_press_cb,
+                                              .key_release = key_release_cb,
+                                              .expose = expose_cb};
+
+static void present_configure_notify_cb(
+    void *user_data, uint32_t event_id, uint32_t window, int16_t x, int16_t y,
+    uint16_t width, uint16_t height, int16_t off_x, int16_t off_y,
+    uint16_t pixmap_width, uint16_t pixmap_height, uint32_t pixmap_flags) {
+  printf("PresentConfigureNotify\n");
+}
+
+static void present_complete_notify_cb(void *user_data, uint8_t kind,
+                                       uint8_t mode, uint32_t event_id,
+                                       uint32_t window, uint32_t serial,
+                                       uint64_t ust, uint64_t msc) {
+  printf("PresentCompleteNotify\n");
+}
+
+static void present_idle_notify_cb(void *user_data, uint32_t event_id,
+                                   uint32_t window, uint32_t serial,
+                                   uint32_t pixmap, uint32_t idle_fence) {
+  printf("PresentIdleNotify\n");
+}
+
+static UtX11PresentEventCallbacks present_event_callbacks = {
+    .configure_notify = present_configure_notify_cb,
+    .complete_notify = present_complete_notify_cb,
+    .idle_notify = present_idle_notify_cb,
+};
 
 static void error_cb(void *user_data, UtObject *error) {
   ut_cstring_ref s = ut_object_to_string(error);
@@ -118,7 +176,8 @@ static void connect_cb(void *user_data, UtObject *error) {
 }
 
 int main(int argc, char **argv) {
-  client = ut_x11_client_new(event_cb, error_cb, NULL, NULL);
+  client = ut_x11_client_new(&event_callbacks, &present_event_callbacks,
+                             error_cb, NULL, NULL);
   ut_x11_client_connect(client, connect_cb, NULL, NULL);
 
   ut_event_loop_run();

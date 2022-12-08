@@ -152,7 +152,8 @@ struct _UtX11Client {
   UtObject *mit_shm_extension;
   UtObject *present_extension;
 
-  UtX11ClientEventCallback event_callback;
+  const UtX11EventCallbacks *event_callbacks;
+  const UtX11PresentEventCallbacks *present_event_callbacks;
   UtX11ClientErrorCallback error_callback;
   void *callback_user_data;
   UtObject *callback_cancel;
@@ -249,8 +250,9 @@ static void decode_query_extension_reply(UtObject *object, uint8_t data0,
       ut_x11_mit_shm_extension_enable(self->mit_shm_extension,
                                       mit_shm_enable_cb, self, self->cancel);
     } else if (ut_cstring_equal(query_extension_data->name, "Present")) {
-      self->present_extension =
-          ut_x11_present_extension_new((UtObject *)self, major_opcode);
+      self->present_extension = ut_x11_present_extension_new(
+          (UtObject *)self, major_opcode, self->present_event_callbacks,
+          self->callback_user_data, self->callback_cancel);
       ut_list_append(self->extensions, self->present_extension);
 
       ut_x11_present_extension_query_version(self->present_extension,
@@ -735,7 +737,7 @@ static size_t decode_reply(UtX11Client *self, UtObject *data) {
   return payload_length;
 }
 
-static UtObject *decode_key_press(UtObject *data) {
+static void decode_key_press(UtX11Client *self, UtObject *data) {
   size_t offset = 0;
   assert((ut_x11_buffer_get_card8(data, &offset) & 0x7f) == 2);
   uint8_t keycode = ut_x11_buffer_get_card8(data, &offset);
@@ -752,10 +754,14 @@ static UtObject *decode_key_press(UtObject *data) {
   ut_x11_buffer_get_card8(data, &offset);  // same_screen
   ut_x11_buffer_get_padding(data, &offset, 1);
 
-  return ut_x11_key_press_new(window, keycode, x, y);
+  if (self->event_callbacks->key_press != NULL &&
+      !ut_cancel_is_active(self->callback_cancel)) {
+    self->event_callbacks->key_press(self->callback_user_data, window, keycode,
+                                     x, y);
+  }
 }
 
-static UtObject *decode_key_release(UtObject *data) {
+static void decode_key_release(UtX11Client *self, UtObject *data) {
   size_t offset = 0;
   assert((ut_x11_buffer_get_card8(data, &offset) & 0x7f) == 3);
   uint8_t keycode = ut_x11_buffer_get_card8(data, &offset);
@@ -772,10 +778,14 @@ static UtObject *decode_key_release(UtObject *data) {
   ut_x11_buffer_get_card8(data, &offset);  // same_screen
   ut_x11_buffer_get_padding(data, &offset, 1);
 
-  return ut_x11_key_release_new(window, keycode, x, y);
+  if (self->event_callbacks->key_release != NULL &&
+      !ut_cancel_is_active(self->callback_cancel)) {
+    self->event_callbacks->key_release(self->callback_user_data, window,
+                                       keycode, x, y);
+  }
 }
 
-static UtObject *decode_button_press(UtObject *data) {
+static void decode_button_press(UtX11Client *self, UtObject *data) {
   size_t offset = 0;
   assert((ut_x11_buffer_get_card8(data, &offset) & 0x7f) == 4);
   uint8_t button = ut_x11_buffer_get_card8(data, &offset);
@@ -792,10 +802,14 @@ static UtObject *decode_button_press(UtObject *data) {
   ut_x11_buffer_get_card8(data, &offset);  // same_screen
   ut_x11_buffer_get_padding(data, &offset, 1);
 
-  return ut_x11_button_press_new(window, button, x, y);
+  if (self->event_callbacks->button_press != NULL &&
+      !ut_cancel_is_active(self->callback_cancel)) {
+    self->event_callbacks->button_press(self->callback_user_data, window,
+                                        button, x, y);
+  }
 }
 
-static UtObject *decode_button_release(UtObject *data) {
+static void decode_button_release(UtX11Client *self, UtObject *data) {
   size_t offset = 0;
   assert((ut_x11_buffer_get_card8(data, &offset) & 0x7f) == 5);
   uint8_t button = ut_x11_buffer_get_card8(data, &offset);
@@ -812,10 +826,14 @@ static UtObject *decode_button_release(UtObject *data) {
   ut_x11_buffer_get_card8(data, &offset);  // same_screen
   ut_x11_buffer_get_padding(data, &offset, 1);
 
-  return ut_x11_button_release_new(window, button, x, y);
+  if (self->event_callbacks->button_release != NULL &&
+      !ut_cancel_is_active(self->callback_cancel)) {
+    self->event_callbacks->button_release(self->callback_user_data, window,
+                                          button, x, y);
+  }
 }
 
-static UtObject *decode_motion_notify(UtObject *data) {
+static void decode_motion_notify(UtX11Client *self, UtObject *data) {
   size_t offset = 0;
   assert((ut_x11_buffer_get_card8(data, &offset) & 0x7f) == 6);
   ut_x11_buffer_get_card8(data, &offset);  // detail
@@ -832,10 +850,14 @@ static UtObject *decode_motion_notify(UtObject *data) {
   ut_x11_buffer_get_card8(data, &offset);  // same_screen
   ut_x11_buffer_get_padding(data, &offset, 1);
 
-  return ut_x11_motion_notify_new(window, x, y);
+  if (self->event_callbacks->motion_notify != NULL &&
+      !ut_cancel_is_active(self->callback_cancel)) {
+    self->event_callbacks->motion_notify(self->callback_user_data, window, x,
+                                         y);
+  }
 }
 
-static UtObject *decode_enter_notify(UtObject *data) {
+static void decode_enter_notify(UtX11Client *self, UtObject *data) {
   size_t offset = 0;
   assert((ut_x11_buffer_get_card8(data, &offset) & 0x7f) == 7);
   ut_x11_buffer_get_card8(data, &offset);  // detail
@@ -852,10 +874,13 @@ static UtObject *decode_enter_notify(UtObject *data) {
   ut_x11_buffer_get_card8(data, &offset);  // mode
   ut_x11_buffer_get_card8(data, &offset);  // same_screen, focus
 
-  return ut_x11_enter_notify_new(window, x, y);
+  if (self->event_callbacks->enter_notify != NULL &&
+      !ut_cancel_is_active(self->callback_cancel)) {
+    self->event_callbacks->enter_notify(self->callback_user_data, window, x, y);
+  }
 }
 
-static UtObject *decode_leave_notify(UtObject *data) {
+static void decode_leave_notify(UtX11Client *self, UtObject *data) {
   size_t offset = 0;
   assert((ut_x11_buffer_get_card8(data, &offset) & 0x7f) == 8);
   ut_x11_buffer_get_card8(data, &offset);  // detail
@@ -872,10 +897,13 @@ static UtObject *decode_leave_notify(UtObject *data) {
   ut_x11_buffer_get_card8(data, &offset);  // mode
   ut_x11_buffer_get_card8(data, &offset);  // same_screen, focus
 
-  return ut_x11_leave_notify_new(window, x, y);
+  if (self->event_callbacks->leave_notify != NULL &&
+      !ut_cancel_is_active(self->callback_cancel)) {
+    self->event_callbacks->leave_notify(self->callback_user_data, window, x, y);
+  }
 }
 
-static UtObject *decode_focus_in(UtObject *data) {
+static void decode_focus_in(UtX11Client *self, UtObject *data) {
   size_t offset = 0;
   assert((ut_x11_buffer_get_card8(data, &offset) & 0x7f) == 9);
   ut_x11_buffer_get_card8(data, &offset);  // detail
@@ -883,10 +911,13 @@ static UtObject *decode_focus_in(UtObject *data) {
   uint32_t window = ut_x11_buffer_get_card32(data, &offset);
   ut_x11_buffer_get_card8(data, &offset); // mode
 
-  return ut_x11_focus_in_new(window);
+  if (self->event_callbacks->focus_in != NULL &&
+      !ut_cancel_is_active(self->callback_cancel)) {
+    self->event_callbacks->focus_in(self->callback_user_data, window);
+  }
 }
 
-static UtObject *decode_focus_out(UtObject *data) {
+static void decode_focus_out(UtX11Client *self, UtObject *data) {
   size_t offset = 0;
   assert((ut_x11_buffer_get_card8(data, &offset) & 0x7f) == 10);
   ut_x11_buffer_get_card8(data, &offset);  // detail
@@ -894,10 +925,13 @@ static UtObject *decode_focus_out(UtObject *data) {
   uint32_t window = ut_x11_buffer_get_card32(data, &offset);
   ut_x11_buffer_get_card8(data, &offset); // mode
 
-  return ut_x11_focus_out_new(window);
+  if (self->event_callbacks->focus_out != NULL &&
+      !ut_cancel_is_active(self->callback_cancel)) {
+    self->event_callbacks->focus_out(self->callback_user_data, window);
+  }
 }
 
-static UtObject *decode_expose(UtObject *data) {
+static void decode_expose(UtX11Client *self, UtObject *data) {
   size_t offset = 0;
   assert((ut_x11_buffer_get_card8(data, &offset) & 0x7f) == 12);
   ut_x11_buffer_get_padding(data, &offset, 1);
@@ -910,19 +944,29 @@ static UtObject *decode_expose(UtObject *data) {
   ut_x11_buffer_get_card16(data, &offset); // count
   ut_x11_buffer_get_padding(data, &offset, 14);
 
-  return ut_x11_expose_new(window, x, y, width, height);
+  if (self->event_callbacks->expose != NULL &&
+      !ut_cancel_is_active(self->callback_cancel)) {
+    self->event_callbacks->expose(self->callback_user_data, window, x, y, width,
+                                  height);
+  }
 }
 
-static UtObject *decode_no_expose(UtObject *data) {
+static void decode_no_expose(UtX11Client *self, UtObject *data) {
   size_t offset = 0;
   assert((ut_x11_buffer_get_card8(data, &offset) & 0x7f) == 14);
   ut_x11_buffer_get_padding(data, &offset, 1);
   ut_x11_buffer_get_card16(data, &offset); // sequence_number
+  uint32_t drawable = ut_x11_buffer_get_card32(data, &offset);
+  ut_x11_buffer_get_card16(data, &offset); // minor-opcode
+  ut_x11_buffer_get_card8(data, &offset);  // major-opcode
 
-  return ut_x11_no_expose_new();
+  if (self->event_callbacks->no_expose != NULL &&
+      !ut_cancel_is_active(self->callback_cancel)) {
+    self->event_callbacks->no_expose(self->callback_user_data, drawable);
+  }
 }
 
-static UtObject *decode_map_notify(UtObject *data) {
+static void decode_map_notify(UtX11Client *self, UtObject *data) {
   size_t offset = 0;
   assert((ut_x11_buffer_get_card8(data, &offset) & 0x7f) == 19);
   ut_x11_buffer_get_padding(data, &offset, 1);
@@ -932,10 +976,14 @@ static UtObject *decode_map_notify(UtObject *data) {
   bool override_redirect = ut_x11_buffer_get_bool(data, &offset);
   ut_x11_buffer_get_padding(data, &offset, 19);
 
-  return ut_x11_map_notify_new(event, window, override_redirect);
+  if (self->event_callbacks->map_notify != NULL &&
+      !ut_cancel_is_active(self->callback_cancel)) {
+    self->event_callbacks->map_notify(self->callback_user_data, event, window,
+                                      override_redirect);
+  }
 }
 
-static UtObject *decode_reparent_notify(UtObject *data) {
+static void decode_reparent_notify(UtX11Client *self, UtObject *data) {
   size_t offset = 0;
   assert((ut_x11_buffer_get_card8(data, &offset) & 0x7f) == 21);
   ut_x11_buffer_get_padding(data, &offset, 1);
@@ -948,11 +996,15 @@ static UtObject *decode_reparent_notify(UtObject *data) {
   bool override_redirect = ut_x11_buffer_get_bool(data, &offset);
   ut_x11_buffer_get_padding(data, &offset, 11);
 
-  return ut_x11_reparent_notify_new(event, window, parent, x, y,
-                                    override_redirect);
+  if (self->event_callbacks->reparent_notify != NULL &&
+      !ut_cancel_is_active(self->callback_cancel)) {
+    self->event_callbacks->reparent_notify(self->callback_user_data, event,
+                                           window, parent, x, y,
+                                           override_redirect);
+  }
 }
 
-static UtObject *decode_configure_notify(UtObject *data) {
+static void decode_configure_notify(UtX11Client *self, UtObject *data) {
   size_t offset = 0;
   assert((ut_x11_buffer_get_card8(data, &offset) & 0x7f) == 22);
   ut_x11_buffer_get_padding(data, &offset, 1);
@@ -968,10 +1020,14 @@ static UtObject *decode_configure_notify(UtObject *data) {
   ut_x11_buffer_get_card8(data, &offset);  // override_redirect
   ut_x11_buffer_get_padding(data, &offset, 5);
 
-  return ut_x11_configure_notify_new(window, x, y, width, height);
+  if (self->event_callbacks->configure_notify != NULL &&
+      !ut_cancel_is_active(self->callback_cancel)) {
+    self->event_callbacks->configure_notify(self->callback_user_data, window, x,
+                                            y, width, height);
+  }
 }
 
-static UtObject *decode_property_notify(UtObject *data) {
+static void decode_property_notify(UtX11Client *self, UtObject *data) {
   size_t offset = 0;
   assert((ut_x11_buffer_get_card8(data, &offset) & 0x7f) == 28);
   ut_x11_buffer_get_padding(data, &offset, 1);
@@ -982,11 +1038,14 @@ static UtObject *decode_property_notify(UtObject *data) {
   ut_x11_buffer_get_card8(data, &offset);  // state
   ut_x11_buffer_get_padding(data, &offset, 15);
 
-  return ut_x11_property_notify_new(window, atom);
+  if (self->event_callbacks->property_notify != NULL &&
+      !ut_cancel_is_active(self->callback_cancel)) {
+    self->event_callbacks->property_notify(self->callback_user_data, window,
+                                           atom);
+  }
 }
 
-static UtObject *decode_generic_event(UtX11Client *self, UtObject *data,
-                                      size_t *length) {
+static size_t decode_generic_event(UtX11Client *self, UtObject *data) {
   size_t offset = 0;
   assert((ut_x11_buffer_get_card8(data, &offset) & 0x7f) == 35);
   uint8_t major_opcode = ut_x11_buffer_get_card8(data, &offset);
@@ -996,26 +1055,40 @@ static UtObject *decode_generic_event(UtX11Client *self, UtObject *data,
 
   size_t total_length = 32 + extra_length * 4;
   if (ut_list_get_length(data) < total_length) {
-    return NULL;
+    return 0;
   }
   UtObjectRef event_data = ut_list_get_sublist(data, 10, total_length);
 
-  UtObjectRef event = NULL;
   size_t extensions_length = ut_list_get_length(self->extensions);
   for (size_t i = 0; i < extensions_length; i++) {
     UtObject *extension = ut_object_list_get_element(self->extensions, i);
-    event = ut_x11_extension_decode_generic_event(extension, major_opcode, code,
-                                                  event_data);
-    if (event != NULL) {
-      break;
+    // FIXME: Major opcode doesn't need passing - we know which extension this
+    // is for
+    if (ut_x11_extension_decode_generic_event(extension, major_opcode, code,
+                                              event_data)) {
+      return total_length;
     }
   }
-  if (event == NULL) {
-    event = ut_x11_unknown_generic_event_new(major_opcode, code);
+
+  if (self->event_callbacks->unknown_generic_event != NULL &&
+      !ut_cancel_is_active(self->callback_cancel)) {
+    self->event_callbacks->unknown_generic_event(self->callback_user_data,
+                                                 major_opcode, code);
   }
 
-  *length = total_length;
-  return ut_object_ref(event);
+  return total_length;
+}
+
+static bool decode_extension_event(UtX11Client *self, UtObject *data) {
+  size_t extensions_length = ut_list_get_length(self->extensions);
+  for (size_t i = 0; i < extensions_length; i++) {
+    UtObject *extension = ut_object_list_get_element(self->extensions, i);
+    if (ut_x11_extension_decode_event(extension, data)) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 static size_t decode_event(UtX11Client *self, UtObject *data) {
@@ -1028,64 +1101,64 @@ static size_t decode_event(UtX11Client *self, UtObject *data) {
   uint8_t code = ut_uint8_list_get_element(event_data, 0);
   // bool from_send_event = (code & 0x80) != 0;
   code &= 0x7f;
-  UtObjectRef event = NULL;
-  size_t length = 32;
-  if (code == 2) {
-    event = decode_key_press(event_data);
-  } else if (code == 3) {
-    event = decode_key_release(event_data);
-  } else if (code == 4) {
-    event = decode_button_press(event_data);
-  } else if (code == 5) {
-    event = decode_button_release(event_data);
-  } else if (code == 6) {
-    event = decode_motion_notify(event_data);
-  } else if (code == 7) {
-    event = decode_enter_notify(event_data);
-  } else if (code == 8) {
-    event = decode_leave_notify(event_data);
-  } else if (code == 9) {
-    event = decode_focus_in(event_data);
-  } else if (code == 10) {
-    event = decode_focus_out(event_data);
-  } else if (code == 12) {
-    event = decode_expose(event_data);
-  } else if (code == 14) {
-    event = decode_no_expose(event_data);
-  } else if (code == 19) {
-    event = decode_map_notify(event_data);
-  } else if (code == 21) {
-    event = decode_reparent_notify(event_data);
-  } else if (code == 22) {
-    event = decode_configure_notify(event_data);
-  } else if (code == 28) {
-    event = decode_property_notify(event_data);
-  } else if (code == 35) {
-    event = decode_generic_event(self, data, &length);
-  } else {
-    size_t extensions_length = ut_list_get_length(self->extensions);
-    for (size_t i = 0; i < extensions_length; i++) {
-      UtObject *extension = ut_object_list_get_element(self->extensions, i);
-      event = ut_x11_extension_decode_event(extension, event_data);
-      if (event != NULL) {
-        break;
+  switch (code) {
+  case 2:
+    decode_key_press(self, event_data);
+    break;
+  case 3:
+    decode_key_release(self, event_data);
+    break;
+  case 4:
+    decode_button_press(self, event_data);
+    break;
+  case 5:
+    decode_button_release(self, event_data);
+    break;
+  case 6:
+    decode_motion_notify(self, event_data);
+    break;
+  case 7:
+    decode_enter_notify(self, event_data);
+    break;
+  case 8:
+    decode_leave_notify(self, event_data);
+    break;
+  case 9:
+    decode_focus_in(self, event_data);
+    break;
+  case 10:
+    decode_focus_out(self, event_data);
+    break;
+  case 12:
+    decode_expose(self, event_data);
+    break;
+  case 14:
+    decode_no_expose(self, event_data);
+    break;
+  case 19:
+    decode_map_notify(self, event_data);
+    break;
+  case 21:
+    decode_reparent_notify(self, event_data);
+    break;
+  case 22:
+    decode_configure_notify(self, event_data);
+    break;
+  case 28:
+    decode_property_notify(self, event_data);
+    break;
+  case 35:
+    return decode_generic_event(self, data);
+  default:
+    if (!decode_extension_event(self, data)) {
+      if (self->event_callbacks->unknown_event != NULL &&
+          !ut_cancel_is_active(self->callback_cancel)) {
+        self->event_callbacks->unknown_event(self->callback_user_data, code);
       }
     }
-    if (event == NULL) {
-      event = ut_x11_unknown_event_new(code);
-    }
   }
 
-  if (event == NULL) {
-    return 0;
-  }
-
-  if (self->event_callback != NULL &&
-      !ut_cancel_is_active(self->callback_cancel)) {
-    self->event_callback(self->callback_user_data, event);
-  }
-
-  return length;
+  return 32;
 }
 
 static size_t decode_message(UtX11Client *self, UtObject *data) {
@@ -1198,14 +1271,17 @@ static UtObjectInterface object_interface = {.type_name = "UtX11Client",
                                              .cleanup = ut_x11_client_cleanup,
                                              .interfaces = {{NULL, NULL}}};
 
-UtObject *ut_x11_client_new(UtX11ClientEventCallback event_callback,
-                            UtX11ClientErrorCallback error_callback,
-                            void *user_data, UtObject *cancel) {
+UtObject *
+ut_x11_client_new(const UtX11EventCallbacks *event_callbacks,
+                  const UtX11PresentEventCallbacks *present_event_callbacks,
+                  UtX11ClientErrorCallback error_callback, void *user_data,
+                  UtObject *cancel) {
   UtObject *object = ut_object_new(sizeof(UtX11Client), &object_interface);
   UtX11Client *self = (UtX11Client *)object;
   UtObjectRef address = ut_unix_socket_address_new("/tmp/.X11-unix/X0");
   self->socket = ut_tcp_socket_new(address, 0);
-  self->event_callback = event_callback;
+  self->event_callbacks = event_callbacks;
+  self->present_event_callbacks = present_event_callbacks;
   self->error_callback = error_callback;
   self->callback_user_data = user_data;
   self->callback_cancel = ut_object_ref(cancel);
