@@ -20,6 +20,34 @@ typedef void (*UtX11ListExtensionsCallback)(void *user_data, UtObject *names,
                                             UtObject *error);
 
 typedef enum {
+  UT_X11_EVENT_KEY_PRESS = 0x00000001,
+  UT_X11_EVENT_KEY_RELEASE = 0x00000002,
+  UT_X11_EVENT_BUTTON_PRESS = 0x00000004,
+  UT_X11_EVENT_BUTTON_RELEASE = 0x00000008,
+  UT_X11_EVENT_ENTER_WINDOW = 0x00000010,
+  UT_X11_EVENT_LEAVE_WINDOW = 0x00000020,
+  UT_X11_EVENT_POINTER_MOTION = 0x00000040,
+  UT_X11_EVENT_POINTER_MOTION_HINT = 0x00000080,
+  UT_X11_EVENT_BUTTON1_MOTION = 0x00000100,
+  UT_X11_EVENT_BUTTON2_MOTION = 0x00000200,
+  UT_X11_EVENT_BUTTON3_MOTION = 0x00000400,
+  UT_X11_EVENT_BUTTON4_MOTION = 0x00000800,
+  UT_X11_EVENT_BUTTON5_MOTION = 0x00001000,
+  UT_X11_EVENT_BUTTON_MOTION = 0x00002000,
+  UT_X11_EVENT_KEYMAP_STATE = 0x00004000,
+  UT_X11_EVENT_EXPOSURE = 0x00008000,
+  UT_X11_EVENT_VISIBILITY_CHANGE = 0x00010000,
+  UT_X11_EVENT_STRUCTURE_NOTIFY = 0x00020000,
+  UT_X11_EVENT_RESIZE_REDIRECT = 0x00040000,
+  UT_X11_EVENT_SUBSTRUCTURE_NOTIFY = 0x00080000,
+  UT_X11_EVENT_SUBSTRUCTURE_REDIRECT = 0x00100000,
+  UT_X11_EVENT_FOCUS_CHANGE = 0x00200000,
+  UT_X11_EVENT_PROPERTY_CHANGE = 0x00400000,
+  UT_X11_EVENT_COLORMAP_CHANGE = 0x00800000,
+  UT_X11_EVENT_OWNER_GRAB_BUTTON = 0x01000000
+} UtX11Event;
+
+typedef enum {
   UT_X11_IMAGE_FORMAT_BITMAP,
   UT_X11_IMAGE_FORMAT_XY_PIXMAP,
   UT_X11_IMAGE_FORMAT_Z_PIXMAP
@@ -34,7 +62,8 @@ void ut_x11_client_connect(UtObject *object,
                            UtObject *cancel);
 
 uint32_t ut_x11_client_create_window(UtObject *object, int16_t x, int16_t y,
-                                     uint16_t width, uint16_t height);
+                                     uint16_t width, uint16_t height,
+                                     uint32_t event_mask);
 
 void ut_x11_client_destroy_window(UtObject *object, uint32_t window);
 

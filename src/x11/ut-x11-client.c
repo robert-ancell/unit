@@ -110,34 +110,6 @@ typedef enum {
   VALUE_MASK_CURSOR = 0x00004000
 } UtX11ValueMask;
 
-typedef enum {
-  EVENT_KEY_PRESS = 0x00000001,
-  EVENT_KEY_RELEASE = 0x00000002,
-  EVENT_BUTTON_PRESS = 0x00000004,
-  EVENT_BUTTON_RELEASE = 0x00000008,
-  EVENT_ENTER_WINDOW = 0x00000010,
-  EVENT_LEAVE_WINDOW = 0x00000020,
-  EVENT_POINTER_MOTION = 0x00000040,
-  EVENT_POINTER_MOTION_HINT = 0x00000080,
-  EVENT_BUTTON1_MOTION = 0x00000100,
-  EVENT_BUTTON2_MOTION = 0x00000200,
-  EVENT_BUTTON3_MOTION = 0x00000400,
-  EVENT_BUTTON4_MOTION = 0x00000800,
-  EVENT_BUTTON5_MOTION = 0x00001000,
-  EVENT_BUTTON_MOTION = 0x00002000,
-  EVENT_KEYMAP_STATE = 0x00004000,
-  EVENT_EXPOSURE = 0x00008000,
-  EVENT_VISIBILITY_CHANGE = 0x00010000,
-  EVENT_STRUCTURE_NOTIFY = 0x00020000,
-  EVENT_RESIZE_REDIRECT = 0x00040000,
-  EVENT_SUBSTRUCTURE_NOTIFY = 0x00080000,
-  EVENT_SUBSTRUCTURE_REDIRECT = 0x00100000,
-  EVENT_FOCUS_CHANGE = 0x00200000,
-  EVENT_PROPERTY_CHANGE = 0x00400000,
-  EVENT_COLORMAP_CHANGE = 0x00800000,
-  EVENT_OWNER_GRAB_BUTTON = 0x01000000
-} UtX11Event;
-
 typedef struct {
   uint8_t depth;
   uint8_t bits_per_pixel;
@@ -903,6 +875,28 @@ static UtObject *decode_leave_notify(UtObject *data) {
   return ut_x11_leave_notify_new(window, x, y);
 }
 
+static UtObject *decode_focus_in(UtObject *data) {
+  size_t offset = 0;
+  assert((ut_x11_buffer_get_card8(data, &offset) & 0x7f) == 9);
+  ut_x11_buffer_get_card8(data, &offset);  // detail
+  ut_x11_buffer_get_card16(data, &offset); // sequence_number
+  uint32_t window = ut_x11_buffer_get_card32(data, &offset);
+  ut_x11_buffer_get_card8(data, &offset); // mode
+
+  return ut_x11_focus_in_new(window);
+}
+
+static UtObject *decode_focus_out(UtObject *data) {
+  size_t offset = 0;
+  assert((ut_x11_buffer_get_card8(data, &offset) & 0x7f) == 10);
+  ut_x11_buffer_get_card8(data, &offset);  // detail
+  ut_x11_buffer_get_card16(data, &offset); // sequence_number
+  uint32_t window = ut_x11_buffer_get_card32(data, &offset);
+  ut_x11_buffer_get_card8(data, &offset); // mode
+
+  return ut_x11_focus_out_new(window);
+}
+
 static UtObject *decode_expose(UtObject *data) {
   size_t offset = 0;
   assert((ut_x11_buffer_get_card8(data, &offset) & 0x7f) == 12);
@@ -1050,6 +1044,10 @@ static size_t decode_event(UtX11Client *self, UtObject *data) {
     event = decode_enter_notify(event_data);
   } else if (code == 8) {
     event = decode_leave_notify(event_data);
+  } else if (code == 9) {
+    event = decode_focus_in(event_data);
+  } else if (code == 10) {
+    event = decode_focus_out(event_data);
   } else if (code == 12) {
     event = decode_expose(event_data);
   } else if (code == 14) {
@@ -1253,7 +1251,8 @@ void ut_x11_client_send_request_with_reply(
 }
 
 uint32_t ut_x11_client_create_window(UtObject *object, int16_t x, int16_t y,
-                                     uint16_t width, uint16_t height) {
+                                     uint16_t width, uint16_t height,
+                                     uint32_t event_mask) {
   assert(ut_object_is_x11_client(object));
   UtX11Client *self = (UtX11Client *)object;
 
@@ -1273,11 +1272,7 @@ uint32_t ut_x11_client_create_window(UtObject *object, int16_t x, int16_t y,
   ut_x11_buffer_append_card16(request, WINDOW_CLASS_INPUT_OUTPUT);
   ut_x11_buffer_append_card32(request, screen->root_visual->id);
   ut_x11_buffer_append_card32(request, VALUE_MASK_EVENT_MASK);
-  ut_x11_buffer_append_card32(
-      request, EVENT_KEY_PRESS | EVENT_KEY_RELEASE | EVENT_BUTTON_PRESS |
-                   EVENT_BUTTON_RELEASE | EVENT_ENTER_WINDOW |
-                   EVENT_LEAVE_WINDOW | EVENT_POINTER_MOTION | EVENT_EXPOSURE |
-                   EVENT_STRUCTURE_NOTIFY | EVENT_PROPERTY_CHANGE);
+  ut_x11_buffer_append_card32(request, event_mask);
 
   ut_x11_client_send_request(object, 1, screen->root_visual->depth, request);
 

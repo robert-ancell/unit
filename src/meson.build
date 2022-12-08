@@ -147,6 +147,8 @@ ut_sources = [
   'x11/ut-x11-event.c',
   'x11/ut-x11-expose.c',
   'x11/ut-x11-extension.c',
+  'x11/ut-x11-focus-in.c',
+  'x11/ut-x11-focus-out.c',
   'x11/ut-x11-gcontext-error.c',
   'x11/ut-x11-id-choice-error.c',
   'x11/ut-x11-implementation-error.c',

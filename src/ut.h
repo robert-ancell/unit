@@ -128,6 +128,8 @@
 #include "x11/ut-x11-error.h"
 #include "x11/ut-x11-event.h"
 #include "x11/ut-x11-expose.h"
+#include "x11/ut-x11-focus-in.h"
+#include "x11/ut-x11-focus-out.h"
 #include "x11/ut-x11-gcontext-error.h"
 #include "x11/ut-x11-id-choice-error.h"
 #include "x11/ut-x11-implementation-error.h"

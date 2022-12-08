@@ -14,12 +14,31 @@ static uint32_t pixmap = 0;
 static uint32_t gc = 0;
 
 static void event_cb(void *user_data, UtObject *event) {
-  ut_cstring_ref s = ut_object_to_string(event);
-  printf("%s\n", s);
-
-  if (ut_object_is_x11_expose(event)) {
+  if (ut_object_is_x11_enter_notify(event)) {
+    printf("EnterNotify\n");
+  } else if (ut_object_is_x11_leave_notify(event)) {
+    printf("LeaveNotify\n");
+  } else if (ut_object_is_x11_motion_notify(event)) {
+    printf("MotionNotify (%d,%d)\n", ut_x11_motion_notify_get_x(event),
+           ut_x11_motion_notify_get_y(event));
+  } else if (ut_object_is_x11_button_press(event)) {
+    printf("ButtonPress %d\n", ut_x11_button_press_get_button(event));
+  } else if (ut_object_is_x11_button_release(event)) {
+    printf("ButtonRelease %d\n", ut_x11_button_release_get_button(event));
+  } else if (ut_object_is_x11_focus_in(event)) {
+    printf("FocusIn\n");
+  } else if (ut_object_is_x11_focus_out(event)) {
+    printf("FocusOut\n");
+  } else if (ut_object_is_x11_key_press(event)) {
+    printf("KeyPress %d\n", ut_x11_key_press_get_keycode(event));
+  } else if (ut_object_is_x11_key_release(event)) {
+    printf("KeyRelease %d\n", ut_x11_key_release_get_keycode(event));
+  } else if (ut_object_is_x11_expose(event)) {
     ut_x11_client_copy_area(client, pixmap, window, gc, 0, 0, 0, 0, width,
                             height);
+  } else {
+    ut_cstring_ref s = ut_object_to_string(event);
+    printf("%s\n", s);
   }
 }
 
@@ -73,7 +92,13 @@ static void connect_cb(void *user_data, UtObject *error) {
 
   ut_x11_client_list_extensions(client, list_extensions_cb, NULL, NULL);
 
-  window = ut_x11_client_create_window(client, 0, 0, width, height);
+  window = ut_x11_client_create_window(
+      client, 0, 0, width, height,
+      UT_X11_EVENT_KEY_PRESS | UT_X11_EVENT_KEY_RELEASE |
+          UT_X11_EVENT_BUTTON_PRESS | UT_X11_EVENT_BUTTON_RELEASE |
+          UT_X11_EVENT_ENTER_WINDOW | UT_X11_EVENT_LEAVE_WINDOW |
+          UT_X11_EVENT_POINTER_MOTION | UT_X11_EVENT_EXPOSURE |
+          UT_X11_EVENT_FOCUS_CHANGE);
 
   UtObject *present = ut_x11_client_get_present_extension(client);
   ut_x11_present_extension_select_input(
