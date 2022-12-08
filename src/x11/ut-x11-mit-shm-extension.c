@@ -99,11 +99,6 @@ static void handle_shm_create_segment_error(UtObject *user_data,
   }
 }
 
-static UtObject *ut_x11_mit_shm_extension_decode_event(UtObject *object,
-                                                       UtObject *data) {
-  return NULL;
-}
-
 static UtObject *ut_x11_mit_shm_extension_decode_error(UtObject *object,
                                                        UtObject *data) {
   UtX11MitShmExtension *self = (UtX11MitShmExtension *)object;
@@ -127,7 +122,6 @@ static void ut_x11_mit_shm_extension_close(UtObject *object) {
 }
 
 static UtX11ExtensionInterface x11_extension_interface = {
-    .decode_event = ut_x11_mit_shm_extension_decode_event,
     .decode_error = ut_x11_mit_shm_extension_decode_error,
     .close = ut_x11_mit_shm_extension_close};
 

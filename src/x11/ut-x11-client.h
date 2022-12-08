@@ -4,7 +4,65 @@
 
 #pragma once
 
-typedef void (*UtX11ClientEventCallback)(void *user_data, UtObject *event);
+typedef void (*UtX11KeyPressCallback)(void *user_data, uint32_t window,
+                                      uint8_t keycode, int16_t x, int16_t y);
+typedef void (*UtX11KeyReleaseCallback)(void *user_data, uint32_t window,
+                                        uint8_t keycode, int16_t x, int16_t y);
+typedef void (*UtX11ButtonPressCallback)(void *user_data, uint32_t window,
+                                         uint8_t button, int16_t x, int16_t y);
+typedef void (*UtX11ButtonReleaseCallback)(void *user_data, uint32_t window,
+                                           uint8_t button, int16_t x,
+                                           int16_t y);
+typedef void (*UtX11MotionNotifyCallback)(void *user_data, uint32_t window,
+                                          int16_t x, int16_t y);
+typedef void (*UtX11EnterNotifyCallback)(void *user_data, uint32_t window,
+                                         int16_t x, int16_t y);
+typedef void (*UtX11LeaveNotifyCallback)(void *user_data, uint32_t window,
+                                         int16_t x, int16_t y);
+typedef void (*UtX11FocusInCallback)(void *user_data, uint32_t window);
+typedef void (*UtX11FocusOutCallback)(void *user_data, uint32_t window);
+typedef void (*UtX11ExposeCallback)(void *user_data, uint32_t window,
+                                    uint16_t x, uint16_t y, uint16_t width,
+                                    uint16_t height);
+typedef void (*UtX11NoExposeCallback)(void *user_data, uint32_t drawable);
+typedef void (*UtX11MapNotifyCallback)(void *user_data, uint32_t event,
+                                       uint32_t window, bool override_redirect);
+typedef void (*UtX11ReparentNotifyCallback)(void *user_data, int32_t event,
+                                            uint32_t window, uint32_t parent,
+                                            int16_t x, int16_t y,
+                                            bool override_redirect);
+typedef void (*UtX11ConfigureNotifyCallback)(void *user_data, uint32_t window,
+                                             int16_t x, int16_t y,
+                                             uint16_t width, uint16_t height);
+typedef void (*UtX11PropertyNotifyCallback)(void *user_data, uint32_t window,
+                                            uint32_t atom);
+
+typedef void (*UtX11UnknownEventCallback)(void *user_data, uint8_t code);
+typedef void (*UtX11UnknownGenericEventCallback)(void *user_data,
+                                                 uint8_t major_opcode,
+                                                 uint16_t code);
+
+typedef struct {
+  UtX11KeyPressCallback key_press;
+  UtX11KeyReleaseCallback key_release;
+  UtX11ButtonPressCallback button_press;
+  UtX11ButtonReleaseCallback button_release;
+  UtX11MotionNotifyCallback motion_notify;
+  UtX11EnterNotifyCallback enter_notify;
+  UtX11LeaveNotifyCallback leave_notify;
+  UtX11FocusInCallback focus_in;
+  UtX11FocusOutCallback focus_out;
+  UtX11ExposeCallback expose;
+  UtX11NoExposeCallback no_expose;
+  UtX11MapNotifyCallback map_notify;
+  UtX11ReparentNotifyCallback reparent_notify;
+  UtX11ConfigureNotifyCallback configure_notify;
+  UtX11PropertyNotifyCallback property_notify;
+
+  UtX11UnknownEventCallback unknown_event;
+  UtX11UnknownGenericEventCallback unknown_generic_event;
+} UtX11EventCallbacks;
+
 typedef void (*UtX11ClientErrorCallback)(void *user_data, UtObject *error);
 typedef void (*UtX11ClientConnectCallback)(void *user_data, UtObject *error);
 typedef void (*UtX11InternAtomCallback)(void *user_data, uint32_t atom,
@@ -53,7 +111,7 @@ typedef enum {
   UT_X11_IMAGE_FORMAT_Z_PIXMAP
 } UtX11ImageFormat;
 
-UtObject *ut_x11_client_new(UtX11ClientEventCallback event_callback,
+UtObject *ut_x11_client_new(const UtX11EventCallbacks *event_callbacks,
                             UtX11ClientErrorCallback error_callback,
                             void *user_data, UtObject *cancel);
 
