@@ -163,7 +163,13 @@ void ut_x11_present_extension_query_version(
 }
 
 void ut_x11_present_extension_pixmap(UtObject *object, uint32_t window,
-                                     uint32_t pixmap, uint32_t serial) {
+                                     uint32_t pixmap, uint32_t serial,
+                                     uint32_t valid_area, uint32_t update_area,
+                                     int16_t x_off, int16_t y_off,
+                                     uint32_t target_crtc, uint32_t wait_fence,
+                                     uint32_t idle_fence, uint32_t options,
+                                     uint64_t target_msc, uint64_t divisor,
+                                     uint64_t remainder) {
   assert(ut_object_is_x11_present_extension(object));
   UtX11PresentExtension *self = (UtX11PresentExtension *)object;
 
@@ -171,18 +177,18 @@ void ut_x11_present_extension_pixmap(UtObject *object, uint32_t window,
   ut_x11_buffer_append_card32(request, window);
   ut_x11_buffer_append_card32(request, pixmap);
   ut_x11_buffer_append_card32(request, serial);
-  ut_x11_buffer_append_card32(request, 0); // FIXME: valid-area
-  ut_x11_buffer_append_card32(request, 0); // FIXME: update-area
-  ut_x11_buffer_append_int16(request, 0);  // FIXME: x-off
-  ut_x11_buffer_append_int16(request, 0);  // FIXME: y-off
-  ut_x11_buffer_append_card32(request, 0); // FIXME: target-crtc
-  ut_x11_buffer_append_card32(request, 0); // FIXME: wait-fence
-  ut_x11_buffer_append_card32(request, 0); // FIXME: idle-fence
-  ut_x11_buffer_append_card32(request, 0); // FIXME: options
+  ut_x11_buffer_append_card32(request, valid_area);
+  ut_x11_buffer_append_card32(request, update_area);
+  ut_x11_buffer_append_int16(request, x_off);
+  ut_x11_buffer_append_int16(request, y_off);
+  ut_x11_buffer_append_card32(request, target_crtc);
+  ut_x11_buffer_append_card32(request, wait_fence);
+  ut_x11_buffer_append_card32(request, idle_fence);
+  ut_x11_buffer_append_card32(request, options);
   ut_x11_buffer_append_padding(request, 4);
-  ut_x11_buffer_append_card64(request, 0); // FIXME: target-msc
-  ut_x11_buffer_append_card32(request, 0); // FIXME: divisor
-  ut_x11_buffer_append_card32(request, 0); // FIXME: remainder
+  ut_x11_buffer_append_card64(request, target_msc);
+  ut_x11_buffer_append_card32(request, divisor);
+  ut_x11_buffer_append_card32(request, remainder);
   // FIXME: notifies
 
   ut_x11_client_send_request(self->client, self->major_opcode, 1, request);

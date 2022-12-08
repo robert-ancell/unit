@@ -23,7 +23,13 @@ void ut_x11_present_extension_query_version(
     void *user_data, UtObject *cancel);
 
 void ut_x11_present_extension_pixmap(UtObject *object, uint32_t window,
-                                     uint32_t pixmap, uint32_t serial);
+                                     uint32_t pixmap, uint32_t serial,
+                                     uint32_t valid_area, uint32_t update_area,
+                                     int16_t x_off, int16_t y_off,
+                                     uint32_t target_crtc, uint32_t wait_fence,
+                                     uint32_t idle_fence, uint32_t options,
+                                     uint64_t target_msc, uint64_t divisor,
+                                     uint64_t remainder);
 
 void ut_x11_present_extension_notify_msc(UtObject *object, uint32_t window,
                                          uint32_t serial, uint64_t target_msc,
