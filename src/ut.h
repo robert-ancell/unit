@@ -140,6 +140,7 @@
 #include "x11/ut-x11-mit-shm-extension.h"
 #include "x11/ut-x11-motion-notify.h"
 #include "x11/ut-x11-name-error.h"
+#include "x11/ut-x11-no-expose.h"
 #include "x11/ut-x11-pixmap-error.h"
 #include "x11/ut-x11-present-complete-notify.h"
 #include "x11/ut-x11-present-configure-notify.h"

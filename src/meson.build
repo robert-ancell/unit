@@ -159,6 +159,7 @@ ut_sources = [
   'x11/ut-x11-mit-shm-extension.c',
   'x11/ut-x11-motion-notify.c',
   'x11/ut-x11-name-error.c',
+  'x11/ut-x11-no-expose.c',
   'x11/ut-x11-pixmap-error.c',
   'x11/ut-x11-present-complete-notify.c',
   'x11/ut-x11-present-configure-notify.c',

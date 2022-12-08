@@ -919,6 +919,15 @@ static UtObject *decode_expose(UtObject *data) {
   return ut_x11_expose_new(window, x, y, width, height);
 }
 
+static UtObject *decode_no_expose(UtObject *data) {
+  size_t offset = 0;
+  assert((ut_x11_buffer_get_card8(data, &offset) & 0x7f) == 14);
+  ut_x11_buffer_get_padding(data, &offset, 1);
+  ut_x11_buffer_get_card16(data, &offset); // sequence_number
+
+  return ut_x11_no_expose_new();
+}
+
 static UtObject *decode_map_notify(UtObject *data) {
   size_t offset = 0;
   assert((ut_x11_buffer_get_card8(data, &offset) & 0x7f) == 19);
@@ -1043,6 +1052,8 @@ static size_t decode_event(UtX11Client *self, UtObject *data) {
     event = decode_leave_notify(event_data);
   } else if (code == 12) {
     event = decode_expose(event_data);
+  } else if (code == 14) {
+    event = decode_no_expose(event_data);
   } else if (code == 19) {
     event = decode_map_notify(event_data);
   } else if (code == 21) {
