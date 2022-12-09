@@ -172,7 +172,7 @@ ut_x11_present_extension_new(UtObject *client, uint8_t major_opcode,
   self->major_opcode = major_opcode;
   self->event_callbacks = event_callbacks;
   self->user_data = user_data;
-  self->cancel = cancel;
+  self->cancel = ut_object_ref(cancel);
   return object;
 }
 
