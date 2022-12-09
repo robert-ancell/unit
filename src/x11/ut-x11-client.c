@@ -149,11 +149,13 @@ struct _UtX11Client {
   UtObject *read_cancel;
 
   UtObject *extensions;
+  UtObject *xfixes_extension;
   UtObject *mit_shm_extension;
   UtObject *shape_extension;
   UtObject *present_extension;
 
   const UtX11EventCallbacks *event_callbacks;
+  const UtX11XfixesEventCallbacks *xfixes_event_callbacks;
   const UtX11PresentEventCallbacks *present_event_callbacks;
   UtX11ClientErrorCallback error_callback;
   void *callback_user_data;
@@ -214,6 +216,9 @@ static void decode_big_requests_enable_reply(UtObject *object, uint8_t data0,
 static void handle_big_requests_enable_error(UtObject *object,
                                              UtObject *error) {}
 
+static void xfixes_query_version_cb(void *user_data, uint32_t version_major,
+                                    uint32_t version_minor, UtObject *error) {}
+
 static void mit_shm_query_version_cb(void *user_data, uint16_t major_version,
                                      uint16_t minor_version, uint16_t uid,
                                      uint16_t gid, uint8_t pixmap_format,
@@ -249,6 +254,15 @@ static void decode_query_extension_reply(UtObject *object, uint8_t data0,
           (UtObject *)self, major_opcode, 0, NULL,
           decode_big_requests_enable_reply, handle_big_requests_enable_error,
           (void *)self, self->cancel);
+    } else if (ut_cstring_equal(query_extension_data->name, "XFIXES")) {
+      self->xfixes_extension = ut_x11_xfixes_extension_new(
+          (UtObject *)self, major_opcode, first_event, first_error,
+          self->xfixes_event_callbacks, self->callback_user_data,
+          self->callback_cancel);
+      ut_list_append(self->extensions, self->xfixes_extension);
+
+      ut_x11_xfixes_extension_query_version(
+          self->xfixes_extension, xfixes_query_version_cb, self, self->cancel);
     } else if (ut_cstring_equal(query_extension_data->name, "MIT-SHM")) {
       self->mit_shm_extension = ut_x11_mit_shm_extension_new(
           (UtObject *)self, major_opcode, first_event, first_error);
@@ -467,6 +481,7 @@ static size_t decode_setup_success(UtX11Client *self, UtObject *data) {
 
   query_extension(self, "Generic Event Extension");
   query_extension(self, "BIG-REQUESTS");
+  query_extension(self, "XFIXES");
   query_extension(self, "MIT-SHM");
   query_extension(self, "SHAPE");
   query_extension(self, "Present");
@@ -1290,6 +1305,7 @@ static UtObjectInterface object_interface = {.type_name = "UtX11Client",
 
 UtObject *
 ut_x11_client_new(const UtX11EventCallbacks *event_callbacks,
+                  const UtX11XfixesEventCallbacks *xfixes_event_callbacks,
                   const UtX11PresentEventCallbacks *present_event_callbacks,
                   UtX11ClientErrorCallback error_callback, void *user_data,
                   UtObject *cancel) {

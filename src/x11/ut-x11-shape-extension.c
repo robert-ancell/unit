@@ -64,6 +64,7 @@ static void decode_shape_query_version_reply(UtObject *user_data, uint8_t data0,
   CallbackData *callback_data = (CallbackData *)user_data;
 
   size_t offset = 0;
+  ut_x11_buffer_get_padding(data, &offset, 1);
   uint16_t major_version = ut_x11_buffer_get_card16(data, &offset);
   uint16_t minor_version = ut_x11_buffer_get_card16(data, &offset);
   ut_x11_buffer_get_padding(data, &offset, 20);

@@ -2,6 +2,7 @@
 
 #include "ut-object.h"
 #include "ut-x11-present-extension.h"
+#include "ut-x11-xfixes-extension.h"
 
 #pragma once
 
@@ -114,6 +115,7 @@ typedef enum {
 
 UtObject *
 ut_x11_client_new(const UtX11EventCallbacks *event_callbacks,
+                  const UtX11XfixesEventCallbacks *xfixes_event_callbacks,
                   const UtX11PresentEventCallbacks *present_event_callbacks,
                   UtX11ClientErrorCallback error_callback, void *user_data,
                   UtObject *cancel);
