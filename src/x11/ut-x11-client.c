@@ -971,13 +971,13 @@ static void decode_expose(UtX11Client *self, UtObject *data) {
   uint16_t y = ut_x11_buffer_get_card16(data, &offset);
   uint16_t width = ut_x11_buffer_get_card16(data, &offset);
   uint16_t height = ut_x11_buffer_get_card16(data, &offset);
-  ut_x11_buffer_get_card16(data, &offset); // count
+  uint16_t count = ut_x11_buffer_get_card16(data, &offset);
   ut_x11_buffer_get_padding(data, &offset, 14);
 
   if (self->event_callbacks->expose != NULL &&
       !ut_cancel_is_active(self->callback_cancel)) {
     self->event_callbacks->expose(self->callback_user_data, window, x, y, width,
-                                  height);
+                                  height, count);
   }
 }
 

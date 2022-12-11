@@ -23,7 +23,7 @@ typedef void (*UtX11FocusInCallback)(void *user_data, uint32_t window);
 typedef void (*UtX11FocusOutCallback)(void *user_data, uint32_t window);
 typedef void (*UtX11ExposeCallback)(void *user_data, uint32_t window,
                                     uint16_t x, uint16_t y, uint16_t width,
-                                    uint16_t height);
+                                    uint16_t height, uint16_t count);
 typedef void (*UtX11NoExposeCallback)(void *user_data, uint32_t drawable);
 typedef void (*UtX11MapNotifyCallback)(void *user_data, uint32_t event,
                                        uint32_t window, bool override_redirect);

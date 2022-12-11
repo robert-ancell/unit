@@ -3,8 +3,8 @@
 
 #include "ut.h"
 
-static size_t width = 640;
-static size_t height = 480;
+static size_t pixmap_width = 0;
+static size_t pixmap_height = 0;
 
 static UtObject *client = NULL;
 static uint32_t segment = 0;
@@ -56,30 +56,48 @@ static void key_release_cb(void *user_data, uint32_t window, uint8_t keycode,
   printf("KeyRelease %d\n", keycode);
 }
 
+static void configure_notify_cb(void *user_data, uint32_t window, int16_t x,
+                                int16_t y, uint16_t width, uint16_t height) {
+  printf("ConfigureNotify\n");
+  if (width == pixmap_width && height == pixmap_height) {
+    return;
+  }
+
+  pixmap_width = width;
+  pixmap_height = height;
+
+  ut_object_unref(buffer);
+  buffer = ut_shared_memory_array_new(width * height * 4);
+  uint8_t *pixmap_data = ut_shared_memory_array_get_data(buffer);
+  for (size_t y = 0; y < height; y++) {
+    for (size_t x = 0; x < width; x++) {
+      uint8_t *pixel = pixmap_data + (y * width * 4) + (x * 4);
+      pixel[0] = 255 * x / width;
+      pixel[1] = 255 * y / height;
+      pixel[2] = 255;
+      pixel[3] = 255;
+    }
+  }
+
+  UtObject *shm = ut_x11_client_get_mit_shm_extension(client);
+  if (segment != 0) {
+    ut_x11_mit_shm_extension_detach(shm, segment);
+  }
+  segment = ut_x11_mit_shm_extension_attach_fd(
+      shm, ut_shared_memory_array_get_fd(buffer), false);
+  if (pixmap != 0) {
+    ut_x11_client_free_pixmap(client, pixmap);
+  }
+  pixmap = ut_x11_mit_shm_extension_create_pixmap(shm, window, width, height,
+                                                  24, segment, 0);
+  gc = ut_x11_client_create_gc(client, pixmap);
+}
+
 static void expose_cb(void *user_data, uint32_t window, uint16_t x, uint16_t y,
-                      uint16_t width, uint16_t height) {
-  ut_x11_client_copy_area(client, pixmap, window, gc, 0, 0, 0, 0, width,
+                      uint16_t width, uint16_t height, uint16_t count) {
+  printf("Expose\n");
+  ut_x11_client_copy_area(client, pixmap, window, gc, x, y, x, y, width,
                           height);
-}
-
-static void present_configure_notify_cb(
-    void *user_data, uint32_t event_id, uint32_t window, int16_t x, int16_t y,
-    uint16_t width, uint16_t height, int16_t off_x, int16_t off_y,
-    uint16_t pixmap_width, uint16_t pixmap_height, uint32_t pixmap_flags) {
-  printf("PresentConfigureNotify\n");
-}
-
-static void present_complete_notify_cb(void *user_data, uint8_t kind,
-                                       uint8_t mode, uint32_t event_id,
-                                       uint32_t window, uint32_t serial,
-                                       uint64_t ust, uint64_t msc) {
-  printf("PresentCompleteNotify\n");
-}
-
-static void present_idle_notify_cb(void *user_data, uint32_t event_id,
-                                   uint32_t window, uint32_t serial,
-                                   uint32_t pixmap, uint32_t idle_fence) {
-  printf("PresentIdleNotify\n");
 }
 
 static UtX11EventCallbacks event_callbacks = {
@@ -92,11 +110,8 @@ static UtX11EventCallbacks event_callbacks = {
     .focus_out = focus_out_cb,
     .key_press = key_press_cb,
     .key_release = key_release_cb,
-    .expose = expose_cb,
-    .present_configure_notify = present_configure_notify_cb,
-    .present_complete_notify = present_complete_notify_cb,
-    .present_idle_notify = present_idle_notify_cb,
-};
+    .configure_notify = configure_notify_cb,
+    .expose = expose_cb};
 
 static void error_cb(void *user_data, UtObject *error) {
   ut_cstring_ref s = ut_object_to_string(error);
@@ -129,18 +144,6 @@ static void connect_cb(void *user_data, UtObject *error) {
 
   printf("Connected\n");
 
-  buffer = ut_shared_memory_array_new(width * height * 4);
-  uint8_t *pixmap_data = ut_shared_memory_array_get_data(buffer);
-  for (size_t y = 0; y < height; y++) {
-    for (size_t x = 0; x < width; x++) {
-      uint8_t *pixel = pixmap_data + (y * width * 4) + (x * 4);
-      pixel[0] = 255 * x / width;
-      pixel[1] = 255 * y / height;
-      pixel[2] = 255;
-      pixel[3] = 255;
-    }
-  }
-
   ut_x11_client_intern_atom(client, "HELLO-WORLD", true, intern_atom_cb, NULL,
                             NULL);
 
@@ -149,28 +152,14 @@ static void connect_cb(void *user_data, UtObject *error) {
   ut_x11_client_list_extensions(client, list_extensions_cb, NULL, NULL);
 
   window = ut_x11_client_create_window(
-      client, 0, 0, width, height,
+      client, 0, 0, 640, 480,
       UT_X11_EVENT_KEY_PRESS | UT_X11_EVENT_KEY_RELEASE |
           UT_X11_EVENT_BUTTON_PRESS | UT_X11_EVENT_BUTTON_RELEASE |
           UT_X11_EVENT_ENTER_WINDOW | UT_X11_EVENT_LEAVE_WINDOW |
-          UT_X11_EVENT_POINTER_MOTION | UT_X11_EVENT_EXPOSURE |
-          UT_X11_EVENT_FOCUS_CHANGE);
-
-  UtObject *present = ut_x11_client_get_present_extension(client);
-  ut_x11_present_extension_select_input(
-      present, window,
-      UT_X11_PRESENT_CONFIGURE_NOTIFY_MASK |
-          UT_X11_PRESENT_COMPLETE_NOTIFY_MASK |
-          UT_X11_PRESENT_IDLE_NOTIFY_MASK);
+          UT_X11_EVENT_POINTER_MOTION | UT_X11_EVENT_STRUCTURE_NOTIFY |
+          UT_X11_EVENT_EXPOSURE | UT_X11_EVENT_FOCUS_CHANGE);
 
   ut_x11_client_map_window(client, window);
-
-  UtObject *shm = ut_x11_client_get_mit_shm_extension(client);
-  segment = ut_x11_mit_shm_extension_attach_fd(
-      shm, ut_shared_memory_array_get_fd(buffer), false);
-  pixmap = ut_x11_mit_shm_extension_create_pixmap(shm, window, width, height,
-                                                  24, segment, 0);
-  gc = ut_x11_client_create_gc(client, pixmap);
 }
 
 int main(int argc, char **argv) {
