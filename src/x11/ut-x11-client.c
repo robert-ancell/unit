@@ -150,6 +150,7 @@ struct _UtX11Client {
 
   UtObject *extensions;
   UtObject *mit_shm_extension;
+  UtObject *shape_extension;
   UtObject *present_extension;
 
   const UtX11EventCallbacks *event_callbacks;
@@ -218,6 +219,9 @@ static void mit_shm_query_version_cb(void *user_data, uint16_t major_version,
                                      uint16_t gid, uint8_t pixmap_format,
                                      bool shared_pixmaps, UtObject *error) {}
 
+static void shape_query_version_cb(void *user_data, uint16_t major_version,
+                                   uint16_t minor_version, UtObject *error) {}
+
 static void present_query_version_cb(void *user_data, uint32_t version_major,
                                      uint32_t version_minor, UtObject *error) {}
 
@@ -253,6 +257,14 @@ static void decode_query_extension_reply(UtObject *object, uint8_t data0,
       ut_x11_mit_shm_extension_query_version(self->mit_shm_extension,
                                              mit_shm_query_version_cb, self,
                                              self->cancel);
+    } else if (ut_cstring_equal(query_extension_data->name, "SHAPE")) {
+      self->shape_extension = ut_x11_shape_extension_new(
+          (UtObject *)self, major_opcode, first_event, NULL, NULL,
+          self->callback_cancel);
+      ut_list_append(self->extensions, self->shape_extension);
+
+      ut_x11_shape_extension_query_version(
+          self->shape_extension, shape_query_version_cb, self, self->cancel);
     } else if (ut_cstring_equal(query_extension_data->name, "Present")) {
       self->present_extension = ut_x11_present_extension_new(
           (UtObject *)self, major_opcode, self->present_event_callbacks,
@@ -456,6 +468,7 @@ static size_t decode_setup_success(UtX11Client *self, UtObject *data) {
   query_extension(self, "Generic Event Extension");
   query_extension(self, "BIG-REQUESTS");
   query_extension(self, "MIT-SHM");
+  query_extension(self, "SHAPE");
   query_extension(self, "Present");
 
   return offset;

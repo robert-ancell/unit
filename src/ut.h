@@ -132,6 +132,7 @@
 #include "x11/ut-x11-pixmap-error.h"
 #include "x11/ut-x11-present-extension.h"
 #include "x11/ut-x11-request-error.h"
+#include "x11/ut-x11-shape-extension.h"
 #include "x11/ut-x11-shm-segment-error.h"
 #include "x11/ut-x11-unknown-error.h"
 #include "x11/ut-x11-value-error.h"
