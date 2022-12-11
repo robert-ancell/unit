@@ -1075,6 +1075,47 @@ static void decode_property_notify(UtX11Client *self, UtObject *data) {
   }
 }
 
+static void decode_client_message(UtX11Client *self, UtObject *data) {
+  size_t offset = 0;
+  assert((ut_x11_buffer_get_card8(data, &offset) & 0x7f) == 33);
+  uint8_t format = ut_x11_buffer_get_card8(data, &offset);
+  ut_x11_buffer_get_card16(data, &offset); // sequence_number
+  uint32_t window = ut_x11_buffer_get_card32(data, &offset);
+  uint32_t type = ut_x11_buffer_get_card32(data, &offset);
+  UtObjectRef message_data = NULL;
+  switch (format) {
+  case 8:
+    message_data = ut_uint8_list_new();
+    for (size_t i = 0; i < 20; i++) {
+      ut_uint8_list_append(message_data,
+                           ut_x11_buffer_get_card8(data, &offset));
+    }
+    break;
+  case 16:
+    message_data = ut_uint16_list_new();
+    for (size_t i = 0; i < 10; i++) {
+      ut_uint16_list_append(message_data,
+                            ut_x11_buffer_get_card16(data, &offset));
+    }
+    break;
+  case 32:
+    message_data = ut_uint32_list_new();
+    for (size_t i = 0; i < 5; i++) {
+      ut_uint32_list_append(message_data,
+                            ut_x11_buffer_get_card32(data, &offset));
+    }
+    break;
+  default:
+    assert(false);
+  }
+
+  if (self->event_callbacks->client_message != NULL &&
+      !ut_cancel_is_active(self->callback_cancel)) {
+    self->event_callbacks->client_message(self->callback_user_data, window,
+                                          type, message_data);
+  }
+}
+
 static size_t decode_generic_event(UtX11Client *self, UtObject *data) {
   size_t offset = 0;
   assert((ut_x11_buffer_get_card8(data, &offset) & 0x7f) == 35);
@@ -1176,6 +1217,9 @@ static size_t decode_event(UtX11Client *self, UtObject *data) {
     break;
   case 28:
     decode_property_notify(self, event_data);
+    break;
+  case 33:
+    decode_client_message(self, data);
     break;
   case 35:
     return decode_generic_event(self, data);
@@ -1523,6 +1567,12 @@ void ut_x11_client_change_property_uint32(UtObject *object, uint32_t window,
   }
 
   ut_x11_client_send_request(object, 18, mode, request);
+}
+
+void ut_x11_client_change_property_atom(UtObject *object, uint32_t window,
+                                        uint32_t property, UtObject *data) {
+  ut_x11_client_change_property_uint32(object, window, property,
+                                       UT_X11_ATOM_ATOM, data);
 }
 
 void ut_x11_client_change_property_string(UtObject *object, uint32_t window,

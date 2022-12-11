@@ -7,6 +7,8 @@ static size_t pixmap_width = 0;
 static size_t pixmap_height = 0;
 
 static UtObject *client = NULL;
+static uint32_t wm_protocols_atom = 0;
+static uint32_t wm_delete_window_atom = 0;
 static uint32_t segment = 0;
 static UtObject *buffer = NULL;
 static uint32_t window = 0;
@@ -54,6 +56,17 @@ static void key_press_cb(void *user_datao, uint32_t window, uint8_t keycode,
 static void key_release_cb(void *user_data, uint32_t window, uint8_t keycode,
                            int16_t x, int16_t y) {
   printf("KeyRelease %d\n", keycode);
+}
+
+static void client_message_cb(void *user_data, uint32_t window, uint32_t type,
+                              UtObject *data) {
+  printf("ClientMessage\n");
+
+  if (type == wm_protocols_atom) {
+    if (ut_uint32_list_get_element(data, 0) == wm_delete_window_atom) {
+      ut_event_loop_return(NULL);
+    }
+  }
 }
 
 static void configure_notify_cb(void *user_data, uint32_t window, int16_t x,
@@ -110,6 +123,7 @@ static UtX11EventCallbacks event_callbacks = {
     .focus_out = focus_out_cb,
     .key_press = key_press_cb,
     .key_release = key_release_cb,
+    .client_message = client_message_cb,
     .configure_notify = configure_notify_cb,
     .expose = expose_cb};
 
@@ -120,10 +134,28 @@ static void error_cb(void *user_data, UtObject *error) {
 
 static void list_extensions_cb(void *user_data, UtObject *names,
                                UtObject *error) {
+  assert(error == NULL);
   size_t names_length = ut_list_get_length(names);
   for (size_t i = 0; i < names_length; i++) {
     printf("%s\n", ut_string_list_get_element(names, i));
   }
+}
+
+static void wm_protocols_atom_cb(void *user_data, uint32_t atom,
+                                 UtObject *error) {
+  assert(error == NULL);
+  wm_protocols_atom = atom;
+}
+
+static void wm_delete_window_atom_cb(void *user_data, uint32_t atom,
+                                     UtObject *error) {
+  assert(error == NULL);
+  wm_delete_window_atom = atom;
+
+  UtObjectRef protocols = ut_uint32_list_new();
+  ut_uint32_list_append(protocols, wm_delete_window_atom);
+  ut_x11_client_change_property_atom(client, window, wm_protocols_atom,
+                                     protocols);
 }
 
 static void connect_cb(void *user_data, UtObject *error) {
@@ -136,6 +168,11 @@ static void connect_cb(void *user_data, UtObject *error) {
   printf("Connected\n");
 
   ut_x11_client_list_extensions(client, list_extensions_cb, NULL, NULL);
+
+  ut_x11_client_intern_atom(client, "WM_PROTOCOLS", false, wm_protocols_atom_cb,
+                            NULL, NULL);
+  ut_x11_client_intern_atom(client, "WM_DELETE_WINDOW", false,
+                            wm_delete_window_atom_cb, NULL, NULL);
 
   window = ut_x11_client_create_window(
       client, 0, 0, 640, 480,

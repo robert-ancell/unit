@@ -105,6 +105,8 @@ typedef void (*UtX11ConfigureNotifyCallback)(void *user_data, uint32_t window,
                                              uint16_t width, uint16_t height);
 typedef void (*UtX11PropertyNotifyCallback)(void *user_data, uint32_t window,
                                             uint32_t atom);
+typedef void (*UtX11ClientMessageCallback)(void *user_data, uint32_t window,
+                                           uint32_t type, UtObject *data);
 
 // From XFIXES
 typedef void (*UtX11SelectionNotifyCallback)(void *user_data, uint32_t window,
@@ -150,6 +152,7 @@ typedef struct {
   UtX11ReparentNotifyCallback reparent_notify;
   UtX11ConfigureNotifyCallback configure_notify;
   UtX11PropertyNotifyCallback property_notify;
+  UtX11ClientMessageCallback client_message;
 
   // From XFIXES
   UtX11SelectionNotifyCallback selection_notify;
@@ -254,6 +257,9 @@ void ut_x11_client_change_property_uint16(UtObject *object, uint32_t window,
 void ut_x11_client_change_property_uint32(UtObject *object, uint32_t window,
                                           uint32_t property, uint32_t type,
                                           UtObject *value);
+
+void ut_x11_client_change_property_atom(UtObject *object, uint32_t window,
+                                        uint32_t property, UtObject *value);
 
 void ut_x11_client_change_property_string(UtObject *object, uint32_t window,
                                           uint32_t property, const char *value);
