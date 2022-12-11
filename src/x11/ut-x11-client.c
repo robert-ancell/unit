@@ -155,8 +155,6 @@ struct _UtX11Client {
   UtObject *present_extension;
 
   const UtX11EventCallbacks *event_callbacks;
-  const UtX11XfixesEventCallbacks *xfixes_event_callbacks;
-  const UtX11PresentEventCallbacks *present_event_callbacks;
   UtX11ClientErrorCallback error_callback;
   void *callback_user_data;
   UtObject *callback_cancel;
@@ -257,7 +255,7 @@ static void decode_query_extension_reply(UtObject *object, uint8_t data0,
     } else if (ut_cstring_equal(query_extension_data->name, "XFIXES")) {
       self->xfixes_extension = ut_x11_xfixes_extension_new(
           (UtObject *)self, major_opcode, first_event, first_error,
-          self->xfixes_event_callbacks, self->callback_user_data,
+          self->event_callbacks, self->callback_user_data,
           self->callback_cancel);
       ut_list_append(self->extensions, self->xfixes_extension);
 
@@ -281,7 +279,7 @@ static void decode_query_extension_reply(UtObject *object, uint8_t data0,
           self->shape_extension, shape_query_version_cb, self, self->cancel);
     } else if (ut_cstring_equal(query_extension_data->name, "Present")) {
       self->present_extension = ut_x11_present_extension_new(
-          (UtObject *)self, major_opcode, self->present_event_callbacks,
+          (UtObject *)self, major_opcode, self->event_callbacks,
           self->callback_user_data, self->callback_cancel);
       ut_list_append(self->extensions, self->present_extension);
 
@@ -1303,18 +1301,14 @@ static UtObjectInterface object_interface = {.type_name = "UtX11Client",
                                              .cleanup = ut_x11_client_cleanup,
                                              .interfaces = {{NULL, NULL}}};
 
-UtObject *
-ut_x11_client_new(const UtX11EventCallbacks *event_callbacks,
-                  const UtX11XfixesEventCallbacks *xfixes_event_callbacks,
-                  const UtX11PresentEventCallbacks *present_event_callbacks,
-                  UtX11ClientErrorCallback error_callback, void *user_data,
-                  UtObject *cancel) {
+UtObject *ut_x11_client_new(const UtX11EventCallbacks *event_callbacks,
+                            UtX11ClientErrorCallback error_callback,
+                            void *user_data, UtObject *cancel) {
   UtObject *object = ut_object_new(sizeof(UtX11Client), &object_interface);
   UtX11Client *self = (UtX11Client *)object;
   UtObjectRef address = ut_unix_socket_address_new("/tmp/.X11-unix/X0");
   self->socket = ut_tcp_socket_new(address, 0);
   self->event_callbacks = event_callbacks;
-  self->present_event_callbacks = present_event_callbacks;
   self->error_callback = error_callback;
   self->callback_user_data = user_data;
   self->callback_cancel = ut_object_ref(cancel);

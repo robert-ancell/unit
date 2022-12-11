@@ -5,20 +5,6 @@
 
 #pragma once
 
-typedef void (*UtX11XfixesSelectionNotifyCallback)(
-    void *user_data, uint32_t window, uint32_t owner, uint32_t selection,
-    uint32_t timestamp, uint32_t selection_timestamp);
-typedef void (*UtX11XfixesCursorNotifyCallback)(void *user_data,
-                                                uint32_t window,
-                                                uint32_t cursor_serial,
-                                                uint32_t timestamp,
-                                                uint32_t name);
-
-typedef struct {
-  UtX11XfixesSelectionNotifyCallback selection_notify;
-  UtX11XfixesCursorNotifyCallback cursor_notify;
-} UtX11XfixesEventCallbacks;
-
 typedef void (*UtX11ClientXfixesQueryVersionCallback)(void *user_data,
                                                       uint32_t major_version,
                                                       uint32_t minor_version,
@@ -40,7 +26,7 @@ typedef void (*UtX11ClientXfixesGetCursorImageAndNameCallback)(
 UtObject *
 ut_x11_xfixes_extension_new(UtObject *client, uint8_t major_opcode,
                             uint8_t first_event, uint8_t first_error,
-                            const UtX11XfixesEventCallbacks *event_callbacks,
+                            const UtX11EventCallbacks *event_callbacks,
                             void *user_data, UtObject *cancel);
 
 void ut_x11_xfixes_extension_query_version(

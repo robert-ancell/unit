@@ -27,7 +27,7 @@ typedef struct {
   UtObject object;
   UtObject *client;
   uint8_t major_opcode;
-  const UtX11PresentEventCallbacks *event_callbacks;
+  const UtX11EventCallbacks *event_callbacks;
   void *user_data;
   UtObject *cancel;
 } UtX11PresentExtension;
@@ -73,9 +73,9 @@ static void decode_configure_notify(UtX11PresentExtension *self,
   uint16_t pixmap_height = ut_x11_buffer_get_card16(data, &offset);
   uint32_t pixmap_flags = ut_x11_buffer_get_card16(data, &offset);
 
-  if (self->event_callbacks->configure_notify != NULL &&
+  if (self->event_callbacks->present_configure_notify != NULL &&
       !ut_cancel_is_active(self->cancel)) {
-    self->event_callbacks->configure_notify(
+    self->event_callbacks->present_configure_notify(
         self->user_data, event_id, window, x, y, width, height, off_x, off_y,
         pixmap_width, pixmap_height, pixmap_flags);
   }
@@ -92,10 +92,10 @@ static void decode_complete_notify(UtX11PresentExtension *self,
   uint64_t ust = ut_x11_buffer_get_card64(data, &offset);
   uint64_t msc = ut_x11_buffer_get_card64(data, &offset);
 
-  if (self->event_callbacks->complete_notify != NULL &&
+  if (self->event_callbacks->present_complete_notify != NULL &&
       !ut_cancel_is_active(self->cancel)) {
-    self->event_callbacks->complete_notify(self->user_data, kind, mode,
-                                           event_id, window, serial, ust, msc);
+    self->event_callbacks->present_complete_notify(
+        self->user_data, kind, mode, event_id, window, serial, ust, msc);
   }
 }
 
@@ -108,10 +108,10 @@ static void decode_idle_notify(UtX11PresentExtension *self, UtObject *data) {
   uint32_t pixmap = ut_x11_buffer_get_card32(data, &offset);
   uint32_t idle_fence = ut_x11_buffer_get_card32(data, &offset);
 
-  if (self->event_callbacks->idle_notify != NULL &&
+  if (self->event_callbacks->present_idle_notify != NULL &&
       !ut_cancel_is_active(self->cancel)) {
-    self->event_callbacks->idle_notify(self->user_data, event_id, window,
-                                       serial, pixmap, idle_fence);
+    self->event_callbacks->present_idle_notify(
+        self->user_data, event_id, window, serial, pixmap, idle_fence);
   }
 }
 
@@ -163,7 +163,7 @@ static UtObjectInterface object_interface = {
 
 UtObject *
 ut_x11_present_extension_new(UtObject *client, uint8_t major_opcode,
-                             const UtX11PresentEventCallbacks *event_callbacks,
+                             const UtX11EventCallbacks *event_callbacks,
                              void *user_data, UtObject *cancel) {
   UtObject *object =
       ut_object_new(sizeof(UtX11PresentExtension), &object_interface);

@@ -62,20 +62,6 @@ static void expose_cb(void *user_data, uint32_t window, uint16_t x, uint16_t y,
                           height);
 }
 
-static UtX11EventCallbacks event_callbacks = {.enter_notify = enter_notify_cb,
-                                              .leave_notify = leave_notify_cb,
-                                              .motion_notify = motion_notify_cb,
-                                              .button_press = button_press_cb,
-                                              .button_release =
-                                                  button_release_cb,
-                                              .focus_in = focus_in_cb,
-                                              .focus_out = focus_out_cb,
-                                              .key_press = key_press_cb,
-                                              .key_release = key_release_cb,
-                                              .expose = expose_cb};
-
-static UtX11XfixesEventCallbacks xfixes_event_callbacks = {};
-
 static void present_configure_notify_cb(
     void *user_data, uint32_t event_id, uint32_t window, int16_t x, int16_t y,
     uint16_t width, uint16_t height, int16_t off_x, int16_t off_y,
@@ -96,10 +82,20 @@ static void present_idle_notify_cb(void *user_data, uint32_t event_id,
   printf("PresentIdleNotify\n");
 }
 
-static UtX11PresentEventCallbacks present_event_callbacks = {
-    .configure_notify = present_configure_notify_cb,
-    .complete_notify = present_complete_notify_cb,
-    .idle_notify = present_idle_notify_cb,
+static UtX11EventCallbacks event_callbacks = {
+    .enter_notify = enter_notify_cb,
+    .leave_notify = leave_notify_cb,
+    .motion_notify = motion_notify_cb,
+    .button_press = button_press_cb,
+    .button_release = button_release_cb,
+    .focus_in = focus_in_cb,
+    .focus_out = focus_out_cb,
+    .key_press = key_press_cb,
+    .key_release = key_release_cb,
+    .expose = expose_cb,
+    .present_configure_notify = present_configure_notify_cb,
+    .present_complete_notify = present_complete_notify_cb,
+    .present_idle_notify = present_idle_notify_cb,
 };
 
 static void error_cb(void *user_data, UtObject *error) {
@@ -178,8 +174,7 @@ static void connect_cb(void *user_data, UtObject *error) {
 }
 
 int main(int argc, char **argv) {
-  client = ut_x11_client_new(&event_callbacks, &xfixes_event_callbacks,
-                             &present_event_callbacks, error_cb, NULL, NULL);
+  client = ut_x11_client_new(&event_callbacks, error_cb, NULL, NULL);
   ut_x11_client_connect(client, connect_cb, NULL, NULL);
 
   ut_event_loop_run();

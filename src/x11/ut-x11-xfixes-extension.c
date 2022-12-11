@@ -29,7 +29,7 @@ typedef struct {
   uint8_t major_opcode;
   uint8_t first_event;
   uint8_t first_error;
-  const UtX11XfixesEventCallbacks *event_callbacks;
+  const UtX11EventCallbacks *event_callbacks;
   void *user_data;
   UtObject *cancel;
 } UtX11XfixesExtension;
@@ -263,7 +263,7 @@ static UtObjectInterface object_interface = {
 UtObject *
 ut_x11_xfixes_extension_new(UtObject *client, uint8_t major_opcode,
                             uint8_t first_event, uint8_t first_error,
-                            const UtX11XfixesEventCallbacks *event_callbacks,
+                            const UtX11EventCallbacks *event_callbacks,
                             void *user_data, UtObject *cancel) {
   UtObject *object =
       ut_object_new(sizeof(UtX11XfixesExtension), &object_interface);

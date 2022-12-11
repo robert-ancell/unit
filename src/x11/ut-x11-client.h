@@ -1,8 +1,6 @@
 #include <stdbool.h>
 
 #include "ut-object.h"
-#include "ut-x11-present-extension.h"
-#include "ut-x11-xfixes-extension.h"
 
 #pragma once
 
@@ -39,6 +37,29 @@ typedef void (*UtX11ConfigureNotifyCallback)(void *user_data, uint32_t window,
 typedef void (*UtX11PropertyNotifyCallback)(void *user_data, uint32_t window,
                                             uint32_t atom);
 
+// From XFIXES
+typedef void (*UtX11SelectionNotifyCallback)(void *user_data, uint32_t window,
+                                             uint32_t owner, uint32_t selection,
+                                             uint32_t timestamp,
+                                             uint32_t selection_timestamp);
+typedef void (*UtX11CursorNotifyCallback)(void *user_data, uint32_t window,
+                                          uint32_t cursor_serial,
+                                          uint32_t timestamp, uint32_t name);
+
+// From PRESENT
+typedef void (*UtX11PresentConfigureNotifyCallback)(
+    void *user_data, uint32_t event_id, uint32_t window, int16_t x, int16_t y,
+    uint16_t width, uint16_t height, int16_t off_x, int16_t off_y,
+    uint16_t pixmap_width, uint16_t pixmap_height, uint32_t pixmap_flags);
+typedef void (*UtX11PresentCompleteNotifyCallback)(
+    void *user_data, uint8_t kind, uint8_t mode, uint32_t event_id,
+    uint32_t window, uint32_t serial, uint64_t ust, uint64_t msc);
+typedef void (*UtX11PresentIdleNotifyCallback)(void *user_data,
+                                               uint32_t event_id,
+                                               uint32_t window, uint32_t serial,
+                                               uint32_t pixmap,
+                                               uint32_t idle_fence);
+
 typedef void (*UtX11UnknownEventCallback)(void *user_data, uint8_t code);
 typedef void (*UtX11UnknownGenericEventCallback)(void *user_data,
                                                  uint8_t major_opcode,
@@ -60,6 +81,15 @@ typedef struct {
   UtX11ReparentNotifyCallback reparent_notify;
   UtX11ConfigureNotifyCallback configure_notify;
   UtX11PropertyNotifyCallback property_notify;
+
+  // From XFIXES
+  UtX11SelectionNotifyCallback selection_notify;
+  UtX11CursorNotifyCallback cursor_notify;
+
+  // From PRESENT
+  UtX11PresentConfigureNotifyCallback present_configure_notify;
+  UtX11PresentCompleteNotifyCallback present_complete_notify;
+  UtX11PresentIdleNotifyCallback present_idle_notify;
 
   UtX11UnknownEventCallback unknown_event;
   UtX11UnknownGenericEventCallback unknown_generic_event;
@@ -113,12 +143,9 @@ typedef enum {
   UT_X11_IMAGE_FORMAT_Z_PIXMAP
 } UtX11ImageFormat;
 
-UtObject *
-ut_x11_client_new(const UtX11EventCallbacks *event_callbacks,
-                  const UtX11XfixesEventCallbacks *xfixes_event_callbacks,
-                  const UtX11PresentEventCallbacks *present_event_callbacks,
-                  UtX11ClientErrorCallback error_callback, void *user_data,
-                  UtObject *cancel);
+UtObject *ut_x11_client_new(const UtX11EventCallbacks *event_callbacks,
+                            UtX11ClientErrorCallback error_callback,
+                            void *user_data, UtObject *cancel);
 
 void ut_x11_client_connect(UtObject *object,
                            UtX11ClientConnectCallback callback, void *user_data,
