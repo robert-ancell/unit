@@ -5,7 +5,10 @@
 
 #pragma once
 
-typedef void (*UtX11MitShmEnableCallback)(void *user_data, UtObject *error);
+typedef void (*UtX11MitShmQueryVersionCallback)(
+    void *user_data, uint16_t major_version, uint16_t minor_version,
+    uint16_t uid, uint16_t gid, uint8_t pixmap_format, bool shared_pixmaps,
+    UtObject *error);
 typedef void (*UtX11MitShmCreateSegmentCallback)(void *user_data, UtObject *fd,
                                                  UtObject *error);
 
@@ -13,17 +16,9 @@ UtObject *ut_x11_mit_shm_extension_new(UtObject *client, uint8_t major_opcode,
                                        uint8_t first_event,
                                        uint8_t first_error);
 
-void ut_x11_mit_shm_extension_enable(UtObject *object,
-                                     UtX11MitShmEnableCallback callback,
-                                     void *user_data, UtObject *cancel);
-
-uint16_t ut_x11_mit_shm_extension_get_uid(UtObject *object);
-
-uint16_t ut_x11_mit_shm_extension_get_gid(UtObject *object);
-
-uint8_t ut_x11_mit_shm_extension_get_pixmap_format(UtObject *object);
-
-bool ut_x11_mit_shm_extension_get_shared_pixmaps(UtObject *object);
+void ut_x11_mit_shm_extension_query_version(
+    UtObject *object, UtX11MitShmQueryVersionCallback callback, void *user_data,
+    UtObject *cancel);
 
 uint32_t ut_x11_mit_shm_extension_attach(UtObject *object, uint32_t shmid,
                                          bool read_only);

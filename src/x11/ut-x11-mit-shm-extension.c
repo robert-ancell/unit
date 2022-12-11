@@ -35,30 +35,26 @@ struct _UtX11MitShmExtension {
   uint8_t major_opcode;
   uint8_t first_event;
   uint8_t first_error;
-  uint16_t uid;
-  uint16_t gid;
-  uint8_t pixmap_format;
-  bool shared_pixmaps;
 };
 
 static void decode_shm_query_version_reply(UtObject *user_data, uint8_t data0,
                                            UtObject *data) {
   CallbackData *callback_data = (CallbackData *)user_data;
-  UtX11MitShmExtension *self = callback_data->self;
 
   size_t offset = 0;
-  self->shared_pixmaps = data0 != 0;
-  /*uint16_t major_version = */ ut_x11_buffer_get_card16(data, &offset);
-  /*uint16_t minor_version = */ ut_x11_buffer_get_card16(data, &offset);
-  self->uid = ut_x11_buffer_get_card16(data, &offset);
-  self->gid = ut_x11_buffer_get_card16(data, &offset);
-  self->pixmap_format = ut_x11_buffer_get_card8(data, &offset);
+  bool shared_pixmaps = data0 != 0;
+  uint16_t major_version = ut_x11_buffer_get_card16(data, &offset);
+  uint16_t minor_version = ut_x11_buffer_get_card16(data, &offset);
+  uint16_t uid = ut_x11_buffer_get_card16(data, &offset);
+  uint16_t gid = ut_x11_buffer_get_card16(data, &offset);
+  uint8_t pixmap_format = ut_x11_buffer_get_card8(data, &offset);
   ut_x11_buffer_get_padding(data, &offset, 15);
 
   if (callback_data->callback != NULL) {
-    UtX11MitShmEnableCallback callback =
-        (UtX11MitShmEnableCallback)callback_data->callback;
-    callback(callback_data->user_data, NULL);
+    UtX11MitShmQueryVersionCallback callback =
+        (UtX11MitShmQueryVersionCallback)callback_data->callback;
+    callback(callback_data->user_data, major_version, minor_version, uid, gid,
+             pixmap_format, shared_pixmaps, NULL);
   }
 }
 
@@ -67,9 +63,9 @@ static void handle_shm_query_version_error(UtObject *user_data,
   CallbackData *callback_data = (CallbackData *)user_data;
 
   if (callback_data->callback != NULL) {
-    UtX11MitShmEnableCallback callback =
-        (UtX11MitShmEnableCallback)callback_data->callback;
-    callback(callback_data->user_data, error);
+    UtX11MitShmQueryVersionCallback callback =
+        (UtX11MitShmQueryVersionCallback)callback_data->callback;
+    callback(callback_data->user_data, 0, 0, 0, 0, 0, false, error);
   }
 }
 
@@ -143,9 +139,9 @@ UtObject *ut_x11_mit_shm_extension_new(UtObject *client, uint8_t major_opcode,
   return object;
 }
 
-void ut_x11_mit_shm_extension_enable(UtObject *object,
-                                     UtX11MitShmEnableCallback callback,
-                                     void *user_data, UtObject *cancel) {
+void ut_x11_mit_shm_extension_query_version(
+    UtObject *object, UtX11MitShmQueryVersionCallback callback, void *user_data,
+    UtObject *cancel) {
   assert(ut_object_is_x11_mit_shm_extension(object));
   UtX11MitShmExtension *self = (UtX11MitShmExtension *)object;
 
@@ -154,30 +150,6 @@ void ut_x11_mit_shm_extension_enable(UtObject *object,
       (UtObject *)self->client, self->major_opcode, 0, request,
       decode_shm_query_version_reply, handle_shm_query_version_error,
       callback_data_new(self, callback, user_data), cancel);
-}
-
-uint16_t ut_x11_mit_shm_extension_get_uid(UtObject *object) {
-  assert(ut_object_is_x11_mit_shm_extension(object));
-  UtX11MitShmExtension *self = (UtX11MitShmExtension *)object;
-  return self->uid;
-}
-
-uint16_t ut_x11_mit_shm_extension_get_gid(UtObject *object) {
-  assert(ut_object_is_x11_mit_shm_extension(object));
-  UtX11MitShmExtension *self = (UtX11MitShmExtension *)object;
-  return self->gid;
-}
-
-uint8_t ut_x11_mit_shm_extension_get_pixmap_format(UtObject *object) {
-  assert(ut_object_is_x11_mit_shm_extension(object));
-  UtX11MitShmExtension *self = (UtX11MitShmExtension *)object;
-  return self->pixmap_format;
-}
-
-bool ut_x11_mit_shm_extension_get_shared_pixmaps(UtObject *object) {
-  assert(ut_object_is_x11_mit_shm_extension(object));
-  UtX11MitShmExtension *self = (UtX11MitShmExtension *)object;
-  return self->shared_pixmaps;
 }
 
 uint32_t ut_x11_mit_shm_extension_attach(UtObject *object, uint32_t shmid,

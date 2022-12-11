@@ -213,7 +213,10 @@ static void decode_big_requests_enable_reply(UtObject *object, uint8_t data0,
 static void handle_big_requests_enable_error(UtObject *object,
                                              UtObject *error) {}
 
-static void mit_shm_enable_cb(void *user_data, UtObject *error) {}
+static void mit_shm_query_version_cb(void *user_data, uint16_t major_version,
+                                     uint16_t minor_version, uint16_t uid,
+                                     uint16_t gid, uint8_t pixmap_format,
+                                     bool shared_pixmaps, UtObject *error) {}
 
 static void present_query_version_cb(void *user_data, uint32_t version_major,
                                      uint32_t version_minor, UtObject *error) {}
@@ -247,8 +250,9 @@ static void decode_query_extension_reply(UtObject *object, uint8_t data0,
           (UtObject *)self, major_opcode, first_event, first_error);
       ut_list_append(self->extensions, self->mit_shm_extension);
 
-      ut_x11_mit_shm_extension_enable(self->mit_shm_extension,
-                                      mit_shm_enable_cb, self, self->cancel);
+      ut_x11_mit_shm_extension_query_version(self->mit_shm_extension,
+                                             mit_shm_query_version_cb, self,
+                                             self->cancel);
     } else if (ut_cstring_equal(query_extension_data->name, "Present")) {
       self->present_extension = ut_x11_present_extension_new(
           (UtObject *)self, major_opcode, self->present_event_callbacks,
