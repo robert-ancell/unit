@@ -118,15 +118,6 @@ static void error_cb(void *user_data, UtObject *error) {
   printf("%s\n", s);
 }
 
-static void intern_atom_cb(void *user_data, uint32_t atom, UtObject *error) {
-  printf("Atom %08x\n", atom);
-}
-
-static void get_atom_name_cb(void *user_data, const char *name,
-                             UtObject *error) {
-  printf("Atom name \"%s\"\n", name);
-}
-
 static void list_extensions_cb(void *user_data, UtObject *names,
                                UtObject *error) {
   size_t names_length = ut_list_get_length(names);
@@ -143,11 +134,6 @@ static void connect_cb(void *user_data, UtObject *error) {
   }
 
   printf("Connected\n");
-
-  ut_x11_client_intern_atom(client, "HELLO-WORLD", true, intern_atom_cb, NULL,
-                            NULL);
-
-  ut_x11_client_get_atom_name(client, 0x00000001, get_atom_name_cb, NULL, NULL);
 
   ut_x11_client_list_extensions(client, list_extensions_cb, NULL, NULL);
 
