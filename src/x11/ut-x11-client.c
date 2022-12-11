@@ -1457,9 +1457,92 @@ void ut_x11_client_get_atom_name(UtObject *object, uint32_t atom,
       cancel);
 }
 
-void ut_x11_client_change_property(UtObject *object, uint32_t window,
-                                   uint32_t property, uint32_t type) {
+void ut_x11_client_change_property_uint8(UtObject *object, uint32_t window,
+                                         uint32_t property, uint32_t type,
+                                         UtObject *data) {
   assert(ut_object_is_x11_client(object));
+
+  uint8_t mode = 0; // Replace
+
+  UtObjectRef request = ut_x11_buffer_new();
+  ut_x11_buffer_append_card32(request, window);
+  ut_x11_buffer_append_card32(request, property);
+  ut_x11_buffer_append_card32(request, type);
+  ut_x11_buffer_append_card8(request, 8); // format
+  ut_x11_buffer_append_padding(request, 3);
+  size_t data_length = ut_list_get_length(data);
+  ut_x11_buffer_append_card32(request, data_length);
+  for (size_t i = 0; i < data_length; i++) {
+    ut_x11_buffer_append_card8(request, ut_uint8_list_get_element(data, i));
+  }
+  ut_x11_buffer_append_align_padding(request, 4);
+
+  ut_x11_client_send_request(object, 18, mode, request);
+}
+
+void ut_x11_client_change_property_uint16(UtObject *object, uint32_t window,
+                                          uint32_t property, uint32_t type,
+                                          UtObject *data) {
+  assert(ut_object_is_x11_client(object));
+
+  uint8_t mode = 0; // Replace
+
+  UtObjectRef request = ut_x11_buffer_new();
+  ut_x11_buffer_append_card32(request, window);
+  ut_x11_buffer_append_card32(request, property);
+  ut_x11_buffer_append_card32(request, type);
+  ut_x11_buffer_append_card8(request, 16); // format
+  ut_x11_buffer_append_padding(request, 3);
+  size_t data_length = ut_list_get_length(data);
+  ut_x11_buffer_append_card32(request, data_length);
+  for (size_t i = 0; i < data_length; i++) {
+    ut_x11_buffer_append_card16(request, ut_uint16_list_get_element(data, i));
+  }
+  ut_x11_buffer_append_align_padding(request, 4);
+
+  ut_x11_client_send_request(object, 18, mode, request);
+}
+
+void ut_x11_client_change_property_uint32(UtObject *object, uint32_t window,
+                                          uint32_t property, uint32_t type,
+                                          UtObject *data) {
+  assert(ut_object_is_x11_client(object));
+
+  uint8_t mode = 0; // Replace
+
+  UtObjectRef request = ut_x11_buffer_new();
+  ut_x11_buffer_append_card32(request, window);
+  ut_x11_buffer_append_card32(request, property);
+  ut_x11_buffer_append_card32(request, type);
+  ut_x11_buffer_append_card8(request, 32); // format
+  ut_x11_buffer_append_padding(request, 3);
+  size_t data_length = ut_list_get_length(data);
+  ut_x11_buffer_append_card32(request, data_length);
+  for (size_t i = 0; i < data_length; i++) {
+    ut_x11_buffer_append_card32(request, ut_uint32_list_get_element(data, i));
+  }
+
+  ut_x11_client_send_request(object, 18, mode, request);
+}
+
+void ut_x11_client_change_property_string(UtObject *object, uint32_t window,
+                                          uint32_t property,
+                                          const char *value) {
+  assert(ut_object_is_x11_client(object));
+
+  uint8_t mode = 0; // Replace
+
+  UtObjectRef request = ut_x11_buffer_new();
+  ut_x11_buffer_append_card32(request, window);
+  ut_x11_buffer_append_card32(request, property);
+  ut_x11_buffer_append_card32(request, UT_X11_ATOM_STRING);
+  ut_x11_buffer_append_card8(request, 8); // format
+  ut_x11_buffer_append_padding(request, 3);
+  ut_x11_buffer_append_card32(request, ut_cstring_get_length(value));
+  ut_x11_buffer_append_string8(request, value);
+  ut_x11_buffer_append_align_padding(request, 4);
+
+  ut_x11_client_send_request(object, 18, mode, request);
 }
 
 void ut_x11_client_delete_property(UtObject *object, uint32_t window,

@@ -159,6 +159,9 @@ static void connect_cb(void *user_data, UtObject *error) {
           UT_X11_EVENT_POINTER_MOTION | UT_X11_EVENT_STRUCTURE_NOTIFY |
           UT_X11_EVENT_EXPOSURE | UT_X11_EVENT_FOCUS_CHANGE);
 
+  ut_x11_client_change_property_string(client, window, UT_X11_ATOM_WM_NAME,
+                                       "UT");
+
   ut_x11_client_map_window(client, window);
 }
 
