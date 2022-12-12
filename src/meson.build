@@ -136,6 +136,7 @@ ut_sources = [
   'x11/ut-x11-alloc-error.c',
   'x11/ut-x11-atom-error.c',
   'x11/ut-x11-bad-region-error.c',
+  'x11/ut-x11-big-requests-extension.c',
   'x11/ut-x11-buffer.c',
   'x11/ut-x11-client.c',
   'x11/ut-x11-colormap-error.c',

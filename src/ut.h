@@ -119,6 +119,7 @@
 #include "x11/ut-x11-alloc-error.h"
 #include "x11/ut-x11-atom-error.h"
 #include "x11/ut-x11-bad-region-error.h"
+#include "x11/ut-x11-big-requests-extension.h"
 #include "x11/ut-x11-client.h"
 #include "x11/ut-x11-colormap-error.h"
 #include "x11/ut-x11-drawable-error.h"

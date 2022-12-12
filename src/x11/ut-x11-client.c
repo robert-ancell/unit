@@ -202,16 +202,6 @@ static void decode_generic_event_enable_reply(UtObject *object, uint8_t data0,
 static void handle_generic_event_enable_error(UtObject *object,
                                               UtObject *error) {}
 
-static void decode_big_requests_enable_reply(UtObject *object, uint8_t data0,
-                                             UtObject *data) {
-  UtX11Client *self = (UtX11Client *)object;
-
-  size_t offset = 0;
-  uint32_t maximum_request_length = ut_x11_buffer_get_card32(data, &offset);
-
-  self->maximum_request_length = maximum_request_length;
-}
-
 static void shape_query_version_cb(void *user_data, uint16_t major_version,
                                    uint16_t minor_version, UtObject *error) {}
 
@@ -220,8 +210,12 @@ static void mit_shm_query_version_cb(void *user_data, uint16_t major_version,
                                      uint16_t gid, uint8_t pixmap_format,
                                      bool shared_pixmaps, UtObject *error) {}
 
-static void handle_big_requests_enable_error(UtObject *object,
-                                             UtObject *error) {}
+static void big_requests_enable_cb(void *user_data,
+                                   uint32_t maximum_request_length,
+                                   UtObject *error) {
+  UtX11Client *self = user_data;
+  self->maximum_request_length = maximum_request_length;
+}
 
 static void sync_initialize_cb(void *user_data, uint8_t version_major,
                                uint8_t version_minor, UtObject *error) {}
@@ -268,10 +262,12 @@ static void decode_query_extension_reply(UtObject *object, uint8_t data0,
                                              mit_shm_query_version_cb, self,
                                              self->cancel);
     } else if (ut_cstring_equal(query_extension_data->name, "BIG-REQUESTS")) {
-      ut_x11_client_send_request_with_reply(
-          (UtObject *)self, major_opcode, 0, NULL,
-          decode_big_requests_enable_reply, handle_big_requests_enable_error,
-          (void *)self, self->cancel);
+      UtObjectRef big_requests_extension =
+          ut_x11_big_requests_extension_new((UtObject *)self, major_opcode);
+      ut_list_append(self->extensions, big_requests_extension);
+
+      ut_x11_big_requests_extension_enable(
+          big_requests_extension, big_requests_enable_cb, self, self->cancel);
     } else if (ut_cstring_equal(query_extension_data->name, "SYNC")) {
       self->sync_extension = ut_x11_sync_extension_new(
           (UtObject *)self, major_opcode, first_event, first_error,
