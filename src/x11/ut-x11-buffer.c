@@ -62,9 +62,17 @@ void ut_x11_buffer_append_card32(UtObject *object, uint32_t value) {
                                  value);
 }
 
+void ut_x11_buffer_append_int32(UtObject *object, int32_t value) {
+  ut_x11_buffer_append_card32(object, (uint32_t)value);
+}
+
 void ut_x11_buffer_append_card64(UtObject *object, uint64_t value) {
   ut_uint8_list_append_uint64_le(ut_uint8_array_with_fds_get_data(object),
                                  value);
+}
+
+void ut_x11_buffer_append_int64(UtObject *object, int64_t value) {
+  ut_x11_buffer_append_card64(object, (uint64_t)value);
 }
 
 void ut_x11_buffer_append_value_card16(UtObject *object, uint16_t value) {
@@ -132,6 +140,10 @@ uint32_t ut_x11_buffer_get_card32(UtObject *object, size_t *offset) {
   return byte1 | byte2 << 8 | byte3 << 16 | byte4 << 24;
 }
 
+int32_t ut_x11_buffer_get_int32(UtObject *object, size_t *offset) {
+  return (int32_t)ut_x11_buffer_get_card32(object, offset);
+}
+
 uint64_t ut_x11_buffer_get_card64(UtObject *object, size_t *offset) {
   uint64_t byte1 = ut_x11_buffer_get_card8(object, offset);
   uint64_t byte2 = ut_x11_buffer_get_card8(object, offset);
@@ -143,6 +155,10 @@ uint64_t ut_x11_buffer_get_card64(UtObject *object, size_t *offset) {
   uint64_t byte8 = ut_x11_buffer_get_card8(object, offset);
   return byte1 | byte2 << 8 | byte3 << 16 | byte4 << 24 | byte5 << 32 |
          byte6 << 40 | byte7 << 48 | byte8 << 56;
+}
+
+int64_t ut_x11_buffer_get_int64(UtObject *object, size_t *offset) {
+  return (int64_t)ut_x11_buffer_get_card64(object, offset);
 }
 
 char *ut_x11_buffer_get_string8(UtObject *object, size_t *offset,

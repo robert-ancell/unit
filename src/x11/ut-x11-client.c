@@ -149,9 +149,10 @@ struct _UtX11Client {
   UtObject *read_cancel;
 
   UtObject *extensions;
-  UtObject *xfixes_extension;
-  UtObject *mit_shm_extension;
   UtObject *shape_extension;
+  UtObject *mit_shm_extension;
+  UtObject *sync_extension;
+  UtObject *xfixes_extension;
   UtObject *present_extension;
 
   const UtX11EventCallbacks *event_callbacks;
@@ -211,19 +212,22 @@ static void decode_big_requests_enable_reply(UtObject *object, uint8_t data0,
   self->maximum_request_length = maximum_request_length;
 }
 
-static void handle_big_requests_enable_error(UtObject *object,
-                                             UtObject *error) {}
-
-static void xfixes_query_version_cb(void *user_data, uint32_t version_major,
-                                    uint32_t version_minor, UtObject *error) {}
+static void shape_query_version_cb(void *user_data, uint16_t major_version,
+                                   uint16_t minor_version, UtObject *error) {}
 
 static void mit_shm_query_version_cb(void *user_data, uint16_t major_version,
                                      uint16_t minor_version, uint16_t uid,
                                      uint16_t gid, uint8_t pixmap_format,
                                      bool shared_pixmaps, UtObject *error) {}
 
-static void shape_query_version_cb(void *user_data, uint16_t major_version,
-                                   uint16_t minor_version, UtObject *error) {}
+static void handle_big_requests_enable_error(UtObject *object,
+                                             UtObject *error) {}
+
+static void sync_initialize_cb(void *user_data, uint8_t version_major,
+                               uint8_t version_minor, UtObject *error) {}
+
+static void xfixes_query_version_cb(void *user_data, uint32_t version_major,
+                                    uint32_t version_minor, UtObject *error) {}
 
 static void present_query_version_cb(void *user_data, uint32_t version_major,
                                      uint32_t version_minor, UtObject *error) {}
@@ -247,11 +251,36 @@ static void decode_query_extension_reply(UtObject *object, uint8_t data0,
           (UtObject *)self, major_opcode, 0, NULL,
           decode_generic_event_enable_reply, handle_generic_event_enable_error,
           (void *)self, self->cancel);
+    } else if (ut_cstring_equal(query_extension_data->name, "SHAPE")) {
+      self->shape_extension = ut_x11_shape_extension_new(
+          (UtObject *)self, major_opcode, first_event, NULL, NULL,
+          self->callback_cancel);
+      ut_list_append(self->extensions, self->shape_extension);
+
+      ut_x11_shape_extension_query_version(
+          self->shape_extension, shape_query_version_cb, self, self->cancel);
+    } else if (ut_cstring_equal(query_extension_data->name, "MIT-SHM")) {
+      self->mit_shm_extension = ut_x11_mit_shm_extension_new(
+          (UtObject *)self, major_opcode, first_event, first_error);
+      ut_list_append(self->extensions, self->mit_shm_extension);
+
+      ut_x11_mit_shm_extension_query_version(self->mit_shm_extension,
+                                             mit_shm_query_version_cb, self,
+                                             self->cancel);
     } else if (ut_cstring_equal(query_extension_data->name, "BIG-REQUESTS")) {
       ut_x11_client_send_request_with_reply(
           (UtObject *)self, major_opcode, 0, NULL,
           decode_big_requests_enable_reply, handle_big_requests_enable_error,
           (void *)self, self->cancel);
+    } else if (ut_cstring_equal(query_extension_data->name, "SYNC")) {
+      self->sync_extension = ut_x11_sync_extension_new(
+          (UtObject *)self, major_opcode, first_event, first_error,
+          self->event_callbacks, self->callback_user_data,
+          self->callback_cancel);
+      ut_list_append(self->extensions, self->sync_extension);
+
+      ut_x11_sync_extension_initialize(self->sync_extension, sync_initialize_cb,
+                                       self, self->cancel);
     } else if (ut_cstring_equal(query_extension_data->name, "XFIXES")) {
       self->xfixes_extension = ut_x11_xfixes_extension_new(
           (UtObject *)self, major_opcode, first_event, first_error,
@@ -261,22 +290,6 @@ static void decode_query_extension_reply(UtObject *object, uint8_t data0,
 
       ut_x11_xfixes_extension_query_version(
           self->xfixes_extension, xfixes_query_version_cb, self, self->cancel);
-    } else if (ut_cstring_equal(query_extension_data->name, "MIT-SHM")) {
-      self->mit_shm_extension = ut_x11_mit_shm_extension_new(
-          (UtObject *)self, major_opcode, first_event, first_error);
-      ut_list_append(self->extensions, self->mit_shm_extension);
-
-      ut_x11_mit_shm_extension_query_version(self->mit_shm_extension,
-                                             mit_shm_query_version_cb, self,
-                                             self->cancel);
-    } else if (ut_cstring_equal(query_extension_data->name, "SHAPE")) {
-      self->shape_extension = ut_x11_shape_extension_new(
-          (UtObject *)self, major_opcode, first_event, NULL, NULL,
-          self->callback_cancel);
-      ut_list_append(self->extensions, self->shape_extension);
-
-      ut_x11_shape_extension_query_version(
-          self->shape_extension, shape_query_version_cb, self, self->cancel);
     } else if (ut_cstring_equal(query_extension_data->name, "Present")) {
       self->present_extension = ut_x11_present_extension_new(
           (UtObject *)self, major_opcode, self->event_callbacks,
@@ -478,10 +491,11 @@ static size_t decode_setup_success(UtX11Client *self, UtObject *data) {
   self->setup_complete = true;
 
   query_extension(self, "Generic Event Extension");
-  query_extension(self, "BIG-REQUESTS");
-  query_extension(self, "XFIXES");
-  query_extension(self, "MIT-SHM");
   query_extension(self, "SHAPE");
+  query_extension(self, "MIT-SHM");
+  query_extension(self, "BIG-REQUESTS");
+  query_extension(self, "SYNC");
+  query_extension(self, "XFIXES");
   query_extension(self, "Present");
 
   return offset;
@@ -1320,7 +1334,10 @@ static void ut_x11_client_cleanup(UtObject *object) {
   ut_object_unref(self->socket);
   ut_object_unref(self->read_cancel);
   ut_object_unref(self->extensions);
+  ut_object_unref(self->shape_extension);
   ut_object_unref(self->mit_shm_extension);
+  ut_object_unref(self->sync_extension);
+  ut_object_unref(self->xfixes_extension);
   ut_object_unref(self->present_extension);
   ut_object_unref(self->callback_cancel);
   ut_object_unref(self->connect_cancel);

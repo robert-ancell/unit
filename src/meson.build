@@ -155,6 +155,7 @@ ut_sources = [
   'x11/ut-x11-request-error.c',
   'x11/ut-x11-shape-extension.c',
   'x11/ut-x11-shm-segment-error.c',
+  'x11/ut-x11-sync-extension.c',
   'x11/ut-x11-unknown-error.c',
   'x11/ut-x11-value-error.c',
   'x11/ut-x11-window-error.c',
