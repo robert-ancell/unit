@@ -1,4 +1,6 @@
 #include <assert.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "ut-x11-buffer.h"
 #include "ut-x11-client-private.h"
@@ -756,8 +758,6 @@ UtObject *ut_x11_client_new(const UtX11EventCallbacks *event_callbacks,
                             void *user_data, UtObject *cancel) {
   UtObject *object = ut_object_new(sizeof(UtX11Client), &object_interface);
   UtX11Client *self = (UtX11Client *)object;
-  UtObjectRef address = ut_unix_socket_address_new("/tmp/.X11-unix/X0");
-  self->socket = ut_tcp_socket_new(address, 0);
   self->event_callbacks = event_callbacks;
   self->error_callback = error_callback;
   self->callback_user_data = user_data;
@@ -771,6 +771,22 @@ void ut_x11_client_connect(UtObject *object,
   assert(ut_object_is_x11_client(object));
   UtX11Client *self = (UtX11Client *)object;
 
+  const char *display = getenv("DISPLAY");
+  if (display == NULL) {
+    // FIXME: Generate error
+    return;
+  }
+
+  char *divider = strchr(display, ':');
+  if (divider == NULL) {
+    // FIXME: Generate error
+    return;
+  }
+  size_t divider_index = divider - display;
+
+  ut_cstring_ref host = ut_cstring_substring(display, 0, divider_index);
+  int display_number = atoi(divider + 1);
+
   assert(callback != NULL);
 
   assert(self->connect_callback == NULL);
@@ -782,6 +798,10 @@ void ut_x11_client_connect(UtObject *object,
                                self->callback_user_data, self->callback_cancel);
   ut_list_append(self->extensions, self->core);
 
+  ut_cstring_ref socket_path =
+      ut_cstring_new_printf("/tmp/.X11-unix/X%d", display_number);
+  UtObjectRef address = ut_unix_socket_address_new(socket_path);
+  self->socket = ut_tcp_socket_new(address, 0);
   ut_tcp_socket_connect(self->socket, connect_cb, self, self->cancel);
   ut_input_stream_read(self->socket, read_cb, self, self->read_cancel);
 }

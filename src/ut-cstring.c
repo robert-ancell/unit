@@ -131,6 +131,6 @@ char *ut_cstring_join(const char *separator, const char *value0, ...) {
 }
 
 char *ut_cstring_substring(const char *value, size_t start, size_t end) {
-  assert(end > start);
+  assert(end >= start);
   return strndup(value + start, end - start);
 }
