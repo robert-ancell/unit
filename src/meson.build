@@ -163,6 +163,7 @@ ut_sources = [
   'x11/ut-x11-value-error.c',
   'x11/ut-x11-window-error.c',
   'x11/ut-x11-xfixes-extension.c',
+  'x11/ut-x11-xinput-extension.c',
   'xml/ut-xml-document.c',
   'xml/ut-xml-element.c',
   'zlib/ut-zlib-decoder.c',

@@ -12,6 +12,7 @@
 #include "ut-x11-shape-extension.h"
 #include "ut-x11-sync-extension.h"
 #include "ut-x11-xfixes-extension.h"
+#include "ut-x11-xinput-extension.h"
 #include "ut.h"
 
 typedef struct _UtX11Client UtX11Client;
@@ -117,6 +118,7 @@ struct _UtX11Client {
   UtObject *core;
   UtObject *shape_extension;
   UtObject *mit_shm_extension;
+  UtObject *xinput_extension;
   UtObject *sync_extension;
   UtObject *xfixes_extension;
   UtObject *present_extension;
@@ -165,6 +167,9 @@ static void generic_event_query_version_cb(void *user_data,
 
 static void shape_query_version_cb(void *user_data, uint16_t major_version,
                                    uint16_t minor_version, UtObject *error) {}
+
+static void xinput_query_version_cb(void *user_data, uint16_t major_version,
+                                    uint16_t minor_version, UtObject *error) {}
 
 static void mit_shm_query_version_cb(void *user_data, uint16_t major_version,
                                      uint16_t minor_version, uint16_t uid,
@@ -228,6 +233,21 @@ static void query_mit_shm_cb(void *user_data, bool present,
 
     ut_x11_mit_shm_extension_query_version(
         self->mit_shm_extension, mit_shm_query_version_cb, self, self->cancel);
+  }
+}
+
+static void query_xinput_cb(void *user_data, bool present, uint8_t major_opcode,
+                            uint8_t first_event, uint8_t first_error,
+                            UtObject *error) {
+  UtX11Client *self = user_data;
+  if (present) {
+    self->xinput_extension = ut_x11_xinput_extension_new(
+        (UtObject *)self, major_opcode, first_event, first_error,
+        self->event_callbacks, self->callback_user_data, self->callback_cancel);
+    ut_list_append(self->extensions, self->xinput_extension);
+
+    ut_x11_xinput_extension_query_version(
+        self->xinput_extension, xinput_query_version_cb, self, self->cancel);
   }
 }
 
@@ -470,6 +490,8 @@ static size_t decode_setup_success(UtX11Client *self, UtObject *data) {
                               self->cancel);
   ut_x11_core_query_extension(self->core, "MIT-SHM", query_mit_shm_cb, self,
                               self->cancel);
+  ut_x11_core_query_extension(self->core, "XInputExtension", query_xinput_cb,
+                              self, self->cancel);
   ut_x11_core_query_extension(self->core, "BIG-REQUESTS", query_big_requests_cb,
                               self, self->cancel);
   ut_x11_core_query_extension(self->core, "SYNC", query_sync_cb, self,
