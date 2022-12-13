@@ -596,6 +596,11 @@ static void handle_list_extensions_error(UtObject *object, UtObject *error) {
   }
 }
 
+static void ut_x11_core_cleanup(UtObject *object) {
+  UtX11Core *self = (UtX11Core *)object;
+  ut_object_unref(self->cancel);
+}
+
 static bool ut_x11_core_decode_event(UtObject *object, UtObject *data) {
   UtX11Core *self = (UtX11Core *)object;
 
@@ -702,11 +707,6 @@ static UtObject *ut_x11_core_decode_error(UtObject *object, UtObject *data) {
 static void ut_x11_core_close(UtObject *object) {
   UtX11Core *self = (UtX11Core *)object;
   self->client = NULL;
-}
-
-static void ut_x11_core_cleanup(UtObject *object) {
-  UtX11Core *self = (UtX11Core *)object;
-  ut_object_unref(self->cancel);
 }
 
 static UtX11ExtensionInterface x11_extension_interface = {

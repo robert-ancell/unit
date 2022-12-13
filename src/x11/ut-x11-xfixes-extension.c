@@ -205,6 +205,11 @@ static void decode_cursor_notify(UtX11XfixesExtension *self, UtObject *data) {
   }
 }
 
+static void ut_x11_xfixes_extension_cleanup(UtObject *object) {
+  UtX11XfixesExtension *self = (UtX11XfixesExtension *)object;
+  ut_object_unref(self->cancel);
+}
+
 static bool ut_x11_xfixes_extension_decode_event(UtObject *object,
                                                  UtObject *data) {
   UtX11XfixesExtension *self = (UtX11XfixesExtension *)object;
@@ -257,6 +262,7 @@ static UtX11ExtensionInterface x11_extension_interface = {
 
 static UtObjectInterface object_interface = {
     .type_name = "UtX11XfixesExtension",
+    .cleanup = ut_x11_xfixes_extension_cleanup,
     .interfaces = {{&ut_x11_extension_id, &x11_extension_interface},
                    {NULL, NULL}}};
 

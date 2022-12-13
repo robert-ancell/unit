@@ -87,6 +87,11 @@ static void handle_shape_query_version_error(UtObject *user_data,
   }
 }
 
+static void ut_x11_shape_extension_cleanup(UtObject *object) {
+  UtX11ShapeExtension *self = (UtX11ShapeExtension *)object;
+  ut_object_unref(self->cancel);
+}
+
 static bool ut_x11_shape_extension_decode_event(UtObject *object,
                                                 UtObject *data) {
   UtX11ShapeExtension *self = (UtX11ShapeExtension *)object;
@@ -118,6 +123,7 @@ static UtX11ExtensionInterface x11_extension_interface = {
 
 static UtObjectInterface object_interface = {
     .type_name = "UtX11ShapeExtension",
+    .cleanup = ut_x11_shape_extension_cleanup,
     .interfaces = {{&ut_x11_extension_id, &x11_extension_interface},
                    {NULL, NULL}}};
 

@@ -115,6 +115,11 @@ static void decode_idle_notify(UtX11PresentExtension *self, UtObject *data) {
   }
 }
 
+static void ut_x11_present_extension_cleanup(UtObject *object) {
+  UtX11PresentExtension *self = (UtX11PresentExtension *)object;
+  ut_object_unref(self->cancel);
+}
+
 static bool ut_x11_present_extension_decode_generic_event(UtObject *object,
                                                           uint8_t major_opcode,
                                                           uint16_t code,
@@ -158,6 +163,7 @@ static UtX11ExtensionInterface x11_extension_interface = {
 
 static UtObjectInterface object_interface = {
     .type_name = "UtX11PresentExtension",
+    .cleanup = ut_x11_present_extension_cleanup,
     .interfaces = {{&ut_x11_extension_id, &x11_extension_interface},
                    {NULL, NULL}}};
 

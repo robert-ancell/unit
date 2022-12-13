@@ -196,6 +196,11 @@ static void query_fence_error_cb(UtObject *object, UtObject *error) {
   }
 }
 
+static void ut_x11_sync_extension_cleanup(UtObject *object) {
+  UtX11SyncExtension *self = (UtX11SyncExtension *)object;
+  ut_object_unref(self->cancel);
+}
+
 static bool ut_x11_sync_extension_decode_event(UtObject *object,
                                                UtObject *data) {
   UtX11SyncExtension *self = (UtX11SyncExtension *)object;
@@ -230,6 +235,7 @@ static UtX11ExtensionInterface x11_extension_interface = {
 
 static UtObjectInterface object_interface = {
     .type_name = "UtX11SyncExtension",
+    .cleanup = ut_x11_sync_extension_cleanup,
     .interfaces = {{&ut_x11_extension_id, &x11_extension_interface},
                    {NULL, NULL}}};
 
