@@ -4,6 +4,7 @@
 #include "ut-x11-client-private.h"
 #include "ut-x11-core.h"
 #include "ut-x11-extension.h"
+#include "ut-x11-generic-event-extension.h"
 #include "ut-x11-mit-shm-extension.h"
 #include "ut.h"
 
@@ -151,15 +152,10 @@ static Request *find_request(UtX11Client *self, uint16_t sequence_number) {
   return NULL;
 }
 
-static void decode_generic_event_enable_reply(UtObject *object, uint8_t data0,
-                                              UtObject *data) {
-  size_t offset = 0;
-  /*uint16_t major_version = */ ut_x11_buffer_get_card16(data, &offset);
-  /*uint16_t minor_version = */ ut_x11_buffer_get_card16(data, &offset);
-}
-
-static void handle_generic_event_enable_error(UtObject *object,
-                                              UtObject *error) {}
+static void generic_event_query_version_cb(void *user_data,
+                                           uint16_t major_version,
+                                           uint16_t minor_version,
+                                           UtObject *error) {}
 
 static void shape_query_version_cb(void *user_data, uint16_t major_version,
                                    uint16_t minor_version, UtObject *error) {}
@@ -190,10 +186,13 @@ static void query_generic_event_cb(void *user_data, bool present,
                                    uint8_t first_error, UtObject *error) {
   UtX11Client *self = user_data;
   if (present) {
-    ut_x11_client_send_request_with_reply(
-        (UtObject *)self, major_opcode, 0, NULL,
-        decode_generic_event_enable_reply, handle_generic_event_enable_error,
-        (void *)self, self->cancel);
+    UtObjectRef generic_event_extension =
+        ut_x11_generic_event_extension_new((UtObject *)self, major_opcode);
+    ut_list_append(self->extensions, generic_event_extension);
+
+    ut_x11_generic_event_extension_query_version(generic_event_extension,
+                                                 generic_event_query_version_cb,
+                                                 self, self->cancel);
   }
 }
 

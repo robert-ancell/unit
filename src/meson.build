@@ -145,6 +145,7 @@ ut_sources = [
   'x11/ut-x11-error.c',
   'x11/ut-x11-extension.c',
   'x11/ut-x11-gcontext-error.c',
+  'x11/ut-x11-generic-event-extension.c',
   'x11/ut-x11-id-choice-error.c',
   'x11/ut-x11-implementation-error.c',
   'x11/ut-x11-length-error.c',
