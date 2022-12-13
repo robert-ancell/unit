@@ -2,6 +2,7 @@
 #include <stdint.h>
 
 #include "ut-object.h"
+#include "ut-x11-client.h"
 
 #pragma once
 

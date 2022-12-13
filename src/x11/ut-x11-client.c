@@ -6,6 +6,10 @@
 #include "ut-x11-extension.h"
 #include "ut-x11-generic-event-extension.h"
 #include "ut-x11-mit-shm-extension.h"
+#include "ut-x11-present-extension.h"
+#include "ut-x11-shape-extension.h"
+#include "ut-x11-sync-extension.h"
+#include "ut-x11-xfixes-extension.h"
 #include "ut.h"
 
 typedef struct _UtX11Client UtX11Client;
@@ -1056,12 +1060,6 @@ uint32_t ut_x11_client_shm_create_segment(
   UtX11Client *self = (UtX11Client *)object;
   return ut_x11_mit_shm_extension_create_segment(
       self->mit_shm_extension, size, read_only, callback, user_data, cancel);
-}
-
-UtObject *ut_x11_client_get_present_extension(UtObject *object) {
-  assert(ut_object_is_x11_client(object));
-  UtX11Client *self = (UtX11Client *)object;
-  return self->present_extension;
 }
 
 bool ut_object_is_x11_client(UtObject *object) {

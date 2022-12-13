@@ -343,6 +343,4 @@ uint32_t ut_x11_client_shm_create_segment(
     UtObject *object, uint32_t size, bool read_only,
     UtX11ShmCreateSegmentCallback callback, void *user_data, UtObject *cancel);
 
-UtObject *ut_x11_client_get_present_extension(UtObject *object);
-
 bool ut_object_is_x11_client(UtObject *object);

@@ -4,6 +4,7 @@
 #include "ut-x11-buffer.h"
 #include "ut-x11-client-private.h"
 #include "ut-x11-extension.h"
+#include "ut-x11-shape-extension.h"
 #include "ut.h"
 
 typedef struct _UtX11ShapeExtension UtX11ShapeExtension;
