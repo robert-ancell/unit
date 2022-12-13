@@ -150,6 +150,19 @@ struct _UtX11Client {
   UtObject *requests;
 };
 
+UtObject *get_extension_by_major_opcode(UtX11Client *self,
+                                        uint8_t major_opcode) {
+  size_t extensions_length = ut_list_get_length(self->extensions);
+  for (size_t i = 0; i < extensions_length; i++) {
+    UtObject *extension = ut_object_list_get_element(self->extensions, i);
+    if (ut_x11_extension_get_major_opcode(extension) == major_opcode) {
+      return extension;
+    }
+  }
+
+  return NULL;
+}
+
 static Request *find_request(UtX11Client *self, uint16_t sequence_number) {
   size_t requests_length = ut_list_get_length(self->requests);
   for (size_t i = 0; i < requests_length; i++) {
@@ -627,15 +640,10 @@ static size_t decode_generic_event(UtX11Client *self, UtObject *data) {
   }
   UtObjectRef event_data = ut_list_get_sublist(data, 10, total_length);
 
-  size_t extensions_length = ut_list_get_length(self->extensions);
-  for (size_t i = 0; i < extensions_length; i++) {
-    UtObject *extension = ut_object_list_get_element(self->extensions, i);
-    // FIXME: Major opcode doesn't need passing - we know which extension this
-    // is for
-    if (ut_x11_extension_decode_generic_event(extension, major_opcode, code,
-                                              event_data)) {
-      return total_length;
-    }
+  UtObject *extension = get_extension_by_major_opcode(self, major_opcode);
+  if (extension != NULL &&
+      ut_x11_extension_decode_generic_event(extension, code, event_data)) {
+    return total_length;
   }
 
   if (self->event_callbacks->unknown_generic_event != NULL &&

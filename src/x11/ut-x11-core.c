@@ -601,6 +601,8 @@ static void ut_x11_core_cleanup(UtObject *object) {
   ut_object_unref(self->cancel);
 }
 
+static uint8_t ut_x11_core_get_major_opcode(UtObject *object) { return 0; }
+
 static bool ut_x11_core_decode_event(UtObject *object, UtObject *data) {
   UtX11Core *self = (UtX11Core *)object;
 
@@ -710,6 +712,7 @@ static void ut_x11_core_close(UtObject *object) {
 }
 
 static UtX11ExtensionInterface x11_extension_interface = {
+    .get_major_opcode = ut_x11_core_get_major_opcode,
     .decode_event = ut_x11_core_decode_event,
     .decode_error = ut_x11_core_decode_error,
     .close = ut_x11_core_close};

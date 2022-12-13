@@ -95,6 +95,11 @@ static void handle_shm_create_segment_error(UtObject *user_data,
   }
 }
 
+static uint8_t ut_x11_mit_shm_extension_get_major_opcode(UtObject *object) {
+  UtX11MitShmExtension *self = (UtX11MitShmExtension *)object;
+  return self->major_opcode;
+}
+
 static UtObject *ut_x11_mit_shm_extension_decode_error(UtObject *object,
                                                        UtObject *data) {
   UtX11MitShmExtension *self = (UtX11MitShmExtension *)object;
@@ -118,6 +123,7 @@ static void ut_x11_mit_shm_extension_close(UtObject *object) {
 }
 
 static UtX11ExtensionInterface x11_extension_interface = {
+    .get_major_opcode = ut_x11_mit_shm_extension_get_major_opcode,
     .decode_error = ut_x11_mit_shm_extension_decode_error,
     .close = ut_x11_mit_shm_extension_close};
 

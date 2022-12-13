@@ -121,15 +121,15 @@ static void ut_x11_present_extension_cleanup(UtObject *object) {
   ut_object_unref(self->cancel);
 }
 
+static uint8_t ut_x11_present_extension_get_major_opcode(UtObject *object) {
+  UtX11PresentExtension *self = (UtX11PresentExtension *)object;
+  return self->major_opcode;
+}
+
 static bool ut_x11_present_extension_decode_generic_event(UtObject *object,
-                                                          uint8_t major_opcode,
                                                           uint16_t code,
                                                           UtObject *data) {
   UtX11PresentExtension *self = (UtX11PresentExtension *)object;
-
-  if (major_opcode != self->major_opcode) {
-    return false;
-  }
 
   switch (code) {
   case 0:
@@ -158,6 +158,7 @@ static void ut_x11_present_extension_close(UtObject *object) {
 }
 
 static UtX11ExtensionInterface x11_extension_interface = {
+    .get_major_opcode = ut_x11_present_extension_get_major_opcode,
     .decode_generic_event = ut_x11_present_extension_decode_generic_event,
     .decode_error = ut_x11_present_extension_decode_error,
     .close = ut_x11_present_extension_close};

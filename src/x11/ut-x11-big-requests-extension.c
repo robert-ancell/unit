@@ -53,12 +53,18 @@ static void enable_error_cb(UtObject *object, UtObject *error) {
   }
 }
 
+static uint8_t ut_x11_big_request_extension_get_major_opcode(UtObject *object) {
+  UtX11BigRequestsExtension *self = (UtX11BigRequestsExtension *)object;
+  return self->major_opcode;
+}
+
 static void ut_x11_big_requests_extension_close(UtObject *object) {
   UtX11BigRequestsExtension *self = (UtX11BigRequestsExtension *)object;
   self->client = NULL;
 }
 
 static UtX11ExtensionInterface x11_extension_interface = {
+    .get_major_opcode = ut_x11_big_request_extension_get_major_opcode,
     .close = ut_x11_big_requests_extension_close};
 
 static UtObjectInterface object_interface = {
