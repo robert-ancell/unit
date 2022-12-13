@@ -73,6 +73,42 @@
 #define UT_X11_WM_CLASS 67
 #define UT_X11_WM_TRANSIENT_FOR 68
 
+typedef enum {
+  UT_X11_DEVICE_CHANGE_REASON_SLAVE_SWITCH = 1,
+  UT_X11_DEVICE_CHANGE_REASON_DEVICE_CHANGE = 2
+} UtX11DeviceChangeReason;
+
+typedef enum {
+  UT_X11_INPUT_NOTIFY_MODE_NORMAL = 0,
+  UT_X11_INPUT_NOTIFY_MODE_GRAB = 1,
+  UT_X11_INPUT_NOTIFY_MODE_UNGRAB = 2,
+  UT_X11_INPUT_NOTIFY_MODE_WHILE_GRABBED = 3,
+  UT_X11_INPUT_NOTIFY_MODE_PASSIVE_GRAB = 4,
+  UT_X11_INPUT_NOTIFY_MODE_PASSIVE_UNGRAB = 5
+} UtX11InputNotifyMode;
+
+typedef enum {
+  UT_X11_INPUT_NOTIFY_DETAIL_ANCESTOR = 0,
+  UT_X11_INPUT_NOTIFY_DETAIL_VIRTUAL = 1,
+  UT_X11_INPUT_NOTIFY_DETAIL_INFERIOR = 2,
+  UT_X11_INPUT_NOTIFY_DETAIL_NONLINEAR = 3,
+  UT_X11_INPUT_NOTIFY_DETAIL_NONLINEAR_VIRTUAL = 4,
+  UT_X11_INPUT_NOTIFY_DETAIL_POINTER = 5,
+  UT_X11_INPUT_NOTIFY_DETAIL_POINTER_ROOT = 6,
+  UT_X11_INPUT_NOTIFY_DETAIL_NONE = 7,
+} UtX11InputNotifyDetail;
+
+typedef enum { UT_X11_KEY_EVENT_FLAG_REPEAT = 0x00010000 } UtX11KeyEventFlag;
+
+typedef enum {
+  UT_X11_POINTER_EVENT_FLAG_EMULATED = 0x00010000
+} UtX11PointerEventFlag;
+
+typedef enum {
+  UT_X11_TOUCH_EVENT_FLAG_PENDING_END = 0x00010000,
+  UT_X11_TOUCH_EVENT_FLAG_EMULATING_POINTER = 0x00020000
+} UtX11TouchEventFlag;
+
 typedef void (*UtX11KeyPressCallback)(void *user_data, uint32_t window,
                                       uint8_t keycode, int16_t x, int16_t y);
 typedef void (*UtX11KeyReleaseCallback)(void *user_data, uint32_t window,
@@ -108,6 +144,62 @@ typedef void (*UtX11PropertyNotifyCallback)(void *user_data, uint32_t window,
 typedef void (*UtX11ClientMessageCallback)(void *user_data, uint32_t window,
                                            uint32_t type, UtObject *data);
 
+// From XInputExtension
+typedef void (*UtX11InputDeviceChangedCallback)(void *user_data,
+                                                uint16_t device_id,
+                                                uint32_t timestamp,
+                                                UtX11DeviceChangeReason reason,
+                                                UtObject *classes);
+typedef void (*UtX11InputKeyPressCallback)(void *user_data, uint16_t device_id,
+                                           uint32_t timestamp, uint32_t window,
+                                           uint8_t keycode, double x, double y,
+                                           UtX11KeyEventFlag flags);
+typedef void (*UtX11InputKeyReleaseCallback)(
+    void *user_data, uint16_t device_id, uint32_t timestamp, uint32_t window,
+    uint8_t keycode, double x, double y, UtX11KeyEventFlag flags);
+typedef void (*UtX11InputButtonPressCallback)(
+    void *user_data, uint16_t device_id, uint32_t timestamp, uint32_t window,
+    uint8_t button, double x, double y, UtX11PointerEventFlag flags);
+typedef void (*UtX11InputButtonReleaseCallback)(
+    void *user_data, uint16_t device_id, uint32_t timestamp, uint32_t window,
+    uint8_t button, double x, double y, UtX11PointerEventFlag flags);
+typedef void (*UtX11InputMotionCallback)(void *user_data, uint16_t device_id,
+                                         uint32_t timestamp, uint32_t window,
+                                         double x, double y,
+                                         UtX11PointerEventFlag flags);
+typedef void (*UtX11InputEnterCallback)(void *user_data, uint16_t device_id,
+                                        uint32_t timestamp,
+                                        UtX11InputNotifyMode mode,
+                                        UtX11InputNotifyDetail detail,
+                                        uint32_t window, double x, double y);
+typedef void (*UtX11InputLeaveCallback)(void *user_data, uint16_t device_id,
+                                        uint32_t timestamp,
+                                        UtX11InputNotifyMode mode,
+                                        UtX11InputNotifyDetail detail,
+                                        uint32_t window, double x, double y);
+typedef void (*UtX11InputFocusInCallback)(void *user_data, uint16_t device_id,
+                                          uint32_t timestamp,
+                                          UtX11InputNotifyMode mode,
+                                          UtX11InputNotifyDetail detail,
+                                          uint32_t window);
+typedef void (*UtX11InputFocusOutCallback)(void *user_data, uint16_t device_id,
+                                           uint32_t timestamp,
+                                           UtX11InputNotifyMode mode,
+                                           UtX11InputNotifyDetail detail,
+                                           uint32_t window);
+typedef void (*UtX11InputTouchBeginCallback)(void *user_data,
+                                             uint16_t device_id,
+                                             uint32_t timestamp,
+                                             uint32_t window, uint32_t touch_id,
+                                             double x, double y);
+typedef void (*UtX11InputTouchUpdateCallback)(
+    void *user_data, uint16_t device_id, uint32_t timestamp, uint32_t window,
+    uint32_t touch_id, double x, double y);
+typedef void (*UtX11InputTouchEndCallback)(void *user_data, uint16_t device_id,
+                                           uint32_t timestamp, uint32_t window,
+                                           uint32_t touch_id, double x,
+                                           double y);
+
 // From XFIXES
 typedef void (*UtX11SelectionNotifyCallback)(void *user_data, uint32_t window,
                                              uint32_t owner, uint32_t selection,
@@ -117,7 +209,7 @@ typedef void (*UtX11CursorNotifyCallback)(void *user_data, uint32_t window,
                                           uint32_t cursor_serial,
                                           uint32_t timestamp, uint32_t name);
 
-// From PRESENT
+// From Present
 typedef void (*UtX11PresentConfigureNotifyCallback)(
     void *user_data, uint32_t event_id, uint32_t window, int16_t x, int16_t y,
     uint16_t width, uint16_t height, int16_t off_x, int16_t off_y,
@@ -157,11 +249,26 @@ typedef struct {
   UtX11PropertyNotifyCallback property_notify;
   UtX11ClientMessageCallback client_message;
 
+  // From XInputExtension
+  UtX11InputDeviceChangedCallback input_device_changed;
+  UtX11InputKeyPressCallback input_key_press;
+  UtX11InputKeyReleaseCallback input_key_release;
+  UtX11InputButtonPressCallback input_button_press;
+  UtX11InputButtonReleaseCallback input_button_release;
+  UtX11InputMotionCallback input_motion;
+  UtX11InputEnterCallback input_enter;
+  UtX11InputLeaveCallback input_leave;
+  UtX11InputFocusInCallback input_focus_in;
+  UtX11InputFocusOutCallback input_focus_out;
+  UtX11InputTouchBeginCallback input_touch_begin;
+  UtX11InputTouchUpdateCallback input_touch_update;
+  UtX11InputTouchEndCallback input_touch_end;
+
   // From XFIXES
   UtX11SelectionNotifyCallback selection_notify;
   UtX11CursorNotifyCallback cursor_notify;
 
-  // From PRESENT
+  // From Present
   UtX11PresentConfigureNotifyCallback present_configure_notify;
   UtX11PresentCompleteNotifyCallback present_complete_notify;
   UtX11PresentIdleNotifyCallback present_idle_notify;
@@ -200,6 +307,12 @@ typedef void (*UtX11ListExtensionsCallback)(void *user_data, UtObject *names,
                                             UtObject *error);
 typedef void (*UtX11ShmCreateSegmentCallback)(void *user_data, UtObject *fd,
                                               UtObject *error);
+typedef void (*UtX11GrabDeviceCallback)(void *user_data, uint8_t status,
+                                        UtObject *error);
+typedef void (*UtX11QueryDeviceCallback)(void *user_data, UtObject *infos,
+                                         UtObject *error);
+typedef void (*UtX11GetFocusCallback)(void *user_data, uint32_t window,
+                                      UtObject *error);
 typedef void (*UtX11ListSystemCountersCallback)(void *user_data,
                                                 UtObject *counters,
                                                 UtObject *error);
@@ -234,6 +347,45 @@ typedef enum {
   UT_X11_EVENT_COLORMAP_CHANGE = 0x00800000,
   UT_X11_EVENT_OWNER_GRAB_BUTTON = 0x01000000
 } UtX11Event;
+
+#define UT_X11_DEVICE_ALL 0
+#define UT_X11_DEVICE_ALL_MASTER 1
+
+typedef enum {
+  UT_X11_INPUT_EVENT_DEVICE_CHANGED = 0x00000002,
+  UT_X11_INPUT_EVENT_KEY_PRESS = 0x00000004,
+  UT_X11_INPUT_EVENT_KEY_RELEASE = 0x00000008,
+  UT_X11_INPUT_EVENT_BUTTON_PRESS = 0x00000010,
+  UT_X11_INPUT_EVENT_BUTTON_RELEASE = 0x00000020,
+  UT_X11_INPUT_EVENT_MOTION = 0x00000040,
+  UT_X11_INPUT_EVENT_ENTER = 0x00000080,
+  UT_X11_INPUT_EVENT_LEAVE = 0x00000100,
+  UT_X11_INPUT_EVENT_FOCUS_IN = 0x00000200,
+  UT_X11_INPUT_EVENT_FOCUS_OUT = 0x00000400,
+  UT_X11_INPUT_EVENT_HIERARCHY = 0x00000800,
+  UT_X11_INPUT_EVENT_PROPERTY = 0x00001000,
+  UT_X11_INPUT_EVENT_RAW_KEY_PRESS = 0x00002000,
+  UT_X11_INPUT_EVENT_RAW_KEY_RELEASE = 0x00004000,
+  UT_X11_INPUT_EVENT_RAW_BUTTON_PRESS = 0x00008000,
+  UT_X11_INPUT_EVENT_RAW_BUTTON_RELEASE = 0x00010000,
+  UT_X11_INPUT_EVENT_RAW_MOTION = 0x00020000,
+  UT_X11_INPUT_EVENT_TOUCH_BEGIN = 0x00040000,
+  UT_X11_INPUT_EVENT_TOUCH_UPDATE = 0x00080000,
+  UT_X11_INPUT_EVENT_TOUCH_END = 0x00100000,
+  UT_X11_INPUT_EVENT_TOUCH_OWNERSHIP = 0x00200000,
+  UT_X11_INPUT_EVENT_RAW_TOUCH_BEGIN = 0x00400000,
+  UT_X11_INPUT_EVENT_RAW_TOUCH_UPDATE = 0x00800000,
+  UT_X11_INPUT_EVENT_RAW_TOUCH_END = 0x01000000,
+  UT_X11_INPUT_EVENT_BARRIER_HIT = 0x02000000,
+  UT_X11_INPUT_EVENT_BARRIER_LEAVE = 0x04000000,
+  UT_X11_INPUT_EVENT_GESTURE_PINCH_BEGIN = 0x08000000,
+  UT_X11_INPUT_EVENT_GESTURE_PINCH_UPDATE = 0x10000000,
+  UT_X11_INPUT_EVENT_GESTURE_PINCH_END = 0x20000000,
+  UT_X11_INPUT_EVENT_SWIPE_PINCH_BEGIN = 0x40000000,
+  UT_X11_INPUT_EVENT_SWIPE_PINCH_UPDATE = 0x80000000,
+  UT_X11_INPUT_EVENT_SWIPE_PINCH_END =
+      0x100000000 // FIXME: Greater than 64 bits
+} UtX11InputEvent;
 
 typedef enum {
   UT_X11_IMAGE_FORMAT_BITMAP,
@@ -399,6 +551,20 @@ uint32_t ut_x11_client_shm_attach_fd(UtObject *object, UtObject *fd,
 uint32_t ut_x11_client_shm_create_segment(
     UtObject *object, uint32_t size, bool read_only,
     UtX11ShmCreateSegmentCallback callback, void *user_data, UtObject *cancel);
+
+void ut_x11_client_select_input_events(UtObject *object, uint32_t window,
+                                       UtObject *masks);
+
+void ut_x11_client_query_device(UtObject *object, uint16_t device_id,
+                                UtX11QueryDeviceCallback callback,
+                                void *user_data, UtObject *cancel);
+
+void ut_x11_client_set_focus(UtObject *object, uint32_t window,
+                             uint32_t timestamp, uint16_t device_id);
+
+void ut_x11_client_get_focus(UtObject *object, uint16_t device_id,
+                             UtX11GetFocusCallback callback, void *user_data,
+                             UtObject *cancel);
 
 void ut_x11_client_list_system_counters(
     UtObject *object, UtX11ListSystemCountersCallback callback, void *user_data,

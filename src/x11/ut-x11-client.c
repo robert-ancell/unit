@@ -1205,6 +1205,39 @@ uint32_t ut_x11_client_shm_create_segment(
       self->shm_extension, size, read_only, callback, user_data, cancel);
 }
 
+void ut_x11_client_select_input_events(UtObject *object, uint32_t window,
+                                       UtObject *masks) {
+  assert(ut_object_is_x11_client(object));
+  UtX11Client *self = (UtX11Client *)object;
+  ut_x11_xinput_extension_select_events(self->xinput_extension, window, masks);
+}
+
+void ut_x11_client_query_device(UtObject *object, uint16_t device_id,
+                                UtX11QueryDeviceCallback callback,
+                                void *user_data, UtObject *cancel) {
+  assert(ut_object_is_x11_client(object));
+  UtX11Client *self = (UtX11Client *)object;
+  ut_x11_xinput_extension_query_device(self->xinput_extension, device_id,
+                                       callback, user_data, cancel);
+}
+
+void ut_x11_client_set_focus(UtObject *object, uint32_t window,
+                             uint32_t timestamp, uint16_t device_id) {
+  assert(ut_object_is_x11_client(object));
+  UtX11Client *self = (UtX11Client *)object;
+  ut_x11_xinput_extension_set_focus(self->xinput_extension, window, timestamp,
+                                    device_id);
+}
+
+void ut_x11_client_get_focus(UtObject *object, uint16_t device_id,
+                             UtX11GetFocusCallback callback, void *user_data,
+                             UtObject *cancel) {
+  assert(ut_object_is_x11_client(object));
+  UtX11Client *self = (UtX11Client *)object;
+  ut_x11_xinput_extension_get_focus(self->xinput_extension, device_id, callback,
+                                    user_data, cancel);
+}
+
 void ut_x11_client_list_system_counters(
     UtObject *object, UtX11ListSystemCountersCallback callback, void *user_data,
     UtObject *cancel) {

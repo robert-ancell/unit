@@ -15,46 +15,63 @@ static uint32_t window = 0;
 static uint32_t pixmap = 0;
 static uint32_t gc = 0;
 
-static void enter_notify_cb(void *user_data, uint32_t window, int16_t x,
-                            int16_t y) {
-  printf("EnterNotify\n");
+static void input_enter_cb(void *user_data, uint16_t device_id,
+                           uint32_t timestamp, UtX11InputNotifyMode mode,
+                           UtX11InputNotifyDetail detail, uint32_t window,
+                           double x, double y) {
+  printf("Enter\n");
 }
 
-static void leave_notify_cb(void *user_data, uint32_t window, int16_t x,
-                            int16_t y) {
-  printf("LeaveNotify\n");
+static void input_leave_cb(void *user_data, uint16_t device_id,
+                           uint32_t timestamp, UtX11InputNotifyMode mode,
+                           UtX11InputNotifyDetail detail, uint32_t window,
+                           double x, double y) {
+  printf("Leave\n");
 }
 
-static void motion_notify_cb(void *user_data, uint32_t window, int16_t x,
-                             int16_t y) {
-  printf("MotionNotify (%d,%d)\n", x, y);
+static void input_motion_cb(void *user_data, uint16_t device_id,
+                            uint32_t timestamp, uint32_t window, double x,
+                            double y, UtX11PointerEventFlag flag) {
+  printf("Motion (%f,%f)\n", x, y);
 }
 
-static void button_press_cb(void *user_data, uint32_t window, uint8_t button,
-                            int16_t x, int16_t y) {
+static void input_button_press_cb(void *user_data, uint16_t device_id,
+                                  uint32_t timestamp, uint32_t window,
+                                  uint8_t button, double x, double y,
+                                  UtX11PointerEventFlag flag) {
   printf("ButtonPress %d\n", button);
 }
 
-static void button_release_cb(void *user_data, uint32_t window, uint8_t button,
-                              int16_t x, int16_t y) {
+static void input_button_release_cb(void *user_data, uint16_t device_id,
+                                    uint32_t timestamp, uint32_t window,
+                                    uint8_t button, double x, double y,
+                                    UtX11PointerEventFlag flag) {
   printf("ButtonRelease %d\n", button);
 }
 
-static void focus_in_cb(void *user_data, uint32_t window) {
+static void input_focus_in_cb(void *user_data, uint16_t device_id,
+                              uint32_t timestamp, UtX11InputNotifyMode mode,
+                              UtX11InputNotifyDetail detail, uint32_t window) {
   printf("FocusIn\n");
 }
 
-static void focus_out_cb(void *user_data, uint32_t window) {
+static void input_focus_out_cb(void *user_data, uint16_t device_id,
+                               uint32_t timestamp, UtX11InputNotifyMode mode,
+                               UtX11InputNotifyDetail detail, uint32_t window) {
   printf("FocusOut\n");
 }
 
-static void key_press_cb(void *user_datao, uint32_t window, uint8_t keycode,
-                         int16_t x, int16_t y) {
+static void input_key_press_cb(void *user_data, uint16_t device_id,
+                               uint32_t timestamp, uint32_t window,
+                               uint8_t keycode, double x, double y,
+                               UtX11KeyEventFlag flag) {
   printf("KeyPress %d\n", keycode);
 }
 
-static void key_release_cb(void *user_data, uint32_t window, uint8_t keycode,
-                           int16_t x, int16_t y) {
+static void input_key_release_cb(void *user_data, uint16_t device_id,
+                                 uint32_t timestamp, uint32_t window,
+                                 uint8_t keycode, double x, double y,
+                                 UtX11KeyEventFlag flag) {
   printf("KeyRelease %d\n", keycode);
 }
 
@@ -113,15 +130,15 @@ static void expose_cb(void *user_data, uint32_t window, uint16_t x, uint16_t y,
 }
 
 static UtX11EventCallbacks event_callbacks = {
-    .enter_notify = enter_notify_cb,
-    .leave_notify = leave_notify_cb,
-    .motion_notify = motion_notify_cb,
-    .button_press = button_press_cb,
-    .button_release = button_release_cb,
-    .focus_in = focus_in_cb,
-    .focus_out = focus_out_cb,
-    .key_press = key_press_cb,
-    .key_release = key_release_cb,
+    .input_enter = input_enter_cb,
+    .input_leave = input_leave_cb,
+    .input_motion = input_motion_cb,
+    .input_button_press = input_button_press_cb,
+    .input_button_release = input_button_release_cb,
+    .input_focus_in = input_focus_in_cb,
+    .input_focus_out = input_focus_out_cb,
+    .input_key_press = input_key_press_cb,
+    .input_key_release = input_key_release_cb,
     .client_message = client_message_cb,
     .configure_notify = configure_notify_cb,
     .expose = expose_cb};
@@ -140,6 +157,14 @@ static void list_extensions_cb(void *user_data, UtObject *names,
   }
 }
 
+static void query_device_cb(void *user_data, UtObject *infos, UtObject *error) {
+  size_t infos_length = ut_list_get_length(infos);
+  for (size_t i = 0; i < infos_length; i++) {
+    UtObjectRef info = ut_list_get_element(infos, i);
+    printf("%s\n", ut_x11_input_device_info_get_name(info));
+  }
+}
+
 static void wm_protocols_atom_cb(void *user_data, uint32_t atom,
                                  UtObject *error) {
   assert(error == NULL);
@@ -151,8 +176,8 @@ static void wm_delete_window_atom_cb(void *user_data, uint32_t atom,
   assert(error == NULL);
   wm_delete_window_atom = atom;
 
-  UtObjectRef protocols = ut_uint32_list_new();
-  ut_uint32_list_append(protocols, wm_delete_window_atom);
+  UtObjectRef protocols =
+      ut_uint32_list_new_from_elements(1, wm_delete_window_atom);
   ut_x11_client_change_property_uint32(client, window, wm_protocols_atom,
                                        UT_X11_PROPERTY_MODE_REPLACE,
                                        UT_X11_ATOM, protocols);
@@ -169,18 +194,29 @@ static void connect_cb(void *user_data, UtObject *error) {
 
   ut_x11_client_list_extensions(client, list_extensions_cb, NULL, NULL);
 
+  ut_x11_client_query_device(client, UT_X11_DEVICE_ALL_MASTER, query_device_cb,
+                             NULL, NULL);
+
   ut_x11_client_intern_atom(client, "WM_PROTOCOLS", false, wm_protocols_atom_cb,
                             NULL, NULL);
   ut_x11_client_intern_atom(client, "WM_DELETE_WINDOW", false,
                             wm_delete_window_atom_cb, NULL, NULL);
 
-  window = ut_x11_client_create_window(
-      client, 0, 0, 640, 480,
-      UT_X11_EVENT_KEY_PRESS | UT_X11_EVENT_KEY_RELEASE |
-          UT_X11_EVENT_BUTTON_PRESS | UT_X11_EVENT_BUTTON_RELEASE |
-          UT_X11_EVENT_ENTER_WINDOW | UT_X11_EVENT_LEAVE_WINDOW |
-          UT_X11_EVENT_POINTER_MOTION | UT_X11_EVENT_STRUCTURE_NOTIFY |
-          UT_X11_EVENT_EXPOSURE | UT_X11_EVENT_FOCUS_CHANGE);
+  window = ut_x11_client_create_window(client, 0, 0, 640, 480,
+                                       UT_X11_EVENT_STRUCTURE_NOTIFY |
+                                           UT_X11_EVENT_EXPOSURE);
+
+  UtObjectRef masks = ut_list_new();
+  UtObjectRef mask = ut_x11_input_event_mask_new(
+      UT_X11_DEVICE_ALL_MASTER,
+      UT_X11_INPUT_EVENT_KEY_PRESS | UT_X11_INPUT_EVENT_KEY_RELEASE |
+          UT_X11_INPUT_EVENT_BUTTON_PRESS | UT_X11_INPUT_EVENT_BUTTON_RELEASE |
+          UT_X11_INPUT_EVENT_MOTION | UT_X11_INPUT_EVENT_ENTER |
+          UT_X11_INPUT_EVENT_LEAVE | UT_X11_INPUT_EVENT_FOCUS_IN |
+          UT_X11_INPUT_EVENT_FOCUS_OUT | UT_X11_INPUT_EVENT_TOUCH_BEGIN |
+          UT_X11_INPUT_EVENT_TOUCH_UPDATE | UT_X11_INPUT_EVENT_TOUCH_END);
+  ut_list_append(masks, mask);
+  ut_x11_client_select_input_events(client, window, masks);
 
   ut_x11_client_change_property_string(
       client, window, UT_X11_PROPERTY_MODE_REPLACE, UT_X11_WM_NAME, "UT");

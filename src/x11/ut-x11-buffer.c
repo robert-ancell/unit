@@ -141,6 +141,13 @@ int32_t ut_x11_buffer_get_int32(UtObject *object, size_t *offset) {
   return (int32_t)ut_x11_buffer_get_card32(object, offset);
 }
 
+double ut_x11_buffer_get_fp1616(UtObject *object, size_t *offset) {
+  uint32_t value = ut_x11_buffer_get_card32(object, offset);
+  uint32_t integer = value >> 16;
+  uint32_t fraction = value & 0xffff;
+  return integer + fraction / 65536.0;
+}
+
 uint64_t ut_x11_buffer_get_card64(UtObject *object, size_t *offset) {
   uint64_t byte1 = ut_x11_buffer_get_card8(object, offset);
   uint64_t byte2 = ut_x11_buffer_get_card8(object, offset);
@@ -152,6 +159,13 @@ uint64_t ut_x11_buffer_get_card64(UtObject *object, size_t *offset) {
   uint64_t byte8 = ut_x11_buffer_get_card8(object, offset);
   return byte1 | byte2 << 8 | byte3 << 16 | byte4 << 24 | byte5 << 32 |
          byte6 << 40 | byte7 << 48 | byte8 << 56;
+}
+
+double ut_x11_buffer_get_fp3232(UtObject *object, size_t *offset) {
+  uint64_t value = ut_x11_buffer_get_card64(object, offset);
+  uint64_t integer = value >> 32;
+  uint64_t fraction = value & 0xffffffff;
+  return integer + fraction / 4294967296.0;
 }
 
 int64_t ut_x11_buffer_get_int64(UtObject *object, size_t *offset) {
@@ -169,6 +183,13 @@ char *ut_x11_buffer_get_string8(UtObject *object, size_t *offset,
   }
   ut_uint8_list_append(value, '\0');
   return (char *)ut_uint8_list_take_data(value);
+}
+
+UtObject *ut_x11_buffer_get_sub_buffer(UtObject *object, size_t *offset,
+                                       size_t length) {
+  UtObject *sublist = ut_list_get_sublist(object, *offset, length);
+  (*offset) += length;
+  return sublist;
 }
 
 size_t ut_x11_buffer_get_fd_count(UtObject *object) {

@@ -58,12 +58,19 @@ uint32_t ut_x11_buffer_get_card32(UtObject *object, size_t *offset);
 
 int32_t ut_x11_buffer_get_int32(UtObject *object, size_t *offset);
 
+double ut_x11_buffer_get_fp1616(UtObject *object, size_t *offset);
+
 uint64_t ut_x11_buffer_get_card64(UtObject *object, size_t *offset);
+
+double ut_x11_buffer_get_fp3232(UtObject *object, size_t *offset);
 
 int64_t ut_x11_buffer_get_int64(UtObject *object, size_t *offset);
 
 char *ut_x11_buffer_get_string8(UtObject *object, size_t *offset,
                                 size_t length);
+
+UtObject *ut_x11_buffer_get_sub_buffer(UtObject *object, size_t *offset,
+                                       size_t length);
 
 size_t ut_x11_buffer_get_fd_count(UtObject *object);
 
