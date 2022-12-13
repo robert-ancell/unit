@@ -140,6 +140,7 @@ ut_sources = [
   'x11/ut-x11-buffer.c',
   'x11/ut-x11-client.c',
   'x11/ut-x11-colormap-error.c',
+  'x11/ut-x11-core.c',
   'x11/ut-x11-drawable-error.c',
   'x11/ut-x11-error.c',
   'x11/ut-x11-extension.c',

@@ -2,6 +2,7 @@
 
 #include "ut-x11-buffer.h"
 #include "ut-x11-client-private.h"
+#include "ut-x11-core.h"
 #include "ut-x11-extension.h"
 #include "ut.h"
 
@@ -39,24 +40,6 @@ request_new(uint16_t sequence_number,
   self->handle_error_function = handle_error_function;
   self->callback_object = callback_object;
   self->cancel = ut_object_ref(cancel);
-  return object;
-}
-
-typedef struct {
-  UtObject object;
-  void *callback;
-  void *user_data;
-} CallbackData;
-
-static UtObjectInterface callback_data_object_interface = {
-    .type_name = "CallbackData", .interfaces = {{NULL, NULL}}};
-
-static UtObject *callback_data_new(void *callback, void *user_data) {
-  UtObject *object =
-      ut_object_new(sizeof(CallbackData), &callback_data_object_interface);
-  CallbackData *self = (CallbackData *)object;
-  self->callback = callback;
-  self->user_data = user_data;
   return object;
 }
 
@@ -149,6 +132,7 @@ struct _UtX11Client {
   UtObject *read_cancel;
 
   UtObject *extensions;
+  UtObject *core;
   UtObject *shape_extension;
   UtObject *mit_shm_extension;
   UtObject *sync_extension;
@@ -523,53 +507,21 @@ static size_t decode_error(UtX11Client *self, UtObject *data) {
   assert(ut_x11_buffer_get_card8(error_data, &offset) == 0);
   uint8_t code = ut_x11_buffer_get_card8(error_data, &offset);
   uint16_t sequence_number = ut_x11_buffer_get_card16(error_data, &offset);
-  uint32_t value = ut_x11_buffer_get_card32(error_data, &offset);
+  /*uint32_t value = */ ut_x11_buffer_get_card32(error_data, &offset);
   uint16_t minor_opcode = ut_x11_buffer_get_card16(error_data, &offset);
   uint8_t major_opcode = ut_x11_buffer_get_card8(error_data, &offset);
 
   UtObjectRef error = NULL;
-  if (code == 1) {
-    error = ut_x11_request_error_new();
-  } else if (code == 2) {
-    error = ut_x11_value_error_new(value);
-  } else if (code == 3) {
-    error = ut_x11_window_error_new(value);
-  } else if (code == 4) {
-    error = ut_x11_pixmap_error_new(value);
-  } else if (code == 5) {
-    error = ut_x11_atom_error_new(value);
-  } else if (code == 8) {
-    error = ut_x11_match_error_new();
-  } else if (code == 9) {
-    error = ut_x11_drawable_error_new(value);
-  } else if (code == 10) {
-    error = ut_x11_access_error_new();
-  } else if (code == 11) {
-    error = ut_x11_alloc_error_new();
-  } else if (code == 12) {
-    error = ut_x11_colormap_error_new(value);
-  } else if (code == 13) {
-    error = ut_x11_gcontext_error_new(value);
-  } else if (code == 14) {
-    error = ut_x11_id_choice_error_new(value);
-  } else if (code == 15) {
-    error = ut_x11_name_error_new();
-  } else if (code == 16) {
-    error = ut_x11_length_error_new(sequence_number);
-  } else if (code == 17) {
-    error = ut_x11_implementation_error_new();
-  } else {
-    size_t extensions_length = ut_list_get_length(self->extensions);
-    for (size_t i = 0; i < extensions_length; i++) {
-      UtObject *extension = ut_object_list_get_element(self->extensions, i);
-      error = ut_x11_extension_decode_error(extension, error_data);
-      if (error != NULL) {
-        break;
-      }
+  size_t extensions_length = ut_list_get_length(self->extensions);
+  for (size_t i = 0; i < extensions_length; i++) {
+    UtObject *extension = ut_object_list_get_element(self->extensions, i);
+    error = ut_x11_extension_decode_error(extension, error_data);
+    if (error != NULL) {
+      break;
     }
-    if (error == NULL) {
-      error = ut_x11_unknown_error_new(code, major_opcode, minor_opcode);
-    }
+  }
+  if (error == NULL) {
+    error = ut_x11_unknown_error_new(code, major_opcode, minor_opcode);
   }
 
   Request *request = find_request(self, sequence_number);
@@ -582,168 +534,6 @@ static size_t decode_error(UtX11Client *self, UtObject *data) {
   }
 
   return 32;
-}
-
-static void decode_intern_atom_reply(UtObject *object, uint8_t data0,
-                                     UtObject *data) {
-  CallbackData *callback_data = (CallbackData *)object;
-
-  size_t offset = 0;
-  uint32_t atom = ut_x11_buffer_get_card32(data, &offset);
-  ut_x11_buffer_get_padding(data, &offset, 20);
-
-  if (callback_data->callback != NULL) {
-    UtX11InternAtomCallback callback =
-        (UtX11InternAtomCallback)callback_data->callback;
-    callback(callback_data->user_data, atom, NULL);
-  }
-}
-
-static void handle_intern_atom_error(UtObject *object, UtObject *error) {
-  CallbackData *callback_data = (CallbackData *)object;
-
-  if (callback_data->callback != NULL) {
-    UtX11InternAtomCallback callback =
-        (UtX11InternAtomCallback)callback_data->callback;
-    callback(callback_data->user_data, 0, error);
-  }
-}
-
-static void decode_get_atom_name_reply(UtObject *object, uint8_t data0,
-                                       UtObject *data) {
-  CallbackData *callback_data = (CallbackData *)object;
-
-  size_t offset = 0;
-  uint16_t name_length = ut_x11_buffer_get_card16(data, &offset);
-  ut_x11_buffer_get_padding(data, &offset, 22);
-  ut_cstring_ref name = ut_x11_buffer_get_string8(data, &offset, name_length);
-  ut_x11_buffer_get_align_padding(data, &offset, 4);
-
-  if (callback_data->callback != NULL) {
-    UtX11GetAtomNameCallback callback =
-        (UtX11GetAtomNameCallback)callback_data->callback;
-    callback(callback_data->user_data, name, NULL);
-  }
-}
-
-static void handle_get_atom_name_error(UtObject *object, UtObject *error) {
-  CallbackData *callback_data = (CallbackData *)object;
-
-  if (callback_data->callback != NULL) {
-    UtX11GetAtomNameCallback callback =
-        (UtX11GetAtomNameCallback)callback_data->callback;
-    callback(callback_data->user_data, NULL, error);
-  }
-}
-
-static void decode_get_property_reply(UtObject *object, uint8_t data0,
-                                      UtObject *data) {
-  CallbackData *callback_data = (CallbackData *)object;
-
-  size_t offset = 0;
-  uint8_t format = data0;
-  uint32_t type = ut_x11_buffer_get_card32(data, &offset);
-  uint32_t bytes_after = ut_x11_buffer_get_card32(data, &offset);
-  size_t length = ut_x11_buffer_get_card32(data, &offset);
-  ut_x11_buffer_get_padding(data, &offset, 12);
-  UtObjectRef value = NULL;
-  if (format == 0) {
-  } else if (format == 8) {
-    value = ut_uint8_array_new();
-    for (size_t i = 0; i < length; i++) {
-      ut_uint8_list_append(value, ut_x11_buffer_get_card8(data, &offset));
-    }
-  } else if (format == 16) {
-    value = ut_uint16_list_new();
-    for (size_t i = 0; i < length; i++) {
-      ut_uint16_list_append(value, ut_x11_buffer_get_card16(data, &offset));
-    }
-  } else if (format == 32) {
-    value = ut_uint32_list_new();
-    for (size_t i = 0; i < length; i++) {
-      ut_uint32_list_append(value, ut_x11_buffer_get_card32(data, &offset));
-    }
-  } else {
-    assert(false);
-  }
-  ut_x11_buffer_get_align_padding(data, &offset, 4);
-
-  if (callback_data->callback != NULL) {
-    UtX11GetPropertyCallback callback =
-        (UtX11GetPropertyCallback)callback_data->callback;
-    callback(callback_data->user_data, type, value, bytes_after, NULL);
-  }
-}
-
-static void handle_get_property_error(UtObject *object, UtObject *error) {
-  CallbackData *callback_data = (CallbackData *)object;
-
-  if (callback_data->callback != NULL) {
-    UtX11GetPropertyCallback callback =
-        (UtX11GetPropertyCallback)callback_data->callback;
-    callback(callback_data->user_data, 0, NULL, 0, error);
-  }
-}
-
-static void decode_list_properties_reply(UtObject *object, uint8_t data0,
-                                         UtObject *data) {
-  CallbackData *callback_data = (CallbackData *)object;
-
-  size_t offset = 0;
-  size_t atoms_length = ut_x11_buffer_get_card16(data, &offset);
-  ut_x11_buffer_get_padding(data, &offset, 22);
-  UtObjectRef atoms = ut_uint32_list_new();
-  for (size_t i = 0; i < atoms_length; i++) {
-    ut_uint32_list_append(atoms, ut_x11_buffer_get_card32(data, &offset));
-  }
-
-  if (callback_data->callback != NULL) {
-    UtX11ListPropertiesCallback callback =
-        (UtX11ListPropertiesCallback)callback_data->callback;
-    callback(callback_data->user_data, atoms, NULL);
-  }
-}
-
-static void handle_list_properties_error(UtObject *object, UtObject *error) {
-  CallbackData *callback_data = (CallbackData *)object;
-
-  if (callback_data->callback != NULL) {
-    UtX11ListPropertiesCallback callback =
-        (UtX11ListPropertiesCallback)callback_data->callback;
-    callback(callback_data->user_data, NULL, error);
-  }
-}
-
-static void decode_list_extensions_reply(UtObject *object, uint8_t data0,
-                                         UtObject *data) {
-  CallbackData *callback_data = (CallbackData *)object;
-
-  size_t offset = 0;
-  ut_x11_buffer_get_padding(data, &offset, 24);
-  size_t names_length = data0;
-  UtObjectRef names = ut_string_list_new();
-  for (size_t i = 0; i < names_length; i++) {
-    uint8_t name_length = ut_x11_buffer_get_card8(data, &offset);
-    ut_cstring_ref name = ut_x11_buffer_get_string8(data, &offset, name_length);
-    ut_string_list_append(names, name);
-  }
-  ut_x11_buffer_get_align_padding(data, &offset, 4);
-
-  if (callback_data->callback != NULL) {
-    UtX11ListExtensionsCallback callback =
-        (UtX11ListExtensionsCallback)callback_data->callback;
-    callback(callback_data->user_data, names, NULL);
-  }
-}
-
-static void handle_list_extensions_error(UtObject *object, UtObject *error) {
-  CallbackData *callback_data = (CallbackData *)object;
-
-  if (callback_data->callback != NULL) {
-    UtX11ListExtensionsCallback callback =
-        (UtX11ListExtensionsCallback)callback_data->callback;
-    callback(callback_data->user_data, NULL, error);
-  }
 }
 
 static size_t decode_reply(UtX11Client *self, UtObject *data) {
@@ -775,355 +565,6 @@ static size_t decode_reply(UtX11Client *self, UtObject *data) {
   }
 
   return payload_length;
-}
-
-static void decode_key_press(UtX11Client *self, UtObject *data) {
-  size_t offset = 0;
-  assert((ut_x11_buffer_get_card8(data, &offset) & 0x7f) == 2);
-  uint8_t keycode = ut_x11_buffer_get_card8(data, &offset);
-  ut_x11_buffer_get_card16(data, &offset); // sequence_number
-  ut_x11_buffer_get_card32(data, &offset); // time
-  ut_x11_buffer_get_card32(data, &offset); // root
-  uint32_t window = ut_x11_buffer_get_card32(data, &offset);
-  ut_x11_buffer_get_card32(data, &offset); // child
-  ut_x11_buffer_get_int16(data, &offset);  // root_x
-  ut_x11_buffer_get_int16(data, &offset);  // root_y
-  int16_t x = ut_x11_buffer_get_int16(data, &offset);
-  int16_t y = ut_x11_buffer_get_int16(data, &offset);
-  ut_x11_buffer_get_card16(data, &offset); // state
-  ut_x11_buffer_get_card8(data, &offset);  // same_screen
-  ut_x11_buffer_get_padding(data, &offset, 1);
-
-  if (self->event_callbacks->key_press != NULL &&
-      !ut_cancel_is_active(self->callback_cancel)) {
-    self->event_callbacks->key_press(self->callback_user_data, window, keycode,
-                                     x, y);
-  }
-}
-
-static void decode_key_release(UtX11Client *self, UtObject *data) {
-  size_t offset = 0;
-  assert((ut_x11_buffer_get_card8(data, &offset) & 0x7f) == 3);
-  uint8_t keycode = ut_x11_buffer_get_card8(data, &offset);
-  ut_x11_buffer_get_card16(data, &offset); // sequence_number
-  ut_x11_buffer_get_card32(data, &offset); // time
-  ut_x11_buffer_get_card32(data, &offset); // root
-  uint32_t window = ut_x11_buffer_get_card32(data, &offset);
-  ut_x11_buffer_get_card32(data, &offset); // child
-  ut_x11_buffer_get_int16(data, &offset);  // root_x
-  ut_x11_buffer_get_int16(data, &offset);  // root_y
-  int16_t x = ut_x11_buffer_get_int16(data, &offset);
-  int16_t y = ut_x11_buffer_get_int16(data, &offset);
-  ut_x11_buffer_get_card16(data, &offset); // state
-  ut_x11_buffer_get_card8(data, &offset);  // same_screen
-  ut_x11_buffer_get_padding(data, &offset, 1);
-
-  if (self->event_callbacks->key_release != NULL &&
-      !ut_cancel_is_active(self->callback_cancel)) {
-    self->event_callbacks->key_release(self->callback_user_data, window,
-                                       keycode, x, y);
-  }
-}
-
-static void decode_button_press(UtX11Client *self, UtObject *data) {
-  size_t offset = 0;
-  assert((ut_x11_buffer_get_card8(data, &offset) & 0x7f) == 4);
-  uint8_t button = ut_x11_buffer_get_card8(data, &offset);
-  ut_x11_buffer_get_card16(data, &offset); // sequence_number
-  ut_x11_buffer_get_card32(data, &offset); // time
-  ut_x11_buffer_get_card32(data, &offset); // root
-  uint32_t window = ut_x11_buffer_get_card32(data, &offset);
-  ut_x11_buffer_get_card32(data, &offset); // child
-  ut_x11_buffer_get_int16(data, &offset);  // root_x
-  ut_x11_buffer_get_int16(data, &offset);  // root_y
-  int16_t x = ut_x11_buffer_get_int16(data, &offset);
-  int16_t y = ut_x11_buffer_get_int16(data, &offset);
-  ut_x11_buffer_get_card16(data, &offset); // state
-  ut_x11_buffer_get_card8(data, &offset);  // same_screen
-  ut_x11_buffer_get_padding(data, &offset, 1);
-
-  if (self->event_callbacks->button_press != NULL &&
-      !ut_cancel_is_active(self->callback_cancel)) {
-    self->event_callbacks->button_press(self->callback_user_data, window,
-                                        button, x, y);
-  }
-}
-
-static void decode_button_release(UtX11Client *self, UtObject *data) {
-  size_t offset = 0;
-  assert((ut_x11_buffer_get_card8(data, &offset) & 0x7f) == 5);
-  uint8_t button = ut_x11_buffer_get_card8(data, &offset);
-  ut_x11_buffer_get_card16(data, &offset); // sequence_number
-  ut_x11_buffer_get_card32(data, &offset); // time
-  ut_x11_buffer_get_card32(data, &offset); // root
-  uint32_t window = ut_x11_buffer_get_card32(data, &offset);
-  ut_x11_buffer_get_card32(data, &offset); // child
-  ut_x11_buffer_get_int16(data, &offset);  // root_x
-  ut_x11_buffer_get_int16(data, &offset);  // root_y
-  int16_t x = ut_x11_buffer_get_int16(data, &offset);
-  int16_t y = ut_x11_buffer_get_int16(data, &offset);
-  ut_x11_buffer_get_card16(data, &offset); // state
-  ut_x11_buffer_get_card8(data, &offset);  // same_screen
-  ut_x11_buffer_get_padding(data, &offset, 1);
-
-  if (self->event_callbacks->button_release != NULL &&
-      !ut_cancel_is_active(self->callback_cancel)) {
-    self->event_callbacks->button_release(self->callback_user_data, window,
-                                          button, x, y);
-  }
-}
-
-static void decode_motion_notify(UtX11Client *self, UtObject *data) {
-  size_t offset = 0;
-  assert((ut_x11_buffer_get_card8(data, &offset) & 0x7f) == 6);
-  ut_x11_buffer_get_card8(data, &offset);  // detail
-  ut_x11_buffer_get_card16(data, &offset); // sequence_number
-  ut_x11_buffer_get_card32(data, &offset); // time
-  ut_x11_buffer_get_card32(data, &offset); // root
-  uint32_t window = ut_x11_buffer_get_card32(data, &offset);
-  ut_x11_buffer_get_card32(data, &offset); // child
-  ut_x11_buffer_get_int16(data, &offset);  // root_x
-  ut_x11_buffer_get_int16(data, &offset);  // root_y
-  int16_t x = ut_x11_buffer_get_int16(data, &offset);
-  int16_t y = ut_x11_buffer_get_int16(data, &offset);
-  ut_x11_buffer_get_card16(data, &offset); // state
-  ut_x11_buffer_get_card8(data, &offset);  // same_screen
-  ut_x11_buffer_get_padding(data, &offset, 1);
-
-  if (self->event_callbacks->motion_notify != NULL &&
-      !ut_cancel_is_active(self->callback_cancel)) {
-    self->event_callbacks->motion_notify(self->callback_user_data, window, x,
-                                         y);
-  }
-}
-
-static void decode_enter_notify(UtX11Client *self, UtObject *data) {
-  size_t offset = 0;
-  assert((ut_x11_buffer_get_card8(data, &offset) & 0x7f) == 7);
-  ut_x11_buffer_get_card8(data, &offset);  // detail
-  ut_x11_buffer_get_card16(data, &offset); // sequence_number
-  ut_x11_buffer_get_card32(data, &offset); // time
-  ut_x11_buffer_get_card32(data, &offset); // root
-  uint32_t window = ut_x11_buffer_get_card32(data, &offset);
-  ut_x11_buffer_get_card32(data, &offset); // child
-  ut_x11_buffer_get_int16(data, &offset);  // root_x
-  ut_x11_buffer_get_int16(data, &offset);  // root_y
-  int16_t x = ut_x11_buffer_get_int16(data, &offset);
-  int16_t y = ut_x11_buffer_get_int16(data, &offset);
-  ut_x11_buffer_get_card16(data, &offset); // state
-  ut_x11_buffer_get_card8(data, &offset);  // mode
-  ut_x11_buffer_get_card8(data, &offset);  // same_screen, focus
-
-  if (self->event_callbacks->enter_notify != NULL &&
-      !ut_cancel_is_active(self->callback_cancel)) {
-    self->event_callbacks->enter_notify(self->callback_user_data, window, x, y);
-  }
-}
-
-static void decode_leave_notify(UtX11Client *self, UtObject *data) {
-  size_t offset = 0;
-  assert((ut_x11_buffer_get_card8(data, &offset) & 0x7f) == 8);
-  ut_x11_buffer_get_card8(data, &offset);  // detail
-  ut_x11_buffer_get_card16(data, &offset); // sequence_number
-  ut_x11_buffer_get_card32(data, &offset); // time
-  ut_x11_buffer_get_card32(data, &offset); // root
-  uint32_t window = ut_x11_buffer_get_card32(data, &offset);
-  ut_x11_buffer_get_card32(data, &offset); // child
-  ut_x11_buffer_get_int16(data, &offset);  // root_x
-  ut_x11_buffer_get_int16(data, &offset);  // root_y
-  int16_t x = ut_x11_buffer_get_int16(data, &offset);
-  int16_t y = ut_x11_buffer_get_int16(data, &offset);
-  ut_x11_buffer_get_card16(data, &offset); // state
-  ut_x11_buffer_get_card8(data, &offset);  // mode
-  ut_x11_buffer_get_card8(data, &offset);  // same_screen, focus
-
-  if (self->event_callbacks->leave_notify != NULL &&
-      !ut_cancel_is_active(self->callback_cancel)) {
-    self->event_callbacks->leave_notify(self->callback_user_data, window, x, y);
-  }
-}
-
-static void decode_focus_in(UtX11Client *self, UtObject *data) {
-  size_t offset = 0;
-  assert((ut_x11_buffer_get_card8(data, &offset) & 0x7f) == 9);
-  ut_x11_buffer_get_card8(data, &offset);  // detail
-  ut_x11_buffer_get_card16(data, &offset); // sequence_number
-  uint32_t window = ut_x11_buffer_get_card32(data, &offset);
-  ut_x11_buffer_get_card8(data, &offset); // mode
-
-  if (self->event_callbacks->focus_in != NULL &&
-      !ut_cancel_is_active(self->callback_cancel)) {
-    self->event_callbacks->focus_in(self->callback_user_data, window);
-  }
-}
-
-static void decode_focus_out(UtX11Client *self, UtObject *data) {
-  size_t offset = 0;
-  assert((ut_x11_buffer_get_card8(data, &offset) & 0x7f) == 10);
-  ut_x11_buffer_get_card8(data, &offset);  // detail
-  ut_x11_buffer_get_card16(data, &offset); // sequence_number
-  uint32_t window = ut_x11_buffer_get_card32(data, &offset);
-  ut_x11_buffer_get_card8(data, &offset); // mode
-
-  if (self->event_callbacks->focus_out != NULL &&
-      !ut_cancel_is_active(self->callback_cancel)) {
-    self->event_callbacks->focus_out(self->callback_user_data, window);
-  }
-}
-
-static void decode_expose(UtX11Client *self, UtObject *data) {
-  size_t offset = 0;
-  assert((ut_x11_buffer_get_card8(data, &offset) & 0x7f) == 12);
-  ut_x11_buffer_get_padding(data, &offset, 1);
-  ut_x11_buffer_get_card16(data, &offset); // sequence_number
-  uint32_t window = ut_x11_buffer_get_card32(data, &offset);
-  uint16_t x = ut_x11_buffer_get_card16(data, &offset);
-  uint16_t y = ut_x11_buffer_get_card16(data, &offset);
-  uint16_t width = ut_x11_buffer_get_card16(data, &offset);
-  uint16_t height = ut_x11_buffer_get_card16(data, &offset);
-  uint16_t count = ut_x11_buffer_get_card16(data, &offset);
-  ut_x11_buffer_get_padding(data, &offset, 14);
-
-  if (self->event_callbacks->expose != NULL &&
-      !ut_cancel_is_active(self->callback_cancel)) {
-    self->event_callbacks->expose(self->callback_user_data, window, x, y, width,
-                                  height, count);
-  }
-}
-
-static void decode_no_expose(UtX11Client *self, UtObject *data) {
-  size_t offset = 0;
-  assert((ut_x11_buffer_get_card8(data, &offset) & 0x7f) == 14);
-  ut_x11_buffer_get_padding(data, &offset, 1);
-  ut_x11_buffer_get_card16(data, &offset); // sequence_number
-  uint32_t drawable = ut_x11_buffer_get_card32(data, &offset);
-  ut_x11_buffer_get_card16(data, &offset); // minor-opcode
-  ut_x11_buffer_get_card8(data, &offset);  // major-opcode
-
-  if (self->event_callbacks->no_expose != NULL &&
-      !ut_cancel_is_active(self->callback_cancel)) {
-    self->event_callbacks->no_expose(self->callback_user_data, drawable);
-  }
-}
-
-static void decode_map_notify(UtX11Client *self, UtObject *data) {
-  size_t offset = 0;
-  assert((ut_x11_buffer_get_card8(data, &offset) & 0x7f) == 19);
-  ut_x11_buffer_get_padding(data, &offset, 1);
-  ut_x11_buffer_get_card16(data, &offset); // sequence_number
-  uint32_t event = ut_x11_buffer_get_card32(data, &offset);
-  uint32_t window = ut_x11_buffer_get_card32(data, &offset);
-  bool override_redirect = ut_x11_buffer_get_bool(data, &offset);
-  ut_x11_buffer_get_padding(data, &offset, 19);
-
-  if (self->event_callbacks->map_notify != NULL &&
-      !ut_cancel_is_active(self->callback_cancel)) {
-    self->event_callbacks->map_notify(self->callback_user_data, event, window,
-                                      override_redirect);
-  }
-}
-
-static void decode_reparent_notify(UtX11Client *self, UtObject *data) {
-  size_t offset = 0;
-  assert((ut_x11_buffer_get_card8(data, &offset) & 0x7f) == 21);
-  ut_x11_buffer_get_padding(data, &offset, 1);
-  ut_x11_buffer_get_card16(data, &offset); // sequence_number
-  uint32_t event = ut_x11_buffer_get_card32(data, &offset);
-  uint32_t window = ut_x11_buffer_get_card32(data, &offset);
-  uint32_t parent = ut_x11_buffer_get_card32(data, &offset);
-  int16_t x = ut_x11_buffer_get_int16(data, &offset);
-  int16_t y = ut_x11_buffer_get_int16(data, &offset);
-  bool override_redirect = ut_x11_buffer_get_bool(data, &offset);
-  ut_x11_buffer_get_padding(data, &offset, 11);
-
-  if (self->event_callbacks->reparent_notify != NULL &&
-      !ut_cancel_is_active(self->callback_cancel)) {
-    self->event_callbacks->reparent_notify(self->callback_user_data, event,
-                                           window, parent, x, y,
-                                           override_redirect);
-  }
-}
-
-static void decode_configure_notify(UtX11Client *self, UtObject *data) {
-  size_t offset = 0;
-  assert((ut_x11_buffer_get_card8(data, &offset) & 0x7f) == 22);
-  ut_x11_buffer_get_padding(data, &offset, 1);
-  ut_x11_buffer_get_card16(data, &offset); // sequence_number
-  ut_x11_buffer_get_card32(data, &offset); // event
-  uint32_t window = ut_x11_buffer_get_card32(data, &offset);
-  ut_x11_buffer_get_card32(data, &offset); // above_sibling
-  int16_t x = ut_x11_buffer_get_int16(data, &offset);
-  int16_t y = ut_x11_buffer_get_int16(data, &offset);
-  uint16_t width = ut_x11_buffer_get_card16(data, &offset);
-  uint16_t height = ut_x11_buffer_get_card16(data, &offset);
-  ut_x11_buffer_get_card16(data, &offset); // border_width
-  ut_x11_buffer_get_card8(data, &offset);  // override_redirect
-  ut_x11_buffer_get_padding(data, &offset, 5);
-
-  if (self->event_callbacks->configure_notify != NULL &&
-      !ut_cancel_is_active(self->callback_cancel)) {
-    self->event_callbacks->configure_notify(self->callback_user_data, window, x,
-                                            y, width, height);
-  }
-}
-
-static void decode_property_notify(UtX11Client *self, UtObject *data) {
-  size_t offset = 0;
-  assert((ut_x11_buffer_get_card8(data, &offset) & 0x7f) == 28);
-  ut_x11_buffer_get_padding(data, &offset, 1);
-  ut_x11_buffer_get_card16(data, &offset); // sequence_number
-  uint32_t window = ut_x11_buffer_get_card32(data, &offset);
-  uint32_t atom = ut_x11_buffer_get_card32(data, &offset);
-  ut_x11_buffer_get_card32(data, &offset); // time
-  ut_x11_buffer_get_card8(data, &offset);  // state
-  ut_x11_buffer_get_padding(data, &offset, 15);
-
-  if (self->event_callbacks->property_notify != NULL &&
-      !ut_cancel_is_active(self->callback_cancel)) {
-    self->event_callbacks->property_notify(self->callback_user_data, window,
-                                           atom);
-  }
-}
-
-static void decode_client_message(UtX11Client *self, UtObject *data) {
-  size_t offset = 0;
-  assert((ut_x11_buffer_get_card8(data, &offset) & 0x7f) == 33);
-  uint8_t format = ut_x11_buffer_get_card8(data, &offset);
-  ut_x11_buffer_get_card16(data, &offset); // sequence_number
-  uint32_t window = ut_x11_buffer_get_card32(data, &offset);
-  uint32_t type = ut_x11_buffer_get_card32(data, &offset);
-  UtObjectRef message_data = NULL;
-  switch (format) {
-  case 8:
-    message_data = ut_uint8_list_new();
-    for (size_t i = 0; i < 20; i++) {
-      ut_uint8_list_append(message_data,
-                           ut_x11_buffer_get_card8(data, &offset));
-    }
-    break;
-  case 16:
-    message_data = ut_uint16_list_new();
-    for (size_t i = 0; i < 10; i++) {
-      ut_uint16_list_append(message_data,
-                            ut_x11_buffer_get_card16(data, &offset));
-    }
-    break;
-  case 32:
-    message_data = ut_uint32_list_new();
-    for (size_t i = 0; i < 5; i++) {
-      ut_uint32_list_append(message_data,
-                            ut_x11_buffer_get_card32(data, &offset));
-    }
-    break;
-  default:
-    assert(false);
-  }
-
-  if (self->event_callbacks->client_message != NULL &&
-      !ut_cancel_is_active(self->callback_cancel)) {
-    self->event_callbacks->client_message(self->callback_user_data, window,
-                                          type, message_data);
-  }
 }
 
 static size_t decode_generic_event(UtX11Client *self, UtObject *data) {
@@ -1183,54 +624,6 @@ static size_t decode_event(UtX11Client *self, UtObject *data) {
   // bool from_send_event = (code & 0x80) != 0;
   code &= 0x7f;
   switch (code) {
-  case 2:
-    decode_key_press(self, event_data);
-    break;
-  case 3:
-    decode_key_release(self, event_data);
-    break;
-  case 4:
-    decode_button_press(self, event_data);
-    break;
-  case 5:
-    decode_button_release(self, event_data);
-    break;
-  case 6:
-    decode_motion_notify(self, event_data);
-    break;
-  case 7:
-    decode_enter_notify(self, event_data);
-    break;
-  case 8:
-    decode_leave_notify(self, event_data);
-    break;
-  case 9:
-    decode_focus_in(self, event_data);
-    break;
-  case 10:
-    decode_focus_out(self, event_data);
-    break;
-  case 12:
-    decode_expose(self, event_data);
-    break;
-  case 14:
-    decode_no_expose(self, event_data);
-    break;
-  case 19:
-    decode_map_notify(self, event_data);
-    break;
-  case 21:
-    decode_reparent_notify(self, event_data);
-    break;
-  case 22:
-    decode_configure_notify(self, event_data);
-    break;
-  case 28:
-    decode_property_notify(self, event_data);
-    break;
-  case 33:
-    decode_client_message(self, data);
-    break;
   case 35:
     return decode_generic_event(self, data);
   default:
@@ -1330,6 +723,7 @@ static void ut_x11_client_cleanup(UtObject *object) {
   ut_object_unref(self->socket);
   ut_object_unref(self->read_cancel);
   ut_object_unref(self->extensions);
+  ut_object_unref(self->core);
   ut_object_unref(self->shape_extension);
   ut_object_unref(self->mit_shm_extension);
   ut_object_unref(self->sync_extension);
@@ -1385,6 +779,10 @@ void ut_x11_client_connect(UtObject *object,
   self->connect_user_data = user_data;
   self->connect_cancel = ut_object_ref(cancel);
 
+  self->core = ut_x11_core_new(object, self->event_callbacks,
+                               self->callback_user_data, self->callback_cancel);
+  ut_list_append(self->extensions, self->core);
+
   ut_tcp_socket_connect(self->socket, connect_cb, self, self->cancel);
   ut_input_stream_read(self->socket, read_cb, self, self->read_cancel);
 }
@@ -1416,71 +814,37 @@ uint32_t ut_x11_client_create_window(UtObject *object, int16_t x, int16_t y,
   assert(ut_object_is_x11_client(object));
   UtX11Client *self = (UtX11Client *)object;
 
-  uint32_t id = ut_x11_client_create_resource_id(object);
-
   assert(self->screens_length > 0);
   X11Screen *screen = self->screens[0];
-
-  UtObjectRef request = ut_x11_buffer_new();
-  ut_x11_buffer_append_card32(request, id);
-  ut_x11_buffer_append_card32(request, screen->root); // parent
-  ut_x11_buffer_append_int16(request, x);
-  ut_x11_buffer_append_int16(request, y);
-  ut_x11_buffer_append_card16(request, width);
-  ut_x11_buffer_append_card16(request, height);
-  ut_x11_buffer_append_card16(request, 0); // border_width
-  ut_x11_buffer_append_card16(request, WINDOW_CLASS_INPUT_OUTPUT);
-  ut_x11_buffer_append_card32(request, screen->root_visual->id);
-  ut_x11_buffer_append_card32(request, VALUE_MASK_EVENT_MASK);
-  ut_x11_buffer_append_card32(request, event_mask);
-
-  ut_x11_client_send_request(object, 1, screen->root_visual->depth, request);
-
-  return id;
+  return ut_x11_core_create_window(self->core, screen->root, x, y, width,
+                                   height, screen->root_visual->depth,
+                                   screen->root_visual->id, event_mask);
 }
 
 void ut_x11_client_destroy_window(UtObject *object, uint32_t window) {
   assert(ut_object_is_x11_client(object));
-
-  UtObjectRef request = ut_x11_buffer_new();
-  ut_x11_buffer_append_card32(request, window);
-
-  ut_x11_client_send_request(object, 4, 0, request);
+  UtX11Client *self = (UtX11Client *)object;
+  ut_x11_core_destroy_window(self->core, window);
 }
 
 void ut_x11_client_map_window(UtObject *object, uint32_t window) {
   assert(ut_object_is_x11_client(object));
-
-  UtObjectRef request = ut_x11_buffer_new();
-  ut_x11_buffer_append_card32(request, window);
-
-  ut_x11_client_send_request(object, 8, 0, request);
+  UtX11Client *self = (UtX11Client *)object;
+  ut_x11_core_map_window(self->core, window);
 }
 
 void ut_x11_client_unmap_window(UtObject *object, uint32_t window) {
   assert(ut_object_is_x11_client(object));
-
-  UtObjectRef request = ut_x11_buffer_new();
-  ut_x11_buffer_append_card32(request, window);
-
-  ut_x11_client_send_request(object, 10, 0, request);
+  UtX11Client *self = (UtX11Client *)object;
+  ut_x11_core_unmap_window(self->core, window);
 }
 
 void ut_x11_client_configure_window(UtObject *object, uint32_t window,
                                     int16_t x, int16_t y, uint16_t width,
                                     uint16_t height) {
   assert(ut_object_is_x11_client(object));
-
-  UtObjectRef request = ut_x11_buffer_new();
-  ut_x11_buffer_append_card32(request, window);
-  ut_x11_buffer_append_card16(request, 0x0001 | 0x0002 | 0x0004 | 0x0008);
-  ut_x11_buffer_append_padding(request, 2);
-  ut_x11_buffer_append_value_int16(request, x);
-  ut_x11_buffer_append_value_int16(request, y);
-  ut_x11_buffer_append_value_card16(request, width);
-  ut_x11_buffer_append_value_card16(request, height);
-
-  ut_x11_client_send_request(object, 12, 0, request);
+  UtX11Client *self = (UtX11Client *)object;
+  ut_x11_core_configure_window(self->core, window, x, y, width, height);
 }
 
 void ut_x11_client_intern_atom(UtObject *object, const char *name,
@@ -1488,98 +852,41 @@ void ut_x11_client_intern_atom(UtObject *object, const char *name,
                                UtX11InternAtomCallback callback,
                                void *user_data, UtObject *cancel) {
   assert(ut_object_is_x11_client(object));
-
-  UtObjectRef request = ut_x11_buffer_new();
-  ut_x11_buffer_append_card16(request, ut_cstring_get_length(name));
-  ut_x11_buffer_append_padding(request, 2);
-  ut_x11_buffer_append_string8(request, name);
-  ut_x11_buffer_append_align_padding(request, 4);
-
-  ut_x11_client_send_request_with_reply(
-      object, 16, only_if_exists ? 1 : 0, request, decode_intern_atom_reply,
-      handle_intern_atom_error, callback_data_new(callback, user_data), cancel);
+  UtX11Client *self = (UtX11Client *)object;
+  ut_x11_core_intern_atom(self->core, name, only_if_exists, callback, user_data,
+                          cancel);
 }
 
 void ut_x11_client_get_atom_name(UtObject *object, uint32_t atom,
                                  UtX11GetAtomNameCallback callback,
                                  void *user_data, UtObject *cancel) {
   assert(ut_object_is_x11_client(object));
-
-  UtObjectRef request = ut_x11_buffer_new();
-  ut_x11_buffer_append_card32(request, atom);
-
-  ut_x11_client_send_request_with_reply(
-      object, 17, 0, request, decode_get_atom_name_reply,
-      handle_get_atom_name_error, callback_data_new(callback, user_data),
-      cancel);
+  UtX11Client *self = (UtX11Client *)object;
+  ut_x11_core_get_atom_name(self->core, atom, callback, user_data, cancel);
 }
 
 void ut_x11_client_change_property_uint8(UtObject *object, uint32_t window,
                                          uint32_t property, uint32_t type,
                                          UtObject *data) {
   assert(ut_object_is_x11_client(object));
-
-  uint8_t mode = 0; // Replace
-
-  UtObjectRef request = ut_x11_buffer_new();
-  ut_x11_buffer_append_card32(request, window);
-  ut_x11_buffer_append_card32(request, property);
-  ut_x11_buffer_append_card32(request, type);
-  ut_x11_buffer_append_card8(request, 8); // format
-  ut_x11_buffer_append_padding(request, 3);
-  size_t data_length = ut_list_get_length(data);
-  ut_x11_buffer_append_card32(request, data_length);
-  for (size_t i = 0; i < data_length; i++) {
-    ut_x11_buffer_append_card8(request, ut_uint8_list_get_element(data, i));
-  }
-  ut_x11_buffer_append_align_padding(request, 4);
-
-  ut_x11_client_send_request(object, 18, mode, request);
+  UtX11Client *self = (UtX11Client *)object;
+  ut_x11_core_change_property_uint8(self->core, window, property, type, data);
 }
 
 void ut_x11_client_change_property_uint16(UtObject *object, uint32_t window,
                                           uint32_t property, uint32_t type,
                                           UtObject *data) {
   assert(ut_object_is_x11_client(object));
-
-  uint8_t mode = 0; // Replace
-
-  UtObjectRef request = ut_x11_buffer_new();
-  ut_x11_buffer_append_card32(request, window);
-  ut_x11_buffer_append_card32(request, property);
-  ut_x11_buffer_append_card32(request, type);
-  ut_x11_buffer_append_card8(request, 16); // format
-  ut_x11_buffer_append_padding(request, 3);
-  size_t data_length = ut_list_get_length(data);
-  ut_x11_buffer_append_card32(request, data_length);
-  for (size_t i = 0; i < data_length; i++) {
-    ut_x11_buffer_append_card16(request, ut_uint16_list_get_element(data, i));
-  }
-  ut_x11_buffer_append_align_padding(request, 4);
-
-  ut_x11_client_send_request(object, 18, mode, request);
+  UtX11Client *self = (UtX11Client *)object;
+  ut_x11_core_change_property_uint16(self->core, window, property, type, data);
 }
 
 void ut_x11_client_change_property_uint32(UtObject *object, uint32_t window,
                                           uint32_t property, uint32_t type,
                                           UtObject *data) {
   assert(ut_object_is_x11_client(object));
-
-  uint8_t mode = 0; // Replace
-
-  UtObjectRef request = ut_x11_buffer_new();
-  ut_x11_buffer_append_card32(request, window);
-  ut_x11_buffer_append_card32(request, property);
-  ut_x11_buffer_append_card32(request, type);
-  ut_x11_buffer_append_card8(request, 32); // format
-  ut_x11_buffer_append_padding(request, 3);
-  size_t data_length = ut_list_get_length(data);
-  ut_x11_buffer_append_card32(request, data_length);
-  for (size_t i = 0; i < data_length; i++) {
-    ut_x11_buffer_append_card32(request, ut_uint32_list_get_element(data, i));
-  }
-
-  ut_x11_client_send_request(object, 18, mode, request);
+  UtX11Client *self = (UtX11Client *)object;
+  ut_x11_core_change_property_uint32(self->core, window, property, type, data);
 }
 
 void ut_x11_client_change_property_atom(UtObject *object, uint32_t window,
@@ -1592,40 +899,25 @@ void ut_x11_client_change_property_string(UtObject *object, uint32_t window,
                                           uint32_t property,
                                           const char *value) {
   assert(ut_object_is_x11_client(object));
-
-  uint8_t mode = 0; // Replace
-
-  UtObjectRef request = ut_x11_buffer_new();
-  ut_x11_buffer_append_card32(request, window);
-  ut_x11_buffer_append_card32(request, property);
-  ut_x11_buffer_append_card32(request, UT_X11_ATOM_STRING);
-  ut_x11_buffer_append_card8(request, 8); // format
-  ut_x11_buffer_append_padding(request, 3);
-  ut_x11_buffer_append_card32(request, ut_cstring_get_length(value));
-  ut_x11_buffer_append_string8(request, value);
-  ut_x11_buffer_append_align_padding(request, 4);
-
-  ut_x11_client_send_request(object, 18, mode, request);
+  UtX11Client *self = (UtX11Client *)object;
+  ut_x11_core_change_property_string(self->core, window, property, value);
 }
 
 void ut_x11_client_delete_property(UtObject *object, uint32_t window,
                                    uint32_t property) {
   assert(ut_object_is_x11_client(object));
-
-  UtObjectRef request = ut_x11_buffer_new();
-  ut_x11_buffer_append_card32(request, window);
-  ut_x11_buffer_append_card32(request, property);
-
-  ut_x11_client_send_request(object, 19, 0, request);
+  UtX11Client *self = (UtX11Client *)object;
+  ut_x11_core_delete_property(self->core, window, property);
 }
 
 void ut_x11_client_get_property(UtObject *object, uint32_t window,
                                 uint32_t property,
                                 UtX11GetPropertyCallback callback,
                                 void *user_data, UtObject *cancel) {
-  return ut_x11_client_get_property_full(object, window, property, 0, 0,
-                                         0xffffffff, false, callback, user_data,
-                                         cancel);
+  assert(ut_object_is_x11_client(object));
+  UtX11Client *self = (UtX11Client *)object;
+  ut_x11_core_get_property(self->core, window, property, 0, 0, 0xffffffff,
+                           false, callback, user_data, cancel);
 }
 
 void ut_x11_client_get_property_full(UtObject *object, uint32_t window,
@@ -1635,100 +927,51 @@ void ut_x11_client_get_property_full(UtObject *object, uint32_t window,
                                      UtX11GetPropertyCallback callback,
                                      void *user_data, UtObject *cancel) {
   assert(ut_object_is_x11_client(object));
-
-  UtObjectRef request = ut_x11_buffer_new();
-  ut_x11_buffer_append_card32(request, window);
-  ut_x11_buffer_append_card32(request, property);
-  ut_x11_buffer_append_card32(request, type);
-  ut_x11_buffer_append_card32(request, long_offset);
-  ut_x11_buffer_append_card32(request, long_length);
-
-  ut_x11_client_send_request_with_reply(
-      object, 31, delete ? 1 : 0, request, decode_get_property_reply,
-      handle_get_property_error, callback_data_new(callback, user_data),
-      cancel);
+  UtX11Client *self = (UtX11Client *)object;
+  ut_x11_core_get_property(self->core, window, property, type, long_offset,
+                           long_length, delete, callback, user_data, cancel);
 }
 
 void ut_x11_client_list_properties(UtObject *object, uint32_t window,
                                    UtX11ListPropertiesCallback callback,
                                    void *user_data, UtObject *cancel) {
   assert(ut_object_is_x11_client(object));
-
-  UtObjectRef request = ut_x11_buffer_new();
-  ut_x11_buffer_append_card32(request, window);
-
-  ut_x11_client_send_request_with_reply(
-      object, 32, 0, request, decode_list_properties_reply,
-      handle_list_properties_error, callback_data_new(callback, user_data),
-      cancel);
+  UtX11Client *self = (UtX11Client *)object;
+  ut_x11_core_list_properties(self->core, window, callback, user_data, cancel);
 }
 
 uint32_t ut_x11_client_create_pixmap(UtObject *object, uint32_t drawable,
                                      uint16_t width, uint16_t height,
                                      uint8_t depth) {
   assert(ut_object_is_x11_client(object));
-
-  uint32_t id = ut_x11_client_create_resource_id(object);
-
-  UtObjectRef request = ut_x11_buffer_new();
-  ut_x11_buffer_append_card32(request, id);
-  ut_x11_buffer_append_card32(request, drawable);
-  ut_x11_buffer_append_card16(request, width);
-  ut_x11_buffer_append_card16(request, height);
-
-  ut_x11_client_send_request(object, 53, depth, request);
-
-  return id;
+  UtX11Client *self = (UtX11Client *)object;
+  return ut_x11_core_create_pixmap(self->core, drawable, width, height, depth);
 }
 
 void ut_x11_client_free_pixmap(UtObject *object, uint32_t pixmap) {
   assert(ut_object_is_x11_client(object));
-
-  UtObjectRef request = ut_x11_buffer_new();
-  ut_x11_buffer_append_card32(request, pixmap);
-
-  ut_x11_client_send_request(object, 54, 0, request);
+  UtX11Client *self = (UtX11Client *)object;
+  ut_x11_core_free_pixmap(self->core, pixmap);
 }
 
 uint32_t ut_x11_client_create_gc(UtObject *object, uint32_t drawable) {
   assert(ut_object_is_x11_client(object));
-
-  uint32_t id = ut_x11_client_create_resource_id(object);
-
-  UtObjectRef request = ut_x11_buffer_new();
-  ut_x11_buffer_append_card32(request, id);
-  ut_x11_buffer_append_card32(request, drawable);
-  uint32_t mask = 0x00000000;
-  ut_x11_buffer_append_card32(request, mask);
-  // FIXME: values
-
-  ut_x11_client_send_request(object, 55, 0, request);
-
-  return id;
+  UtX11Client *self = (UtX11Client *)object;
+  return ut_x11_core_create_gc(self->core, drawable);
 }
 
 void ut_x11_client_free_gc(UtObject *object, uint32_t gc) {
   assert(ut_object_is_x11_client(object));
-
-  UtObjectRef request = ut_x11_buffer_new();
-  ut_x11_buffer_append_card32(request, gc);
-
-  ut_x11_client_send_request(object, 60, 0, request);
+  UtX11Client *self = (UtX11Client *)object;
+  ut_x11_core_free_gc(self->core, gc);
 }
 
 void ut_x11_client_clear_area(UtObject *object, uint32_t window, int16_t x,
                               int16_t y, uint16_t width, uint16_t height,
                               bool exposures) {
   assert(ut_object_is_x11_client(object));
-
-  UtObjectRef request = ut_x11_buffer_new();
-  ut_x11_buffer_append_card32(request, window);
-  ut_x11_buffer_append_int16(request, x);
-  ut_x11_buffer_append_int16(request, y);
-  ut_x11_buffer_append_card16(request, width);
-  ut_x11_buffer_append_card16(request, height);
-
-  ut_x11_client_send_request(object, 61, exposures ? 1 : 0, request);
+  UtX11Client *self = (UtX11Client *)object;
+  ut_x11_core_clear_area(self->core, window, x, y, width, height, exposures);
 }
 
 void ut_x11_client_copy_area(UtObject *object, uint32_t src_drawable,
@@ -1736,19 +979,9 @@ void ut_x11_client_copy_area(UtObject *object, uint32_t src_drawable,
                              int16_t src_y, int16_t dst_x, int16_t dst_y,
                              uint16_t width, uint16_t height) {
   assert(ut_object_is_x11_client(object));
-
-  UtObjectRef request = ut_x11_buffer_new();
-  ut_x11_buffer_append_card32(request, src_drawable);
-  ut_x11_buffer_append_card32(request, dst_drawable);
-  ut_x11_buffer_append_card32(request, gc);
-  ut_x11_buffer_append_int16(request, src_x);
-  ut_x11_buffer_append_int16(request, src_y);
-  ut_x11_buffer_append_int16(request, dst_x);
-  ut_x11_buffer_append_int16(request, dst_y);
-  ut_x11_buffer_append_card16(request, width);
-  ut_x11_buffer_append_card16(request, height);
-
-  ut_x11_client_send_request(object, 62, 0, request);
+  UtX11Client *self = (UtX11Client *)object;
+  ut_x11_core_copy_area(self->core, src_drawable, dst_drawable, gc, src_x,
+                        src_y, dst_y, dst_y, width, height);
 }
 
 void ut_x11_client_put_image(UtObject *object, uint32_t drawable, uint32_t gc,
@@ -1756,49 +989,29 @@ void ut_x11_client_put_image(UtObject *object, uint32_t drawable, uint32_t gc,
                              uint16_t height, uint8_t depth, int16_t dst_x,
                              int16_t dst_y, uint8_t *data, size_t data_length) {
   assert(ut_object_is_x11_client(object));
-
-  UtObjectRef request = ut_x11_buffer_new();
-  ut_x11_buffer_append_card32(request, drawable);
-  ut_x11_buffer_append_card32(request, gc);
-  ut_x11_buffer_append_card16(request, width);
-  ut_x11_buffer_append_card16(request, height);
-  ut_x11_buffer_append_int16(request, dst_x);
-  ut_x11_buffer_append_int16(request, dst_y);
-  ut_x11_buffer_append_card8(request, 0); // left_pad);
-  ut_x11_buffer_append_card8(request, depth);
-  ut_x11_buffer_append_padding(request, 2);
-  ut_x11_buffer_append_block(request, data, data_length);
-  ut_x11_buffer_append_align_padding(request, 4);
-
-  ut_x11_client_send_request(object, 72, format, request);
+  UtX11Client *self = (UtX11Client *)object;
+  ut_x11_core_put_image(self->core, drawable, gc, format, width, height, depth,
+                        dst_x, dst_y, data, data_length);
 }
 
 void ut_x11_client_list_extensions(UtObject *object,
                                    UtX11ListExtensionsCallback callback,
                                    void *user_data, UtObject *cancel) {
   assert(ut_object_is_x11_client(object));
-
-  UtObjectRef request = ut_x11_buffer_new();
-  ut_x11_client_send_request_with_reply(
-      object, 99, 0, request, decode_list_extensions_reply,
-      handle_list_extensions_error, callback_data_new(callback, user_data),
-      cancel);
+  UtX11Client *self = (UtX11Client *)object;
+  ut_x11_core_list_extensions(self->core, callback, user_data, cancel);
 }
 
 void ut_x11_client_bell(UtObject *object) {
   assert(ut_object_is_x11_client(object));
-
-  UtObjectRef request = ut_x11_buffer_new();
-  ut_x11_client_send_request(object, 108, 0, request);
+  UtX11Client *self = (UtX11Client *)object;
+  ut_x11_core_bell(self->core);
 }
 
 void ut_x11_client_kill_client(UtObject *object, uint32_t resource) {
   assert(ut_object_is_x11_client(object));
-
-  UtObjectRef request = ut_x11_buffer_new();
-  ut_x11_buffer_append_card32(request, resource);
-
-  ut_x11_client_send_request(object, 113, 0, request);
+  UtX11Client *self = (UtX11Client *)object;
+  ut_x11_core_kill_client(self->core, resource);
 }
 
 UtObject *ut_x11_client_get_mit_shm_extension(UtObject *object) {
