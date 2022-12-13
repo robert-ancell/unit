@@ -85,6 +85,10 @@ void ut_x11_core_put_image(UtObject *object, uint32_t drawable, uint32_t gc,
                            uint16_t height, uint8_t depth, int16_t dst_x,
                            int16_t dst_y, uint8_t *data, size_t data_length);
 
+void ut_x11_core_query_extension(UtObject *object, const char *name,
+                                 UtX11QueryExtensionCallback callback,
+                                 void *user_data, UtObject *cancel);
+
 void ut_x11_core_list_extensions(UtObject *object,
                                  UtX11ListExtensionsCallback callback,
                                  void *user_data, UtObject *cancel);

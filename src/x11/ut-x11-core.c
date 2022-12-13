@@ -535,6 +535,35 @@ static void handle_list_properties_error(UtObject *object, UtObject *error) {
   }
 }
 
+static void decode_query_extension_reply(UtObject *object, uint8_t data0,
+                                         UtObject *data) {
+  CallbackData *callback_data = (CallbackData *)object;
+
+  size_t offset = 0;
+  bool present = ut_x11_buffer_get_bool(data, &offset);
+  uint8_t major_opcode = ut_x11_buffer_get_card8(data, &offset);
+  uint8_t first_event = ut_x11_buffer_get_card8(data, &offset);
+  uint8_t first_error = ut_x11_buffer_get_card8(data, &offset);
+  ut_x11_buffer_get_padding(data, &offset, 20);
+
+  if (callback_data->callback != NULL) {
+    UtX11QueryExtensionCallback callback =
+        (UtX11QueryExtensionCallback)callback_data->callback;
+    callback(callback_data->user_data, present, major_opcode, first_event,
+             first_error, NULL);
+  }
+}
+
+static void handle_query_extension_error(UtObject *object, UtObject *error) {
+  CallbackData *callback_data = (CallbackData *)object;
+
+  if (callback_data->callback != NULL) {
+    UtX11QueryExtensionCallback callback =
+        (UtX11QueryExtensionCallback)callback_data->callback;
+    callback(callback_data->user_data, false, 0, 0, 0, error);
+  }
+}
+
 static void decode_list_extensions_reply(UtObject *object, uint8_t data0,
                                          UtObject *data) {
   CallbackData *callback_data = (CallbackData *)object;
@@ -1065,6 +1094,24 @@ void ut_x11_core_put_image(UtObject *object, uint32_t drawable, uint32_t gc,
   ut_x11_buffer_append_align_padding(request, 4);
 
   ut_x11_client_send_request(self->client, 72, format, request);
+}
+
+void ut_x11_core_query_extension(UtObject *object, const char *name,
+                                 UtX11QueryExtensionCallback callback,
+                                 void *user_data, UtObject *cancel) {
+  assert(ut_object_is_x11_core(object));
+  UtX11Core *self = (UtX11Core *)object;
+
+  UtObjectRef request = ut_x11_buffer_new();
+  ut_x11_buffer_append_card16(request, ut_cstring_get_length(name));
+  ut_x11_buffer_append_padding(request, 2);
+  ut_x11_buffer_append_string8(request, name);
+  ut_x11_buffer_append_align_padding(request, 4);
+
+  ut_x11_client_send_request_with_reply(
+      self->client, 98, 0, request, decode_query_extension_reply,
+      handle_query_extension_error,
+      callback_data_new(self, callback, user_data), cancel);
 }
 
 void ut_x11_core_list_extensions(UtObject *object,

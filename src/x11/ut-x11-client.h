@@ -178,6 +178,11 @@ typedef void (*UtX11GetPropertyCallback)(void *user_data, uint32_t type,
                                          UtObject *error);
 typedef void (*UtX11ListPropertiesCallback)(void *user_data, UtObject *atoms,
                                             UtObject *error);
+typedef void (*UtX11QueryExtensionCallback)(void *user_data, bool present,
+                                            uint8_t major_opcode,
+                                            uint8_t first_event,
+                                            uint8_t first_error,
+                                            UtObject *error);
 typedef void (*UtX11ListExtensionsCallback)(void *user_data, UtObject *names,
                                             UtObject *error);
 
@@ -306,6 +311,10 @@ void ut_x11_client_put_image(UtObject *object, uint32_t drawable, uint32_t gc,
                              UtX11ImageFormat format, uint16_t width,
                              uint16_t height, uint8_t depth, int16_t dst_x,
                              int16_t dst_y, uint8_t *data, size_t data_length);
+
+void ut_x11_client_query_extension(UtObject *object, const char *name,
+                                   UtX11QueryExtensionCallback callback,
+                                   void *user_data, UtObject *cancel);
 
 void ut_x11_client_list_extensions(UtObject *object,
                                    UtX11ListExtensionsCallback callback,
