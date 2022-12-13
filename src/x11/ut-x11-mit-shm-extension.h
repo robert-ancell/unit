@@ -2,6 +2,7 @@
 #include <stdint.h>
 
 #include "ut-object.h"
+#include "ut-x11-client.h"
 
 #pragma once
 
@@ -9,8 +10,6 @@ typedef void (*UtX11MitShmQueryVersionCallback)(
     void *user_data, uint16_t major_version, uint16_t minor_version,
     uint16_t uid, uint16_t gid, uint8_t pixmap_format, bool shared_pixmaps,
     UtObject *error);
-typedef void (*UtX11MitShmCreateSegmentCallback)(void *user_data, UtObject *fd,
-                                                 UtObject *error);
 
 UtObject *ut_x11_mit_shm_extension_new(UtObject *client, uint8_t major_opcode,
                                        uint8_t first_event,
@@ -36,7 +35,6 @@ uint32_t ut_x11_mit_shm_extension_attach_fd(UtObject *object, UtObject *fd,
 
 uint32_t ut_x11_mit_shm_extension_create_segment(
     UtObject *object, uint32_t size, bool read_only,
-    UtX11MitShmCreateSegmentCallback callback, void *user_data,
-    UtObject *cancel);
+    UtX11ShmCreateSegmentCallback callback, void *user_data, UtObject *cancel);
 
 bool ut_object_is_x11_mit_shm_extension(UtObject *object);

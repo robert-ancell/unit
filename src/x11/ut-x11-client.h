@@ -185,6 +185,8 @@ typedef void (*UtX11QueryExtensionCallback)(void *user_data, bool present,
                                             UtObject *error);
 typedef void (*UtX11ListExtensionsCallback)(void *user_data, UtObject *names,
                                             UtObject *error);
+typedef void (*UtX11ShmCreateSegmentCallback)(void *user_data, UtObject *fd,
+                                              UtObject *error);
 
 typedef enum {
   UT_X11_EVENT_KEY_PRESS = 0x00000001,
@@ -324,7 +326,22 @@ void ut_x11_client_bell(UtObject *object);
 
 void ut_x11_client_kill_client(UtObject *object, uint32_t resource);
 
-UtObject *ut_x11_client_get_mit_shm_extension(UtObject *object);
+uint32_t ut_x11_client_shm_attach(UtObject *object, uint32_t shmid,
+                                  bool read_only);
+
+void ut_x11_client_shm_detach(UtObject *object, uint32_t segment);
+
+uint32_t ut_x11_client_shm_create_pixmap(UtObject *object, uint32_t drawable,
+                                         uint16_t width, uint16_t height,
+                                         uint8_t depth, uint32_t segment,
+                                         uint32_t offset);
+
+uint32_t ut_x11_client_shm_attach_fd(UtObject *object, UtObject *fd,
+                                     bool read_only);
+
+uint32_t ut_x11_client_shm_create_segment(
+    UtObject *object, uint32_t size, bool read_only,
+    UtX11ShmCreateSegmentCallback callback, void *user_data, UtObject *cancel);
 
 UtObject *ut_x11_client_get_present_extension(UtObject *object);
 

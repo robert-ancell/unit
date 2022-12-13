@@ -4,6 +4,7 @@
 #include "ut-x11-client-private.h"
 #include "ut-x11-core.h"
 #include "ut-x11-extension.h"
+#include "ut-x11-mit-shm-extension.h"
 #include "ut.h"
 
 typedef struct _UtX11Client UtX11Client;
@@ -1017,10 +1018,45 @@ void ut_x11_client_kill_client(UtObject *object, uint32_t resource) {
   ut_x11_core_kill_client(self->core, resource);
 }
 
-UtObject *ut_x11_client_get_mit_shm_extension(UtObject *object) {
+uint32_t ut_x11_client_shm_attach(UtObject *object, uint32_t shmid,
+                                  bool read_only) {
   assert(ut_object_is_x11_client(object));
   UtX11Client *self = (UtX11Client *)object;
-  return self->mit_shm_extension;
+  return ut_x11_mit_shm_extension_attach(self->mit_shm_extension, shmid,
+                                         read_only);
+}
+
+void ut_x11_client_shm_detach(UtObject *object, uint32_t segment) {
+  assert(ut_object_is_x11_client(object));
+  UtX11Client *self = (UtX11Client *)object;
+  return ut_x11_mit_shm_extension_detach(self->mit_shm_extension, segment);
+}
+
+uint32_t ut_x11_client_shm_create_pixmap(UtObject *object, uint32_t drawable,
+                                         uint16_t width, uint16_t height,
+                                         uint8_t depth, uint32_t segment,
+                                         uint32_t offset) {
+  assert(ut_object_is_x11_client(object));
+  UtX11Client *self = (UtX11Client *)object;
+  return ut_x11_mit_shm_extension_create_pixmap(
+      self->mit_shm_extension, drawable, width, height, depth, segment, offset);
+}
+
+uint32_t ut_x11_client_shm_attach_fd(UtObject *object, UtObject *fd,
+                                     bool read_only) {
+  assert(ut_object_is_x11_client(object));
+  UtX11Client *self = (UtX11Client *)object;
+  return ut_x11_mit_shm_extension_attach_fd(self->mit_shm_extension, fd,
+                                            read_only);
+}
+
+uint32_t ut_x11_client_shm_create_segment(
+    UtObject *object, uint32_t size, bool read_only,
+    UtX11ShmCreateSegmentCallback callback, void *user_data, UtObject *cancel) {
+  assert(ut_object_is_x11_client(object));
+  UtX11Client *self = (UtX11Client *)object;
+  return ut_x11_mit_shm_extension_create_segment(
+      self->mit_shm_extension, size, read_only, callback, user_data, cancel);
 }
 
 UtObject *ut_x11_client_get_present_extension(UtObject *object) {

@@ -92,17 +92,16 @@ static void configure_notify_cb(void *user_data, uint32_t window, int16_t x,
     }
   }
 
-  UtObject *shm = ut_x11_client_get_mit_shm_extension(client);
   if (segment != 0) {
-    ut_x11_mit_shm_extension_detach(shm, segment);
+    ut_x11_client_shm_detach(client, segment);
   }
-  segment = ut_x11_mit_shm_extension_attach_fd(
-      shm, ut_shared_memory_array_get_fd(buffer), false);
+  segment = ut_x11_client_shm_attach_fd(
+      client, ut_shared_memory_array_get_fd(buffer), false);
   if (pixmap != 0) {
     ut_x11_client_free_pixmap(client, pixmap);
   }
-  pixmap = ut_x11_mit_shm_extension_create_pixmap(shm, window, width, height,
-                                                  24, segment, 0);
+  pixmap = ut_x11_client_shm_create_pixmap(client, window, width, height, 24,
+                                           segment, 0);
   gc = ut_x11_client_create_gc(client, pixmap);
 }
 

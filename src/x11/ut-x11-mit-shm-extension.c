@@ -4,6 +4,7 @@
 #include "ut-x11-buffer.h"
 #include "ut-x11-client-private.h"
 #include "ut-x11-extension.h"
+#include "ut-x11-mit-shm-extension.h"
 #include "ut.h"
 
 typedef struct _UtX11MitShmExtension UtX11MitShmExtension;
@@ -78,8 +79,8 @@ static void decode_shm_create_segment_reply(UtObject *user_data, uint8_t data0,
   UtObjectRef fd = ut_x11_buffer_take_fd(data);
 
   if (callback_data->callback != NULL) {
-    UtX11MitShmCreateSegmentCallback callback =
-        (UtX11MitShmCreateSegmentCallback)callback_data->callback;
+    UtX11ShmCreateSegmentCallback callback =
+        (UtX11ShmCreateSegmentCallback)callback_data->callback;
     callback(callback_data->user_data, fd, NULL);
   }
 }
@@ -89,8 +90,8 @@ static void handle_shm_create_segment_error(UtObject *user_data,
   CallbackData *callback_data = (CallbackData *)user_data;
 
   if (callback_data->callback != NULL) {
-    UtX11MitShmCreateSegmentCallback callback =
-        (UtX11MitShmCreateSegmentCallback)callback_data->callback;
+    UtX11ShmCreateSegmentCallback callback =
+        (UtX11ShmCreateSegmentCallback)callback_data->callback;
     callback(callback_data->user_data, NULL, error);
   }
 }
@@ -230,8 +231,7 @@ uint32_t ut_x11_mit_shm_extension_attach_fd(UtObject *object, UtObject *fd,
 
 uint32_t ut_x11_mit_shm_extension_create_segment(
     UtObject *object, uint32_t size, bool read_only,
-    UtX11MitShmCreateSegmentCallback callback, void *user_data,
-    UtObject *cancel) {
+    UtX11ShmCreateSegmentCallback callback, void *user_data, UtObject *cancel) {
   assert(ut_object_is_x11_mit_shm_extension(object));
   UtX11MitShmExtension *self = (UtX11MitShmExtension *)object;
 

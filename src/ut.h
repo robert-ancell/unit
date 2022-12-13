@@ -129,7 +129,6 @@
 #include "x11/ut-x11-implementation-error.h"
 #include "x11/ut-x11-length-error.h"
 #include "x11/ut-x11-match-error.h"
-#include "x11/ut-x11-mit-shm-extension.h"
 #include "x11/ut-x11-name-error.h"
 #include "x11/ut-x11-pixmap-error.h"
 #include "x11/ut-x11-present-extension.h"
