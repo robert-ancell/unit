@@ -12,12 +12,34 @@ uint8_t ut_x11_extension_get_major_opcode(UtObject *object) {
   return x11_extension_interface->get_major_opcode(object);
 }
 
-bool ut_x11_extension_decode_event(UtObject *object, UtObject *data) {
+uint8_t ut_x11_extension_get_first_event(UtObject *object) {
+  UtX11ExtensionInterface *x11_extension_interface =
+      ut_object_get_interface(object, &ut_x11_extension_id);
+  assert(x11_extension_interface != NULL);
+  return x11_extension_interface->get_first_event != NULL
+             ? x11_extension_interface->get_first_event(object)
+             : 0;
+}
+
+uint8_t ut_x11_extension_get_first_error(UtObject *object) {
+  UtX11ExtensionInterface *x11_extension_interface =
+      ut_object_get_interface(object, &ut_x11_extension_id);
+  assert(x11_extension_interface != NULL);
+  return x11_extension_interface->get_first_error != NULL
+             ? x11_extension_interface->get_first_error(object)
+             : 0;
+}
+
+bool ut_x11_extension_decode_event(UtObject *object, uint8_t code,
+                                   bool from_send_event,
+                                   uint16_t sequence_number, uint8_t data0,
+                                   UtObject *data) {
   UtX11ExtensionInterface *x11_extension_interface =
       ut_object_get_interface(object, &ut_x11_extension_id);
   assert(x11_extension_interface != NULL);
   return x11_extension_interface->decode_event != NULL
-             ? x11_extension_interface->decode_event(object, data)
+             ? x11_extension_interface->decode_event(
+                   object, code, from_send_event, sequence_number, data0, data)
              : false;
 }
 

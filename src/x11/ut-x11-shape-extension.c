@@ -40,10 +40,10 @@ struct _UtX11ShapeExtension {
   UtObject *cancel;
 };
 
-static void decode_shape_notify(UtX11ShapeExtension *self, UtObject *data) {
+static void decode_shape_notify(UtX11ShapeExtension *self, uint8_t data0,
+                                UtObject *data) {
+  uint8_t kind = data0;
   size_t offset = 0;
-  ut_x11_buffer_get_card8(data, &offset); // code
-  uint8_t kind = ut_x11_buffer_get_card8(data, &offset);
   uint32_t window = ut_x11_buffer_get_card32(data, &offset);
   int16_t x = ut_x11_buffer_get_int16(data, &offset);
   int16_t y = ut_x11_buffer_get_int16(data, &offset);
@@ -98,20 +98,20 @@ static uint8_t ut_x11_shape_extension_get_major_opcode(UtObject *object) {
   return self->major_opcode;
 }
 
-static bool ut_x11_shape_extension_decode_event(UtObject *object,
-                                                UtObject *data) {
+static uint8_t ut_x11_shape_extension_get_first_event(UtObject *object) {
   UtX11ShapeExtension *self = (UtX11ShapeExtension *)object;
+  return self->first_event;
+}
 
-  size_t offset = 0;
-  uint8_t code = ut_x11_buffer_get_card8(data, &offset) & 0x7f;
-  if (code < self->first_event) {
-    return false;
-  }
-  code -= self->first_event;
+static bool ut_x11_shape_extension_decode_event(UtObject *object, uint8_t code,
+                                                bool from_send_event,
+                                                uint16_t sequence_number,
+                                                uint8_t data0, UtObject *data) {
+  UtX11ShapeExtension *self = (UtX11ShapeExtension *)object;
 
   switch (code) {
   case 0:
-    decode_shape_notify(self, data);
+    decode_shape_notify(self, data0, data);
     return true;
   default:
     return false;
@@ -125,6 +125,7 @@ static void ut_x11_shape_extension_close(UtObject *object) {
 
 static UtX11ExtensionInterface x11_extension_interface = {
     .get_major_opcode = ut_x11_shape_extension_get_major_opcode,
+    .get_first_event = ut_x11_shape_extension_get_first_event,
     .decode_event = ut_x11_shape_extension_decode_event,
     .close = ut_x11_shape_extension_close};
 

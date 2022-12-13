@@ -100,6 +100,11 @@ static uint8_t ut_x11_mit_shm_extension_get_major_opcode(UtObject *object) {
   return self->major_opcode;
 }
 
+static uint8_t ut_x11_mit_shm_extension_get_first_event(UtObject *object) {
+  UtX11MitShmExtension *self = (UtX11MitShmExtension *)object;
+  return self->first_event;
+}
+
 static UtObject *ut_x11_mit_shm_extension_decode_error(UtObject *object,
                                                        UtObject *data) {
   UtX11MitShmExtension *self = (UtX11MitShmExtension *)object;
@@ -124,6 +129,7 @@ static void ut_x11_mit_shm_extension_close(UtObject *object) {
 
 static UtX11ExtensionInterface x11_extension_interface = {
     .get_major_opcode = ut_x11_mit_shm_extension_get_major_opcode,
+    .get_first_event = ut_x11_mit_shm_extension_get_first_event,
     .decode_error = ut_x11_mit_shm_extension_decode_error,
     .close = ut_x11_mit_shm_extension_close};
 

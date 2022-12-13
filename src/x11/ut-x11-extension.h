@@ -7,7 +7,10 @@
 
 typedef struct {
   uint8_t (*get_major_opcode)(UtObject *object);
-  bool (*decode_event)(UtObject *object, UtObject *data);
+  uint8_t (*get_first_event)(UtObject *object);
+  uint8_t (*get_first_error)(UtObject *object);
+  bool (*decode_event)(UtObject *object, uint8_t code, bool from_send_event,
+                       uint16_t sequence_number, uint8_t data0, UtObject *data);
   bool (*decode_generic_event)(UtObject *object, uint16_t code, UtObject *data);
   UtObject *(*decode_error)(UtObject *object, UtObject *data);
   void (*close)(UtObject *object);
@@ -17,7 +20,14 @@ extern int ut_x11_extension_id;
 
 uint8_t ut_x11_extension_get_major_opcode(UtObject *object);
 
-bool ut_x11_extension_decode_event(UtObject *object, UtObject *data);
+uint8_t ut_x11_extension_get_first_event(UtObject *object);
+
+uint8_t ut_x11_extension_get_first_error(UtObject *object);
+
+bool ut_x11_extension_decode_event(UtObject *object, uint8_t code,
+                                   bool from_send_event,
+                                   uint16_t sequence_number, uint8_t data0,
+                                   UtObject *data);
 
 bool ut_x11_extension_decode_generic_event(UtObject *object, uint16_t code,
                                            UtObject *data);

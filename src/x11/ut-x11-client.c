@@ -626,11 +626,10 @@ static size_t decode_reply(UtX11Client *self, UtObject *data) {
   return payload_length;
 }
 
-static size_t decode_generic_event(UtX11Client *self, UtObject *data) {
+static size_t decode_generic_event(UtX11Client *self, uint8_t data0,
+                                   UtObject *data) {
   size_t offset = 0;
-  assert((ut_x11_buffer_get_card8(data, &offset) & 0x7f) == 35);
-  uint8_t major_opcode = ut_x11_buffer_get_card8(data, &offset);
-  ut_x11_buffer_get_card16(data, &offset); // sequence_number
+  uint8_t major_opcode = data0;
   uint32_t extra_length = ut_x11_buffer_get_card32(data, &offset);
   uint16_t code = ut_x11_buffer_get_card16(data, &offset);
 
@@ -655,11 +654,18 @@ static size_t decode_generic_event(UtX11Client *self, UtObject *data) {
   return total_length;
 }
 
-static bool decode_extension_event(UtX11Client *self, UtObject *data) {
+static bool decode_extension_event(UtX11Client *self, uint8_t code,
+                                   bool from_send_event,
+                                   uint16_t sequence_number, uint8_t data0,
+                                   UtObject *data) {
   size_t extensions_length = ut_list_get_length(self->extensions);
   for (size_t i = 0; i < extensions_length; i++) {
     UtObject *extension = ut_object_list_get_element(self->extensions, i);
-    if (ut_x11_extension_decode_event(extension, data)) {
+    uint8_t first_event = ut_x11_extension_get_first_event(extension);
+    if (code >= first_event &&
+        ut_x11_extension_decode_event(extension, code - first_event,
+                                      from_send_event, sequence_number, data0,
+                                      data)) {
       return true;
     }
   }
@@ -672,19 +678,25 @@ static size_t decode_event(UtX11Client *self, UtObject *data) {
     return 0;
   }
 
-  UtObjectRef event_data = ut_list_get_sublist(data, 0, 32);
-
-  uint8_t code = ut_uint8_list_get_element(event_data, 0);
-  // bool from_send_event = (code & 0x80) != 0;
+  size_t offset = 0;
+  uint8_t code = ut_x11_buffer_get_card8(data, &offset);
+  bool from_send_event = (code & 0x80) != 0;
   code &= 0x7f;
+  uint8_t event_data0 = ut_x11_buffer_get_card8(data, &offset);
+  uint16_t sequence_number = ut_x11_buffer_get_card16(data, &offset);
+  UtObjectRef event_data = ut_list_get_sublist(data, offset, 32 - offset);
+
   switch (code) {
   case 35:
-    return decode_generic_event(self, data);
+    return decode_generic_event(self, event_data0, event_data);
   default:
-    if (!decode_extension_event(self, data)) {
+    if (!decode_extension_event(self, code, from_send_event, sequence_number,
+                                event_data0, event_data)) {
       if (self->event_callbacks->unknown_event != NULL &&
           !ut_cancel_is_active(self->callback_cancel)) {
-        self->event_callbacks->unknown_event(self->callback_user_data, code);
+        self->event_callbacks->unknown_event(self->callback_user_data, code,
+                                             from_send_event, sequence_number,
+                                             event_data0, event_data);
       }
     }
   }

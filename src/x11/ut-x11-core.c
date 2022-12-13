@@ -62,11 +62,9 @@ struct _UtX11Core {
   UtObject *cancel;
 };
 
-static void decode_key_press(UtX11Core *self, UtObject *data) {
+static void decode_key_press(UtX11Core *self, uint8_t data0, UtObject *data) {
+  uint8_t keycode = data0;
   size_t offset = 0;
-  assert((ut_x11_buffer_get_card8(data, &offset) & 0x7f) == 2);
-  uint8_t keycode = ut_x11_buffer_get_card8(data, &offset);
-  ut_x11_buffer_get_card16(data, &offset); // sequence_number
   ut_x11_buffer_get_card32(data, &offset); // time
   ut_x11_buffer_get_card32(data, &offset); // root
   uint32_t window = ut_x11_buffer_get_card32(data, &offset);
@@ -85,11 +83,9 @@ static void decode_key_press(UtX11Core *self, UtObject *data) {
   }
 }
 
-static void decode_key_release(UtX11Core *self, UtObject *data) {
+static void decode_key_release(UtX11Core *self, uint8_t data0, UtObject *data) {
+  uint8_t keycode = data0;
   size_t offset = 0;
-  assert((ut_x11_buffer_get_card8(data, &offset) & 0x7f) == 3);
-  uint8_t keycode = ut_x11_buffer_get_card8(data, &offset);
-  ut_x11_buffer_get_card16(data, &offset); // sequence_number
   ut_x11_buffer_get_card32(data, &offset); // time
   ut_x11_buffer_get_card32(data, &offset); // root
   uint32_t window = ut_x11_buffer_get_card32(data, &offset);
@@ -108,11 +104,10 @@ static void decode_key_release(UtX11Core *self, UtObject *data) {
   }
 }
 
-static void decode_button_press(UtX11Core *self, UtObject *data) {
+static void decode_button_press(UtX11Core *self, uint8_t data0,
+                                UtObject *data) {
+  uint8_t button = data0;
   size_t offset = 0;
-  assert((ut_x11_buffer_get_card8(data, &offset) & 0x7f) == 4);
-  uint8_t button = ut_x11_buffer_get_card8(data, &offset);
-  ut_x11_buffer_get_card16(data, &offset); // sequence_number
   ut_x11_buffer_get_card32(data, &offset); // time
   ut_x11_buffer_get_card32(data, &offset); // root
   uint32_t window = ut_x11_buffer_get_card32(data, &offset);
@@ -131,11 +126,10 @@ static void decode_button_press(UtX11Core *self, UtObject *data) {
   }
 }
 
-static void decode_button_release(UtX11Core *self, UtObject *data) {
+static void decode_button_release(UtX11Core *self, uint8_t data0,
+                                  UtObject *data) {
+  uint8_t button = data0;
   size_t offset = 0;
-  assert((ut_x11_buffer_get_card8(data, &offset) & 0x7f) == 5);
-  uint8_t button = ut_x11_buffer_get_card8(data, &offset);
-  ut_x11_buffer_get_card16(data, &offset); // sequence_number
   ut_x11_buffer_get_card32(data, &offset); // time
   ut_x11_buffer_get_card32(data, &offset); // root
   uint32_t window = ut_x11_buffer_get_card32(data, &offset);
@@ -155,11 +149,10 @@ static void decode_button_release(UtX11Core *self, UtObject *data) {
   }
 }
 
-static void decode_motion_notify(UtX11Core *self, UtObject *data) {
+static void decode_motion_notify(UtX11Core *self, uint8_t data0,
+                                 UtObject *data) {
+  // uint8_t detail = data0;
   size_t offset = 0;
-  assert((ut_x11_buffer_get_card8(data, &offset) & 0x7f) == 6);
-  ut_x11_buffer_get_card8(data, &offset);  // detail
-  ut_x11_buffer_get_card16(data, &offset); // sequence_number
   ut_x11_buffer_get_card32(data, &offset); // time
   ut_x11_buffer_get_card32(data, &offset); // root
   uint32_t window = ut_x11_buffer_get_card32(data, &offset);
@@ -178,11 +171,10 @@ static void decode_motion_notify(UtX11Core *self, UtObject *data) {
   }
 }
 
-static void decode_enter_notify(UtX11Core *self, UtObject *data) {
+static void decode_enter_notify(UtX11Core *self, uint8_t data0,
+                                UtObject *data) {
+  // uint8_t detail = data0;
   size_t offset = 0;
-  assert((ut_x11_buffer_get_card8(data, &offset) & 0x7f) == 7);
-  ut_x11_buffer_get_card8(data, &offset);  // detail
-  ut_x11_buffer_get_card16(data, &offset); // sequence_number
   ut_x11_buffer_get_card32(data, &offset); // time
   ut_x11_buffer_get_card32(data, &offset); // root
   uint32_t window = ut_x11_buffer_get_card32(data, &offset);
@@ -201,11 +193,10 @@ static void decode_enter_notify(UtX11Core *self, UtObject *data) {
   }
 }
 
-static void decode_leave_notify(UtX11Core *self, UtObject *data) {
+static void decode_leave_notify(UtX11Core *self, uint8_t data0,
+                                UtObject *data) {
+  // uint8_t detail = data0;
   size_t offset = 0;
-  assert((ut_x11_buffer_get_card8(data, &offset) & 0x7f) == 8);
-  ut_x11_buffer_get_card8(data, &offset);  // detail
-  ut_x11_buffer_get_card16(data, &offset); // sequence_number
   ut_x11_buffer_get_card32(data, &offset); // time
   ut_x11_buffer_get_card32(data, &offset); // root
   uint32_t window = ut_x11_buffer_get_card32(data, &offset);
@@ -224,11 +215,9 @@ static void decode_leave_notify(UtX11Core *self, UtObject *data) {
   }
 }
 
-static void decode_focus_in(UtX11Core *self, UtObject *data) {
+static void decode_focus_in(UtX11Core *self, uint8_t data0, UtObject *data) {
+  // uint8_t detail = data0;
   size_t offset = 0;
-  assert((ut_x11_buffer_get_card8(data, &offset) & 0x7f) == 9);
-  ut_x11_buffer_get_card8(data, &offset);  // detail
-  ut_x11_buffer_get_card16(data, &offset); // sequence_number
   uint32_t window = ut_x11_buffer_get_card32(data, &offset);
   ut_x11_buffer_get_card8(data, &offset); // mode
 
@@ -238,11 +227,9 @@ static void decode_focus_in(UtX11Core *self, UtObject *data) {
   }
 }
 
-static void decode_focus_out(UtX11Core *self, UtObject *data) {
+static void decode_focus_out(UtX11Core *self, uint8_t data0, UtObject *data) {
+  // uint8_t detail = data0;
   size_t offset = 0;
-  assert((ut_x11_buffer_get_card8(data, &offset) & 0x7f) == 10);
-  ut_x11_buffer_get_card8(data, &offset);  // detail
-  ut_x11_buffer_get_card16(data, &offset); // sequence_number
   uint32_t window = ut_x11_buffer_get_card32(data, &offset);
   ut_x11_buffer_get_card8(data, &offset); // mode
 
@@ -252,11 +239,8 @@ static void decode_focus_out(UtX11Core *self, UtObject *data) {
   }
 }
 
-static void decode_expose(UtX11Core *self, UtObject *data) {
+static void decode_expose(UtX11Core *self, uint8_t data0, UtObject *data) {
   size_t offset = 0;
-  assert((ut_x11_buffer_get_card8(data, &offset) & 0x7f) == 12);
-  ut_x11_buffer_get_padding(data, &offset, 1);
-  ut_x11_buffer_get_card16(data, &offset); // sequence_number
   uint32_t window = ut_x11_buffer_get_card32(data, &offset);
   uint16_t x = ut_x11_buffer_get_card16(data, &offset);
   uint16_t y = ut_x11_buffer_get_card16(data, &offset);
@@ -272,11 +256,8 @@ static void decode_expose(UtX11Core *self, UtObject *data) {
   }
 }
 
-static void decode_no_expose(UtX11Core *self, UtObject *data) {
+static void decode_no_expose(UtX11Core *self, uint8_t data0, UtObject *data) {
   size_t offset = 0;
-  assert((ut_x11_buffer_get_card8(data, &offset) & 0x7f) == 14);
-  ut_x11_buffer_get_padding(data, &offset, 1);
-  ut_x11_buffer_get_card16(data, &offset); // sequence_number
   uint32_t drawable = ut_x11_buffer_get_card32(data, &offset);
   ut_x11_buffer_get_card16(data, &offset); // minor-opcode
   ut_x11_buffer_get_card8(data, &offset);  // major-opcode
@@ -287,11 +268,8 @@ static void decode_no_expose(UtX11Core *self, UtObject *data) {
   }
 }
 
-static void decode_map_notify(UtX11Core *self, UtObject *data) {
+static void decode_map_notify(UtX11Core *self, uint8_t data0, UtObject *data) {
   size_t offset = 0;
-  assert((ut_x11_buffer_get_card8(data, &offset) & 0x7f) == 19);
-  ut_x11_buffer_get_padding(data, &offset, 1);
-  ut_x11_buffer_get_card16(data, &offset); // sequence_number
   uint32_t event = ut_x11_buffer_get_card32(data, &offset);
   uint32_t window = ut_x11_buffer_get_card32(data, &offset);
   bool override_redirect = ut_x11_buffer_get_bool(data, &offset);
@@ -304,11 +282,9 @@ static void decode_map_notify(UtX11Core *self, UtObject *data) {
   }
 }
 
-static void decode_reparent_notify(UtX11Core *self, UtObject *data) {
+static void decode_reparent_notify(UtX11Core *self, uint8_t data0,
+                                   UtObject *data) {
   size_t offset = 0;
-  assert((ut_x11_buffer_get_card8(data, &offset) & 0x7f) == 21);
-  ut_x11_buffer_get_padding(data, &offset, 1);
-  ut_x11_buffer_get_card16(data, &offset); // sequence_number
   uint32_t event = ut_x11_buffer_get_card32(data, &offset);
   uint32_t window = ut_x11_buffer_get_card32(data, &offset);
   uint32_t parent = ut_x11_buffer_get_card32(data, &offset);
@@ -324,11 +300,9 @@ static void decode_reparent_notify(UtX11Core *self, UtObject *data) {
   }
 }
 
-static void decode_configure_notify(UtX11Core *self, UtObject *data) {
+static void decode_configure_notify(UtX11Core *self, uint8_t data0,
+                                    UtObject *data) {
   size_t offset = 0;
-  assert((ut_x11_buffer_get_card8(data, &offset) & 0x7f) == 22);
-  ut_x11_buffer_get_padding(data, &offset, 1);
-  ut_x11_buffer_get_card16(data, &offset); // sequence_number
   ut_x11_buffer_get_card32(data, &offset); // event
   uint32_t window = ut_x11_buffer_get_card32(data, &offset);
   ut_x11_buffer_get_card32(data, &offset); // above_sibling
@@ -347,11 +321,9 @@ static void decode_configure_notify(UtX11Core *self, UtObject *data) {
   }
 }
 
-static void decode_property_notify(UtX11Core *self, UtObject *data) {
+static void decode_property_notify(UtX11Core *self, uint8_t data0,
+                                   UtObject *data) {
   size_t offset = 0;
-  assert((ut_x11_buffer_get_card8(data, &offset) & 0x7f) == 28);
-  ut_x11_buffer_get_padding(data, &offset, 1);
-  ut_x11_buffer_get_card16(data, &offset); // sequence_number
   uint32_t window = ut_x11_buffer_get_card32(data, &offset);
   uint32_t atom = ut_x11_buffer_get_card32(data, &offset);
   ut_x11_buffer_get_card32(data, &offset); // time
@@ -364,11 +336,10 @@ static void decode_property_notify(UtX11Core *self, UtObject *data) {
   }
 }
 
-static void decode_client_message(UtX11Core *self, UtObject *data) {
+static void decode_client_message(UtX11Core *self, uint8_t data0,
+                                  UtObject *data) {
+  uint8_t format = data0;
   size_t offset = 0;
-  assert((ut_x11_buffer_get_card8(data, &offset) & 0x7f) == 33);
-  uint8_t format = ut_x11_buffer_get_card8(data, &offset);
-  ut_x11_buffer_get_card16(data, &offset); // sequence_number
   uint32_t window = ut_x11_buffer_get_card32(data, &offset);
   uint32_t type = ut_x11_buffer_get_card32(data, &offset);
   UtObjectRef message_data = NULL;
@@ -603,60 +574,62 @@ static void ut_x11_core_cleanup(UtObject *object) {
 
 static uint8_t ut_x11_core_get_major_opcode(UtObject *object) { return 0; }
 
-static bool ut_x11_core_decode_event(UtObject *object, UtObject *data) {
-  UtX11Core *self = (UtX11Core *)object;
+static uint8_t ut_x11_core_get_first_event(UtObject *object) { return 0; }
 
-  size_t offset = 0;
-  uint8_t code = ut_x11_buffer_get_card8(data, &offset) & 0x7f;
+static bool ut_x11_core_decode_event(UtObject *object, uint8_t code,
+                                     bool from_send_event,
+                                     uint16_t sequence_number, uint8_t data0,
+                                     UtObject *data) {
+  UtX11Core *self = (UtX11Core *)object;
 
   switch (code) {
   case 2:
-    decode_key_press(self, data);
+    decode_key_press(self, data0, data);
     return true;
   case 3:
-    decode_key_release(self, data);
+    decode_key_release(self, data0, data);
     return true;
   case 4:
-    decode_button_press(self, data);
+    decode_button_press(self, data0, data);
     return true;
   case 5:
-    decode_button_release(self, data);
+    decode_button_release(self, data0, data);
     return true;
   case 6:
-    decode_motion_notify(self, data);
+    decode_motion_notify(self, data0, data);
     return true;
   case 7:
-    decode_enter_notify(self, data);
+    decode_enter_notify(self, data0, data);
     return true;
   case 8:
-    decode_leave_notify(self, data);
+    decode_leave_notify(self, data0, data);
     return true;
   case 9:
-    decode_focus_in(self, data);
+    decode_focus_in(self, data0, data);
     return true;
   case 10:
-    decode_focus_out(self, data);
+    decode_focus_out(self, data0, data);
     return true;
   case 12:
-    decode_expose(self, data);
+    decode_expose(self, data0, data);
     return true;
   case 14:
-    decode_no_expose(self, data);
+    decode_no_expose(self, data0, data);
     return true;
   case 19:
-    decode_map_notify(self, data);
+    decode_map_notify(self, data0, data);
     return true;
   case 21:
-    decode_reparent_notify(self, data);
+    decode_reparent_notify(self, data0, data);
     return true;
   case 22:
-    decode_configure_notify(self, data);
+    decode_configure_notify(self, data0, data);
     return true;
   case 28:
-    decode_property_notify(self, data);
+    decode_property_notify(self, data0, data);
     return true;
   case 33:
-    decode_client_message(self, data);
+    decode_client_message(self, data0, data);
     return true;
   default:
     return false;
@@ -713,6 +686,7 @@ static void ut_x11_core_close(UtObject *object) {
 
 static UtX11ExtensionInterface x11_extension_interface = {
     .get_major_opcode = ut_x11_core_get_major_opcode,
+    .get_first_event = ut_x11_core_get_first_event,
     .decode_event = ut_x11_core_decode_event,
     .decode_error = ut_x11_core_decode_error,
     .close = ut_x11_core_close};

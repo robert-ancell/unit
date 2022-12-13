@@ -72,17 +72,16 @@ static uint8_t ut_x11_xinput_extension_get_major_opcode(UtObject *object) {
   return self->major_opcode;
 }
 
-static bool ut_x11_xinput_extension_decode_event(UtObject *object,
-                                                 UtObject *data) {
+static uint8_t ut_x11_xinput_extension_get_first_event(UtObject *object) {
   UtX11XinputExtension *self = (UtX11XinputExtension *)object;
+  return self->first_event;
+}
 
-  size_t offset = 0;
-  uint8_t code = ut_x11_buffer_get_card8(data, &offset) & 0x7f;
-  if (code < self->first_event) {
-    return false;
-  }
-  code -= self->first_event;
-
+static bool ut_x11_xinput_extension_decode_event(UtObject *object, uint8_t code,
+                                                 bool from_send_event,
+                                                 uint16_t sequence_number,
+                                                 uint8_t data0,
+                                                 UtObject *data) {
   switch (code) {
   default:
     return false;
@@ -102,6 +101,7 @@ static void ut_x11_xinput_extension_close(UtObject *object) {
 
 static UtX11ExtensionInterface x11_extension_interface = {
     .get_major_opcode = ut_x11_xinput_extension_get_major_opcode,
+    .get_first_event = ut_x11_xinput_extension_get_first_event,
     .decode_event = ut_x11_xinput_extension_decode_event,
     .decode_error = ut_x11_xinput_extension_decode_error,
     .close = ut_x11_xinput_extension_close};

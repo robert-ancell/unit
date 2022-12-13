@@ -171,10 +171,9 @@ static void get_cursor_image_and_name_error_cb(UtObject *object,
   }
 }
 
-static void decode_selection_notify(UtX11XfixesExtension *self,
+static void decode_selection_notify(UtX11XfixesExtension *self, uint8_t data0,
                                     UtObject *data) {
   size_t offset = 0;
-  ut_x11_buffer_get_card8(data, &offset); // code
   uint32_t window = ut_x11_buffer_get_card32(data, &offset);
   uint32_t owner = ut_x11_buffer_get_card32(data, &offset);
   uint32_t selection = ut_x11_buffer_get_card32(data, &offset);
@@ -190,9 +189,9 @@ static void decode_selection_notify(UtX11XfixesExtension *self,
   }
 }
 
-static void decode_cursor_notify(UtX11XfixesExtension *self, UtObject *data) {
+static void decode_cursor_notify(UtX11XfixesExtension *self, uint8_t data0,
+                                 UtObject *data) {
   size_t offset = 0;
-  ut_x11_buffer_get_card8(data, &offset); // code
   uint32_t window = ut_x11_buffer_get_card32(data, &offset);
   uint32_t cursor_serial = ut_x11_buffer_get_card32(data, &offset);
   uint32_t timestamp = ut_x11_buffer_get_card32(data, &offset);
@@ -216,23 +215,24 @@ static uint8_t ut_x11_xfixes_extension_get_major_opcode(UtObject *object) {
   return self->major_opcode;
 }
 
-static bool ut_x11_xfixes_extension_decode_event(UtObject *object,
+static uint8_t ut_x11_xfixes_extension_get_first_event(UtObject *object) {
+  UtX11XfixesExtension *self = (UtX11XfixesExtension *)object;
+  return self->first_event;
+}
+
+static bool ut_x11_xfixes_extension_decode_event(UtObject *object, uint8_t code,
+                                                 bool from_send_event,
+                                                 uint16_t sequence_number,
+                                                 uint8_t data0,
                                                  UtObject *data) {
   UtX11XfixesExtension *self = (UtX11XfixesExtension *)object;
 
-  size_t offset = 0;
-  uint8_t code = ut_x11_buffer_get_card8(data, &offset) & 0x7f;
-  if (code < self->first_event) {
-    return false;
-  }
-  code -= self->first_event;
-
   switch (code) {
   case 0:
-    decode_selection_notify(self, data);
+    decode_selection_notify(self, data0, data);
     return true;
   case 1:
-    decode_cursor_notify(self, data);
+    decode_cursor_notify(self, data0, data);
     return true;
   default:
     return false;
@@ -263,6 +263,7 @@ static void ut_x11_xfixes_extension_close(UtObject *object) {
 
 static UtX11ExtensionInterface x11_extension_interface = {
     .get_major_opcode = ut_x11_xfixes_extension_get_major_opcode,
+    .get_first_event = ut_x11_xfixes_extension_get_first_event,
     .decode_event = ut_x11_xfixes_extension_decode_event,
     .decode_error = ut_x11_xfixes_extension_decode_error,
     .close = ut_x11_xfixes_extension_close};

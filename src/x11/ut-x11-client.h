@@ -131,7 +131,10 @@ typedef void (*UtX11PresentIdleNotifyCallback)(void *user_data,
                                                uint32_t pixmap,
                                                uint32_t idle_fence);
 
-typedef void (*UtX11UnknownEventCallback)(void *user_data, uint8_t code);
+typedef void (*UtX11UnknownEventCallback)(void *user_data, uint8_t code,
+                                          bool from_send_event,
+                                          uint16_t sequence_number,
+                                          uint8_t data0, UtObject *data);
 typedef void (*UtX11UnknownGenericEventCallback)(void *user_data,
                                                  uint8_t major_opcode,
                                                  uint16_t code);
