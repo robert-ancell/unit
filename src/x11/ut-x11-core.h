@@ -91,6 +91,50 @@ void ut_x11_core_list_properties(UtObject *object, uint32_t window,
                                  UtX11ListPropertiesCallback callback,
                                  void *user_data, UtObject *cancel);
 
+// SetSelectionOwner
+
+// GetSelectionOwner
+
+// ConvertSelection
+
+// SendEvent
+
+// GrabPointer
+
+// UngrabPointer
+
+// GrabButton
+
+// UngrabButton
+
+// ChangeActivePointerGrab
+
+// GrabKeyboard
+
+// UngrabKeyboard
+
+// GrabKey
+
+// UngrabKey
+
+// AllowEvents
+
+void ut_x11_core_grab_server(UtObject *object);
+
+void ut_x11_core_ungrab_server(UtObject *object);
+
+// QueryPointer
+
+// GetMotionEvents
+
+// TranslateCoordinates
+
+// WarpPointer
+
+// SetInputFocus
+
+// GetInputFocus
+
 uint32_t ut_x11_core_create_pixmap(UtObject *object, uint32_t drawable,
                                    uint16_t width, uint16_t height,
                                    uint8_t depth);
@@ -98,6 +142,15 @@ uint32_t ut_x11_core_create_pixmap(UtObject *object, uint32_t drawable,
 void ut_x11_core_free_pixmap(UtObject *object, uint32_t pixmap);
 
 uint32_t ut_x11_core_create_gc(UtObject *object, uint32_t drawable);
+
+void ut_x11_core_change_gc(UtObject *object, uint32_t gc);
+
+void ut_x11_core_copy_gc(UtObject *object, uint32_t src_gc, uint32_t dst_gc,
+                         uint32_t value_mask);
+
+// SetDashes
+
+// SetClipRectangles
 
 void ut_x11_core_free_gc(UtObject *object, uint32_t gc);
 
@@ -110,10 +163,14 @@ void ut_x11_core_copy_area(UtObject *object, uint32_t src_drawable,
                            int16_t src_y, int16_t dst_x, int16_t dst_y,
                            uint16_t width, uint16_t height);
 
+// CopyPlane
+
 void ut_x11_core_put_image(UtObject *object, uint32_t drawable, uint32_t gc,
                            UtX11ImageFormat format, uint16_t width,
                            uint16_t height, uint8_t depth, int16_t dst_x,
                            int16_t dst_y, uint8_t *data, size_t data_length);
+
+// GetImage
 
 void ut_x11_core_query_extension(UtObject *object, const char *name,
                                  UtX11QueryExtensionCallback callback,
@@ -125,6 +182,13 @@ void ut_x11_core_list_extensions(UtObject *object,
 
 void ut_x11_core_bell(UtObject *object);
 
+// SetCloseDownMode
+
 void ut_x11_core_kill_client(UtObject *object, uint32_t resource);
+
+void ut_x11_core_rotate_properties(UtObject *object, uint32_t window,
+                                   int16_t delta, UtObject *atoms);
+
+void ut_x11_core_no_operation(UtObject *object);
 
 bool ut_object_is_x11_core(UtObject *object);

@@ -1077,6 +1077,20 @@ void ut_x11_core_list_properties(UtObject *object, uint32_t window,
       callback_data_new(self, callback, user_data), cancel);
 }
 
+void ut_x11_core_grab_server(UtObject *object) {
+  assert(ut_object_is_x11_core(object));
+  UtX11Core *self = (UtX11Core *)object;
+
+  ut_x11_client_send_request(self->client, 36, 0, NULL);
+}
+
+void ut_x11_core_ungrab_server(UtObject *object) {
+  assert(ut_object_is_x11_core(object));
+  UtX11Core *self = (UtX11Core *)object;
+
+  ut_x11_client_send_request(self->client, 37, 0, NULL);
+}
+
 uint32_t ut_x11_core_create_pixmap(UtObject *object, uint32_t drawable,
                                    uint16_t width, uint16_t height,
                                    uint8_t depth) {
@@ -1122,6 +1136,30 @@ uint32_t ut_x11_core_create_gc(UtObject *object, uint32_t drawable) {
   ut_x11_client_send_request(self->client, 55, 0, request);
 
   return id;
+}
+
+void ut_x11_core_change_gc(UtObject *object, uint32_t gc) {
+  assert(ut_object_is_x11_core(object));
+  UtX11Core *self = (UtX11Core *)object;
+
+  UtObjectRef request = ut_x11_buffer_new();
+  ut_x11_buffer_append_card32(request, gc);
+  ut_x11_buffer_append_card32(request, 0);
+
+  ut_x11_client_send_request(self->client, 56, 0, request);
+}
+
+void ut_x11_core_copy_gc(UtObject *object, uint32_t src_gc, uint32_t dst_gc,
+                         uint32_t value_mask) {
+  assert(ut_object_is_x11_core(object));
+  UtX11Core *self = (UtX11Core *)object;
+
+  UtObjectRef request = ut_x11_buffer_new();
+  ut_x11_buffer_append_card32(request, src_gc);
+  ut_x11_buffer_append_card32(request, dst_gc);
+  ut_x11_buffer_append_card32(request, value_mask);
+
+  ut_x11_client_send_request(self->client, 57, 0, request);
 }
 
 void ut_x11_core_free_gc(UtObject *object, uint32_t gc) {
@@ -1218,9 +1256,8 @@ void ut_x11_core_list_extensions(UtObject *object,
   assert(ut_object_is_x11_core(object));
   UtX11Core *self = (UtX11Core *)object;
 
-  UtObjectRef request = ut_x11_buffer_new();
   ut_x11_client_send_request_with_reply(
-      self->client, 99, 0, request, decode_list_extensions_reply,
+      self->client, 99, 0, NULL, decode_list_extensions_reply,
       handle_list_extensions_error,
       callback_data_new(self, callback, user_data), cancel);
 }
@@ -1229,8 +1266,7 @@ void ut_x11_core_bell(UtObject *object) {
   assert(ut_object_is_x11_core(object));
   UtX11Core *self = (UtX11Core *)object;
 
-  UtObjectRef request = ut_x11_buffer_new();
-  ut_x11_client_send_request(self->client, 108, 0, request);
+  ut_x11_client_send_request(self->client, 108, 0, NULL);
 }
 
 void ut_x11_core_kill_client(UtObject *object, uint32_t resource) {
@@ -1241,6 +1277,31 @@ void ut_x11_core_kill_client(UtObject *object, uint32_t resource) {
   ut_x11_buffer_append_card32(request, resource);
 
   ut_x11_client_send_request(self->client, 113, 0, request);
+}
+
+void ut_x11_core_rotate_properties(UtObject *object, uint32_t window,
+                                   int16_t delta, UtObject *atoms) {
+  assert(ut_object_is_x11_core(object));
+  UtX11Core *self = (UtX11Core *)object;
+
+  size_t atoms_length = ut_list_get_length(atoms);
+
+  UtObjectRef request = ut_x11_buffer_new();
+  ut_x11_buffer_append_card32(request, window);
+  ut_x11_buffer_append_card16(request, atoms_length);
+  ut_x11_buffer_append_int16(request, delta);
+  for (size_t i = 0; i < atoms_length; i++) {
+    ut_x11_buffer_append_card32(request, ut_uint32_list_get_element(atoms, i));
+  }
+
+  ut_x11_client_send_request(self->client, 114, 0, request);
+}
+
+void ut_x11_core_no_operation(UtObject *object) {
+  assert(ut_object_is_x11_core(object));
+  UtX11Core *self = (UtX11Core *)object;
+
+  ut_x11_client_send_request(self->client, 127, 0, NULL);
 }
 
 bool ut_object_is_x11_core(UtObject *object) {
