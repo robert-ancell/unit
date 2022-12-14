@@ -7,10 +7,10 @@
 #include "ut-x11-core.h"
 #include "ut-x11-extension.h"
 #include "ut-x11-generic-event-extension.h"
-#include "ut-x11-mit-shm-extension.h"
 #include "ut-x11-present-extension.h"
 #include "ut-x11-randr-extension.h"
 #include "ut-x11-shape-extension.h"
+#include "ut-x11-shm-extension.h"
 #include "ut-x11-sync-extension.h"
 #include "ut-x11-xfixes-extension.h"
 #include "ut-x11-xinput-extension.h"
@@ -118,7 +118,7 @@ struct _UtX11Client {
   UtObject *extensions;
   UtObject *core;
   UtObject *shape_extension;
-  UtObject *mit_shm_extension;
+  UtObject *shm_extension;
   UtObject *xinput_extension;
   UtObject *sync_extension;
   UtObject *xfixes_extension;
@@ -186,10 +186,10 @@ static void shape_query_version_cb(void *user_data, uint16_t major_version,
 static void xinput_query_version_cb(void *user_data, uint16_t major_version,
                                     uint16_t minor_version, UtObject *error) {}
 
-static void mit_shm_query_version_cb(void *user_data, uint16_t major_version,
-                                     uint16_t minor_version, uint16_t uid,
-                                     uint16_t gid, uint8_t pixmap_format,
-                                     bool shared_pixmaps, UtObject *error) {}
+static void shm_query_version_cb(void *user_data, uint16_t major_version,
+                                 uint16_t minor_version, uint16_t uid,
+                                 uint16_t gid, uint8_t pixmap_format,
+                                 bool shared_pixmaps, UtObject *error) {}
 
 static void big_requests_enable_cb(void *user_data,
                                    uint32_t maximum_request_length,
@@ -240,17 +240,17 @@ static void query_shape_cb(void *user_data, bool present, uint8_t major_opcode,
   }
 }
 
-static void query_mit_shm_cb(void *user_data, bool present,
-                             uint8_t major_opcode, uint8_t first_event,
-                             uint8_t first_error, UtObject *error) {
+static void query_shm_cb(void *user_data, bool present, uint8_t major_opcode,
+                         uint8_t first_event, uint8_t first_error,
+                         UtObject *error) {
   UtX11Client *self = user_data;
   if (present) {
-    self->mit_shm_extension = ut_x11_mit_shm_extension_new(
+    self->shm_extension = ut_x11_shm_extension_new(
         (UtObject *)self, major_opcode, first_event, first_error);
-    ut_list_append(self->extensions, self->mit_shm_extension);
+    ut_list_append(self->extensions, self->shm_extension);
 
-    ut_x11_mit_shm_extension_query_version(
-        self->mit_shm_extension, mit_shm_query_version_cb, self, self->cancel);
+    ut_x11_shm_extension_query_version(
+        self->shm_extension, shm_query_version_cb, self, self->cancel);
   }
 }
 
@@ -522,7 +522,7 @@ static size_t decode_setup_success(UtX11Client *self, UtObject *data) {
                               query_generic_event_cb, self, self->cancel);
   ut_x11_core_query_extension(self->core, "SHAPE", query_shape_cb, self,
                               self->cancel);
-  ut_x11_core_query_extension(self->core, "MIT-SHM", query_mit_shm_cb, self,
+  ut_x11_core_query_extension(self->core, "MIT-SHM", query_shm_cb, self,
                               self->cancel);
   ut_x11_core_query_extension(self->core, "XInputExtension", query_xinput_cb,
                               self, self->cancel);
@@ -791,7 +791,7 @@ static void ut_x11_client_cleanup(UtObject *object) {
   ut_object_unref(self->extensions);
   ut_object_unref(self->core);
   ut_object_unref(self->shape_extension);
-  ut_object_unref(self->mit_shm_extension);
+  ut_object_unref(self->shm_extension);
   ut_object_unref(self->sync_extension);
   ut_object_unref(self->xfixes_extension);
   ut_object_unref(self->randr_extension);
@@ -1111,14 +1111,13 @@ uint32_t ut_x11_client_shm_attach(UtObject *object, uint32_t shmid,
                                   bool read_only) {
   assert(ut_object_is_x11_client(object));
   UtX11Client *self = (UtX11Client *)object;
-  return ut_x11_mit_shm_extension_attach(self->mit_shm_extension, shmid,
-                                         read_only);
+  return ut_x11_shm_extension_attach(self->shm_extension, shmid, read_only);
 }
 
 void ut_x11_client_shm_detach(UtObject *object, uint32_t segment) {
   assert(ut_object_is_x11_client(object));
   UtX11Client *self = (UtX11Client *)object;
-  return ut_x11_mit_shm_extension_detach(self->mit_shm_extension, segment);
+  return ut_x11_shm_extension_detach(self->shm_extension, segment);
 }
 
 uint32_t ut_x11_client_shm_create_pixmap(UtObject *object, uint32_t drawable,
@@ -1127,16 +1126,15 @@ uint32_t ut_x11_client_shm_create_pixmap(UtObject *object, uint32_t drawable,
                                          uint32_t offset) {
   assert(ut_object_is_x11_client(object));
   UtX11Client *self = (UtX11Client *)object;
-  return ut_x11_mit_shm_extension_create_pixmap(
-      self->mit_shm_extension, drawable, width, height, depth, segment, offset);
+  return ut_x11_shm_extension_create_pixmap(
+      self->shm_extension, drawable, width, height, depth, segment, offset);
 }
 
 uint32_t ut_x11_client_shm_attach_fd(UtObject *object, UtObject *fd,
                                      bool read_only) {
   assert(ut_object_is_x11_client(object));
   UtX11Client *self = (UtX11Client *)object;
-  return ut_x11_mit_shm_extension_attach_fd(self->mit_shm_extension, fd,
-                                            read_only);
+  return ut_x11_shm_extension_attach_fd(self->shm_extension, fd, read_only);
 }
 
 uint32_t ut_x11_client_shm_create_segment(
@@ -1144,8 +1142,8 @@ uint32_t ut_x11_client_shm_create_segment(
     UtX11ShmCreateSegmentCallback callback, void *user_data, UtObject *cancel) {
   assert(ut_object_is_x11_client(object));
   UtX11Client *self = (UtX11Client *)object;
-  return ut_x11_mit_shm_extension_create_segment(
-      self->mit_shm_extension, size, read_only, callback, user_data, cancel);
+  return ut_x11_shm_extension_create_segment(
+      self->shm_extension, size, read_only, callback, user_data, cancel);
 }
 
 bool ut_object_is_x11_client(UtObject *object) {

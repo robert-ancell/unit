@@ -150,7 +150,7 @@ ut_sources = [
   'x11/ut-x11-implementation-error.c',
   'x11/ut-x11-length-error.c',
   'x11/ut-x11-match-error.c',
-  'x11/ut-x11-mit-shm-extension.c',
+  'x11/ut-x11-shm-extension.c',
   'x11/ut-x11-name-error.c',
   'x11/ut-x11-pixmap-error.c',
   'x11/ut-x11-present-extension.c',
