@@ -233,6 +233,8 @@ void ut_x11_client_connect(UtObject *object,
                            UtX11ClientConnectCallback callback, void *user_data,
                            UtObject *cancel);
 
+const char *ut_x11_client_get_vendor(UtObject *object);
+
 uint32_t ut_x11_client_create_window(UtObject *object, int16_t x, int16_t y,
                                      uint16_t width, uint16_t height,
                                      uint32_t event_mask);

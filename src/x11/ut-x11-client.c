@@ -438,13 +438,12 @@ static size_t decode_setup_success(UtX11Client *self, UtObject *data) {
   self->pixmap_formats = ut_object_list_new();
   for (size_t i = 0; i < pixmap_formats_length; i++) {
     uint8_t depth = ut_x11_buffer_get_card8(data, &offset);
-     uint8_t bits_per_pixel =
-        ut_x11_buffer_get_card8(data, &offset);
-    uint8_t scanline_pad =
-        ut_x11_buffer_get_card8(data, &offset);
+    uint8_t bits_per_pixel = ut_x11_buffer_get_card8(data, &offset);
+    uint8_t scanline_pad = ut_x11_buffer_get_card8(data, &offset);
     ut_x11_buffer_get_padding(data, &offset, 5);
-    UtObjectRef pixmap_format = ut_x11_pixmap_format_new(depth, bits_per_pixel, scanline_pad);
-     ut_list_append(self->pixmap_formats, pixmap_format);
+    UtObjectRef pixmap_format =
+        ut_x11_pixmap_format_new(depth, bits_per_pixel, scanline_pad);
+    ut_list_append(self->pixmap_formats, pixmap_format);
   }
 
   self->screens = ut_object_list_new();
@@ -852,6 +851,12 @@ void ut_x11_client_connect(UtObject *object,
   self->socket = ut_tcp_socket_new(address, 0);
   ut_tcp_socket_connect(self->socket, connect_cb, self, self->cancel);
   ut_input_stream_read(self->socket, read_cb, self, self->read_cancel);
+}
+
+const char *ut_x11_client_get_vendor(UtObject *object) {
+  assert(ut_object_is_x11_client(object));
+  UtX11Client *self = (UtX11Client *)object;
+  return self->vendor;
 }
 
 uint32_t ut_x11_client_create_resource_id(UtObject *object) {
