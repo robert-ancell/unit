@@ -566,13 +566,14 @@ static size_t decode_setup_authenticate(UtObject *message) { return 0; }
 
 static size_t decode_setup_message(UtX11Client *self, UtObject *message) {
   uint8_t status = ut_uint8_list_get_element(message, 0);
-  if (status == 0) {
+  switch (status) {
+  case 0:
     return decode_setup_failed(self, message);
-  } else if (status == 1) {
+  case 1:
     return decode_setup_success(self, message);
-  } else if (status == 2) {
+  case 2:
     return decode_setup_authenticate(message);
-  } else {
+  default:
     assert(false);
   }
 }
