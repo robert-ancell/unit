@@ -314,7 +314,7 @@ uint32_t ut_x11_sync_extension_create_counter(UtObject *object,
 
   UtObjectRef request = ut_x11_buffer_new();
   ut_x11_buffer_append_card32(request, id);
-  ut_x11_buffer_append_int32(request, initial_value);
+  ut_x11_buffer_append_int64(request, initial_value);
 
   ut_x11_client_send_request(self->client, self->major_opcode, 2, request);
 
