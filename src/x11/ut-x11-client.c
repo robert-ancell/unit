@@ -975,12 +975,6 @@ void ut_x11_client_change_property_uint32(UtObject *object, uint32_t window,
   ut_x11_core_change_property_uint32(self->core, window, property, type, data);
 }
 
-void ut_x11_client_change_property_atom(UtObject *object, uint32_t window,
-                                        uint32_t property, UtObject *data) {
-  ut_x11_client_change_property_uint32(object, window, property,
-                                       UT_X11_ATOM_ATOM, data);
-}
-
 void ut_x11_client_change_property_string(UtObject *object, uint32_t window,
                                           uint32_t property,
                                           const char *value) {

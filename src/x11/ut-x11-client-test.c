@@ -153,8 +153,8 @@ static void wm_delete_window_atom_cb(void *user_data, uint32_t atom,
 
   UtObjectRef protocols = ut_uint32_list_new();
   ut_uint32_list_append(protocols, wm_delete_window_atom);
-  ut_x11_client_change_property_atom(client, window, wm_protocols_atom,
-                                     protocols);
+  ut_x11_client_change_property_uint32(client, window, wm_protocols_atom,
+                                       UT_X11_ATOM, protocols);
 }
 
 static void connect_cb(void *user_data, UtObject *error) {
@@ -181,8 +181,7 @@ static void connect_cb(void *user_data, UtObject *error) {
           UT_X11_EVENT_POINTER_MOTION | UT_X11_EVENT_STRUCTURE_NOTIFY |
           UT_X11_EVENT_EXPOSURE | UT_X11_EVENT_FOCUS_CHANGE);
 
-  ut_x11_client_change_property_string(client, window, UT_X11_ATOM_WM_NAME,
-                                       "UT");
+  ut_x11_client_change_property_string(client, window, UT_X11_WM_NAME, "UT");
 
   ut_x11_client_map_window(client, window);
 }

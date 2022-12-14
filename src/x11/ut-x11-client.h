@@ -4,74 +4,74 @@
 
 #pragma once
 
-#define UT_X11_ATOM_PRIMARY 1
-#define UT_X11_ATOM_SECONDARY 2
-#define UT_X11_ATOM_ARC 3
-#define UT_X11_ATOM_ATOM 4
-#define UT_X11_ATOM_BITMAP 5
-#define UT_X11_ATOM_CARDINAL 6
-#define UT_X11_ATOM_COLORMAP 7
-#define UT_X11_ATOM_CURSOR 8
-#define UT_X11_ATOM_CUT_BUFFER0 8
-#define UT_X11_ATOM_CUT_BUFFER1 9
-#define UT_X11_ATOM_CUT_BUFFER2 10
-#define UT_X11_ATOM_CUT_BUFFER3 11
-#define UT_X11_ATOM_CUT_BUFFER4 12
-#define UT_X11_ATOM_CUT_BUFFER5 13
-#define UT_X11_ATOM_CUT_BUFFER6 14
-#define UT_X11_ATOM_CUT_BUFFER7 16
-#define UT_X11_ATOM_DRAWABLE 17
-#define UT_X11_ATOM_FONT 18
-#define UT_X11_ATOM_INTEGER 19
-#define UT_X11_ATOM_PIXMAP 20
-#define UT_X11_ATOM_POINT 21
-#define UT_X11_ATOM_RECTANGLE 22
-#define UT_X11_ATOM_RESOURCE_MANAGER 23
-#define UT_X11_ATOM_RGB_COLOR_MAP 24
-#define UT_X11_ATOM_RGB_BEST_MAP 25
-#define UT_X11_ATOM_RGB_BLUE_MAP 26
-#define UT_X11_ATOM_RGB_DEFAULT_MAP 27
-#define UT_X11_ATOM_RGB_GRAY_MAP 28
-#define UT_X11_ATOM_RGB_GREEN_MAP 29
-#define UT_X11_ATOM_RGB_RED_MAP 30
-#define UT_X11_ATOM_STRING 31
-#define UT_X11_ATOM_VISUALID 32
-#define UT_X11_ATOM_WINDOW 33
-#define UT_X11_ATOM_WM_COMMAND 34
-#define UT_X11_ATOM_WM_HINTS 35
-#define UT_X11_ATOM_WM_CLIENT_MACHINE 36
-#define UT_X11_ATOM_WM_ICON_NAME 37
-#define UT_X11_ATOM_WM_ICON_SIZE 38
-#define UT_X11_ATOM_WM_NAME 39
-#define UT_X11_ATOM_WM_NORMAL_HINTS 40
-#define UT_X11_ATOM_WM_SIZE_HINTS 41
-#define UT_X11_ATOM_WM_ZOOM_HINTS 42
-#define UT_X11_ATOM_MIN_SPACE 43
-#define UT_X11_ATOM_NORM_SPACE 44
-#define UT_X11_ATOM_MAX_SPACE 45
-#define UT_X11_ATOM_END_SPACE 46
-#define UT_X11_ATOM_SUPERSCRIPT_X 47
-#define UT_X11_ATOM_SUPERSCRIPT_Y 48
-#define UT_X11_ATOM_SUBSCRIPT_X 49
-#define UT_X11_ATOM_SUBSCRIPT_Y 50
-#define UT_X11_ATOM_UNDERLINE_POSITION 51
-#define UT_X11_ATOM_UNDERLINE_THICKNESS 52
-#define UT_X11_ATOM_STRIKEOUT_ASCENT 53
-#define UT_X11_ATOM_STRIKEOUT_DESCENT 54
-#define UT_X11_ATOM_ITALIC_ANGLE 55
-#define UT_X11_ATOM_X_HEIGHT 56
-#define UT_X11_ATOM_QUAD_WIDTH 57
-#define UT_X11_ATOM_WEIGHT 58
-#define UT_X11_ATOM_POINT_SIZE 59
-#define UT_X11_ATOM_RESOLUTION 60
-#define UT_X11_ATOM_COPYRIGHT 61
-#define UT_X11_ATOM_NOTICE 62
-#define UT_X11_ATOM_FONT_NAME 63
-#define UT_X11_ATOM_FAMILY_NAME 64
-#define UT_X11_ATOM_FULL_NAME 65
-#define UT_X11_ATOM_CAP_HEIGHT 66
-#define UT_X11_ATOM_WM_CLASS 67
-#define UT_X11_ATOM_WM_TRANSIENT_FOR 68
+#define UT_X11_PRIMARY 1
+#define UT_X11_SECONDARY 2
+#define UT_X11_ARC 3
+#define UT_X11_ATOM 4
+#define UT_X11_BITMAP 5
+#define UT_X11_CARDINAL 6
+#define UT_X11_COLORMAP 7
+#define UT_X11_CURSOR 8
+#define UT_X11_CUT_BUFFER0 8
+#define UT_X11_CUT_BUFFER1 9
+#define UT_X11_CUT_BUFFER2 10
+#define UT_X11_CUT_BUFFER3 11
+#define UT_X11_CUT_BUFFER4 12
+#define UT_X11_CUT_BUFFER5 13
+#define UT_X11_CUT_BUFFER6 14
+#define UT_X11_CUT_BUFFER7 16
+#define UT_X11_DRAWABLE 17
+#define UT_X11_FONT 18
+#define UT_X11_INTEGER 19
+#define UT_X11_PIXMAP 20
+#define UT_X11_POINT 21
+#define UT_X11_RECTANGLE 22
+#define UT_X11_RESOURCE_MANAGER 23
+#define UT_X11_RGB_COLOR_MAP 24
+#define UT_X11_RGB_BEST_MAP 25
+#define UT_X11_RGB_BLUE_MAP 26
+#define UT_X11_RGB_DEFAULT_MAP 27
+#define UT_X11_RGB_GRAY_MAP 28
+#define UT_X11_RGB_GREEN_MAP 29
+#define UT_X11_RGB_RED_MAP 30
+#define UT_X11_STRING 31
+#define UT_X11_VISUALID 32
+#define UT_X11_WINDOW 33
+#define UT_X11_WM_COMMAND 34
+#define UT_X11_WM_HINTS 35
+#define UT_X11_WM_CLIENT_MACHINE 36
+#define UT_X11_WM_ICON_NAME 37
+#define UT_X11_WM_ICON_SIZE 38
+#define UT_X11_WM_NAME 39
+#define UT_X11_WM_NORMAL_HINTS 40
+#define UT_X11_WM_SIZE_HINTS 41
+#define UT_X11_WM_ZOOM_HINTS 42
+#define UT_X11_MIN_SPACE 43
+#define UT_X11_NORM_SPACE 44
+#define UT_X11_MAX_SPACE 45
+#define UT_X11_END_SPACE 46
+#define UT_X11_SUPERSCRIPT_X 47
+#define UT_X11_SUPERSCRIPT_Y 48
+#define UT_X11_SUBSCRIPT_X 49
+#define UT_X11_SUBSCRIPT_Y 50
+#define UT_X11_UNDERLINE_POSITION 51
+#define UT_X11_UNDERLINE_THICKNESS 52
+#define UT_X11_STRIKEOUT_ASCENT 53
+#define UT_X11_STRIKEOUT_DESCENT 54
+#define UT_X11_ITALIC_ANGLE 55
+#define UT_X11_X_HEIGHT 56
+#define UT_X11_QUAD_WIDTH 57
+#define UT_X11_WEIGHT 58
+#define UT_X11_POINT_SIZE 59
+#define UT_X11_RESOLUTION 60
+#define UT_X11_COPYRIGHT 61
+#define UT_X11_NOTICE 62
+#define UT_X11_FONT_NAME 63
+#define UT_X11_FAMILY_NAME 64
+#define UT_X11_FULL_NAME 65
+#define UT_X11_CAP_HEIGHT 66
+#define UT_X11_WM_CLASS 67
+#define UT_X11_WM_TRANSIENT_FOR 68
 
 typedef void (*UtX11KeyPressCallback)(void *user_data, uint32_t window,
                                       uint8_t keycode, int16_t x, int16_t y);
@@ -279,9 +279,6 @@ void ut_x11_client_change_property_uint16(UtObject *object, uint32_t window,
 void ut_x11_client_change_property_uint32(UtObject *object, uint32_t window,
                                           uint32_t property, uint32_t type,
                                           UtObject *value);
-
-void ut_x11_client_change_property_atom(UtObject *object, uint32_t window,
-                                        uint32_t property, UtObject *value);
 
 void ut_x11_client_change_property_string(UtObject *object, uint32_t window,
                                           uint32_t property, const char *value);

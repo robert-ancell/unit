@@ -896,7 +896,7 @@ void ut_x11_core_change_property_string(UtObject *object, uint32_t window,
   UtObjectRef request = ut_x11_buffer_new();
   ut_x11_buffer_append_card32(request, window);
   ut_x11_buffer_append_card32(request, property);
-  ut_x11_buffer_append_card32(request, UT_X11_ATOM_STRING);
+  ut_x11_buffer_append_card32(request, UT_X11_STRING);
   ut_x11_buffer_append_card8(request, 8); // format
   ut_x11_buffer_append_padding(request, 3);
   ut_x11_buffer_append_card32(request, ut_cstring_get_length(value));
