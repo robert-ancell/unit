@@ -77,6 +77,11 @@ static uint8_t ut_x11_xinput_extension_get_first_event(UtObject *object) {
   return self->first_event;
 }
 
+static uint8_t ut_x11_xinput_extension_get_first_error(UtObject *object) {
+  UtX11XinputExtension *self = (UtX11XinputExtension *)object;
+  return self->first_error;
+}
+
 static bool ut_x11_xinput_extension_decode_event(UtObject *object, uint8_t code,
                                                  bool from_send_event,
                                                  uint16_t sequence_number,
@@ -88,10 +93,22 @@ static bool ut_x11_xinput_extension_decode_event(UtObject *object, uint8_t code,
   }
 }
 
-static UtObject *ut_x11_xinput_extension_decode_error(UtObject *object,
-                                                      UtObject *data) {
-  // FIXME
-  return NULL;
+static UtX11ErrorCode ut_x11_xinput_extension_decode_error(UtObject *object,
+                                                           uint8_t code) {
+  switch (code) {
+  case 0:
+    return UT_X11_ERROR_INPUT_DEVICE;
+  case 1:
+    return UT_X11_ERROR_INPUT_EVENT;
+  case 2:
+    return UT_X11_ERROR_INPUT_MODE;
+  case 3:
+    return UT_X11_ERROR_INPUT_DEVICE_BUSY;
+  case 4:
+    return UT_X11_ERROR_INPUT_CLASS;
+  default:
+    return UT_X11_ERROR_UNKNOWN;
+  }
 }
 
 static void ut_x11_xinput_extension_close(UtObject *object) {
@@ -102,6 +119,7 @@ static void ut_x11_xinput_extension_close(UtObject *object) {
 static UtX11ExtensionInterface x11_extension_interface = {
     .get_major_opcode = ut_x11_xinput_extension_get_major_opcode,
     .get_first_event = ut_x11_xinput_extension_get_first_event,
+    .get_first_error = ut_x11_xinput_extension_get_first_error,
     .decode_event = ut_x11_xinput_extension_decode_event,
     .decode_error = ut_x11_xinput_extension_decode_error,
     .close = ut_x11_xinput_extension_close};

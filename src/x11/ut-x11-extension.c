@@ -53,13 +53,13 @@ bool ut_x11_extension_decode_generic_event(UtObject *object, uint16_t code,
              : false;
 }
 
-UtObject *ut_x11_extension_decode_error(UtObject *object, UtObject *data) {
+UtX11ErrorCode ut_x11_extension_decode_error(UtObject *object, uint8_t code) {
   UtX11ExtensionInterface *x11_extension_interface =
       ut_object_get_interface(object, &ut_x11_extension_id);
   assert(x11_extension_interface != NULL);
   return x11_extension_interface->decode_error != NULL
-             ? x11_extension_interface->decode_error(object, data)
-             : 0;
+             ? x11_extension_interface->decode_error(object, code)
+             : UT_X11_ERROR_UNKNOWN;
 }
 
 void ut_x11_extension_close(UtObject *object) {

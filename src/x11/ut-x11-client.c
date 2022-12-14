@@ -564,24 +564,25 @@ static size_t decode_error(UtX11Client *self, UtObject *data) {
 
   size_t offset = 0;
   assert(ut_x11_buffer_get_card8(error_data, &offset) == 0);
-  uint8_t code = ut_x11_buffer_get_card8(error_data, &offset);
+  uint8_t raw_code = ut_x11_buffer_get_card8(error_data, &offset);
   uint16_t sequence_number = ut_x11_buffer_get_card16(error_data, &offset);
-  /*uint32_t value = */ ut_x11_buffer_get_card32(error_data, &offset);
+  uint32_t value = ut_x11_buffer_get_card32(error_data, &offset);
   uint16_t minor_opcode = ut_x11_buffer_get_card16(error_data, &offset);
   uint8_t major_opcode = ut_x11_buffer_get_card8(error_data, &offset);
 
-  UtObjectRef error = NULL;
+  UtX11ErrorCode code = UT_X11_ERROR_UNKNOWN;
   size_t extensions_length = ut_list_get_length(self->extensions);
   for (size_t i = 0; i < extensions_length; i++) {
     UtObject *extension = ut_object_list_get_element(self->extensions, i);
-    error = ut_x11_extension_decode_error(extension, error_data);
-    if (error != NULL) {
-      break;
+    uint8_t first_error = ut_x11_extension_get_first_error(extension);
+    if (raw_code >= first_error) {
+      code = ut_x11_extension_decode_error(extension, raw_code - first_error);
+      if (code != UT_X11_ERROR_UNKNOWN) {
+        break;
+      }
     }
   }
-  if (error == NULL) {
-    error = ut_x11_unknown_error_new(code, major_opcode, minor_opcode);
-  }
+  UtObjectRef error = ut_x11_error_new(code, value, major_opcode, minor_opcode);
 
   Request *request = find_request(self, sequence_number);
   if (request != NULL) {

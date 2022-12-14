@@ -636,46 +636,44 @@ static bool ut_x11_core_decode_event(UtObject *object, uint8_t code,
   }
 }
 
-static UtObject *ut_x11_core_decode_error(UtObject *object, UtObject *data) {
-  size_t offset = 0;
-  assert(ut_x11_buffer_get_card8(data, &offset) == 0);
-  uint8_t code = ut_x11_buffer_get_card8(data, &offset);
-  uint16_t sequence_number = ut_x11_buffer_get_card16(data, &offset);
-  uint32_t value = ut_x11_buffer_get_card32(data, &offset);
-
+static UtX11ErrorCode ut_x11_core_decode_error(UtObject *object, uint8_t code) {
   switch (code) {
   case 1:
-    return ut_x11_request_error_new();
+    return UT_X11_ERROR_REQUEST;
   case 2:
-    return ut_x11_value_error_new(value);
+    return UT_X11_ERROR_VALUE;
   case 3:
-    return ut_x11_window_error_new(value);
+    return UT_X11_ERROR_WINDOW;
   case 4:
-    return ut_x11_pixmap_error_new(value);
+    return UT_X11_ERROR_PIXMAP;
   case 5:
-    return ut_x11_atom_error_new(value);
+    return UT_X11_ERROR_ATOM;
+  case 6:
+    return UT_X11_ERROR_CURSOR;
+  case 7:
+    return UT_X11_ERROR_FONT;
   case 8:
-    return ut_x11_match_error_new();
+    return UT_X11_ERROR_MATCH;
   case 9:
-    return ut_x11_drawable_error_new(value);
+    return UT_X11_ERROR_DRAWABLE;
   case 10:
-    return ut_x11_access_error_new();
+    return UT_X11_ERROR_ACCESS;
   case 11:
-    return ut_x11_alloc_error_new();
+    return UT_X11_ERROR_ALLOC;
   case 12:
-    return ut_x11_colormap_error_new(value);
+    return UT_X11_ERROR_COLORMAP;
   case 13:
-    return ut_x11_gcontext_error_new(value);
+    return UT_X11_ERROR_GCONTEXT;
   case 14:
-    return ut_x11_id_choice_error_new(value);
+    return UT_X11_ERROR_ID_CHOICE;
   case 15:
-    return ut_x11_name_error_new();
+    return UT_X11_ERROR_NAME;
   case 16:
-    return ut_x11_length_error_new(sequence_number);
+    return UT_X11_ERROR_LENGTH;
   case 17:
-    return ut_x11_implementation_error_new();
+    return UT_X11_ERROR_IMPLEMENTATION;
   default:
-    return NULL;
+    return UT_X11_ERROR_UNKNOWN;
   }
 }
 

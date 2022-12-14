@@ -220,6 +220,11 @@ static uint8_t ut_x11_xfixes_extension_get_first_event(UtObject *object) {
   return self->first_event;
 }
 
+static uint8_t ut_x11_xfixes_extension_get_first_error(UtObject *object) {
+  UtX11XfixesExtension *self = (UtX11XfixesExtension *)object;
+  return self->first_error;
+}
+
 static bool ut_x11_xfixes_extension_decode_event(UtObject *object, uint8_t code,
                                                  bool from_send_event,
                                                  uint16_t sequence_number,
@@ -239,21 +244,14 @@ static bool ut_x11_xfixes_extension_decode_event(UtObject *object, uint8_t code,
   }
 }
 
-static UtObject *ut_x11_xfixes_extension_decode_error(UtObject *object,
-                                                      UtObject *data) {
-  UtX11XfixesExtension *self = (UtX11XfixesExtension *)object;
-
-  size_t offset = 0;
-  assert(ut_x11_buffer_get_card8(data, &offset) == 0);
-  uint8_t code = ut_x11_buffer_get_card8(data, &offset);
-  /*uint16_t sequence_number = */ ut_x11_buffer_get_card16(data, &offset);
-  uint32_t value = ut_x11_buffer_get_card32(data, &offset);
-
-  if (code == self->first_error) {
-    return ut_x11_bad_region_error_new(value);
+static UtX11ErrorCode ut_x11_xfixes_extension_decode_error(UtObject *object,
+                                                           uint8_t code) {
+  switch (code) {
+  case 0:
+    return UT_X11_ERROR_BAD_REGION;
+  default:
+    return UT_X11_ERROR_UNKNOWN;
   }
-
-  return NULL;
 }
 
 static void ut_x11_xfixes_extension_close(UtObject *object) {
@@ -264,6 +262,7 @@ static void ut_x11_xfixes_extension_close(UtObject *object) {
 static UtX11ExtensionInterface x11_extension_interface = {
     .get_major_opcode = ut_x11_xfixes_extension_get_major_opcode,
     .get_first_event = ut_x11_xfixes_extension_get_first_event,
+    .get_first_error = ut_x11_xfixes_extension_get_first_error,
     .decode_event = ut_x11_xfixes_extension_decode_event,
     .decode_error = ut_x11_xfixes_extension_decode_error,
     .close = ut_x11_xfixes_extension_close};

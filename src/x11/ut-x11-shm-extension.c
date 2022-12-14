@@ -105,21 +105,14 @@ static uint8_t ut_x11_shm_extension_get_first_event(UtObject *object) {
   return self->first_event;
 }
 
-static UtObject *ut_x11_shm_extension_decode_error(UtObject *object,
-                                                   UtObject *data) {
-  UtX11ShmExtension *self = (UtX11ShmExtension *)object;
-
-  size_t offset = 0;
-  assert(ut_x11_buffer_get_card8(data, &offset) == 0);
-  uint8_t code = ut_x11_buffer_get_card8(data, &offset);
-  /*uint16_t sequence_number = */ ut_x11_buffer_get_card16(data, &offset);
-  uint32_t value = ut_x11_buffer_get_card32(data, &offset);
-
-  if (code == self->first_error) {
-    return ut_x11_shm_segment_error_new(value);
+static UtX11ErrorCode ut_x11_shm_extension_decode_error(UtObject *object,
+                                                        uint8_t code) {
+  switch (code) {
+  case 0:
+    return UT_X11_ERROR_BAD_SEGMENT;
+  default:
+    return UT_X11_ERROR_UNKNOWN;
   }
-
-  return NULL;
 }
 
 static void ut_x11_shm_extension_close(UtObject *object) {

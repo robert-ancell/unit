@@ -146,12 +146,6 @@ static bool ut_x11_present_extension_decode_generic_event(UtObject *object,
   }
 }
 
-static UtObject *ut_x11_present_extension_decode_error(UtObject *object,
-                                                       UtObject *data) {
-  // FIXME
-  return NULL;
-}
-
 static void ut_x11_present_extension_close(UtObject *object) {
   UtX11PresentExtension *self = (UtX11PresentExtension *)object;
   self->client = NULL;
@@ -160,7 +154,6 @@ static void ut_x11_present_extension_close(UtObject *object) {
 static UtX11ExtensionInterface x11_extension_interface = {
     .get_major_opcode = ut_x11_present_extension_get_major_opcode,
     .decode_generic_event = ut_x11_present_extension_decode_generic_event,
-    .decode_error = ut_x11_present_extension_decode_error,
     .close = ut_x11_present_extension_close};
 
 static UtObjectInterface object_interface = {
