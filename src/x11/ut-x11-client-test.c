@@ -71,7 +71,7 @@ static void client_message_cb(void *user_data, uint32_t window, uint32_t type,
 
 static void configure_notify_cb(void *user_data, uint32_t window, int16_t x,
                                 int16_t y, uint16_t width, uint16_t height) {
-  printf("ConfigureNotify\n");
+  printf("ConfigureNotify (%d,%d) %dx%d\n", x, y, width, height);
   if (width == pixmap_width && height == pixmap_height) {
     return;
   }
