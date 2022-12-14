@@ -172,6 +172,13 @@ typedef struct {
 
 typedef void (*UtX11ClientErrorCallback)(void *user_data, UtObject *error);
 typedef void (*UtX11ClientConnectCallback)(void *user_data, UtObject *error);
+typedef void (*UtX11GetWindowAttributesCallback)(
+    void *user_data, uint32_t visual, uint16_t class, uint8_t bit_gravity,
+    uint8_t win_gravity, uint8_t backing_store, uint32_t backing_planes,
+    uint32_t backing_pixel, bool save_under, bool map_is_installed,
+    uint8_t map_state, bool override_redirect, uint32_t colormap,
+    uint32_t all_event_masks, uint32_t your_event_mask,
+    uint16_t do_not_propagate_mask, UtObject *error);
 typedef void (*UtX11InternAtomCallback)(void *user_data, uint32_t atom,
                                         UtObject *error);
 typedef void (*UtX11GetAtomNameCallback)(void *user_data, const char *name,
@@ -255,11 +262,28 @@ uint32_t ut_x11_client_create_window(UtObject *object, int16_t x, int16_t y,
                                      uint16_t width, uint16_t height,
                                      uint32_t event_mask);
 
+void ut_x11_client_change_window_attributes(UtObject *object, uint32_t window,
+                                            uint32_t event_mask);
+
+void ut_x11_client_get_window_attributes(
+    UtObject *object, uint32_t window,
+    UtX11GetWindowAttributesCallback callback, void *user_data,
+    UtObject *cancel);
+
 void ut_x11_client_destroy_window(UtObject *object, uint32_t window);
+
+void ut_x11_client_destroy_subwindows(UtObject *object, uint32_t window);
+
+void ut_x11_client_reparent_window(UtObject *object, uint32_t window,
+                                   uint32_t parent, int16_t x, int16_t y);
 
 void ut_x11_client_map_window(UtObject *object, uint32_t window);
 
+void ut_x11_client_map_subwindows(UtObject *object, uint32_t window);
+
 void ut_x11_client_unmap_window(UtObject *object, uint32_t window);
+
+void ut_x11_client_unmap_subwindows(UtObject *object, uint32_t window);
 
 void ut_x11_client_configure_window(UtObject *object, uint32_t window,
                                     int16_t x, int16_t y, uint16_t width,

@@ -907,10 +907,40 @@ uint32_t ut_x11_client_create_window(UtObject *object, int16_t x, int16_t y,
       event_mask);
 }
 
+void ut_x11_client_change_window_attributes(UtObject *object, uint32_t window,
+                                            uint32_t event_mask) {
+  assert(ut_object_is_x11_client(object));
+  UtX11Client *self = (UtX11Client *)object;
+  ut_x11_core_change_window_attributes(self->core, window, event_mask);
+}
+
+void ut_x11_client_get_window_attributes(
+    UtObject *object, uint32_t window,
+    UtX11GetWindowAttributesCallback callback, void *user_data,
+    UtObject *cancel) {
+  assert(ut_object_is_x11_client(object));
+  UtX11Client *self = (UtX11Client *)object;
+  ut_x11_core_get_window_attributes(self->core, window, callback, user_data,
+                                    cancel);
+}
+
 void ut_x11_client_destroy_window(UtObject *object, uint32_t window) {
   assert(ut_object_is_x11_client(object));
   UtX11Client *self = (UtX11Client *)object;
   ut_x11_core_destroy_window(self->core, window);
+}
+
+void ut_x11_client_destroy_subwindows(UtObject *object, uint32_t window) {
+  assert(ut_object_is_x11_client(object));
+  UtX11Client *self = (UtX11Client *)object;
+  ut_x11_core_destroy_subwindows(self->core, window);
+}
+
+void ut_x11_client_reparent_window(UtObject *object, uint32_t window,
+                                   uint32_t parent, int16_t x, int16_t y) {
+  assert(ut_object_is_x11_client(object));
+  UtX11Client *self = (UtX11Client *)object;
+  ut_x11_core_reparent_window(self->core, window, parent, x, y);
 }
 
 void ut_x11_client_map_window(UtObject *object, uint32_t window) {
@@ -919,10 +949,22 @@ void ut_x11_client_map_window(UtObject *object, uint32_t window) {
   ut_x11_core_map_window(self->core, window);
 }
 
+void ut_x11_client_map_subwindows(UtObject *object, uint32_t window) {
+  assert(ut_object_is_x11_client(object));
+  UtX11Client *self = (UtX11Client *)object;
+  ut_x11_core_map_subwindows(self->core, window);
+}
+
 void ut_x11_client_unmap_window(UtObject *object, uint32_t window) {
   assert(ut_object_is_x11_client(object));
   UtX11Client *self = (UtX11Client *)object;
   ut_x11_core_unmap_window(self->core, window);
+}
+
+void ut_x11_client_unmap_subwindows(UtObject *object, uint32_t window) {
+  assert(ut_object_is_x11_client(object));
+  UtX11Client *self = (UtX11Client *)object;
+  ut_x11_core_unmap_subwindows(self->core, window);
 }
 
 void ut_x11_client_configure_window(UtObject *object, uint32_t window,

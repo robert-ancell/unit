@@ -376,6 +376,51 @@ static void decode_client_message(UtX11Core *self, uint8_t data0,
   }
 }
 
+static void decode_get_window_attributes_reply(UtObject *object, uint8_t data0,
+                                               UtObject *data) {
+  CallbackData *callback_data = (CallbackData *)object;
+
+  size_t offset = 0;
+  uint8_t backing_store = data0;
+  uint32_t visual = ut_x11_buffer_get_card32(data, &offset);
+  uint16_t class = ut_x11_buffer_get_card16(data, &offset);
+  uint8_t bit_gravity = ut_x11_buffer_get_card8(data, &offset);
+  uint8_t win_gravity = ut_x11_buffer_get_card8(data, &offset);
+  uint32_t backing_planes = ut_x11_buffer_get_card32(data, &offset);
+  uint32_t backing_pixel = ut_x11_buffer_get_card32(data, &offset);
+  bool save_under = ut_x11_buffer_get_card8(data, &offset) != 0;
+  bool map_is_installed = ut_x11_buffer_get_card8(data, &offset) != 0;
+  bool map_state = ut_x11_buffer_get_card8(data, &offset);
+  bool override_redirect = ut_x11_buffer_get_card8(data, &offset) != 0;
+  uint32_t colormap = ut_x11_buffer_get_card32(data, &offset);
+  uint32_t all_event_masks = ut_x11_buffer_get_card32(data, &offset);
+  uint32_t your_event_mask = ut_x11_buffer_get_card32(data, &offset);
+  uint16_t do_not_propagate_mask = ut_x11_buffer_get_card16(data, &offset);
+  ut_x11_buffer_get_padding(data, &offset, 2);
+  ut_x11_buffer_get_padding(data, &offset, 20);
+
+  if (callback_data->callback != NULL) {
+    UtX11GetWindowAttributesCallback callback =
+        (UtX11GetWindowAttributesCallback)callback_data->callback;
+    callback(callback_data->user_data, visual, class, bit_gravity, win_gravity,
+             backing_store, backing_planes, backing_pixel, save_under,
+             map_is_installed, map_state, override_redirect, colormap,
+             all_event_masks, your_event_mask, do_not_propagate_mask, NULL);
+  }
+}
+
+static void handle_get_window_attributes_error(UtObject *object,
+                                               UtObject *error) {
+  CallbackData *callback_data = (CallbackData *)object;
+
+  if (callback_data->callback != NULL) {
+    UtX11GetWindowAttributesCallback callback =
+        (UtX11GetWindowAttributesCallback)callback_data->callback;
+    callback(callback_data->user_data, 0, 0, 0, 0, 0, 0, 0, false, false, 0,
+             false, 0, 0, 0, 0, error);
+  }
+}
+
 static void decode_intern_atom_reply(UtObject *object, uint8_t data0,
                                      UtObject *data) {
   CallbackData *callback_data = (CallbackData *)object;
@@ -734,6 +779,35 @@ uint32_t ut_x11_core_create_window(UtObject *object, uint32_t parent, int16_t x,
   return id;
 }
 
+void ut_x11_core_change_window_attributes(UtObject *object, uint32_t window,
+                                          uint32_t event_mask) {
+  assert(ut_object_is_x11_core(object));
+  UtX11Core *self = (UtX11Core *)object;
+
+  UtObjectRef request = ut_x11_buffer_new();
+  ut_x11_buffer_append_card32(request, window);
+  ut_x11_buffer_append_card32(request, VALUE_MASK_EVENT_MASK);
+  ut_x11_buffer_append_card32(request, event_mask);
+
+  ut_x11_client_send_request(self->client, 2, 0, request);
+}
+
+void ut_x11_core_get_window_attributes(
+    UtObject *object, uint32_t window,
+    UtX11GetWindowAttributesCallback callback, void *user_data,
+    UtObject *cancel) {
+  assert(ut_object_is_x11_core(object));
+  UtX11Core *self = (UtX11Core *)object;
+
+  UtObjectRef request = ut_x11_buffer_new();
+  ut_x11_buffer_append_card32(request, window);
+
+  ut_x11_client_send_request_with_reply(
+      self->client, 3, 0, request, decode_get_window_attributes_reply,
+      handle_get_window_attributes_error,
+      callback_data_new(self, callback, user_data), cancel);
+}
+
 void ut_x11_core_destroy_window(UtObject *object, uint32_t window) {
   assert(ut_object_is_x11_core(object));
   UtX11Core *self = (UtX11Core *)object;
@@ -742,6 +816,32 @@ void ut_x11_core_destroy_window(UtObject *object, uint32_t window) {
   ut_x11_buffer_append_card32(request, window);
 
   ut_x11_client_send_request(self->client, 4, 0, request);
+}
+
+void ut_x11_core_destroy_subwindows(UtObject *object, uint32_t window) {
+  assert(ut_object_is_x11_core(object));
+  UtX11Core *self = (UtX11Core *)object;
+
+  UtObjectRef request = ut_x11_buffer_new();
+  ut_x11_buffer_append_card32(request, window);
+
+  ut_x11_client_send_request(self->client, 5, 0, request);
+}
+
+// ChangeSaveSet
+
+void ut_x11_core_reparent_window(UtObject *object, uint32_t window,
+                                 uint32_t parent, int16_t x, int16_t y) {
+  assert(ut_object_is_x11_core(object));
+  UtX11Core *self = (UtX11Core *)object;
+
+  UtObjectRef request = ut_x11_buffer_new();
+  ut_x11_buffer_append_card32(request, window);
+  ut_x11_buffer_append_card32(request, parent);
+  ut_x11_buffer_append_int16(request, x);
+  ut_x11_buffer_append_int16(request, y);
+
+  ut_x11_client_send_request(self->client, 7, 0, request);
 }
 
 void ut_x11_core_map_window(UtObject *object, uint32_t window) {
@@ -754,6 +854,16 @@ void ut_x11_core_map_window(UtObject *object, uint32_t window) {
   ut_x11_client_send_request(self->client, 8, 0, request);
 }
 
+void ut_x11_core_map_subwindows(UtObject *object, uint32_t window) {
+  assert(ut_object_is_x11_core(object));
+  UtX11Core *self = (UtX11Core *)object;
+
+  UtObjectRef request = ut_x11_buffer_new();
+  ut_x11_buffer_append_card32(request, window);
+
+  ut_x11_client_send_request(self->client, 9, 0, request);
+}
+
 void ut_x11_core_unmap_window(UtObject *object, uint32_t window) {
   assert(ut_object_is_x11_core(object));
   UtX11Core *self = (UtX11Core *)object;
@@ -762,6 +872,16 @@ void ut_x11_core_unmap_window(UtObject *object, uint32_t window) {
   ut_x11_buffer_append_card32(request, window);
 
   ut_x11_client_send_request(self->client, 10, 0, request);
+}
+
+void ut_x11_core_unmap_subwindows(UtObject *object, uint32_t window) {
+  assert(ut_object_is_x11_core(object));
+  UtX11Core *self = (UtX11Core *)object;
+
+  UtObjectRef request = ut_x11_buffer_new();
+  ut_x11_buffer_append_card32(request, window);
+
+  ut_x11_client_send_request(self->client, 11, 0, request);
 }
 
 void ut_x11_core_configure_window(UtObject *object, uint32_t window, int16_t x,
@@ -780,6 +900,12 @@ void ut_x11_core_configure_window(UtObject *object, uint32_t window, int16_t x,
 
   ut_x11_client_send_request(self->client, 12, 0, request);
 }
+
+// CirculateWindow
+
+// GetGeometry
+
+// QueryTree
 
 void ut_x11_core_intern_atom(UtObject *object, const char *name,
                              bool only_if_exists,

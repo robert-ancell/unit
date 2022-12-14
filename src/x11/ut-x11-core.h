@@ -15,14 +15,39 @@ uint32_t ut_x11_core_create_window(UtObject *object, uint32_t parent, int16_t x,
                                    uint8_t depth, uint32_t visual,
                                    uint32_t event_mask);
 
+void ut_x11_core_change_window_attributes(UtObject *object, uint32_t window,
+                                          uint32_t event_mask);
+
+void ut_x11_core_get_window_attributes(
+    UtObject *object, uint32_t window,
+    UtX11GetWindowAttributesCallback callback, void *user_data,
+    UtObject *cancel);
+
 void ut_x11_core_destroy_window(UtObject *object, uint32_t window);
+
+void ut_x11_core_destroy_subwindows(UtObject *object, uint32_t window);
+
+// ChangeSaveSet
+
+void ut_x11_core_reparent_window(UtObject *object, uint32_t window,
+                                 uint32_t parent, int16_t x, int16_t y);
 
 void ut_x11_core_map_window(UtObject *object, uint32_t window);
 
+void ut_x11_core_map_subwindows(UtObject *object, uint32_t window);
+
 void ut_x11_core_unmap_window(UtObject *object, uint32_t window);
+
+void ut_x11_core_unmap_subwindows(UtObject *object, uint32_t window);
 
 void ut_x11_core_configure_window(UtObject *object, uint32_t window, int16_t x,
                                   int16_t y, uint16_t width, uint16_t height);
+
+// CirculateWindow
+
+// GetGeometry
+
+// QueryTree
 
 void ut_x11_core_intern_atom(UtObject *object, const char *name,
                              bool only_if_exists,
