@@ -859,6 +859,18 @@ const char *ut_x11_client_get_vendor(UtObject *object) {
   return self->vendor;
 }
 
+UtObject *ut_x11_client_get_pixmap_formats(UtObject *object) {
+  assert(ut_object_is_x11_client(object));
+  UtX11Client *self = (UtX11Client *)object;
+  return self->pixmap_formats;
+}
+
+UtObject *ut_x11_client_get_screens(UtObject *object) {
+  assert(ut_object_is_x11_client(object));
+  UtX11Client *self = (UtX11Client *)object;
+  return self->screens;
+}
+
 uint32_t ut_x11_client_create_resource_id(UtObject *object) {
   assert(ut_object_is_x11_client(object));
   UtX11Client *self = (UtX11Client *)object;
