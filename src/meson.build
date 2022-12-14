@@ -136,6 +136,7 @@ ut_sources = [
   'x11/ut-x11-buffer.c',
   'x11/ut-x11-client.c',
   'x11/ut-x11-core.c',
+  'x11/ut-x11-dri3-extension.c',
   'x11/ut-x11-error.c',
   'x11/ut-x11-extension.c',
   'x11/ut-x11-generic-event-extension.c',

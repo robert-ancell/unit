@@ -5,6 +5,7 @@
 #include "ut-x11-buffer.h"
 #include "ut-x11-client-private.h"
 #include "ut-x11-core.h"
+#include "ut-x11-dri3-extension.h"
 #include "ut-x11-extension.h"
 #include "ut-x11-generic-event-extension.h"
 #include "ut-x11-present-extension.h"
@@ -122,8 +123,9 @@ struct _UtX11Client {
   UtObject *xinput_extension;
   UtObject *sync_extension;
   UtObject *xfixes_extension;
-  UtObject *present_extension;
   UtObject *randr_extension;
+  UtObject *present_extension;
+  UtObject *dri3_extension;
 
   const UtX11EventCallbacks *event_callbacks;
   UtX11ClientErrorCallback error_callback;
@@ -209,6 +211,9 @@ static void randr_query_version_cb(void *user_data, uint32_t version_major,
 
 static void present_query_version_cb(void *user_data, uint32_t version_major,
                                      uint32_t version_minor, UtObject *error) {}
+
+static void dri3_query_version_cb(void *user_data, uint32_t version_major,
+                                  uint32_t version_minor, UtObject *error) {}
 
 static void query_generic_event_cb(void *user_data, bool present,
                                    uint8_t major_opcode, uint8_t first_event,
@@ -345,6 +350,21 @@ static void query_present_cb(void *user_data, bool present,
 
     ut_x11_present_extension_query_version(
         self->present_extension, present_query_version_cb, self, self->cancel);
+  }
+}
+
+static void query_dri3_cb(void *user_data, bool present, uint8_t major_opcode,
+                          uint8_t first_event, uint8_t first_error,
+                          UtObject *error) {
+  UtX11Client *self = user_data;
+
+  if (present) {
+    self->dri3_extension =
+        ut_x11_dri3_extension_new((UtObject *)self, major_opcode);
+    ut_list_append(self->extensions, self->dri3_extension);
+
+    ut_x11_dri3_extension_query_version(
+        self->dri3_extension, dri3_query_version_cb, self, self->cancel);
 
     // FIXME: More reliably do this on the last setup request.
     self->connect_callback(self->connect_user_data, NULL);
@@ -535,6 +555,8 @@ static size_t decode_setup_success(UtX11Client *self, UtObject *data) {
   ut_x11_core_query_extension(self->core, "RANDR", query_randr_cb, self,
                               self->cancel);
   ut_x11_core_query_extension(self->core, "Present", query_present_cb, self,
+                              self->cancel);
+  ut_x11_core_query_extension(self->core, "DRI3", query_dri3_cb, self,
                               self->cancel);
 
   return offset;
@@ -793,10 +815,12 @@ static void ut_x11_client_cleanup(UtObject *object) {
   ut_object_unref(self->core);
   ut_object_unref(self->shape_extension);
   ut_object_unref(self->shm_extension);
+  ut_object_unref(self->xinput_extension);
   ut_object_unref(self->sync_extension);
   ut_object_unref(self->xfixes_extension);
   ut_object_unref(self->randr_extension);
   ut_object_unref(self->present_extension);
+  ut_object_unref(self->dri3_extension);
   ut_object_unref(self->callback_cancel);
   ut_object_unref(self->connect_cancel);
   free(self->vendor);
