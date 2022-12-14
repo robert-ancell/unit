@@ -952,35 +952,42 @@ void ut_x11_client_get_atom_name(UtObject *object, uint32_t atom,
 }
 
 void ut_x11_client_change_property_uint8(UtObject *object, uint32_t window,
-                                         uint32_t property, uint32_t type,
+                                         uint32_t property,
+                                         UtX11PropertyMode mode, uint32_t type,
                                          UtObject *data) {
   assert(ut_object_is_x11_client(object));
   UtX11Client *self = (UtX11Client *)object;
-  ut_x11_core_change_property_uint8(self->core, window, property, type, data);
+  ut_x11_core_change_property_uint8(self->core, window, property, mode, type,
+                                    data);
 }
 
 void ut_x11_client_change_property_uint16(UtObject *object, uint32_t window,
-                                          uint32_t property, uint32_t type,
+                                          uint32_t property,
+                                          UtX11PropertyMode mode, uint32_t type,
                                           UtObject *data) {
   assert(ut_object_is_x11_client(object));
   UtX11Client *self = (UtX11Client *)object;
-  ut_x11_core_change_property_uint16(self->core, window, property, type, data);
+  ut_x11_core_change_property_uint16(self->core, window, property, mode, type,
+                                     data);
 }
 
 void ut_x11_client_change_property_uint32(UtObject *object, uint32_t window,
-                                          uint32_t property, uint32_t type,
+                                          uint32_t property,
+                                          UtX11PropertyMode mode, uint32_t type,
                                           UtObject *data) {
   assert(ut_object_is_x11_client(object));
   UtX11Client *self = (UtX11Client *)object;
-  ut_x11_core_change_property_uint32(self->core, window, property, type, data);
+  ut_x11_core_change_property_uint32(self->core, window, property, mode, type,
+                                     data);
 }
 
 void ut_x11_client_change_property_string(UtObject *object, uint32_t window,
                                           uint32_t property,
+                                          UtX11PropertyMode mode,
                                           const char *value) {
   assert(ut_object_is_x11_client(object));
   UtX11Client *self = (UtX11Client *)object;
-  ut_x11_core_change_property_string(self->core, window, property, value);
+  ut_x11_core_change_property_string(self->core, window, property, mode, value);
 }
 
 void ut_x11_client_delete_property(UtObject *object, uint32_t window,

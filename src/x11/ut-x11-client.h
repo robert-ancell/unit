@@ -231,6 +231,12 @@ typedef enum {
   UT_X11_IMAGE_FORMAT_Z_PIXMAP
 } UtX11ImageFormat;
 
+typedef enum {
+  UT_X11_PROPERTY_MODE_REPLACE = 0,
+  UT_X11_PROPERTY_MODE_PREPEND = 1,
+  UT_X11_PROPERTY_MODE_APPEND = 2
+} UtX11PropertyMode;
+
 UtObject *ut_x11_client_new(const UtX11EventCallbacks *event_callbacks,
                             UtX11ClientErrorCallback error_callback,
                             void *user_data, UtObject *cancel);
@@ -269,19 +275,24 @@ void ut_x11_client_get_atom_name(UtObject *object, uint32_t atom,
                                  void *user_data, UtObject *cancel);
 
 void ut_x11_client_change_property_uint8(UtObject *object, uint32_t window,
-                                         uint32_t property, uint32_t type,
+                                         uint32_t property,
+                                         UtX11PropertyMode mode, uint32_t type,
                                          UtObject *value);
 
 void ut_x11_client_change_property_uint16(UtObject *object, uint32_t window,
-                                          uint32_t property, uint32_t type,
+                                          uint32_t property,
+                                          UtX11PropertyMode mode, uint32_t type,
                                           UtObject *value);
 
 void ut_x11_client_change_property_uint32(UtObject *object, uint32_t window,
-                                          uint32_t property, uint32_t type,
+                                          uint32_t property,
+                                          UtX11PropertyMode mode, uint32_t type,
                                           UtObject *value);
 
 void ut_x11_client_change_property_string(UtObject *object, uint32_t window,
-                                          uint32_t property, const char *value);
+                                          uint32_t property,
+                                          UtX11PropertyMode mode,
+                                          const char *value);
 
 void ut_x11_client_delete_property(UtObject *object, uint32_t window,
                                    uint32_t property);

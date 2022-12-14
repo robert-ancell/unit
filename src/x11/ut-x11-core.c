@@ -816,12 +816,11 @@ void ut_x11_core_get_atom_name(UtObject *object, uint32_t atom,
 }
 
 void ut_x11_core_change_property_uint8(UtObject *object, uint32_t window,
-                                       uint32_t property, uint32_t type,
+                                       uint32_t property,
+                                       UtX11PropertyMode mode, uint32_t type,
                                        UtObject *data) {
   assert(ut_object_is_x11_core(object));
   UtX11Core *self = (UtX11Core *)object;
-
-  uint8_t mode = 0; // Replace
 
   UtObjectRef request = ut_x11_buffer_new();
   ut_x11_buffer_append_card32(request, window);
@@ -840,12 +839,11 @@ void ut_x11_core_change_property_uint8(UtObject *object, uint32_t window,
 }
 
 void ut_x11_core_change_property_uint16(UtObject *object, uint32_t window,
-                                        uint32_t property, uint32_t type,
+                                        uint32_t property,
+                                        UtX11PropertyMode mode, uint32_t type,
                                         UtObject *data) {
   assert(ut_object_is_x11_core(object));
   UtX11Core *self = (UtX11Core *)object;
-
-  uint8_t mode = 0; // Replace
 
   UtObjectRef request = ut_x11_buffer_new();
   ut_x11_buffer_append_card32(request, window);
@@ -864,12 +862,11 @@ void ut_x11_core_change_property_uint16(UtObject *object, uint32_t window,
 }
 
 void ut_x11_core_change_property_uint32(UtObject *object, uint32_t window,
-                                        uint32_t property, uint32_t type,
+                                        uint32_t property,
+                                        UtX11PropertyMode mode, uint32_t type,
                                         UtObject *data) {
   assert(ut_object_is_x11_core(object));
   UtX11Core *self = (UtX11Core *)object;
-
-  uint8_t mode = 0; // Replace
 
   UtObjectRef request = ut_x11_buffer_new();
   ut_x11_buffer_append_card32(request, window);
@@ -887,11 +884,11 @@ void ut_x11_core_change_property_uint32(UtObject *object, uint32_t window,
 }
 
 void ut_x11_core_change_property_string(UtObject *object, uint32_t window,
-                                        uint32_t property, const char *value) {
+                                        uint32_t property,
+                                        UtX11PropertyMode mode,
+                                        const char *value) {
   assert(ut_object_is_x11_core(object));
   UtX11Core *self = (UtX11Core *)object;
-
-  uint8_t mode = 0; // Replace
 
   UtObjectRef request = ut_x11_buffer_new();
   ut_x11_buffer_append_card32(request, window);

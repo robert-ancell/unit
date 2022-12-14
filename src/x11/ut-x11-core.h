@@ -34,19 +34,24 @@ void ut_x11_core_get_atom_name(UtObject *object, uint32_t atom,
                                void *user_data, UtObject *cancel);
 
 void ut_x11_core_change_property_uint8(UtObject *object, uint32_t window,
-                                       uint32_t property, uint32_t type,
+                                       uint32_t property,
+                                       UtX11PropertyMode mode, uint32_t type,
                                        UtObject *value);
 
 void ut_x11_core_change_property_uint16(UtObject *object, uint32_t window,
-                                        uint32_t property, uint32_t type,
+                                        uint32_t property,
+                                        UtX11PropertyMode mode, uint32_t type,
                                         UtObject *value);
 
 void ut_x11_core_change_property_uint32(UtObject *object, uint32_t window,
-                                        uint32_t property, uint32_t type,
+                                        uint32_t property,
+                                        UtX11PropertyMode mode, uint32_t type,
                                         UtObject *value);
 
 void ut_x11_core_change_property_string(UtObject *object, uint32_t window,
-                                        uint32_t property, const char *value);
+                                        uint32_t property,
+                                        UtX11PropertyMode mode,
+                                        const char *value);
 
 void ut_x11_core_delete_property(UtObject *object, uint32_t window,
                                  uint32_t property);
