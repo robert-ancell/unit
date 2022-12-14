@@ -88,10 +88,8 @@ void ut_x11_big_requests_extension_enable(
   assert(ut_object_is_x11_big_requests_extension(object));
   UtX11BigRequestsExtension *self = (UtX11BigRequestsExtension *)object;
 
-  UtObjectRef request = ut_x11_buffer_new();
-
   ut_x11_client_send_request_with_reply(
-      self->client, self->major_opcode, 0, request, enable_reply_cb,
+      self->client, self->major_opcode, 0, NULL, enable_reply_cb,
       enable_error_cb, callback_data_new(callback, user_data), cancel);
 }
 

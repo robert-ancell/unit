@@ -158,9 +158,8 @@ void ut_x11_shape_extension_query_version(
   assert(ut_object_is_x11_shape_extension(object));
   UtX11ShapeExtension *self = (UtX11ShapeExtension *)object;
 
-  UtObjectRef request = ut_x11_buffer_new();
   ut_x11_client_send_request_with_reply(
-      (UtObject *)self->client, self->major_opcode, 0, request,
+      (UtObject *)self->client, self->major_opcode, 0, NULL,
       decode_shape_query_version_reply, handle_shape_query_version_error,
       callback_data_new(self, callback, user_data), cancel);
 }

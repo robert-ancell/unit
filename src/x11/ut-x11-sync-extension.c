@@ -297,12 +297,10 @@ void ut_x11_sync_extension_list_system_counters(
   assert(ut_object_is_x11_sync_extension(object));
   UtX11SyncExtension *self = (UtX11SyncExtension *)object;
 
-  UtObjectRef request = ut_x11_buffer_new();
-
   ut_x11_client_send_request_with_reply(
-      self->client, self->major_opcode, 1, request,
-      list_system_counters_reply_cb, list_system_counters_error_cb,
-      callback_data_new(callback, user_data), cancel);
+      self->client, self->major_opcode, 1, NULL, list_system_counters_reply_cb,
+      list_system_counters_error_cb, callback_data_new(callback, user_data),
+      cancel);
 }
 
 uint32_t ut_x11_sync_extension_create_counter(UtObject *object,

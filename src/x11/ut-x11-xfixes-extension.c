@@ -340,10 +340,8 @@ void ut_x11_xfixes_extension_get_cursor_image(
   assert(ut_object_is_x11_xfixes_extension(object));
   UtX11XfixesExtension *self = (UtX11XfixesExtension *)object;
 
-  UtObjectRef request = ut_x11_buffer_new();
-
   ut_x11_client_send_request_with_reply(
-      self->client, self->major_opcode, 4, request, get_cursor_image_reply_cb,
+      self->client, self->major_opcode, 4, NULL, get_cursor_image_reply_cb,
       get_cursor_image_error_cb, callback_data_new(callback, user_data),
       cancel);
 }
@@ -645,10 +643,8 @@ void ut_x11_xfixes_extension_get_cursor_image_and_name(
   assert(ut_object_is_x11_xfixes_extension(object));
   UtX11XfixesExtension *self = (UtX11XfixesExtension *)object;
 
-  UtObjectRef request = ut_x11_buffer_new();
-
   ut_x11_client_send_request_with_reply(
-      self->client, self->major_opcode, 25, request,
+      self->client, self->major_opcode, 25, NULL,
       get_cursor_image_and_name_reply_cb, get_cursor_image_and_name_error_cb,
       callback_data_new(callback, user_data), cancel);
 }
