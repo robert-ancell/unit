@@ -78,38 +78,6 @@ typedef enum {
   VALUE_MASK_CURSOR = 0x00004000
 } UtX11ValueMask;
 
-typedef struct {
-  uint8_t depth;
-  uint8_t bits_per_pixel;
-  uint8_t scanline_pad;
-} X11PixmapFormat;
-
-typedef struct {
-  uint32_t id;
-  uint8_t depth;
-  uint8_t class;
-  uint8_t bits_per_rgb_value;
-  uint16_t colormap_entries;
-  uint32_t red_mask;
-  uint32_t green_mask;
-  uint32_t blue_mask;
-} X11Visual;
-
-typedef struct {
-  uint32_t root;
-  uint32_t default_colormap;
-  uint32_t white_pixel;
-  uint32_t black_pixel;
-  uint32_t current_input_masks;
-  uint16_t width_in_pixels;
-  uint16_t height_in_pixels;
-  uint16_t width_in_millimeters;
-  uint16_t height_in_millimeters;
-  X11Visual *root_visual;
-  X11Visual **visuals;
-  size_t visuals_length;
-} X11Screen;
-
 struct _UtX11Client {
   UtObject object;
   UtObject *cancel;
@@ -142,10 +110,8 @@ struct _UtX11Client {
   uint32_t resource_id_base;
   uint32_t resource_id_mask;
   uint16_t maximum_request_length;
-  X11PixmapFormat **pixmap_formats;
-  size_t pixmap_formats_length;
-  X11Screen **screens;
-  size_t screens_length;
+  UtObject *pixmap_formats;
+  UtObject *screens;
 
   uint32_t next_resource_id;
   uint16_t sequence_number;
@@ -469,71 +435,71 @@ static size_t decode_setup_success(UtX11Client *self, UtObject *data) {
   self->vendor = ut_x11_buffer_get_string8(data, &offset, vendor_length);
   ut_x11_buffer_get_align_padding(data, &offset, 4);
 
-  self->pixmap_formats =
-      malloc(sizeof(X11PixmapFormat *) * pixmap_formats_length);
-  self->pixmap_formats_length = pixmap_formats_length;
+  self->pixmap_formats = ut_object_list_new();
   for (size_t i = 0; i < pixmap_formats_length; i++) {
-    X11PixmapFormat *format = self->pixmap_formats[i] =
-        malloc(sizeof(X11PixmapFormat));
-    format->depth = ut_x11_buffer_get_card8(data, &offset); // depth
-    format->bits_per_pixel =
-        ut_x11_buffer_get_card8(data, &offset); // bits_per_pixel
-    format->scanline_pad =
-        ut_x11_buffer_get_card8(data, &offset); // scanline_pad
+    uint8_t depth = ut_x11_buffer_get_card8(data, &offset);
+     uint8_t bits_per_pixel =
+        ut_x11_buffer_get_card8(data, &offset);
+    uint8_t scanline_pad =
+        ut_x11_buffer_get_card8(data, &offset);
     ut_x11_buffer_get_padding(data, &offset, 5);
+    UtObjectRef pixmap_format = ut_x11_pixmap_format_new(depth, bits_per_pixel, scanline_pad);
+     ut_list_append(self->pixmap_formats, pixmap_format);
   }
 
-  self->screens = malloc(sizeof(X11Screen *) * screens_length);
-  self->screens_length = screens_length;
+  self->screens = ut_object_list_new();
   for (size_t i = 0; i < screens_length; i++) {
-    X11Screen *screen = self->screens[i] = malloc(sizeof(X11Screen));
-
-    screen->root = ut_x11_buffer_get_card32(data, &offset);
-    screen->default_colormap = ut_x11_buffer_get_card32(data, &offset);
-    screen->white_pixel = ut_x11_buffer_get_card32(data, &offset);
-    screen->black_pixel = ut_x11_buffer_get_card32(data, &offset);
-    screen->current_input_masks = ut_x11_buffer_get_card32(data, &offset);
-    screen->width_in_pixels = ut_x11_buffer_get_card16(data, &offset);
-    screen->height_in_pixels = ut_x11_buffer_get_card16(data, &offset);
-    screen->width_in_millimeters = ut_x11_buffer_get_card16(data, &offset);
-    screen->height_in_millimeters = ut_x11_buffer_get_card16(data, &offset);
+    uint32_t root = ut_x11_buffer_get_card32(data, &offset);
+    uint32_t default_colormap = ut_x11_buffer_get_card32(data, &offset);
+    uint32_t white_pixel = ut_x11_buffer_get_card32(data, &offset);
+    uint32_t black_pixel = ut_x11_buffer_get_card32(data, &offset);
+    uint32_t current_input_masks = ut_x11_buffer_get_card32(data, &offset);
+    uint16_t width_in_pixels = ut_x11_buffer_get_card16(data, &offset);
+    uint16_t height_in_pixels = ut_x11_buffer_get_card16(data, &offset);
+    uint16_t width_in_millimeters = ut_x11_buffer_get_card16(data, &offset);
+    uint16_t height_in_millimeters = ut_x11_buffer_get_card16(data, &offset);
     ut_x11_buffer_get_card16(data, &offset); // min_installed_maps
     ut_x11_buffer_get_card16(data, &offset); // max_installed_maps
-    screen->root_visual = NULL;
     uint32_t root_visual_id = ut_x11_buffer_get_card32(data, &offset);
     ut_x11_buffer_get_card8(data, &offset); // backing_stores
     ut_x11_buffer_get_card8(data, &offset); // save_unders
     ut_x11_buffer_get_card8(data, &offset); // root_depth
-    screen->visuals = NULL;
-    screen->visuals_length = 0;
+
+    UtObjectRef visuals = ut_object_list_new();
+    UtObject *root_visual = NULL;
     size_t allowed_depths_length = ut_x11_buffer_get_card8(data, &offset);
     for (size_t j = 0; j < allowed_depths_length; j++) {
       uint8_t depth = ut_x11_buffer_get_card8(data, &offset);
       ut_x11_buffer_get_padding(data, &offset, 1);
       size_t visuals_length = ut_x11_buffer_get_card16(data, &offset);
       ut_x11_buffer_get_padding(data, &offset, 4);
-      size_t first_visual = screen->visuals_length;
-      screen->visuals_length += visuals_length;
-      screen->visuals = realloc(screen->visuals,
-                                sizeof(X11Visual *) * screen->visuals_length);
+      UtObjectRef visuals = ut_object_list_new();
       for (size_t k = 0; k < visuals_length; k++) {
-        X11Visual *visual = screen->visuals[first_visual + k] =
-            malloc(sizeof(X11Visual));
-        visual->id = ut_x11_buffer_get_card32(data, &offset);
-        visual->depth = depth;
-        visual->class = ut_x11_buffer_get_card8(data, &offset);
-        visual->bits_per_rgb_value = ut_x11_buffer_get_card8(data, &offset);
-        visual->colormap_entries = ut_x11_buffer_get_card16(data, &offset);
-        visual->red_mask = ut_x11_buffer_get_card32(data, &offset);
-        visual->blue_mask = ut_x11_buffer_get_card32(data, &offset);
-        visual->green_mask = ut_x11_buffer_get_card32(data, &offset);
+        uint32_t id = ut_x11_buffer_get_card32(data, &offset);
+        uint8_t class = ut_x11_buffer_get_card8(data, &offset);
+        uint8_t bits_per_rgb_value = ut_x11_buffer_get_card8(data, &offset);
+        uint16_t colormap_entries = ut_x11_buffer_get_card16(data, &offset);
+        uint32_t red_mask = ut_x11_buffer_get_card32(data, &offset);
+        uint32_t green_mask = ut_x11_buffer_get_card32(data, &offset);
+        uint32_t blue_mask = ut_x11_buffer_get_card32(data, &offset);
         ut_x11_buffer_get_padding(data, &offset, 4);
 
-        if (visual->id == root_visual_id) {
-          screen->root_visual = visual;
+        UtObjectRef visual = ut_x11_visual_new(
+            id, depth, class, bits_per_rgb_value, colormap_entries, red_mask,
+            green_mask, blue_mask);
+        ut_list_append(visuals, visual);
+
+        if (id == root_visual_id) {
+          ut_object_set(&root_visual, visual);
         }
       }
     }
+
+    UtObjectRef screen = ut_x11_screen_new(
+        root, default_colormap, white_pixel, black_pixel, current_input_masks,
+        width_in_pixels, height_in_pixels, width_in_millimeters,
+        height_in_millimeters, root_visual, visuals);
+    ut_list_append(self->screens, screen);
   }
 
   self->setup_complete = true;
@@ -825,18 +791,8 @@ static void ut_x11_client_cleanup(UtObject *object) {
   ut_object_unref(self->callback_cancel);
   ut_object_unref(self->connect_cancel);
   free(self->vendor);
-  for (size_t i = 0; i < self->pixmap_formats_length; i++) {
-    free(self->pixmap_formats[i]);
-  }
-  free(self->pixmap_formats);
-  for (size_t i = 0; i < self->screens_length; i++) {
-    X11Screen *screen = self->screens[i];
-    for (size_t j = 0; j < screen->visuals_length; j++) {
-      free(screen->visuals[j]);
-    }
-    free(screen);
-  }
-  free(self->screens);
+  ut_object_unref(self->pixmap_formats);
+  ut_object_unref(self->screens);
   ut_object_unref(self->requests);
 }
 
@@ -925,11 +881,13 @@ uint32_t ut_x11_client_create_window(UtObject *object, int16_t x, int16_t y,
   assert(ut_object_is_x11_client(object));
   UtX11Client *self = (UtX11Client *)object;
 
-  assert(self->screens_length > 0);
-  X11Screen *screen = self->screens[0];
-  return ut_x11_core_create_window(self->core, screen->root, x, y, width,
-                                   height, screen->root_visual->depth,
-                                   screen->root_visual->id, event_mask);
+  assert(ut_list_get_length(self->screens) > 0);
+  UtObject *screen = ut_object_list_get_element(self->screens, 0);
+  UtObject *root_visual = ut_x11_screen_get_root_visual(screen);
+  return ut_x11_core_create_window(
+      self->core, ut_x11_screen_get_root(screen), x, y, width, height,
+      ut_x11_visual_get_depth(root_visual), ut_x11_visual_get_id(root_visual),
+      event_mask);
 }
 
 void ut_x11_client_destroy_window(UtObject *object, uint32_t window) {
