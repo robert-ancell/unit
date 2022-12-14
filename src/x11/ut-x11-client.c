@@ -1147,6 +1147,51 @@ uint32_t ut_x11_client_shm_create_segment(
       self->shm_extension, size, read_only, callback, user_data, cancel);
 }
 
+void ut_x11_client_list_system_counters(
+    UtObject *object, UtX11ClientListSystemCountersCallback callback,
+    void *user_data, UtObject *cancel) {
+  assert(ut_object_is_x11_client(object));
+  UtX11Client *self = (UtX11Client *)object;
+  ut_x11_sync_extension_list_system_counters(self->sync_extension, callback,
+                                             user_data, cancel);
+}
+
+uint32_t ut_x11_client_create_counter(UtObject *object, int64_t initial_value) {
+  assert(ut_object_is_x11_client(object));
+  UtX11Client *self = (UtX11Client *)object;
+  return ut_x11_sync_extension_create_counter(self->sync_extension,
+                                              initial_value);
+}
+
+void ut_x11_client_set_counter(UtObject *object, uint32_t counter,
+                               int64_t amount) {
+  assert(ut_object_is_x11_client(object));
+  UtX11Client *self = (UtX11Client *)object;
+  ut_x11_sync_extension_set_counter(self->sync_extension, counter, amount);
+}
+
+void ut_x11_client_change_counter(UtObject *object, uint32_t counter,
+                                  int64_t amount) {
+  assert(ut_object_is_x11_client(object));
+  UtX11Client *self = (UtX11Client *)object;
+  ut_x11_sync_extension_change_counter(self->sync_extension, counter, amount);
+}
+
+void ut_x11_client_query_counter(UtObject *object, uint32_t counter,
+                                 UtX11ClientQueryCounterCallback callback,
+                                 void *user_data, UtObject *cancel) {
+  assert(ut_object_is_x11_client(object));
+  UtX11Client *self = (UtX11Client *)object;
+  ut_x11_sync_extension_query_counter(self->sync_extension, counter, callback,
+                                      user_data, cancel);
+}
+
+void ut_x11_client_destroy_counter(UtObject *object, uint32_t counter) {
+  assert(ut_object_is_x11_client(object));
+  UtX11Client *self = (UtX11Client *)object;
+  ut_x11_sync_extension_destroy_counter(self->sync_extension, counter);
+}
+
 bool ut_object_is_x11_client(UtObject *object) {
   return ut_object_is_type(object, &object_interface);
 }
