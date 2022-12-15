@@ -14,7 +14,7 @@ static UtX11EventInterface x11_event_interface = {};
 
 static UtObjectInterface object_interface = {
     .type_name = "UtX11ButtonPress",
-    .interfaces = {{&ut_x11_event_id, &x11_event_interface}}};
+    .interfaces = {{&ut_x11_event_id, &x11_event_interface}, {NULL, NULL}}};
 
 UtObject *ut_x11_button_press_new(uint32_t window, uint8_t button, int16_t x,
                                   int16_t y) {

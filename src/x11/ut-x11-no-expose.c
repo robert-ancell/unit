@@ -10,7 +10,7 @@ static UtX11EventInterface x11_event_interface = {};
 
 static UtObjectInterface object_interface = {
     .type_name = "UtX11NoExpose",
-    .interfaces = {{&ut_x11_event_id, &x11_event_interface}}};
+    .interfaces = {{&ut_x11_event_id, &x11_event_interface}, {NULL, NULL}}};
 
 UtObject *ut_x11_no_expose_new() {
   return ut_object_new(sizeof(UtX11NoExpose), &object_interface);

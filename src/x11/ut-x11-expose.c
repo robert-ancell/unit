@@ -15,7 +15,7 @@ static UtX11EventInterface x11_event_interface = {};
 
 static UtObjectInterface object_interface = {
     .type_name = "UtX11Expose",
-    .interfaces = {{&ut_x11_event_id, &x11_event_interface}}};
+    .interfaces = {{&ut_x11_event_id, &x11_event_interface}, {NULL, NULL}}};
 
 UtObject *ut_x11_expose_new(uint32_t window, uint16_t x, uint16_t y,
                             uint16_t width, uint16_t height) {
