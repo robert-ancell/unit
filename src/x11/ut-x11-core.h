@@ -170,7 +170,11 @@ void ut_x11_core_put_image(UtObject *object, uint32_t drawable, uint32_t gc,
                            uint16_t height, uint8_t depth, int16_t dst_x,
                            int16_t dst_y, uint8_t *data, size_t data_length);
 
-// GetImage
+void ut_x11_core_get_image(UtObject *object, uint32_t drawable,
+                           UtX11ImageFormat format, int16_t x, int16_t y,
+                           uint16_t width, uint16_t height, uint32_t plane_mask,
+                           UtX11GetImageCallback callback, void *user_data,
+                           UtObject *cancel);
 
 void ut_x11_core_query_extension(UtObject *object, const char *name,
                                  UtX11QueryExtensionCallback callback,

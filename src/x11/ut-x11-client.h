@@ -188,6 +188,9 @@ typedef void (*UtX11GetPropertyCallback)(void *user_data, uint32_t type,
                                          UtObject *error);
 typedef void (*UtX11ListPropertiesCallback)(void *user_data, UtObject *atoms,
                                             UtObject *error);
+typedef void (*UtX11GetImageCallback)(void *user_data, uint32_t visual,
+                                      uint8_t depth, UtObject *data,
+                                      UtObject *error);
 typedef void (*UtX11QueryExtensionCallback)(void *user_data, bool present,
                                             uint8_t major_opcode,
                                             uint8_t first_event,
@@ -355,6 +358,13 @@ void ut_x11_client_copy_area(UtObject *object, uint32_t src_drawable,
                              uint32_t dst_drawable, uint32_t gc, int16_t src_x,
                              int16_t src_y, int16_t dst_x, int16_t dst_y,
                              uint16_t width, uint16_t height);
+
+void ut_x11_client_get_image(UtObject *object, uint32_t drawable,
+                             UtX11ImageFormat format, int16_t x, int16_t y,
+                             uint16_t width, uint16_t height,
+                             uint32_t plane_mask,
+                             UtX11GetImageCallback callback, void *user_data,
+                             UtObject *cancel);
 
 void ut_x11_client_put_image(UtObject *object, uint32_t drawable, uint32_t gc,
                              UtX11ImageFormat format, uint16_t width,

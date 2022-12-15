@@ -1113,6 +1113,18 @@ void ut_x11_client_copy_area(UtObject *object, uint32_t src_drawable,
                         src_y, dst_y, dst_y, width, height);
 }
 
+void ut_x11_client_get_image(UtObject *object, uint32_t drawable,
+                             UtX11ImageFormat format, int16_t x, int16_t y,
+                             uint16_t width, uint16_t height,
+                             uint32_t plane_mask,
+                             UtX11GetImageCallback callback, void *user_data,
+                             UtObject *cancel) {
+  assert(ut_object_is_x11_client(object));
+  UtX11Client *self = (UtX11Client *)object;
+  ut_x11_core_get_image(self->core, drawable, format, x, y, width, height,
+                        plane_mask, callback, user_data, cancel);
+}
+
 void ut_x11_client_put_image(UtObject *object, uint32_t drawable, uint32_t gc,
                              UtX11ImageFormat format, uint16_t width,
                              uint16_t height, uint8_t depth, int16_t dst_x,

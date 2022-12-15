@@ -551,6 +551,34 @@ static void handle_list_properties_error(UtObject *object, UtObject *error) {
   }
 }
 
+static void decode_get_image_reply(UtObject *object, uint8_t data0,
+                                   UtObject *data) {
+  CallbackData *callback_data = (CallbackData *)object;
+
+  uint8_t depth = data0;
+  size_t offset = 0;
+  uint32_t visual = ut_x11_buffer_get_card32(data, &offset);
+  ut_x11_buffer_get_padding(data, &offset, 20);
+  size_t data_length = ut_list_get_length(data);
+  UtObjectRef image_data = ut_list_get_sublist(data, offset, data_length);
+
+  if (callback_data->callback != NULL) {
+    UtX11GetImageCallback callback =
+        (UtX11GetImageCallback)callback_data->callback;
+    callback(callback_data->user_data, visual, depth, image_data, NULL);
+  }
+}
+
+static void handle_get_image_error(UtObject *object, UtObject *error) {
+  CallbackData *callback_data = (CallbackData *)object;
+
+  if (callback_data->callback != NULL) {
+    UtX11GetImageCallback callback =
+        (UtX11GetImageCallback)callback_data->callback;
+    callback(callback_data->user_data, 0, 0, NULL, error);
+  }
+}
+
 static void decode_query_extension_reply(UtObject *object, uint8_t data0,
                                          UtObject *data) {
   CallbackData *callback_data = (CallbackData *)object;
@@ -1230,6 +1258,28 @@ void ut_x11_core_put_image(UtObject *object, uint32_t drawable, uint32_t gc,
   ut_x11_buffer_append_align_padding(request, 4);
 
   ut_x11_client_send_request(self->client, 72, format, request);
+}
+
+void ut_x11_core_get_image(UtObject *object, uint32_t drawable,
+                           UtX11ImageFormat format, int16_t x, int16_t y,
+                           uint16_t width, uint16_t height, uint32_t plane_mask,
+                           UtX11GetImageCallback callback, void *user_data,
+                           UtObject *cancel) {
+  assert(ut_object_is_x11_core(object));
+  UtX11Core *self = (UtX11Core *)object;
+
+  UtObjectRef request = ut_x11_buffer_new();
+  ut_x11_buffer_append_card32(request, drawable);
+  ut_x11_buffer_append_int16(request, x);
+  ut_x11_buffer_append_int16(request, y);
+  ut_x11_buffer_append_card16(request, width);
+  ut_x11_buffer_append_card16(request, height);
+  ut_x11_buffer_append_card32(request, plane_mask);
+
+  ut_x11_client_send_request_with_reply(
+      self->client, 73, format, request, decode_get_image_reply,
+      handle_get_image_error, callback_data_new(self, callback, user_data),
+      cancel);
 }
 
 void ut_x11_core_query_extension(UtObject *object, const char *name,
