@@ -626,7 +626,8 @@ static size_t decode_generic_event(UtX11Client *self, uint8_t data0,
   if (ut_list_get_length(data) < total_length) {
     return 0;
   }
-  UtObjectRef event_data = ut_list_get_sublist(data, 10, total_length);
+  UtObjectRef event_data =
+      ut_list_get_sublist(data, offset, total_length - offset);
 
   UtObject *extension = get_extension_by_major_opcode(self, major_opcode);
   if (extension != NULL &&
