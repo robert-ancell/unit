@@ -1128,11 +1128,11 @@ void ut_x11_client_get_image(UtObject *object, uint32_t drawable,
 void ut_x11_client_put_image(UtObject *object, uint32_t drawable, uint32_t gc,
                              UtX11ImageFormat format, uint16_t width,
                              uint16_t height, uint8_t depth, int16_t dst_x,
-                             int16_t dst_y, uint8_t *data, size_t data_length) {
+                             int16_t dst_y, UtObject *data) {
   assert(ut_object_is_x11_client(object));
   UtX11Client *self = (UtX11Client *)object;
   ut_x11_core_put_image(self->core, drawable, gc, format, width, height, depth,
-                        dst_x, dst_y, data, data_length);
+                        dst_x, dst_y, data);
 }
 
 void ut_x11_client_query_extension(UtObject *object, const char *name,

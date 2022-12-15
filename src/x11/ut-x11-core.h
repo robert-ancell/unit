@@ -168,7 +168,7 @@ void ut_x11_core_copy_area(UtObject *object, uint32_t src_drawable,
 void ut_x11_core_put_image(UtObject *object, uint32_t drawable, uint32_t gc,
                            UtX11ImageFormat format, uint16_t width,
                            uint16_t height, uint8_t depth, int16_t dst_x,
-                           int16_t dst_y, uint8_t *data, size_t data_length);
+                           int16_t dst_y, UtObject *data);
 
 void ut_x11_core_get_image(UtObject *object, uint32_t drawable,
                            UtX11ImageFormat format, int16_t x, int16_t y,

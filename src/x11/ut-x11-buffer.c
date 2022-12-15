@@ -83,11 +83,8 @@ void ut_x11_buffer_append_value_int16(UtObject *object, int16_t value) {
   ut_x11_buffer_append_value_card16(object, (uint16_t)value);
 }
 
-void ut_x11_buffer_append_block(UtObject *object, const uint8_t *data,
-                                size_t data_length) {
-  for (size_t i = 0; i < data_length; i++) {
-    ut_x11_buffer_append_card8(object, data[i]);
-  }
+void ut_x11_buffer_append_list(UtObject *object, UtObject *value) {
+  ut_list_append_list(object, value);
 }
 
 void ut_x11_buffer_append_string8(UtObject *object, const char *value) {

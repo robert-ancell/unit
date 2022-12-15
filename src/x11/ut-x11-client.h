@@ -369,7 +369,7 @@ void ut_x11_client_get_image(UtObject *object, uint32_t drawable,
 void ut_x11_client_put_image(UtObject *object, uint32_t drawable, uint32_t gc,
                              UtX11ImageFormat format, uint16_t width,
                              uint16_t height, uint8_t depth, int16_t dst_x,
-                             int16_t dst_y, uint8_t *data, size_t data_length);
+                             int16_t dst_y, UtObject *data);
 
 void ut_x11_client_query_extension(UtObject *object, const char *name,
                                    UtX11QueryExtensionCallback callback,

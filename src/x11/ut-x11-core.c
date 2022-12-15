@@ -1240,7 +1240,7 @@ void ut_x11_core_copy_area(UtObject *object, uint32_t src_drawable,
 void ut_x11_core_put_image(UtObject *object, uint32_t drawable, uint32_t gc,
                            UtX11ImageFormat format, uint16_t width,
                            uint16_t height, uint8_t depth, int16_t dst_x,
-                           int16_t dst_y, uint8_t *data, size_t data_length) {
+                           int16_t dst_y, UtObject *data) {
   assert(ut_object_is_x11_core(object));
   UtX11Core *self = (UtX11Core *)object;
 
@@ -1254,7 +1254,7 @@ void ut_x11_core_put_image(UtObject *object, uint32_t drawable, uint32_t gc,
   ut_x11_buffer_append_card8(request, 0); // left_pad);
   ut_x11_buffer_append_card8(request, depth);
   ut_x11_buffer_append_padding(request, 2);
-  ut_x11_buffer_append_block(request, data, data_length);
+  ut_x11_buffer_append_list(request, data);
   ut_x11_buffer_append_align_padding(request, 4);
 
   ut_x11_client_send_request(self->client, 72, format, request);
