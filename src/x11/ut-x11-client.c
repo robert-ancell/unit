@@ -663,7 +663,8 @@ static bool decode_extension_event(UtX11Client *self, uint8_t code,
 }
 
 static size_t decode_event(UtX11Client *self, UtObject *data) {
-  if (ut_list_get_length(data) < 32) {
+  size_t data_length = ut_list_get_length(data);
+  if (data_length < 32) {
     return 0;
   }
 
@@ -673,12 +674,14 @@ static size_t decode_event(UtX11Client *self, UtObject *data) {
   code &= 0x7f;
   uint8_t event_data0 = ut_x11_buffer_get_card8(data, &offset);
   uint16_t sequence_number = ut_x11_buffer_get_card16(data, &offset);
-  UtObjectRef event_data = ut_list_get_sublist(data, offset, 32 - offset);
 
+  UtObjectRef event_data = NULL;
   switch (code) {
   case 35:
+    event_data = ut_list_get_sublist(data, offset, data_length - offset);
     return decode_generic_event(self, event_data0, event_data);
   default:
+    event_data = ut_list_get_sublist(data, offset, 32 - offset);
     if (!decode_extension_event(self, code, from_send_event, sequence_number,
                                 event_data0, event_data)) {
       if (self->event_callbacks->unknown_event != NULL &&
@@ -688,9 +691,8 @@ static size_t decode_event(UtX11Client *self, UtObject *data) {
                                              event_data0, event_data);
       }
     }
+    return 32;
   }
-
-  return 32;
 }
 
 static size_t decode_message(UtX11Client *self, UtObject *data) {
