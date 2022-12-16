@@ -619,10 +619,10 @@ static size_t decode_generic_event(UtX11Client *self, uint8_t data0,
                                    UtObject *data) {
   size_t offset = 0;
   uint8_t major_opcode = data0;
-  uint32_t extra_length = ut_x11_buffer_get_card32(data, &offset);
+  size_t extra_length = ut_x11_buffer_get_card32(data, &offset) * 4;
   uint16_t code = ut_x11_buffer_get_card16(data, &offset);
 
-  size_t total_length = 32 + extra_length * 4;
+  size_t total_length = 28 + extra_length;
   if (ut_list_get_length(data) < total_length) {
     return 0;
   }
@@ -632,7 +632,7 @@ static size_t decode_generic_event(UtX11Client *self, uint8_t data0,
   UtObject *extension = get_extension_by_major_opcode(self, major_opcode);
   if (extension != NULL &&
       ut_x11_extension_decode_generic_event(extension, code, event_data)) {
-    return total_length;
+    return 32 + extra_length;
   }
 
   if (self->event_callbacks->unknown_generic_event != NULL &&
@@ -641,7 +641,7 @@ static size_t decode_generic_event(UtX11Client *self, uint8_t data0,
                                                  major_opcode, code);
   }
 
-  return total_length;
+  return 32 + extra_length;
 }
 
 static bool decode_extension_event(UtX11Client *self, uint8_t code,
@@ -682,7 +682,7 @@ static size_t decode_event(UtX11Client *self, UtObject *data) {
     event_data = ut_list_get_sublist(data, offset, data_length - offset);
     return decode_generic_event(self, event_data0, event_data);
   default:
-    event_data = ut_list_get_sublist(data, offset, 32 - offset);
+    event_data = ut_list_get_sublist(data, offset, 28 - offset);
     if (!decode_extension_event(self, code, from_send_event, sequence_number,
                                 event_data0, event_data)) {
       if (self->event_callbacks->unknown_event != NULL &&
