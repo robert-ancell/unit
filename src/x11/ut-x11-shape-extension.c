@@ -50,7 +50,7 @@ static void decode_shape_notify(UtX11ShapeExtension *self, uint8_t data0,
   uint16_t width = ut_x11_buffer_get_card16(data, &offset);
   uint16_t height = ut_x11_buffer_get_card16(data, &offset);
   uint32_t timestamp = ut_x11_buffer_get_card32(data, &offset);
-  bool shaped = ut_x11_buffer_get_card8(data, &offset) != 0;
+  bool shaped = ut_x11_buffer_get_bool(data, &offset);
   ut_x11_buffer_get_padding(data, &offset, 11);
 
   if (self->event_callbacks->shape_notify != NULL &&

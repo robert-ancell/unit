@@ -125,7 +125,7 @@ static void query_alarm_reply_cb(UtObject *object, uint8_t data0,
   ut_x11_buffer_get_padding(data, &offset, 1);
   uint32_t trigger = ut_x11_buffer_get_card32(data, &offset);
   uint64_t delta = ut_x11_buffer_get_int64(data, &offset);
-  bool events = ut_x11_buffer_get_card8(data, &offset) != 0;
+  bool events = ut_x11_buffer_get_bool(data, &offset);
   uint8_t state = ut_x11_buffer_get_card8(data, &offset);
   ut_x11_buffer_get_padding(data, &offset, 2);
 
@@ -177,7 +177,7 @@ static void query_fence_reply_cb(UtObject *object, uint8_t data0,
 
   size_t offset = 0;
   ut_x11_buffer_get_padding(data, &offset, 1);
-  bool triggered = ut_x11_buffer_get_card8(data, &offset) != 0;
+  bool triggered = ut_x11_buffer_get_bool(data, &offset);
   ut_x11_buffer_get_padding(data, &offset, 23);
 
   if (callback_data->callback != NULL) {

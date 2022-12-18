@@ -388,10 +388,10 @@ static void decode_get_window_attributes_reply(UtObject *object, uint8_t data0,
   uint8_t win_gravity = ut_x11_buffer_get_card8(data, &offset);
   uint32_t backing_planes = ut_x11_buffer_get_card32(data, &offset);
   uint32_t backing_pixel = ut_x11_buffer_get_card32(data, &offset);
-  bool save_under = ut_x11_buffer_get_card8(data, &offset) != 0;
-  bool map_is_installed = ut_x11_buffer_get_card8(data, &offset) != 0;
-  bool map_state = ut_x11_buffer_get_card8(data, &offset);
-  bool override_redirect = ut_x11_buffer_get_card8(data, &offset) != 0;
+  bool save_under = ut_x11_buffer_get_bool(data, &offset);
+  bool map_is_installed = ut_x11_buffer_get_bool(data, &offset);
+  uint8_t map_state = ut_x11_buffer_get_card8(data, &offset);
+  bool override_redirect = ut_x11_buffer_get_bool(data, &offset);
   uint32_t colormap = ut_x11_buffer_get_card32(data, &offset);
   uint32_t all_event_masks = ut_x11_buffer_get_card32(data, &offset);
   uint32_t your_event_mask = ut_x11_buffer_get_card32(data, &offset);
