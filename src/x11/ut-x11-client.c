@@ -1206,8 +1206,8 @@ uint32_t ut_x11_client_shm_create_segment(
 }
 
 void ut_x11_client_list_system_counters(
-    UtObject *object, UtX11ClientListSystemCountersCallback callback,
-    void *user_data, UtObject *cancel) {
+    UtObject *object, UtX11ListSystemCountersCallback callback, void *user_data,
+    UtObject *cancel) {
   assert(ut_object_is_x11_client(object));
   UtX11Client *self = (UtX11Client *)object;
   ut_x11_sync_extension_list_system_counters(self->sync_extension, callback,
@@ -1236,7 +1236,7 @@ void ut_x11_client_change_counter(UtObject *object, uint32_t counter,
 }
 
 void ut_x11_client_query_counter(UtObject *object, uint32_t counter,
-                                 UtX11ClientQueryCounterCallback callback,
+                                 UtX11QueryCounterCallback callback,
                                  void *user_data, UtObject *cancel) {
   assert(ut_object_is_x11_client(object));
   UtX11Client *self = (UtX11Client *)object;

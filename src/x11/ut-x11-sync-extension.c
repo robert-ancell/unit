@@ -76,8 +76,8 @@ static void list_system_counters_reply_cb(UtObject *object, uint8_t data0,
   }
 
   if (callback_data->callback != NULL) {
-    UtX11ClientListSystemCountersCallback callback =
-        (UtX11ClientListSystemCountersCallback)callback_data->callback;
+    UtX11ListSystemCountersCallback callback =
+        (UtX11ListSystemCountersCallback)callback_data->callback;
     callback(callback_data->user_data, counters, NULL);
   }
 }
@@ -86,8 +86,8 @@ static void list_system_counters_error_cb(UtObject *object, UtObject *error) {
   CallbackData *callback_data = (CallbackData *)object;
 
   if (callback_data->callback != NULL) {
-    UtX11ClientListSystemCountersCallback callback =
-        (UtX11ClientListSystemCountersCallback)callback_data->callback;
+    UtX11ListSystemCountersCallback callback =
+        (UtX11ListSystemCountersCallback)callback_data->callback;
     callback(callback_data->user_data, NULL, error);
   }
 }
@@ -101,8 +101,8 @@ static void query_counter_reply_cb(UtObject *object, uint8_t data0,
   int64_t counter_value = ut_x11_buffer_get_int64(data, &offset);
 
   if (callback_data->callback != NULL) {
-    UtX11ClientQueryCounterCallback callback =
-        (UtX11ClientQueryCounterCallback)callback_data->callback;
+    UtX11QueryCounterCallback callback =
+        (UtX11QueryCounterCallback)callback_data->callback;
     callback(callback_data->user_data, counter_value, NULL);
   }
 }
@@ -111,8 +111,8 @@ static void query_counter_error_cb(UtObject *object, UtObject *error) {
   CallbackData *callback_data = (CallbackData *)object;
 
   if (callback_data->callback != NULL) {
-    UtX11ClientQueryCounterCallback callback =
-        (UtX11ClientQueryCounterCallback)callback_data->callback;
+    UtX11QueryCounterCallback callback =
+        (UtX11QueryCounterCallback)callback_data->callback;
     callback(callback_data->user_data, 0, error);
   }
 }
@@ -292,8 +292,8 @@ void ut_x11_sync_extension_initialize(
 }
 
 void ut_x11_sync_extension_list_system_counters(
-    UtObject *object, UtX11ClientListSystemCountersCallback callback,
-    void *user_data, UtObject *cancel) {
+    UtObject *object, UtX11ListSystemCountersCallback callback, void *user_data,
+    UtObject *cancel) {
   assert(ut_object_is_x11_sync_extension(object));
   UtX11SyncExtension *self = (UtX11SyncExtension *)object;
 
@@ -343,10 +343,9 @@ void ut_x11_sync_extension_change_counter(UtObject *object, uint32_t counter,
   ut_x11_client_send_request(self->client, self->major_opcode, 4, request);
 }
 
-void ut_x11_sync_extension_query_counter(
-    UtObject *object, uint32_t counter,
-    UtX11ClientQueryCounterCallback callback, void *user_data,
-    UtObject *cancel) {
+void ut_x11_sync_extension_query_counter(UtObject *object, uint32_t counter,
+                                         UtX11QueryCounterCallback callback,
+                                         void *user_data, UtObject *cancel) {
   assert(ut_object_is_x11_sync_extension(object));
   UtX11SyncExtension *self = (UtX11SyncExtension *)object;
 
