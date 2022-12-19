@@ -99,6 +99,9 @@ static void ut_string_array_init(UtObject *object) {
 
 static void ut_string_array_cleanup(UtObject *object) {
   UtStringArray *self = (UtStringArray *)object;
+  for (size_t i = 0; i < self->data_length; i++) {
+    free(self->data[i]);
+  }
   free(self->data);
 }
 
