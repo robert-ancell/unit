@@ -199,6 +199,7 @@ static void ut_tcp_socket_write(UtObject *object, UtObject *data,
     iov.iov_base = (void *)buffer;
     iov.iov_len = data_length;
     uint8_t control_data[CMSG_SPACE(sizeof(int) * file_descriptors_length)];
+    memset(control_data, 0, sizeof(control_data));
     struct msghdr msg;
     msg.msg_name = NULL;
     msg.msg_namelen = 0;
