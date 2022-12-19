@@ -109,23 +109,6 @@ typedef enum {
   UT_X11_TOUCH_EVENT_FLAG_EMULATING_POINTER = 0x00020000
 } UtX11TouchEventFlag;
 
-typedef void (*UtX11KeyPressCallback)(void *user_data, uint32_t window,
-                                      uint8_t keycode, int16_t x, int16_t y);
-typedef void (*UtX11KeyReleaseCallback)(void *user_data, uint32_t window,
-                                        uint8_t keycode, int16_t x, int16_t y);
-typedef void (*UtX11ButtonPressCallback)(void *user_data, uint32_t window,
-                                         uint8_t button, int16_t x, int16_t y);
-typedef void (*UtX11ButtonReleaseCallback)(void *user_data, uint32_t window,
-                                           uint8_t button, int16_t x,
-                                           int16_t y);
-typedef void (*UtX11MotionNotifyCallback)(void *user_data, uint32_t window,
-                                          int16_t x, int16_t y);
-typedef void (*UtX11EnterNotifyCallback)(void *user_data, uint32_t window,
-                                         int16_t x, int16_t y);
-typedef void (*UtX11LeaveNotifyCallback)(void *user_data, uint32_t window,
-                                         int16_t x, int16_t y);
-typedef void (*UtX11FocusInCallback)(void *user_data, uint32_t window);
-typedef void (*UtX11FocusOutCallback)(void *user_data, uint32_t window);
 typedef void (*UtX11ExposeCallback)(void *user_data, uint32_t window,
                                     uint16_t x, uint16_t y, uint16_t width,
                                     uint16_t height, uint16_t count);
@@ -232,15 +215,6 @@ typedef void (*UtX11UnknownGenericEventCallback)(void *user_data,
                                                  uint16_t code);
 
 typedef struct {
-  UtX11KeyPressCallback key_press;
-  UtX11KeyReleaseCallback key_release;
-  UtX11ButtonPressCallback button_press;
-  UtX11ButtonReleaseCallback button_release;
-  UtX11MotionNotifyCallback motion_notify;
-  UtX11EnterNotifyCallback enter_notify;
-  UtX11LeaveNotifyCallback leave_notify;
-  UtX11FocusInCallback focus_in;
-  UtX11FocusOutCallback focus_out;
   UtX11ExposeCallback expose;
   UtX11NoExposeCallback no_expose;
   UtX11MapNotifyCallback map_notify;
@@ -321,21 +295,6 @@ typedef void (*UtX11QueryCounterCallback)(void *user_data,
                                           UtObject *error);
 
 typedef enum {
-  UT_X11_EVENT_KEY_PRESS = 0x00000001,
-  UT_X11_EVENT_KEY_RELEASE = 0x00000002,
-  UT_X11_EVENT_BUTTON_PRESS = 0x00000004,
-  UT_X11_EVENT_BUTTON_RELEASE = 0x00000008,
-  UT_X11_EVENT_ENTER_WINDOW = 0x00000010,
-  UT_X11_EVENT_LEAVE_WINDOW = 0x00000020,
-  UT_X11_EVENT_POINTER_MOTION = 0x00000040,
-  UT_X11_EVENT_POINTER_MOTION_HINT = 0x00000080,
-  UT_X11_EVENT_BUTTON1_MOTION = 0x00000100,
-  UT_X11_EVENT_BUTTON2_MOTION = 0x00000200,
-  UT_X11_EVENT_BUTTON3_MOTION = 0x00000400,
-  UT_X11_EVENT_BUTTON4_MOTION = 0x00000800,
-  UT_X11_EVENT_BUTTON5_MOTION = 0x00001000,
-  UT_X11_EVENT_BUTTON_MOTION = 0x00002000,
-  UT_X11_EVENT_KEYMAP_STATE = 0x00004000,
   UT_X11_EVENT_EXPOSURE = 0x00008000,
   UT_X11_EVENT_VISIBILITY_CHANGE = 0x00010000,
   UT_X11_EVENT_STRUCTURE_NOTIFY = 0x00020000,
