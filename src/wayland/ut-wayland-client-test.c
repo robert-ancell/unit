@@ -212,5 +212,17 @@ int main(int argc, char **argv) {
 
   ut_event_loop_run();
 
+  ut_object_unref(registry);
+  ut_object_unref(compositor);
+  ut_object_unref(shm);
+  ut_object_unref(seat);
+  ut_object_unref(pointer);
+  ut_object_unref(keyboard);
+  ut_object_unref(touch);
+  ut_object_unref(wm_base);
+  ut_object_unref(surface);
+  ut_object_unref(xdg_surface);
+  ut_object_unref(client);
+
   return 0;
 }
