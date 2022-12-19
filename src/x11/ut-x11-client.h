@@ -4,6 +4,7 @@
 
 #pragma once
 
+// Builtin atoms
 #define UT_X11_PRIMARY 1
 #define UT_X11_SECONDARY 2
 #define UT_X11_ARC 3
