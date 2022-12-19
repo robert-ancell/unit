@@ -31,6 +31,7 @@ typedef struct {
 
 static void ut_tcp_socket_cleanup(UtObject *object) {
   UtTcpSocket *self = (UtTcpSocket *)object;
+  ut_object_unref(self->address);
   ut_object_unref(self->fd);
   if (self->write_watch_cancel != NULL) {
     ut_cancel_activate(self->write_watch_cancel);
