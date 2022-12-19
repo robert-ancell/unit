@@ -382,5 +382,36 @@ UtObject *ut_event_loop_run() {
     loop->write_watches = remove_cancelled_watches(loop->write_watches);
   }
 
-  return loop->return_value;
+  UtObjectRef return_value = loop->return_value;
+
+  Timeout *next_timeout;
+  for (Timeout *timeout = loop->timeouts; timeout != NULL;
+       timeout = next_timeout) {
+    next_timeout = timeout->next;
+    ut_object_unref(timeout->cancel);
+    free(timeout);
+  }
+  FdWatch *next_watch;
+  for (FdWatch *watch = loop->read_watches; watch != NULL; watch = next_watch) {
+    next_watch = watch->next;
+    ut_object_unref(watch->cancel);
+    free(watch);
+  }
+  for (FdWatch *watch = loop->write_watches; watch != NULL;
+       watch = next_watch) {
+    next_watch = watch->next;
+    ut_object_unref(watch->cancel);
+    free(watch);
+  }
+  WorkerThread *next_thread;
+  for (WorkerThread *thread = loop->worker_threads; thread != NULL;
+       thread = next_thread) {
+    next_thread = thread->next;
+    ut_object_unref(thread->cancel);
+    free(thread);
+  }
+  ut_object_unref(loop->return_value);
+  free(loop);
+
+  return return_value;
 }
