@@ -15,63 +15,58 @@ static uint32_t window = 0;
 static uint32_t pixmap = 0;
 static uint32_t gc = 0;
 
-static void input_enter_cb(void *user_data, uint16_t device_id,
-                           uint32_t timestamp, UtX11InputNotifyMode mode,
-                           UtX11InputNotifyDetail detail, uint32_t window,
-                           double x, double y) {
+static void enter_cb(void *user_data, uint16_t device_id, uint32_t timestamp,
+                     UtX11InputNotifyMode mode, UtX11InputNotifyDetail detail,
+                     uint32_t window, double x, double y) {
   printf("Enter\n");
 }
 
-static void input_leave_cb(void *user_data, uint16_t device_id,
-                           uint32_t timestamp, UtX11InputNotifyMode mode,
-                           UtX11InputNotifyDetail detail, uint32_t window,
-                           double x, double y) {
+static void leave_cb(void *user_data, uint16_t device_id, uint32_t timestamp,
+                     UtX11InputNotifyMode mode, UtX11InputNotifyDetail detail,
+                     uint32_t window, double x, double y) {
   printf("Leave\n");
 }
 
-static void input_motion_cb(void *user_data, uint16_t device_id,
-                            uint32_t timestamp, uint32_t window, double x,
-                            double y, UtX11PointerEventFlag flag) {
+static void motion_cb(void *user_data, uint16_t device_id, uint32_t timestamp,
+                      uint32_t window, double x, double y,
+                      UtX11PointerEventFlag flag) {
   printf("Motion (%f,%f)\n", x, y);
 }
 
-static void input_button_press_cb(void *user_data, uint16_t device_id,
-                                  uint32_t timestamp, uint32_t window,
-                                  uint8_t button, double x, double y,
-                                  UtX11PointerEventFlag flag) {
+static void button_press_cb(void *user_data, uint16_t device_id,
+                            uint32_t timestamp, uint32_t window, uint8_t button,
+                            double x, double y, UtX11PointerEventFlag flag) {
   printf("ButtonPress %d\n", button);
 }
 
-static void input_button_release_cb(void *user_data, uint16_t device_id,
-                                    uint32_t timestamp, uint32_t window,
-                                    uint8_t button, double x, double y,
-                                    UtX11PointerEventFlag flag) {
+static void button_release_cb(void *user_data, uint16_t device_id,
+                              uint32_t timestamp, uint32_t window,
+                              uint8_t button, double x, double y,
+                              UtX11PointerEventFlag flag) {
   printf("ButtonRelease %d\n", button);
 }
 
-static void input_focus_in_cb(void *user_data, uint16_t device_id,
-                              uint32_t timestamp, UtX11InputNotifyMode mode,
-                              UtX11InputNotifyDetail detail, uint32_t window) {
+static void focus_in_cb(void *user_data, uint16_t device_id, uint32_t timestamp,
+                        UtX11InputNotifyMode mode,
+                        UtX11InputNotifyDetail detail, uint32_t window) {
   printf("FocusIn\n");
 }
 
-static void input_focus_out_cb(void *user_data, uint16_t device_id,
-                               uint32_t timestamp, UtX11InputNotifyMode mode,
-                               UtX11InputNotifyDetail detail, uint32_t window) {
+static void focus_out_cb(void *user_data, uint16_t device_id,
+                         uint32_t timestamp, UtX11InputNotifyMode mode,
+                         UtX11InputNotifyDetail detail, uint32_t window) {
   printf("FocusOut\n");
 }
 
-static void input_key_press_cb(void *user_data, uint16_t device_id,
-                               uint32_t timestamp, uint32_t window,
-                               uint8_t keycode, double x, double y,
-                               UtX11KeyEventFlag flag) {
+static void key_press_cb(void *user_data, uint16_t device_id,
+                         uint32_t timestamp, uint32_t window, uint8_t keycode,
+                         double x, double y, UtX11KeyEventFlag flag) {
   printf("KeyPress %d\n", keycode);
 }
 
-static void input_key_release_cb(void *user_data, uint16_t device_id,
-                                 uint32_t timestamp, uint32_t window,
-                                 uint8_t keycode, double x, double y,
-                                 UtX11KeyEventFlag flag) {
+static void key_release_cb(void *user_data, uint16_t device_id,
+                           uint32_t timestamp, uint32_t window, uint8_t keycode,
+                           double x, double y, UtX11KeyEventFlag flag) {
   printf("KeyRelease %d\n", keycode);
 }
 
@@ -130,15 +125,15 @@ static void expose_cb(void *user_data, uint32_t window, uint16_t x, uint16_t y,
 }
 
 static UtX11EventCallbacks event_callbacks = {
-    .input_enter = input_enter_cb,
-    .input_leave = input_leave_cb,
-    .input_motion = input_motion_cb,
-    .input_button_press = input_button_press_cb,
-    .input_button_release = input_button_release_cb,
-    .input_focus_in = input_focus_in_cb,
-    .input_focus_out = input_focus_out_cb,
-    .input_key_press = input_key_press_cb,
-    .input_key_release = input_key_release_cb,
+    .enter = enter_cb,
+    .leave = leave_cb,
+    .motion = motion_cb,
+    .button_press = button_press_cb,
+    .button_release = button_release_cb,
+    .focus_in = focus_in_cb,
+    .focus_out = focus_out_cb,
+    .key_press = key_press_cb,
+    .key_release = key_release_cb,
     .client_message = client_message_cb,
     .configure_notify = configure_notify_cb,
     .expose = expose_cb};

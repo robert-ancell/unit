@@ -136,10 +136,10 @@ static void decode_device_changed(UtX11XinputExtension *self, UtObject *data) {
   ut_x11_buffer_get_padding(data, &offset, 11);
   UtObjectRef classes = decode_device_classes(data, &offset, classes_length);
 
-  if (self->event_callbacks->input_device_changed != NULL &&
+  if (self->event_callbacks->device_changed != NULL &&
       !ut_cancel_is_active(self->cancel)) {
-    self->event_callbacks->input_device_changed(self->user_data, device_id,
-                                                timestamp, reason, classes);
+    self->event_callbacks->device_changed(self->user_data, device_id, timestamp,
+                                          reason, classes);
   }
 }
 
@@ -203,11 +203,10 @@ static void decode_key_press(UtX11XinputExtension *self, UtObject *data) {
   decode_key_event(data, &device_id, &timestamp, &detail, &event, &event_x,
                    &event_y, &flags, &button_mask, &valuator_mask);
 
-  if (self->event_callbacks->input_key_press != NULL &&
+  if (self->event_callbacks->key_press != NULL &&
       !ut_cancel_is_active(self->cancel)) {
-    self->event_callbacks->input_key_press(self->user_data, device_id,
-                                           timestamp, event, detail, event_x,
-                                           event_y, flags);
+    self->event_callbacks->key_press(self->user_data, device_id, timestamp,
+                                     event, detail, event_x, event_y, flags);
   }
 }
 
@@ -221,11 +220,10 @@ static void decode_key_release(UtX11XinputExtension *self, UtObject *data) {
   decode_key_event(data, &device_id, &timestamp, &detail, &event, &event_x,
                    &event_y, &flags, &button_mask, &valuator_mask);
 
-  if (self->event_callbacks->input_key_release != NULL &&
+  if (self->event_callbacks->key_release != NULL &&
       !ut_cancel_is_active(self->cancel)) {
-    self->event_callbacks->input_key_release(self->user_data, device_id,
-                                             timestamp, event, detail, event_x,
-                                             event_y, flags);
+    self->event_callbacks->key_release(self->user_data, device_id, timestamp,
+                                       event, detail, event_x, event_y, flags);
   }
 }
 
@@ -276,11 +274,10 @@ static void decode_button_press(UtX11XinputExtension *self, UtObject *data) {
   decode_pointer_event(data, &device_id, &timestamp, &detail, &event, &event_x,
                        &event_y, &flags, &button_mask, &valuator_mask);
 
-  if (self->event_callbacks->input_button_press != NULL &&
+  if (self->event_callbacks->button_press != NULL &&
       !ut_cancel_is_active(self->cancel)) {
-    self->event_callbacks->input_button_press(self->user_data, device_id,
-                                              timestamp, event, detail, event_x,
-                                              event_y, flags);
+    self->event_callbacks->button_press(self->user_data, device_id, timestamp,
+                                        event, detail, event_x, event_y, flags);
   }
 }
 
@@ -294,11 +291,11 @@ static void decode_button_release(UtX11XinputExtension *self, UtObject *data) {
   decode_pointer_event(data, &device_id, &timestamp, &detail, &event, &event_x,
                        &event_y, &flags, &button_mask, &valuator_mask);
 
-  if (self->event_callbacks->input_button_release != NULL &&
+  if (self->event_callbacks->button_release != NULL &&
       !ut_cancel_is_active(self->cancel)) {
-    self->event_callbacks->input_button_release(self->user_data, device_id,
-                                                timestamp, event, detail,
-                                                event_x, event_y, flags);
+    self->event_callbacks->button_release(self->user_data, device_id, timestamp,
+                                          event, detail, event_x, event_y,
+                                          flags);
   }
 }
 
@@ -312,10 +309,10 @@ static void decode_motion(UtX11XinputExtension *self, UtObject *data) {
   decode_pointer_event(data, &device_id, &timestamp, &detail, &event, &event_x,
                        &event_y, &flags, &button_mask, &valuator_mask);
 
-  if (self->event_callbacks->input_motion != NULL &&
+  if (self->event_callbacks->motion != NULL &&
       !ut_cancel_is_active(self->cancel)) {
-    self->event_callbacks->input_motion(self->user_data, device_id, timestamp,
-                                        event, event_x, event_y, flags);
+    self->event_callbacks->motion(self->user_data, device_id, timestamp, event,
+                                  event_x, event_y, flags);
   }
 }
 
@@ -358,10 +355,10 @@ static void decode_enter(UtX11XinputExtension *self, UtObject *data) {
   decode_notify_event(data, &device_id, &timestamp, &mode, &detail, &event,
                       &event_x, &event_y, &buttons);
 
-  if (self->event_callbacks->input_enter != NULL &&
+  if (self->event_callbacks->enter != NULL &&
       !ut_cancel_is_active(self->cancel)) {
-    self->event_callbacks->input_enter(self->user_data, device_id, timestamp,
-                                       mode, detail, event, event_x, event_y);
+    self->event_callbacks->enter(self->user_data, device_id, timestamp, mode,
+                                 detail, event, event_x, event_y);
   }
 }
 
@@ -375,10 +372,10 @@ static void decode_leave(UtX11XinputExtension *self, UtObject *data) {
   decode_notify_event(data, &device_id, &timestamp, &mode, &detail, &event,
                       &event_x, &event_y, &buttons);
 
-  if (self->event_callbacks->input_leave != NULL &&
+  if (self->event_callbacks->leave != NULL &&
       !ut_cancel_is_active(self->cancel)) {
-    self->event_callbacks->input_leave(self->user_data, device_id, timestamp,
-                                       mode, detail, event, event_x, event_y);
+    self->event_callbacks->leave(self->user_data, device_id, timestamp, mode,
+                                 detail, event, event_x, event_y);
   }
 }
 
@@ -392,10 +389,10 @@ static void decode_focus_in(UtX11XinputExtension *self, UtObject *data) {
   decode_notify_event(data, &device_id, &timestamp, &mode, &detail, &event,
                       &event_x, &event_y, &buttons);
 
-  if (self->event_callbacks->input_focus_in != NULL &&
+  if (self->event_callbacks->focus_in != NULL &&
       !ut_cancel_is_active(self->cancel)) {
-    self->event_callbacks->input_focus_in(self->user_data, event, timestamp,
-                                          mode, detail, device_id);
+    self->event_callbacks->focus_in(self->user_data, event, timestamp, mode,
+                                    detail, device_id);
   }
 }
 
@@ -409,10 +406,10 @@ static void decode_focus_out(UtX11XinputExtension *self, UtObject *data) {
   decode_notify_event(data, &device_id, &timestamp, &mode, &detail, &event,
                       &event_x, &event_y, &buttons);
 
-  if (self->event_callbacks->input_focus_out != NULL &&
+  if (self->event_callbacks->focus_out != NULL &&
       !ut_cancel_is_active(self->cancel)) {
-    self->event_callbacks->input_focus_out(self->user_data, event, timestamp,
-                                           mode, detail, device_id);
+    self->event_callbacks->focus_out(self->user_data, event, timestamp, mode,
+                                     detail, device_id);
   }
 }
 
@@ -463,10 +460,10 @@ static void decode_touch_begin(UtX11XinputExtension *self, UtObject *data) {
   decode_touch_event(data, &device_id, &timestamp, &detail, &event, &event_x,
                      &event_y, &flags, &button_mask, &valuator_mask);
 
-  if (self->event_callbacks->input_touch_begin != NULL &&
+  if (self->event_callbacks->touch_begin != NULL &&
       !ut_cancel_is_active(self->cancel)) {
-    self->event_callbacks->input_touch_begin(
-        self->user_data, device_id, timestamp, event, detail, event_x, event_y);
+    self->event_callbacks->touch_begin(self->user_data, device_id, timestamp,
+                                       event, detail, event_x, event_y);
   }
 }
 
@@ -480,10 +477,10 @@ static void decode_touch_update(UtX11XinputExtension *self, UtObject *data) {
   decode_touch_event(data, &device_id, &timestamp, &detail, &event, &event_x,
                      &event_y, &flags, &button_mask, &valuator_mask);
 
-  if (self->event_callbacks->input_touch_update != NULL &&
+  if (self->event_callbacks->touch_update != NULL &&
       !ut_cancel_is_active(self->cancel)) {
-    self->event_callbacks->input_touch_update(
-        self->user_data, device_id, timestamp, event, detail, event_x, event_y);
+    self->event_callbacks->touch_update(self->user_data, device_id, timestamp,
+                                        event, detail, event_x, event_y);
   }
 }
 
@@ -497,10 +494,10 @@ static void decode_touch_end(UtX11XinputExtension *self, UtObject *data) {
   decode_touch_event(data, &device_id, &timestamp, &detail, &event, &event_x,
                      &event_y, &flags, &button_mask, &valuator_mask);
 
-  if (self->event_callbacks->input_touch_end != NULL &&
+  if (self->event_callbacks->touch_end != NULL &&
       !ut_cancel_is_active(self->cancel)) {
-    self->event_callbacks->input_touch_end(
-        self->user_data, device_id, timestamp, event, detail, event_x, event_y);
+    self->event_callbacks->touch_end(self->user_data, device_id, timestamp,
+                                     event, detail, event_x, event_y);
   }
 }
 

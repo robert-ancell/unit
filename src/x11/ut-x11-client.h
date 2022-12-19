@@ -128,60 +128,59 @@ typedef void (*UtX11ClientMessageCallback)(void *user_data, uint32_t window,
                                            uint32_t type, UtObject *data);
 
 // From XInputExtension
-typedef void (*UtX11InputDeviceChangedCallback)(void *user_data,
-                                                uint16_t device_id,
-                                                uint32_t timestamp,
-                                                UtX11DeviceChangeReason reason,
-                                                UtObject *classes);
-typedef void (*UtX11InputKeyPressCallback)(void *user_data, uint16_t device_id,
-                                           uint32_t timestamp, uint32_t window,
-                                           uint8_t keycode, double x, double y,
-                                           UtX11KeyEventFlag flags);
-typedef void (*UtX11InputKeyReleaseCallback)(
-    void *user_data, uint16_t device_id, uint32_t timestamp, uint32_t window,
-    uint8_t keycode, double x, double y, UtX11KeyEventFlag flags);
-typedef void (*UtX11InputButtonPressCallback)(
-    void *user_data, uint16_t device_id, uint32_t timestamp, uint32_t window,
-    uint8_t button, double x, double y, UtX11PointerEventFlag flags);
-typedef void (*UtX11InputButtonReleaseCallback)(
-    void *user_data, uint16_t device_id, uint32_t timestamp, uint32_t window,
-    uint8_t button, double x, double y, UtX11PointerEventFlag flags);
-typedef void (*UtX11InputMotionCallback)(void *user_data, uint16_t device_id,
-                                         uint32_t timestamp, uint32_t window,
-                                         double x, double y,
-                                         UtX11PointerEventFlag flags);
-typedef void (*UtX11InputEnterCallback)(void *user_data, uint16_t device_id,
-                                        uint32_t timestamp,
-                                        UtX11InputNotifyMode mode,
-                                        UtX11InputNotifyDetail detail,
-                                        uint32_t window, double x, double y);
-typedef void (*UtX11InputLeaveCallback)(void *user_data, uint16_t device_id,
-                                        uint32_t timestamp,
-                                        UtX11InputNotifyMode mode,
-                                        UtX11InputNotifyDetail detail,
-                                        uint32_t window, double x, double y);
-typedef void (*UtX11InputFocusInCallback)(void *user_data, uint16_t device_id,
-                                          uint32_t timestamp,
-                                          UtX11InputNotifyMode mode,
-                                          UtX11InputNotifyDetail detail,
-                                          uint32_t window);
-typedef void (*UtX11InputFocusOutCallback)(void *user_data, uint16_t device_id,
+typedef void (*UtX11DeviceChangedCallback)(void *user_data, uint16_t device_id,
                                            uint32_t timestamp,
-                                           UtX11InputNotifyMode mode,
-                                           UtX11InputNotifyDetail detail,
-                                           uint32_t window);
-typedef void (*UtX11InputTouchBeginCallback)(void *user_data,
-                                             uint16_t device_id,
-                                             uint32_t timestamp,
-                                             uint32_t window, uint32_t touch_id,
-                                             double x, double y);
-typedef void (*UtX11InputTouchUpdateCallback)(
-    void *user_data, uint16_t device_id, uint32_t timestamp, uint32_t window,
-    uint32_t touch_id, double x, double y);
-typedef void (*UtX11InputTouchEndCallback)(void *user_data, uint16_t device_id,
+                                           UtX11DeviceChangeReason reason,
+                                           UtObject *classes);
+typedef void (*UtX11KeyPressCallback)(void *user_data, uint16_t device_id,
+                                      uint32_t timestamp, uint32_t window,
+                                      uint8_t keycode, double x, double y,
+                                      UtX11KeyEventFlag flags);
+typedef void (*UtX11KeyReleaseCallback)(void *user_data, uint16_t device_id,
+                                        uint32_t timestamp, uint32_t window,
+                                        uint8_t keycode, double x, double y,
+                                        UtX11KeyEventFlag flags);
+typedef void (*UtX11ButtonPressCallback)(void *user_data, uint16_t device_id,
+                                         uint32_t timestamp, uint32_t window,
+                                         uint8_t button, double x, double y,
+                                         UtX11PointerEventFlag flags);
+typedef void (*UtX11ButtonReleaseCallback)(void *user_data, uint16_t device_id,
                                            uint32_t timestamp, uint32_t window,
-                                           uint32_t touch_id, double x,
-                                           double y);
+                                           uint8_t button, double x, double y,
+                                           UtX11PointerEventFlag flags);
+typedef void (*UtX11MotionCallback)(void *user_data, uint16_t device_id,
+                                    uint32_t timestamp, uint32_t window,
+                                    double x, double y,
+                                    UtX11PointerEventFlag flags);
+typedef void (*UtX11EnterCallback)(void *user_data, uint16_t device_id,
+                                   uint32_t timestamp,
+                                   UtX11InputNotifyMode mode,
+                                   UtX11InputNotifyDetail detail,
+                                   uint32_t window, double x, double y);
+typedef void (*UtX11LeaveCallback)(void *user_data, uint16_t device_id,
+                                   uint32_t timestamp,
+                                   UtX11InputNotifyMode mode,
+                                   UtX11InputNotifyDetail detail,
+                                   uint32_t window, double x, double y);
+typedef void (*UtX11FocusInCallback)(void *user_data, uint16_t device_id,
+                                     uint32_t timestamp,
+                                     UtX11InputNotifyMode mode,
+                                     UtX11InputNotifyDetail detail,
+                                     uint32_t window);
+typedef void (*UtX11FocusOutCallback)(void *user_data, uint16_t device_id,
+                                      uint32_t timestamp,
+                                      UtX11InputNotifyMode mode,
+                                      UtX11InputNotifyDetail detail,
+                                      uint32_t window);
+typedef void (*UtX11TouchBeginCallback)(void *user_data, uint16_t device_id,
+                                        uint32_t timestamp, uint32_t window,
+                                        uint32_t touch_id, double x, double y);
+typedef void (*UtX11TouchUpdateCallback)(void *user_data, uint16_t device_id,
+                                         uint32_t timestamp, uint32_t window,
+                                         uint32_t touch_id, double x, double y);
+typedef void (*UtX11TouchEndCallback)(void *user_data, uint16_t device_id,
+                                      uint32_t timestamp, uint32_t window,
+                                      uint32_t touch_id, double x, double y);
 
 // From XFIXES
 typedef void (*UtX11SelectionNotifyCallback)(void *user_data, uint32_t window,
@@ -224,19 +223,19 @@ typedef struct {
   UtX11ClientMessageCallback client_message;
 
   // From XInputExtension
-  UtX11InputDeviceChangedCallback input_device_changed;
-  UtX11InputKeyPressCallback input_key_press;
-  UtX11InputKeyReleaseCallback input_key_release;
-  UtX11InputButtonPressCallback input_button_press;
-  UtX11InputButtonReleaseCallback input_button_release;
-  UtX11InputMotionCallback input_motion;
-  UtX11InputEnterCallback input_enter;
-  UtX11InputLeaveCallback input_leave;
-  UtX11InputFocusInCallback input_focus_in;
-  UtX11InputFocusOutCallback input_focus_out;
-  UtX11InputTouchBeginCallback input_touch_begin;
-  UtX11InputTouchUpdateCallback input_touch_update;
-  UtX11InputTouchEndCallback input_touch_end;
+  UtX11DeviceChangedCallback device_changed;
+  UtX11KeyPressCallback key_press;
+  UtX11KeyReleaseCallback key_release;
+  UtX11ButtonPressCallback button_press;
+  UtX11ButtonReleaseCallback button_release;
+  UtX11MotionCallback motion;
+  UtX11EnterCallback enter;
+  UtX11LeaveCallback leave;
+  UtX11FocusInCallback focus_in;
+  UtX11FocusOutCallback focus_out;
+  UtX11TouchBeginCallback touch_begin;
+  UtX11TouchUpdateCallback touch_update;
+  UtX11TouchEndCallback touch_end;
 
   // From XFIXES
   UtX11SelectionNotifyCallback selection_notify;
