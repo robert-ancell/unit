@@ -465,7 +465,7 @@ static size_t decode_setup_success(UtX11Client *self, UtObject *data) {
     ut_x11_buffer_get_card8(data, &offset); // root_depth
 
     UtObjectRef visuals = ut_object_list_new();
-    UtObject *root_visual = NULL;
+    UtObjectRef root_visual = NULL;
     size_t allowed_depths_length = ut_x11_buffer_get_card8(data, &offset);
     for (size_t j = 0; j < allowed_depths_length; j++) {
       uint8_t depth = ut_x11_buffer_get_card8(data, &offset);
