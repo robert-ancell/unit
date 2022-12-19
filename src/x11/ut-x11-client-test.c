@@ -225,5 +225,8 @@ int main(int argc, char **argv) {
 
   ut_event_loop_run();
 
+  ut_object_unref(client);
+  ut_object_unref(buffer);
+
   return 0;
 }
