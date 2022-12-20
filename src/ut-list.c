@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <stdlib.h>
 
+#include "ut-list-private.h"
 #include "ut.h"
 
 int ut_list_id = 0;
@@ -167,7 +168,7 @@ void ut_list_resize(UtObject *object, size_t length) {
   list_interface->resize(object, length);
 }
 
-char *ut_list_to_string(UtObject *object) {
+char *_ut_list_to_string(UtObject *object) {
   UtObjectRef string = ut_string_new("[");
   for (size_t i = 0; i < ut_list_get_length(object); i++) {
     UtObject *item = ut_list_get_element(object, i);
