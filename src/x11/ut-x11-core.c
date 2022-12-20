@@ -149,13 +149,14 @@ static void decode_property_notify(UtX11Core *self, uint8_t data0,
   size_t offset = 0;
   uint32_t window = ut_x11_buffer_get_card32(data, &offset);
   uint32_t atom = ut_x11_buffer_get_card32(data, &offset);
-  ut_x11_buffer_get_card32(data, &offset); // time
-  ut_x11_buffer_get_card8(data, &offset);  // state
+  uint32_t timestamp = ut_x11_buffer_get_card32(data, &offset);
+  uint8_t state = ut_x11_buffer_get_card8(data, &offset);
   ut_x11_buffer_get_padding(data, &offset, 15);
 
   if (self->event_callbacks->property_notify != NULL &&
       !ut_cancel_is_active(self->cancel)) {
-    self->event_callbacks->property_notify(self->user_data, window, atom);
+    self->event_callbacks->property_notify(self->user_data, window, atom,
+                                           timestamp, state);
   }
 }
 
@@ -881,7 +882,7 @@ void ut_x11_core_get_property(UtObject *object, uint32_t window,
   ut_x11_buffer_append_card32(request, long_length);
 
   ut_x11_client_send_request_with_reply(
-      self->client, 31, delete ? 1 : 0, request, decode_get_property_reply,
+      self->client, 20, delete ? 1 : 0, request, decode_get_property_reply,
       handle_get_property_error, callback_data_new(self, callback, user_data),
       cancel);
 }
@@ -896,7 +897,7 @@ void ut_x11_core_list_properties(UtObject *object, uint32_t window,
   ut_x11_buffer_append_card32(request, window);
 
   ut_x11_client_send_request_with_reply(
-      self->client, 32, 0, request, decode_list_properties_reply,
+      self->client, 21, 0, request, decode_list_properties_reply,
       handle_list_properties_error,
       callback_data_new(self, callback, user_data), cancel);
 }

@@ -75,6 +75,11 @@
 #define UT_X11_WM_TRANSIENT_FOR 68
 
 typedef enum {
+  UT_X11_PROPERTY_NOTIFY_STATE_NEW_VALUE = 0,
+  UT_X11_PROPERTY_NOTIFY_STATE_DELETE = 1
+} UtX11PropertyNotifyState;
+
+typedef enum {
   UT_X11_DEVICE_CHANGE_REASON_SLAVE_SWITCH = 1,
   UT_X11_DEVICE_CHANGE_REASON_DEVICE_CHANGE = 2
 } UtX11DeviceChangeReason;
@@ -124,7 +129,8 @@ typedef void (*UtX11ConfigureNotifyCallback)(void *user_data, uint32_t window,
                                              int16_t x, int16_t y,
                                              uint16_t width, uint16_t height);
 typedef void (*UtX11PropertyNotifyCallback)(void *user_data, uint32_t window,
-                                            uint32_t atom);
+                                            uint32_t atom, uint32_t timestamp,
+                                            UtX11PropertyNotifyState state);
 typedef void (*UtX11ClientMessageCallback)(void *user_data, uint32_t window,
                                            uint32_t type, UtObject *data);
 
@@ -436,7 +442,7 @@ void ut_x11_client_delete_property(UtObject *object, uint32_t window,
                                    uint32_t property);
 
 void ut_x11_client_get_property(UtObject *object, uint32_t window,
-                                uint32_t property,
+                                uint32_t property, uint32_t type,
                                 UtX11GetPropertyCallback callback,
                                 void *user_data, UtObject *cancel);
 

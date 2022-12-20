@@ -1043,12 +1043,12 @@ void ut_x11_client_delete_property(UtObject *object, uint32_t window,
 }
 
 void ut_x11_client_get_property(UtObject *object, uint32_t window,
-                                uint32_t property,
+                                uint32_t property, uint32_t type,
                                 UtX11GetPropertyCallback callback,
                                 void *user_data, UtObject *cancel) {
   assert(ut_object_is_x11_client(object));
   UtX11Client *self = (UtX11Client *)object;
-  ut_x11_core_get_property(self->core, window, property, 0, 0, 0xffffffff,
+  ut_x11_core_get_property(self->core, window, property, type, 0, 0xffffffff,
                            false, callback, user_data, cancel);
 }
 

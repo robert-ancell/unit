@@ -7,13 +7,21 @@ static size_t pixmap_width = 0;
 static size_t pixmap_height = 0;
 
 static UtObject *client = NULL;
-static uint32_t wm_protocols_atom = 0;
-static uint32_t wm_delete_window_atom = 0;
+static UtObject *atoms = NULL;
 static uint32_t segment = 0;
 static UtObject *buffer = NULL;
 static uint32_t window = 0;
 static uint32_t pixmap = 0;
 static uint32_t gc = 0;
+
+static uint32_t get_atom(const char *name) {
+  UtObjectRef value = ut_map_lookup_string(atoms, name);
+  if (value == NULL) {
+    return 0;
+  }
+
+  return ut_uint32_get_value(value);
+}
 
 static void enter_cb(void *user_data, uint16_t device_id, uint32_t timestamp,
                      UtX11InputNotifyMode mode, UtX11InputNotifyDetail detail,
@@ -74,8 +82,8 @@ static void client_message_cb(void *user_data, uint32_t window, uint32_t type,
                               UtObject *data) {
   printf("ClientMessage\n");
 
-  if (type == wm_protocols_atom) {
-    if (ut_uint32_list_get_element(data, 0) == wm_delete_window_atom) {
+  if (type == get_atom("WM_PROTOCOLS")) {
+    if (ut_uint32_list_get_element(data, 0) == get_atom("WM_DELETE_WINDOW")) {
       ut_event_loop_return(NULL);
     }
   }
@@ -124,6 +132,34 @@ static void expose_cb(void *user_data, uint32_t window, uint16_t x, uint16_t y,
                           height);
 }
 
+static void get_wm_state_cb(void *user_data, uint32_t type, UtObject *value,
+                            uint32_t bytes_after, UtObject *error) {
+  size_t atoms_length = ut_list_get_length(value);
+  bool maximized_vert = false, maximized_horz = false, hidden = false;
+  for (size_t i = 0; i < atoms_length; i++) {
+    uint32_t atom = ut_uint32_list_get_element(value, i);
+    if (atom == get_atom("_NET_WM_STATE_MAXIMIZED_VERT")) {
+      maximized_vert = true;
+    } else if (atom == get_atom("_NET_WM_STATE_MAXIMIZED_HORZ")) {
+      maximized_horz = true;
+    } else if (atom == get_atom("_NET_WM_STATE_HIDDEN")) {
+      hidden = true;
+    }
+  }
+  printf("Window state: maximized-vert=%s maximized-horz=%s hidden=%s\n",
+         maximized_vert ? "yes" : "no", maximized_horz ? "yes" : "no",
+         hidden ? "yes" : "no");
+}
+
+static void property_notify_cb(void *user_data, uint32_t window, uint32_t atom,
+                               uint32_t timestamp,
+                               UtX11PropertyNotifyState state) {
+  if (atom == get_atom("_NET_WM_STATE")) {
+    ut_x11_client_get_property(client, window, atom, UT_X11_ATOM,
+                               get_wm_state_cb, NULL, NULL);
+  }
+}
+
 static UtX11EventCallbacks event_callbacks = {
     .enter = enter_cb,
     .leave = leave_cb,
@@ -136,7 +172,8 @@ static UtX11EventCallbacks event_callbacks = {
     .key_release = key_release_cb,
     .client_message = client_message_cb,
     .configure_notify = configure_notify_cb,
-    .expose = expose_cb};
+    .expose = expose_cb,
+    .property_notify = property_notify_cb};
 
 static void error_cb(void *user_data, UtObject *error) {
   ut_cstring_ref s = ut_object_to_string(error);
@@ -160,22 +197,23 @@ static void query_device_cb(void *user_data, UtObject *infos, UtObject *error) {
   }
 }
 
-static void wm_protocols_atom_cb(void *user_data, uint32_t atom,
-                                 UtObject *error) {
+static void intern_atom_cb(void *user_data, uint32_t atom, UtObject *error) {
+  ut_cstring_ref name = user_data;
   assert(error == NULL);
-  wm_protocols_atom = atom;
+  ut_map_insert_string_take(atoms, name, ut_uint32_new(atom));
+
+  if (ut_cstring_equal(name, "WM_DELETE_WINDOW")) {
+    UtObjectRef protocols =
+        ut_uint32_list_new_from_elements(1, get_atom("WM_DELETE_WINDOW"));
+    ut_x11_client_change_property_uint32(
+        client, window, get_atom("WM_PROTOCOLS"), UT_X11_PROPERTY_MODE_REPLACE,
+        UT_X11_ATOM, protocols);
+  }
 }
 
-static void wm_delete_window_atom_cb(void *user_data, uint32_t atom,
-                                     UtObject *error) {
-  assert(error == NULL);
-  wm_delete_window_atom = atom;
-
-  UtObjectRef protocols =
-      ut_uint32_list_new_from_elements(1, wm_delete_window_atom);
-  ut_x11_client_change_property_uint32(client, window, wm_protocols_atom,
-                                       UT_X11_PROPERTY_MODE_REPLACE,
-                                       UT_X11_ATOM, protocols);
+static void intern_atom(const char *name) {
+  ut_x11_client_intern_atom(client, name, false, intern_atom_cb,
+                            ut_cstring_new(name), NULL);
 }
 
 static void connect_cb(void *user_data, UtObject *error) {
@@ -192,14 +230,26 @@ static void connect_cb(void *user_data, UtObject *error) {
   ut_x11_client_query_device(client, UT_X11_DEVICE_ALL_MASTER, query_device_cb,
                              NULL, NULL);
 
-  ut_x11_client_intern_atom(client, "WM_PROTOCOLS", false, wm_protocols_atom_cb,
-                            NULL, NULL);
-  ut_x11_client_intern_atom(client, "WM_DELETE_WINDOW", false,
-                            wm_delete_window_atom_cb, NULL, NULL);
+  intern_atom("WM_PROTOCOLS");
+  intern_atom("WM_DELETE_WINDOW");
+  intern_atom("_NET_WM_STATE");
+  intern_atom("_NET_WM_STATE_MODAL");
+  intern_atom("_NET_WM_STATE_STICKY");
+  intern_atom("_NET_WM_STATE_MAXIMIZED_VERT");
+  intern_atom("_NET_WM_STATE_MAXIMIZED_HORZ");
+  intern_atom("_NET_WM_STATE_SHADED");
+  intern_atom("_NET_WM_STATE_SKIP_TASKBAR");
+  intern_atom("_NET_WM_STATE_SKIP_PAGER");
+  intern_atom("_NET_WM_STATE_HIDDEN");
+  intern_atom("_NET_WM_STATE_FULLSCREEN");
+  intern_atom("_NET_WM_STATE_ABOVE");
+  intern_atom("_NET_WM_STATE_BELOW");
+  intern_atom("_NET_WM_STATE_DEMANDS_ATTENTION");
 
   window = ut_x11_client_create_window(client, 0, 0, 640, 480,
                                        UT_X11_EVENT_STRUCTURE_NOTIFY |
-                                           UT_X11_EVENT_EXPOSURE);
+                                           UT_X11_EVENT_EXPOSURE |
+                                           UT_X11_EVENT_PROPERTY_CHANGE);
 
   UtObjectRef masks = ut_list_new();
   UtObjectRef mask = ut_x11_input_event_mask_new(
@@ -221,11 +271,13 @@ static void connect_cb(void *user_data, UtObject *error) {
 
 int main(int argc, char **argv) {
   client = ut_x11_client_new(&event_callbacks, error_cb, NULL, NULL);
+  atoms = ut_map_new();
   ut_x11_client_connect(client, connect_cb, NULL, NULL);
 
   ut_event_loop_run();
 
   ut_object_unref(client);
+  ut_object_unref(atoms);
   ut_object_unref(buffer);
 
   return 0;
