@@ -22,19 +22,12 @@ static void align(UtWaylandDecoder *self) {
   }
 }
 
-static void ut_wayland_decoder_init(UtObject *object) {
-  UtWaylandDecoder *self = (UtWaylandDecoder *)object;
-  self->data = ut_uint8_array_new();
-  self->offset = 0;
-}
-
 static void ut_wayland_decoder_cleanup(UtObject *object) {
   UtWaylandDecoder *self = (UtWaylandDecoder *)object;
   ut_object_unref(self->data);
 }
 
 static UtObjectInterface object_interface = {.type_name = "UtWaylandDecoder",
-                                             .init = ut_wayland_decoder_init,
                                              .cleanup =
                                                  ut_wayland_decoder_cleanup,
                                              .interfaces = {{NULL, NULL}}};
