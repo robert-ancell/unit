@@ -388,27 +388,23 @@ UtObject *ut_event_loop_run() {
   for (Timeout *timeout = loop->timeouts; timeout != NULL;
        timeout = next_timeout) {
     next_timeout = timeout->next;
-    ut_object_unref(timeout->cancel);
-    free(timeout);
+    free_timeout(timeout);
   }
   FdWatch *next_watch;
   for (FdWatch *watch = loop->read_watches; watch != NULL; watch = next_watch) {
     next_watch = watch->next;
-    ut_object_unref(watch->cancel);
-    free(watch);
+    free_fd_watch(watch);
   }
   for (FdWatch *watch = loop->write_watches; watch != NULL;
        watch = next_watch) {
     next_watch = watch->next;
-    ut_object_unref(watch->cancel);
-    free(watch);
+    free_fd_watch(watch);
   }
   WorkerThread *next_thread;
   for (WorkerThread *thread = loop->worker_threads; thread != NULL;
        thread = next_thread) {
     next_thread = thread->next;
-    ut_object_unref(thread->cancel);
-    free(thread);
+    free_worker_thread(thread);
   }
   ut_object_unref(loop->return_value);
   free(loop);
