@@ -135,15 +135,16 @@ static UtWaylandTouchCallbacks touch_callbacks = {
 
 static void seat_capabilities_cb(void *user_data, uint32_t capabilities) {
   if ((capabilities & UT_WAYLAND_SEAT_CAPABILITY_POINTER) != 0) {
-    ut_object_set(&pointer,
-                  ut_wayland_seat_get_pointer(seat, &pointer_callbacks, NULL));
+    UtObjectRef p = ut_wayland_seat_get_pointer(seat, &pointer_callbacks, NULL);
+    ut_object_set(&pointer, p);
   } else {
     ut_object_clear(&pointer);
   }
 
   if ((capabilities & UT_WAYLAND_SEAT_CAPABILITY_KEYBOARD) != 0) {
-    ut_object_set(&keyboard, ut_wayland_seat_get_keyboard(
-                                 seat, &keyboard_callbacks, NULL));
+    UtObjectRef k =
+        ut_wayland_seat_get_keyboard(seat, &keyboard_callbacks, NULL);
+    ut_object_set(&keyboard, k);
   } else {
     ut_object_clear(&keyboard);
   }
