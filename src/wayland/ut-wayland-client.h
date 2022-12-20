@@ -6,6 +6,8 @@
 
 #pragma once
 
+/// Creates a new [UtWaylandClient] object.
+/// !return-ref
 UtObject *ut_wayland_client_new();
 
 void ut_wayland_client_connect(UtObject *object);

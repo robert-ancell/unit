@@ -23,7 +23,7 @@ extern int ut_string_id;
 UtObject *ut_string_new(const char *text);
 
 UtObject *ut_string_new_printf(const char *format, ...)
-    __attribute((format(printf, 1, 2)));
+    __attribute__((format(printf, 1, 2)));
 
 UtObject *ut_string_new_constant(const char *text);
 
@@ -53,14 +53,14 @@ void ut_string_clear(UtObject *object);
 void ut_string_prepend(UtObject *object, const char *text);
 
 void ut_string_prepend_printf(UtObject *object, const char *format, ...)
-    __attribute((format(printf, 2, 3)));
+    __attribute__((format(printf, 2, 3)));
 
 void ut_string_prepend_code_point(UtObject *object, uint32_t code_point);
 
 void ut_string_append(UtObject *object, const char *text);
 
 void ut_string_append_printf(UtObject *object, const char *format, ...)
-    __attribute((format(printf, 2, 3)));
+    __attribute__((format(printf, 2, 3)));
 
 void ut_string_append_code_point(UtObject *object, uint32_t code_point);
 

@@ -101,7 +101,7 @@ typedef enum {
   UT_X11_INPUT_NOTIFY_DETAIL_NONLINEAR_VIRTUAL = 4,
   UT_X11_INPUT_NOTIFY_DETAIL_POINTER = 5,
   UT_X11_INPUT_NOTIFY_DETAIL_POINTER_ROOT = 6,
-  UT_X11_INPUT_NOTIFY_DETAIL_NONE = 7,
+  UT_X11_INPUT_NOTIFY_DETAIL_NONE = 7
 } UtX11InputNotifyDetail;
 
 typedef enum { UT_X11_KEY_EVENT_FLAG_REPEAT = 0x00010000 } UtX11KeyEventFlag;
@@ -364,18 +364,32 @@ typedef enum {
   UT_X11_PROPERTY_MODE_APPEND = 2
 } UtX11PropertyMode;
 
+/// Creates a new [UtX11Client] object.
+/// [event_callbacks] should be set with functions for the events you wish to
+/// consume. [error_callback] is used to detect errors returns from the X
+/// server. !return-ref
 UtObject *ut_x11_client_new(const UtX11EventCallbacks *event_callbacks,
                             UtX11ClientErrorCallback error_callback,
                             void *user_data, UtObject *cancel);
 
+/// Connect the [UtX11Client] to the X server.
+/// [callback] is called when the connection is completed.
 void ut_x11_client_connect(UtObject *object,
                            UtX11ClientConnectCallback callback, void *user_data,
                            UtObject *cancel);
 
+/// Returns the X11 server vendor.
+/// This value is set once [ut_x11_client_connect] has completed.
 const char *ut_x11_client_get_vendor(UtObject *object);
 
+/// Returns the pixmap formats supported by the X server.
+/// This value is set once [ut_x11_client_connect] has completed.
+/// !return-element-type UtX11PixmapFormat
 UtObject *ut_x11_client_get_pixmap_formats(UtObject *object);
 
+/// Returns the screens provided by the X server.
+/// This value is set once [ut_x11_client_connect] has completed.
+/// !return-element-type UtX11Screen
 UtObject *ut_x11_client_get_screens(UtObject *object);
 
 uint32_t ut_x11_client_create_window(UtObject *object, int16_t x, int16_t y,

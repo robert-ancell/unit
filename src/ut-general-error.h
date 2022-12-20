@@ -6,7 +6,7 @@
 #pragma once
 
 UtObject *ut_general_error_new(const char *format, ...)
-    __attribute((format(printf, 1, 2)));
+    __attribute__((format(printf, 1, 2)));
 
 UtObject *ut_general_error_new_valist(const char *format, va_list ap);
 

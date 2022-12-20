@@ -2,6 +2,7 @@
 #include <stdarg.h>
 #include <stdlib.h>
 
+#include "ut-list-private.h"
 #include "ut.h"
 
 typedef struct {
@@ -99,7 +100,7 @@ static UtListInterface list_interface = {
 
 static UtObjectInterface object_interface = {
     .type_name = "UtObjectArray",
-    .to_string = ut_list_to_string,
+    .to_string = _ut_list_to_string,
     .cleanup = ut_object_array_cleanup,
     .interfaces = {{&ut_object_list_id, &object_list_interface},
                    {&ut_list_id, &list_interface},
