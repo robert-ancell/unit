@@ -19,7 +19,7 @@ static void decode_enter(UtWaylandKeyboard *self, UtObject *data) {
   uint32_t serial = ut_wayland_decoder_get_uint(data);
   uint32_t surface_id = ut_wayland_decoder_get_uint(data);
   UtObject *surface = ut_wayland_client_get_object(self->client, surface_id);
-  UtObject *keys = ut_wayland_decoder_get_uint_array(data);
+  UtObjectRef keys = ut_wayland_decoder_get_uint_array(data);
   if (self->callbacks != NULL && self->callbacks->enter != NULL) {
     self->callbacks->enter(self->user_data, serial, surface, keys);
   }
