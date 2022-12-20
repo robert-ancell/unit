@@ -21,6 +21,7 @@ static void ut_wayland_encoder_cleanup(UtObject *object) {
   UtWaylandEncoder *self = (UtWaylandEncoder *)object;
   ut_object_unref(self->data);
   ut_object_unref(self->fds);
+  ut_object_unref(self->data_with_fds);
 }
 
 static UtObjectInterface object_interface = {.type_name = "UtWaylandEncoder",
