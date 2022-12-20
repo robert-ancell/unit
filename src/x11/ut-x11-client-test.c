@@ -213,8 +213,8 @@ static void connect_cb(void *user_data, UtObject *error) {
   ut_list_append(masks, mask);
   ut_x11_client_select_input_events(client, window, masks);
 
-  ut_x11_client_change_property_string(
-      client, window, UT_X11_PROPERTY_MODE_REPLACE, UT_X11_WM_NAME, "UT");
+  ut_x11_client_change_property_string(client, window, UT_X11_WM_NAME,
+                                       UT_X11_PROPERTY_MODE_REPLACE, "UT");
 
   ut_x11_client_map_window(client, window);
 }
