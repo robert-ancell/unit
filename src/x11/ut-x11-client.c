@@ -1113,7 +1113,7 @@ void ut_x11_client_copy_area(UtObject *object, uint32_t src_drawable,
   assert(ut_object_is_x11_client(object));
   UtX11Client *self = (UtX11Client *)object;
   ut_x11_core_copy_area(self->core, src_drawable, dst_drawable, gc, src_x,
-                        src_y, dst_y, dst_y, width, height);
+                        src_y, dst_x, dst_y, width, height);
 }
 
 void ut_x11_client_get_image(UtObject *object, uint32_t drawable,

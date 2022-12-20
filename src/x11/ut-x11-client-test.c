@@ -119,7 +119,7 @@ static void configure_notify_cb(void *user_data, uint32_t window, int16_t x,
 
 static void expose_cb(void *user_data, uint32_t window, uint16_t x, uint16_t y,
                       uint16_t width, uint16_t height, uint16_t count) {
-  printf("Expose\n");
+  printf("Expose (%d,%d) %dx%d\n", x, y, width, height);
   ut_x11_client_copy_area(client, pixmap, window, gc, x, y, x, y, width,
                           height);
 }
