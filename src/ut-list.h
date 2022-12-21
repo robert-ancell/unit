@@ -21,7 +21,7 @@ typedef struct {
 extern int ut_list_id;
 
 /// Creates a new object that implements [UtList].
-/// !returns-ref
+/// !return-ref
 UtObject *ut_list_new();
 
 /// Creates a new object that implements [UtList] and contains the passed
@@ -29,7 +29,7 @@ UtObject *ut_list_new();
 /// ```c
 /// UtObjectRef list = ut_list_new_from_elements(item0, item1, item2, NULL);
 /// ```
-/// !returns-ref
+/// !return-ref
 UtObject *ut_list_new_from_elements(UtObject *item0, ...);
 
 /// Creates a new object that implements [UtList] and contains the passed
@@ -41,22 +41,22 @@ UtObject *ut_list_new_from_elements(UtObject *item0, ...);
 /// ```
 /// !take-ref item0
 /// !take-ref ...
-/// !returns-ref
+/// !return-ref
 UtObject *ut_list_new_from_elements_take(UtObject *item0, ...);
 
 /// Gets the number of elements in [object].
 size_t ut_list_get_length(UtObject *object);
 
 /// Gets the element at the given [index] in [object].
-/// !returns-ref
+/// !return-ref
 UtObject *ut_list_get_element(UtObject *object, size_t index);
 
 /// Gets the first element in [object].
-/// !returns-ref
+/// !return-ref
 UtObject *ut_list_get_first(UtObject *object);
 
 /// Gets the last element in [object].
-/// !returns-ref
+/// !return-ref
 UtObject *ut_list_get_last(UtObject *object);
 
 /// Creates a new list containing [count] elements from [start] in [object].
@@ -64,12 +64,12 @@ UtObject *ut_list_get_last(UtObject *object);
 /// of copying. This means any updates to [object] will also occur in the
 /// sublist. If this behaviour is not desired, then use [ut_list_copy] to ensure
 /// the returned sublist has separate content. Passing a range that is not valid
-/// will trigger assertions. !returns-ref
+/// will trigger assertions. !return-ref
 UtObject *ut_list_get_sublist(UtObject *object, size_t start, size_t count);
 
 /// Creates a new list containing the same contents as [object].
 /// If [object] was immutable, the new list will be mutable.
-/// !returns-ref
+/// !return-ref
 UtObject *ut_list_copy(UtObject *object);
 
 /// Returns [true] if the contents of [object] can be changed.

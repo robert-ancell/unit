@@ -656,11 +656,19 @@ for statement in statements:
 
 doc_text = ''
 functions.sort(key=lambda x: x.function.name)
+undocumented_functions = []
 for function in functions:
     doc_text += '\n'
     doc_text += function.function.name + '\n'
     for comment in function.comments:
         doc_text += comment + '\n'
+    if len(function.comments) == 0:
+        undocumented_functions.append(function)
 
 f = open('API.md', 'w')
 f.write(doc_text)
+
+if len(undocumented_functions) > 0:
+    print('Undocumented functions:')
+    for function in undocumented_functions:
+        print ('  ' + function.function.name)
