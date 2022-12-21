@@ -674,3 +674,5 @@ if len(undocumented_functions) > 0:
     print('Undocumented functions:')
     for function in undocumented_functions:
         print('  ' + function.function.name)
+n_documented = len(functions) - len(undocumented_functions)
+print('Documented %d/%d functions' % (n_documented, len(functions)))
