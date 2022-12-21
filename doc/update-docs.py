@@ -640,8 +640,10 @@ for statement in statements:
         comments = []
         for s in parse_header(source_dir + '/' + statement.path):
             if isinstance(s, Comment):
-                if s.text.startswith('/ '):
-                    text = s.text[2:]
+                if s.text.startswith('/'):
+                    text = s.text[1:]
+                    if text.startswith(' '):
+                        text = text[1:]
                     if not text.startswith('!'):
                         comments.append(text)
                 else:
@@ -671,4 +673,4 @@ f.write(doc_text)
 if len(undocumented_functions) > 0:
     print('Undocumented functions:')
     for function in undocumented_functions:
-        print ('  ' + function.function.name)
+        print('  ' + function.function.name)

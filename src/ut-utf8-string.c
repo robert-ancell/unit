@@ -3,6 +3,7 @@
 #include <string.h>
 #include <sys/types.h>
 
+#include "ut-string-private.h"
 #include "ut-uint8-subarray.h"
 #include "ut.h"
 
@@ -146,9 +147,9 @@ static UtStringInterface string_interface = {
 static UtObjectInterface object_interface = {
     .type_name = "UtUtf8String",
     .init = ut_utf8_string_init,
-    .to_string = ut_string_to_string,
-    .equal = ut_string_equal,
-    .hash = ut_string_hash,
+    .to_string = _ut_string_to_string,
+    .equal = _ut_string_equal,
+    .hash = _ut_string_hash,
     .cleanup = ut_utf8_string_cleanup,
     .interfaces = {{&ut_string_id, &string_interface}, {NULL, NULL}}};
 

@@ -5,6 +5,7 @@
 #pragma once
 
 /// Creates a new [UtZlibEncoder] to encode the data from [input_stream].
+///
 /// !return-type UtZlibDecoder
 UtObject *ut_zlib_decoder_new(UtObject *input_stream);
 

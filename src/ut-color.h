@@ -6,6 +6,7 @@
 
 /// Creates a new [UtColor] object containing [red], [green], [blue] and [alpha]
 /// values. The values are in the range [0.0, 1.0] and represent the
+///
 /// !return-type UtColor
 /// !return-ref
 UtObject *ut_color_new_rgba(double red, double green, double blue,
@@ -14,6 +15,7 @@ UtObject *ut_color_new_rgba(double red, double green, double blue,
 /// Creates a new [UtColor] object from a color hash.
 /// [hex_string] is in the form `#rrggbb` where `rr`, `gg` and `bb` are the red,
 /// green and blue components in hexadecimal, e.g. `#E95420`
+///
 /// !return-type UtColor
 /// !return-ref
 UtObject *ut_color_new_from_hex_string(const char *hex_string);

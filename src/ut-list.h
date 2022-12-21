@@ -21,6 +21,7 @@ typedef struct {
 extern int ut_list_id;
 
 /// Creates a new object that implements [UtList].
+///
 /// !return-ref
 UtObject *ut_list_new();
 
@@ -29,6 +30,7 @@ UtObject *ut_list_new();
 /// ```c
 /// UtObjectRef list = ut_list_new_from_elements(item0, item1, item2, NULL);
 /// ```
+///
 /// !return-ref
 UtObject *ut_list_new_from_elements(UtObject *item0, ...);
 
@@ -39,6 +41,7 @@ UtObject *ut_list_new_from_elements(UtObject *item0, ...);
 /// UtObjectRef list = ut_list_new_from_elements_take(ut_string_new("Hello"),
 /// ut_string_new("World"), NULL);
 /// ```
+///
 /// !take-ref item0
 /// !take-ref ...
 /// !return-ref
@@ -48,14 +51,17 @@ UtObject *ut_list_new_from_elements_take(UtObject *item0, ...);
 size_t ut_list_get_length(UtObject *object);
 
 /// Gets the element at the given [index] in [object].
+///
 /// !return-ref
 UtObject *ut_list_get_element(UtObject *object, size_t index);
 
 /// Gets the first element in [object].
+///
 /// !return-ref
 UtObject *ut_list_get_first(UtObject *object);
 
 /// Gets the last element in [object].
+///
 /// !return-ref
 UtObject *ut_list_get_last(UtObject *object);
 
@@ -64,11 +70,14 @@ UtObject *ut_list_get_last(UtObject *object);
 /// of copying. This means any updates to [object] will also occur in the
 /// sublist. If this behaviour is not desired, then use [ut_list_copy] to ensure
 /// the returned sublist has separate content. Passing a range that is not valid
-/// will trigger assertions. !return-ref
+/// will trigger assertions.
+///
+/// !return-ref
 UtObject *ut_list_get_sublist(UtObject *object, size_t start, size_t count);
 
 /// Creates a new list containing the same contents as [object].
 /// If [object] was immutable, the new list will be mutable.
+///
 /// !return-ref
 UtObject *ut_list_copy(UtObject *object);
 
@@ -84,6 +93,7 @@ void ut_list_append(UtObject *object, UtObject *item);
 /// ```c
 /// ut_list_append_take(list, ut_string_new("Hello"));
 /// ```
+///
 /// !take-ref item
 void ut_list_append_take(UtObject *object, UtObject *item);
 
@@ -99,6 +109,7 @@ void ut_list_prepend(UtObject *object, UtObject *item);
 /// ```c
 /// ut_list_prepend_take(list, ut_string_new("Hello"));
 /// ```
+///
 /// !take-ref item
 void ut_list_prepend_take(UtObject *object, UtObject *item);
 
@@ -117,6 +128,7 @@ void ut_list_insert(UtObject *object, size_t index, UtObject *item);
 /// ```c
 /// ut_list_insert_take(list, 3, ut_string_new("Hello"));
 /// ```
+///
 /// !take-ref item
 void ut_list_insert_take(UtObject *object, size_t index, UtObject *item);
 

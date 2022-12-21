@@ -6,6 +6,7 @@
 #pragma once
 
 /// Creates a new [UtUint8] object that contains [value].
+///
 /// !return-ref
 UtObject *ut_uint8_new(uint8_t value);
 

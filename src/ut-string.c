@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include "ut-string-private.h"
 #include "ut.h"
 
 int ut_string_id = 0;
@@ -223,7 +224,7 @@ void ut_string_append_code_point(UtObject *object, uint32_t code_point) {
   string_interface->append_code_point(object, code_point);
 }
 
-char *ut_string_to_string(UtObject *object) {
+char *_ut_string_to_string(UtObject *object) {
   UtObjectRef string = ut_string_new("\"");
   for (const char *c = ut_string_get_text(object); *c != '\0'; c++) {
     if (*c == 0x7) {
@@ -260,7 +261,7 @@ char *ut_string_to_string(UtObject *object) {
   return ut_string_take_text(string);
 }
 
-bool ut_string_equal(UtObject *object, UtObject *other) {
+bool _ut_string_equal(UtObject *object, UtObject *other) {
   if (!ut_object_implements_string(other)) {
     return false;
   }
@@ -268,7 +269,7 @@ bool ut_string_equal(UtObject *object, UtObject *other) {
                           ut_string_get_text(other));
 }
 
-int ut_string_hash(UtObject *object) {
+int _ut_string_hash(UtObject *object) {
   int hash = 0;
   for (const char *c = ut_string_get_text(object); *c != '\0'; c++) {
     hash = hash * 31 + *c;

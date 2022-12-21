@@ -7,9 +7,12 @@
 #pragma once
 
 /// Creates a new [UtWaylandClient] object.
+///
+/// !return-type UtWaylandClient
 /// !return-ref
 UtObject *ut_wayland_client_new();
 
+/// Connect the [object] to the Wayland server.
 void ut_wayland_client_connect(UtObject *object);
 
 UtObject *ut_wayland_client_sync(UtObject *object,

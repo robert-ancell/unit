@@ -367,12 +367,14 @@ typedef enum {
 /// Creates a new [UtX11Client] object.
 /// [event_callbacks] should be set with functions for the events you wish to
 /// consume. [error_callback] is used to detect errors returns from the X
-/// server. !return-ref
+/// server.
+///
+/// !return-ref
 UtObject *ut_x11_client_new(const UtX11EventCallbacks *event_callbacks,
                             UtX11ClientErrorCallback error_callback,
                             void *user_data, UtObject *cancel);
 
-/// Connect the [UtX11Client] to the X server.
+/// Connect the [object] to the X server.
 /// [callback] is called when the connection is completed.
 void ut_x11_client_connect(UtObject *object,
                            UtX11ClientConnectCallback callback, void *user_data,
@@ -384,11 +386,15 @@ const char *ut_x11_client_get_vendor(UtObject *object);
 
 /// Returns the pixmap formats supported by the X server.
 /// This value is set once [ut_x11_client_connect] has completed.
+///
+/// !return-type UtList
 /// !return-element-type UtX11PixmapFormat
 UtObject *ut_x11_client_get_pixmap_formats(UtObject *object);
 
 /// Returns the screens provided by the X server.
 /// This value is set once [ut_x11_client_connect] has completed.
+///
+/// !return-type UtList
 /// !return-element-type UtX11Screen
 UtObject *ut_x11_client_get_screens(UtObject *object);
 

@@ -5,6 +5,7 @@
 #pragma once
 
 /// Creates a new [UtNull] object.
+///
 /// !return-ref
 UtObject *ut_null_new();
 

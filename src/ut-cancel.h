@@ -5,6 +5,7 @@
 #pragma once
 
 /// Creates a new [UtCancel] object.
+///
 /// !return-ref
 UtObject *ut_cancel_new();
 

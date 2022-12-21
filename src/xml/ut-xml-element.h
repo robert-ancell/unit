@@ -5,6 +5,7 @@
 #pragma once
 
 /// Creates a new [UtXmlElement] with [name], [attributes] and [content].
+///
 /// !arg-type attributes UtMap
 /// !arg-type content UtList
 /// !return-type UtXmlElement

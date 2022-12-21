@@ -6,6 +6,7 @@
 #pragma once
 
 /// Creates a new [UtUint32] object that contains [value].
+///
 /// !return-ref
 UtObject *ut_uint32_new(uint32_t value);
 

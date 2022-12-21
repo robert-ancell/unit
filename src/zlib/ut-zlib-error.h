@@ -5,6 +5,7 @@
 #pragma once
 
 /// Creates a new Zlib error.
+///
 /// !return-ref
 /// !return-type UtZlibError
 UtObject *ut_zlib_error_new();

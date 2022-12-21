@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <stdlib.h>
 
+#include "ut-string-private.h"
 #include "ut.h"
 
 typedef struct {
@@ -26,9 +27,9 @@ static UtStringInterface string_interface = {
 
 static UtObjectInterface object_interface = {
     .type_name = "UtConstantUtf8String",
-    .to_string = ut_string_to_string,
-    .equal = ut_string_equal,
-    .hash = ut_string_hash,
+    .to_string = _ut_string_to_string,
+    .equal = _ut_string_equal,
+    .hash = _ut_string_hash,
     .interfaces = {{&ut_string_id, &string_interface}, {NULL, NULL}}};
 
 UtObject *ut_constant_utf8_string_new(const char *text) {

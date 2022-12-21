@@ -5,11 +5,13 @@
 #pragma once
 
 /// Creates a new [UtXmlDocument] with the given [root] element.
+///
 /// !return-type UtXmlDocument
 /// !return-ref
 UtObject *ut_xml_document_new(UtObject *root);
 
 /// Creates a new [UtXmlDocument] from the given XML [text].
+///
 /// !return-type UtXmlDocument
 /// !return-ref
 UtObject *ut_xml_document_new_from_text(const char *text);
