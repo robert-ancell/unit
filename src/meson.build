@@ -80,6 +80,7 @@ ut_sources = [
   'ut-string.c',
   'ut-string-array.c',
   'ut-string-list.c',
+  'ut-string-subarray.c',
   'ut-tcp-server-socket.c',
   'ut-tcp-socket.c',
   'ut-udp-datagram.c',
