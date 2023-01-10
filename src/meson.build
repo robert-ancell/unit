@@ -1,4 +1,17 @@
 ut_sources = [
+  'asn1/ut-asn1-ber-decoder.c',
+  'asn1/ut-asn1-ber-encoder.c',
+  'asn1/ut-asn1-boolean-type.c',
+  'asn1/ut-asn1-integer-type.c',
+  'asn1/ut-asn1-module-definition.c',
+  'asn1/ut-asn1-null-type.c',
+  'asn1/ut-asn1-octet-string-type.c',
+  'asn1/ut-asn1-sequence-of-type.c',
+  'asn1/ut-asn1-sequence-type.c',
+  'asn1/ut-asn1-string-type.c',
+  'asn1/ut-asn1-tagged-type.c',
+  'asn1/ut-asn1-type-assignment.c',
+  'asn1/ut-asn1-value-assignment.c',
   'deflate/ut-deflate-decoder.c',
   'deflate/ut-deflate-error.c',
   'dbus/ut-dbus-array.c',
@@ -237,6 +250,21 @@ json_test = executable('ut-json-test',
                        'json/ut-json-test.c',
                        link_with: ut_lib)
 test('JSON', json_test)
+
+asn1_test = executable('ut-asn1-test',
+                       'asn1/ut-asn1-test.c',
+                       link_with: ut_lib)
+test('ASN.1', asn1_test)
+
+asn1_ber_encoder_test = executable('ut-asn1-ber-encoder-test',
+                                   'asn1/ut-asn1-ber-encoder-test.c',
+                                   link_with: ut_lib)
+test('ASN.1 BER encoder', asn1_test)
+
+asn1_ber_decoder_test = executable('ut-asn1-ber-decoder-test',
+                                   'asn1/ut-asn1-ber-decoder-test.c',
+                                   link_with: ut_lib)
+test('ASN.1 BER decoder', asn1_test)
 
 deflate_decoder_test = executable('ut-deflate-decoder-test',
                                   'deflate/ut-deflate-decoder-test.c',
