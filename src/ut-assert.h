@@ -62,6 +62,14 @@ void _ut_assert_cstring_equal(const char *file, int line, const char *a_name,
                               const char *a_value, const char *b_name,
                               const char *b_value);
 
+/// Asserts that the [UtBitList] object [a] has the same contents a the
+/// binary string [b_bin].
+#define ut_assert_bit_list_equal_bin(a, b_bin)                                 \
+  _ut_assert_bit_list_equal_bin(__FILE__, __LINE__, #a, a, b_bin)
+void _ut_assert_bit_list_equal_bin(const char *file, int line,
+                                   const char *a_name, UtObject *a_value,
+                                   const char *b_bin);
+
 /// Asserts that the [UtUint8List] object [a] has the same contents a the C
 /// array [b].
 #define ut_assert_uint8_list_equal(a, b, b_length)                             \

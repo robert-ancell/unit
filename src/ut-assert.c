@@ -115,11 +115,12 @@ void _ut_assert_equal(const char *file, int line, const char *a_name,
 
 void _ut_assert_is_error(const char *file, int line, const char *name,
                          UtObject *value) {
-  if (ut_object_implements_error(value)) {
+  if (value != NULL && ut_object_implements_error(value)) {
     return;
   }
 
-  ut_cstring_ref value_string = ut_object_to_string(value);
+  ut_cstring_ref value_string =
+      value != NULL ? ut_object_to_string(value) : ut_cstring_new("(NULL)");
   fprintf(stderr,
           "%s:%d Object %s is not an error:\n"
           "  %s\n",
@@ -200,6 +201,37 @@ void _ut_assert_cstring_equal(const char *file, int line, const char *a_name,
     fprintf(stderr, " ");
   }
   fprintf(stderr, "^\n");
+
+  abort();
+}
+
+void _ut_assert_bit_list_equal_bin(const char *file, int line,
+                                   const char *a_name, UtObject *a_value,
+                                   const char *b_bin) {
+  UtObjectRef b_value = ut_bit_list_new_from_bin_string(b_bin);
+  size_t length = ut_list_get_length(a_value);
+  if (length == ut_list_get_length(b_value)) {
+    bool match = true;
+    for (size_t i = 0; i < length; i++) {
+      if (ut_bit_list_get_element(a_value, i) !=
+          ut_bit_list_get_element(b_value, i)) {
+        match = false;
+        break;
+      }
+    }
+
+    if (match) {
+      return;
+    }
+  }
+
+  ut_cstring_ref a_value_string = ut_object_to_string(a_value);
+  ut_cstring_ref b_value_string = ut_object_to_string(b_value);
+  fprintf(stderr,
+          "%s:%d List %s doesn't have expected content:\n"
+          "  %s\n"
+          "  %s\n",
+          file, line, a_name, a_value_string, b_value_string);
 
   abort();
 }

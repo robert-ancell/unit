@@ -1,3 +1,7 @@
+#include "asn1/ut-asn1-ber-decoder.h"
+#include "asn1/ut-asn1-ber-encoder.h"
+#include "asn1/ut-asn1-error.h"
+#include "asn1/ut-asn1-tag.h"
 #include "dbus/ut-dbus-array.h"
 #include "dbus/ut-dbus-client.h"
 #include "dbus/ut-dbus-dict.h"
