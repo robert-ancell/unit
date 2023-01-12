@@ -105,4 +105,6 @@ void ut_uint8_list_insert(UtObject *object, size_t index, uint8_t value);
 void ut_uint8_list_insert_block(UtObject *object, size_t index,
                                 const uint8_t *data, size_t data_length);
 
+char *ut_uint8_list_to_hex_string(UtObject *object);
+
 bool ut_object_implements_uint8_list(UtObject *object);

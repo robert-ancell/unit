@@ -261,6 +261,28 @@ void ut_uint8_list_insert_block(UtObject *object, size_t index,
   uint8_list_interface->insert(object, index, data, data_length);
 }
 
+char *ut_uint8_list_to_hex_string(UtObject *object) {
+  UtUint8ListInterface *uint8_list_interface =
+      ut_object_get_interface(object, &ut_uint8_list_id);
+  assert(uint8_list_interface != NULL);
+
+  size_t length = ut_list_get_length(object);
+  const uint8_t *data = ut_uint8_list_get_data(object);
+  UtObjectRef hex_string = ut_string_new("");
+  if (data != NULL) {
+    for (size_t i = 0; i < length; i++) {
+      ut_string_append_printf(hex_string, "%02x", data[i]);
+    }
+  } else {
+    for (size_t i = 0; i < length; i++) {
+      ut_string_append_printf(hex_string, "%02x",
+                              ut_uint8_list_get_element(object, i));
+    }
+  }
+
+  return ut_string_take_text(hex_string);
+}
+
 bool ut_object_implements_uint8_list(UtObject *object) {
   return ut_object_get_interface(object, &ut_uint8_list_id) != NULL;
 }

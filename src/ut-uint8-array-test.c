@@ -10,6 +10,8 @@ int main(int argc, char **argv) {
 
   UtObjectRef hex_list = ut_uint8_array_new_from_hex_string("0078ff");
   ut_assert_uint8_list_equal(hex_list, expected_data, 3);
+  ut_cstring_ref hex_string = ut_uint8_list_to_hex_string(hex_list);
+  ut_assert_cstring_equal(hex_string, "0078ff");
 
   UtObjectRef hex_list2 = ut_uint8_array_new_from_hex_string("0078FF");
   ut_assert_uint8_list_equal(hex_list2, expected_data, 3);
