@@ -4,12 +4,21 @@
 #include "ut.h"
 
 int main(int argc, char **argv) {
-  UtObjectRef list = ut_uint8_array_new_from_elements(3, 0x01, 0x02, 0x03);
-  printf("%zi\n", ut_list_get_length(list));
-  printf("%02X\n", ut_uint8_array_get_data(list)[1]);
-  printf("%s\n", ut_object_get_type_name(list));
-  ut_cstring_ref list_string = ut_object_to_string(list);
-  printf("list: %s\n", list_string);
+  UtObjectRef list = ut_uint8_array_new_from_elements(3, 0x00, 0x78, 0xff);
+  uint8_t expected_data[] = {0x00, 0x78, 0xff};
+  ut_assert_uint8_list_equal(list, expected_data, 3);
+
+  UtObjectRef hex_list = ut_uint8_array_new_from_hex_string("0078ff");
+  ut_assert_uint8_list_equal(hex_list, expected_data, 3);
+
+  UtObjectRef hex_list2 = ut_uint8_array_new_from_hex_string("0078FF");
+  ut_assert_uint8_list_equal(hex_list2, expected_data, 3);
+
+  UtObjectRef hex_list3 = ut_uint8_array_new_from_hex_string("0078F");
+  ut_assert_is_error(hex_list3);
+
+  UtObjectRef hex_list4 = ut_uint8_array_new_from_hex_string("0078FG");
+  ut_assert_is_error(hex_list4);
 
   return 0;
 }

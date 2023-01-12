@@ -20,6 +20,8 @@ UtObject *ut_uint8_list_new();
 
 UtObject *ut_uint8_list_new_from_elements(size_t length, ...);
 
+UtObject *ut_uint8_list_new_from_hex_string(const char *hex);
+
 uint8_t ut_uint8_list_get_element(UtObject *object, size_t index);
 
 int8_t ut_uint8_list_get_int8(UtObject *object, size_t index);

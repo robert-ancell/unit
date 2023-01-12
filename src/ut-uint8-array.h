@@ -14,6 +14,8 @@ UtObject *ut_uint8_array_new_from_elements(size_t length, ...);
 
 UtObject *ut_uint8_array_new_from_va_elements(size_t length, va_list ap);
 
+UtObject *ut_uint8_array_new_from_hex_string(const char *hex);
+
 uint8_t *ut_uint8_array_get_data(UtObject *object);
 
 bool ut_object_is_uint8_array(UtObject *object);

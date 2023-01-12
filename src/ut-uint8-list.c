@@ -15,6 +15,10 @@ UtObject *ut_uint8_list_new_from_elements(size_t length, ...) {
   va_end(ap);
 }
 
+UtObject *ut_uint8_list_new_from_hex_string(const char *hex) {
+  return ut_uint8_array_new_from_hex_string(hex);
+}
+
 uint8_t ut_uint8_list_get_element(UtObject *object, size_t index) {
   UtUint8ListInterface *uint8_list_interface =
       ut_object_get_interface(object, &ut_uint8_list_id);
