@@ -195,6 +195,37 @@ void _ut_assert_uint8_list_equal(const char *file, int line, const char *a_name,
   abort();
 }
 
+void _ut_assert_uint8_list_equal_hex(const char *file, int line,
+                                     const char *a_name, UtObject *a_value,
+                                     const char *b_hex) {
+  UtObjectRef b_value = ut_uint8_list_new_from_hex_string(b_hex);
+  size_t length = ut_list_get_length(a_value);
+  if (length == ut_list_get_length(b_value)) {
+    bool match = true;
+    for (size_t i = 0; i < length; i++) {
+      if (ut_uint8_list_get_element(a_value, i) !=
+          ut_uint8_list_get_element(b_value, i)) {
+        match = false;
+        break;
+      }
+    }
+
+    if (match) {
+      return;
+    }
+  }
+
+  ut_cstring_ref a_value_string = ut_object_to_string(a_value);
+  ut_cstring_ref b_value_string = ut_object_to_string(b_value);
+  fprintf(stderr,
+          "%s:%d List %s doesn't have expected content:\n"
+          "  %s\n"
+          "  %s\n",
+          file, line, a_name, a_value_string, b_value_string);
+
+  abort();
+}
+
 void _ut_assert_uint8_array_equal(const char *file, int line,
                                   const char *a_name, const uint8_t *a_value,
                                   size_t a_length, const uint8_t *b_value,

@@ -15,8 +15,7 @@ static void echo_listen_cb(void *user_data, UtObject *socket) {
 
 // Get the response from the echo server
 static size_t read_cb(void *user_data, UtObject *data, bool complete) {
-  uint8_t expected_data[8] = {0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef};
-  ut_assert_uint8_list_equal(data, expected_data, 8);
+  ut_assert_uint8_list_equal_hex(data, "0123456789abcdef");
 
   ut_event_loop_return(NULL);
 
@@ -29,8 +28,7 @@ static void connect_cb(void *user_data) {
   ut_input_stream_read(socket, read_cb, NULL, NULL);
 
   // Send a message.
-  UtObjectRef data = ut_uint8_array_new_from_elements(8, 0x01, 0x23, 0x45, 0x67,
-                                                      0x89, 0xab, 0xcd, 0xef);
+  UtObjectRef data = ut_uint8_array_new_from_hex_string("0123456789abcdef");
   ut_tcp_socket_send(socket, data);
 }
 

@@ -22,8 +22,7 @@ static size_t read_cb(void *user_data, UtObject *datagrams, bool complete) {
   UtObjectRef datagram = ut_list_get_element(datagrams, 0);
   UtObject *data = ut_udp_datagram_get_data(datagram);
 
-  uint8_t expected_data[8] = {0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef};
-  ut_assert_uint8_list_equal(data, expected_data, 8);
+  ut_assert_uint8_list_equal_hex(data, "0123456789abcdef");
 
   ut_event_loop_return(NULL);
 

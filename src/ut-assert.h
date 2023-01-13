@@ -40,13 +40,21 @@ void _ut_assert_cstring_equal(const char *file, int line, const char *a_name,
                               const char *a_value, const char *b_name,
                               const char *b_value);
 
-/// Asserts that the two [UtUint8List] object [a] has the same contents a the C
+/// Asserts that the [UtUint8List] object [a] has the same contents a the C
 /// array [b].
 #define ut_assert_uint8_list_equal(a, b, b_length)                             \
   _ut_assert_uint8_list_equal(__FILE__, __LINE__, #a, a, b, b_length)
 void _ut_assert_uint8_list_equal(const char *file, int line, const char *a_name,
                                  UtObject *a_value, uint8_t *b_value,
                                  size_t b_length);
+
+/// Asserts that the [UtUint8List] object [a] has the same contents a the
+/// hexadecimal string [b_hex].
+#define ut_assert_uint8_list_equal_hex(a, b_hex)                               \
+  _ut_assert_uint8_list_equal_hex(__FILE__, __LINE__, #a, a, b_hex)
+void _ut_assert_uint8_list_equal_hex(const char *file, int line,
+                                     const char *a_name, UtObject *a_value,
+                                     const char *b_hex);
 
 /// Asserts that the two C arrays [a] and [b] have the same contents.
 #define ut_assert_uint8_array_equal(a, a_length, b, b_length)                  \

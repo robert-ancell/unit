@@ -26,11 +26,9 @@ int main(int argc, char **argv) {
       "f0debc9a78563412f0debc9a78563412f0debc9a78563412f0debc9a78563412");
   UtObjectRef big256_from_list = ut_uint256_new_from_uint8_list(list);
   UtObjectRef out_list = ut_uint256_to_uint8_list(big256_from_list);
-  uint8_t big256_data[32] = {0xf0, 0xde, 0xbc, 0x9a, 0x78, 0x56, 0x34, 0x12,
-                             0xf0, 0xde, 0xbc, 0x9a, 0x78, 0x56, 0x34, 0x12,
-                             0xf0, 0xde, 0xbc, 0x9a, 0x78, 0x56, 0x34, 0x12,
-                             0xf0, 0xde, 0xbc, 0x9a, 0x78, 0x56, 0x34, 0x12};
-  ut_assert_uint8_list_equal(out_list, big256_data, 32);
+  ut_assert_uint8_list_equal_hex(
+      out_list,
+      "f0debc9a78563412f0debc9a78563412f0debc9a78563412f0debc9a78563412");
 
   UtObjectRef big256copy = ut_uint256_copy(big256);
   ut_assert_equal(big256copy, big256);
