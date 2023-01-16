@@ -51,7 +51,8 @@ static void test_decode() {
                                                      0, 0,       // '_'
                                                      1, 1, 1, 1, // 'B'
                                                      1, 1, 0,    // 'E'
-                                                     0, 1);      // 'D'
+                                                     0, 1        // 'D'
+  );
 
   UtObjectRef decoder = ut_huffman_decoder_new(symbol_weights);
 

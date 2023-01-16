@@ -48,6 +48,7 @@ ut_sources = [
   'ut-hash-table.c',
   'ut-huffman-code.c',
   'ut-huffman-decoder.c',
+  'ut-huffman-encoder.c',
   'ut-image-buffer.c',
   'ut-input-stream.c',
   'ut-input-stream-multiplexer.c',
@@ -242,7 +243,12 @@ test('JSON', json_test)
 huffman_decoder_test = executable('ut-huffman-decoder-test',
                                   'ut-huffman-decoder-test.c',
                                   link_with: ut_lib)
-test('Huffman', huffman_decoder_test)
+test('Huffman Decoder', huffman_decoder_test)
+
+huffman_encoder_test = executable('ut-huffman-encoder-test',
+                                  'ut-huffman-encoder-test.c',
+                                  link_with: ut_lib)
+test('Huffman Encoder', huffman_encoder_test)
 
 deflate_decoder_test = executable('ut-deflate-decoder-test',
                                   'deflate/ut-deflate-decoder-test.c',

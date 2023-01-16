@@ -25,11 +25,6 @@ void ut_huffman_code_generate(UtObject *symbol_weights, uint16_t *codes,
   size_t n_nodes = 0;
   for (size_t i = 0; i < symbols_length; i++) {
     double weight = ut_float64_list_get_element(symbol_weights, i);
-    // Ignore zero weighted symbols - these don't need to be encoded.
-    if (weight == 0) {
-      continue;
-    }
-
     nodes[n_nodes].parent = -1;
     nodes[n_nodes].child0 = -1;
     nodes[n_nodes].child1 = -1;
