@@ -72,3 +72,11 @@ void _ut_assert_uint16_array_equal(const char *file, int line,
                                    const char *a_name, const uint16_t *a_value,
                                    size_t a_length, const uint16_t *b_value,
                                    size_t b_length);
+
+/// Asserts that the [UtUint32List] object [a] has the same contents a the C
+/// array [b].
+#define ut_assert_uint32_list_equal(a, b, b_length)                            \
+  _ut_assert_uint32_list_equal(__FILE__, __LINE__, #a, a, b, b_length)
+void _ut_assert_uint32_list_equal(const char *file, int line,
+                                  const char *a_name, UtObject *a_value,
+                                  uint32_t *b_value, size_t b_length);

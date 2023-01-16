@@ -316,3 +316,40 @@ void _ut_assert_uint16_array_equal(const char *file, int line,
 
   abort();
 }
+
+void _ut_assert_uint32_list_equal(const char *file, int line,
+                                  const char *a_name, UtObject *a_value,
+                                  uint32_t *b_value, size_t b_length) {
+  if (ut_list_get_length(a_value) == b_length) {
+    bool match = true;
+    for (size_t i = 0; i < b_length; i++) {
+      if (ut_uint32_list_get_element(a_value, i) != b_value[i]) {
+        match = false;
+        break;
+      }
+    }
+
+    if (match) {
+      return;
+    }
+  }
+
+  UtObjectRef b_value_string = ut_string_new("<uint32>[");
+  for (size_t i = 0; i < b_length; i++) {
+    if (i != 0) {
+      ut_string_append(b_value_string, ", ");
+    }
+    ut_string_append_printf(b_value_string, "%d", b_value[i]);
+  }
+  ut_string_append(b_value_string, "]");
+
+  ut_cstring_ref a_value_string = ut_object_to_string(a_value);
+  fprintf(stderr,
+          "%s:%d List %s doesn't have expected content:\n"
+          "  %s\n"
+          "  %s\n",
+          file, line, a_name, a_value_string,
+          ut_string_get_text(b_value_string));
+
+  abort();
+}
