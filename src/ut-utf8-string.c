@@ -4,7 +4,6 @@
 #include <sys/types.h>
 
 #include "ut-string-private.h"
-#include "ut-uint8-subarray.h"
 #include "ut.h"
 
 typedef struct {
@@ -59,8 +58,7 @@ static char *ut_utf8_string_take_text(UtObject *object) {
 
 static UtObject *ut_utf8_string_get_utf8(UtObject *object) {
   UtUtf8String *self = (UtUtf8String *)object;
-  return ut_uint8_subarray_new(self->data, 0,
-                               ut_list_get_length(self->data) - 1);
+  return ut_list_get_sublist(self->data, 0, ut_list_get_length(self->data) - 1);
 }
 
 static void ut_utf8_string_clear(UtObject *object) {
