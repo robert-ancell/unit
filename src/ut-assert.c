@@ -99,15 +99,16 @@ void _ut_assert_is_not_error(const char *file, int line, const char *name,
 }
 
 void _ut_assert_int_equal(const char *file, int line, const char *a_name,
-                          int a_value, const char *b_name, int b_value) {
+                          int64_t a_value, const char *b_name,
+                          int64_t b_value) {
   if (a_value == b_value) {
     return;
   }
 
   fprintf(stderr,
           "%s:%d Integers %s and %s are not equal:\n"
-          "  %d\n"
-          "  %d\n",
+          "  %li\n"
+          "  %li\n",
           file, line, a_name, b_name, a_value, b_value);
 
   abort();
