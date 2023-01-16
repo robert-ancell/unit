@@ -174,8 +174,8 @@ cstring_test = executable('ut-cstring-test',
 test('C String', cstring_test)
 
 uint256_test = executable('ut-uint256-test',
-                              'ut-uint256-test.c',
-                              link_with: ut_lib)
+                          'ut-uint256-test.c',
+                          link_with: ut_lib)
 test('Uint256', uint256_test)
 
 uint8_array_test = executable('ut-uint8-array-test',
