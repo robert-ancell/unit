@@ -238,6 +238,11 @@ json_test = executable('ut-json-test',
                        link_with: ut_lib)
 test('JSON', json_test)
 
+huffman_decoder_test = executable('ut-huffman-decoder-test',
+                                  'ut-huffman-decoder-test.c',
+                                  link_with: ut_lib)
+test('Huffman', huffman_decoder_test)
+
 deflate_decoder_test = executable('ut-deflate-decoder-test',
                                   'deflate/ut-deflate-decoder-test.c',
                                   link_with: ut_lib)
