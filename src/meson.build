@@ -1,6 +1,4 @@
 ut_sources = [
-  'deflate/ut-deflate-decoder.c',
-  'deflate/ut-deflate-error.c',
   'dbus/ut-dbus-array.c',
   'dbus/ut-dbus-auth-client.c',
   'dbus/ut-dbus-auth-server.c',
@@ -15,6 +13,8 @@ ut_sources = [
   'dbus/ut-dbus-signature.c',
   'dbus/ut-dbus-struct.c',
   'dbus/ut-dbus-variant.c',
+  'deflate/ut-deflate-decoder.c',
+  'deflate/ut-deflate-error.c',
   'dns/ut-dns-client.c',
   'gzip/ut-gzip-decoder.c',
   'gzip/ut-gzip-error.c',
