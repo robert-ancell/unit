@@ -12,14 +12,6 @@ typedef struct {
   size_t max_code_width;
 } UtHuffmanDecoder;
 
-static void ut_huffman_decoder_init(UtObject *object) {
-  UtHuffmanDecoder *self = (UtHuffmanDecoder *)object;
-  self->code_table_data = NULL;
-  self->code_tables = NULL;
-  self->min_code_width = 0;
-  self->max_code_width = 0;
-}
-
 static void ut_huffman_decoder_cleanup(UtObject *object) {
   UtHuffmanDecoder *self = (UtHuffmanDecoder *)object;
   free(self->code_table_data);
@@ -27,7 +19,6 @@ static void ut_huffman_decoder_cleanup(UtObject *object) {
 }
 
 static UtObjectInterface object_interface = {.type_name = "UtHuffmanDecoder",
-                                             .init = ut_huffman_decoder_init,
                                              .cleanup =
                                                  ut_huffman_decoder_cleanup,
                                              .interfaces = {{NULL, NULL}}};
