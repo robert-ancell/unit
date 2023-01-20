@@ -27,6 +27,7 @@ ut_sources = [
   'huffman/ut-huffman-decoder.c',
   'huffman/ut-huffman-encoder.c',
   'png/ut-png-decoder.c',
+  'png/ut-png-encoder.c',
   'png/ut-png-error.c',
   'png/ut-png-image.c',
   'json/ut-json.c',
@@ -294,7 +295,12 @@ test('GZip Encoder', gzip_encoder_test)
 png_decoder_test = executable('ut-png-decoder-test',
                               'png/ut-png-decoder-test.c',
                               link_with: ut_lib)
-test('PNG', png_decoder_test)
+test('PNG Decoder', png_decoder_test)
+
+png_encoder_test = executable('ut-png-encoder-test',
+                              'png/ut-png-encoder-test.c',
+                              link_with: ut_lib)
+test('PNG Encoder', png_encoder_test)
 
 event_loop_test = executable('ut-event-loop-test',
                              'ut-event-loop-test.c',

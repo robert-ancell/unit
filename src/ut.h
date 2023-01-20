@@ -21,6 +21,7 @@
 #include "huffman/ut-huffman-decoder.h"
 #include "huffman/ut-huffman-encoder.h"
 #include "png/ut-png-decoder.h"
+#include "png/ut-png-encoder.h"
 #include "png/ut-png-error.h"
 #include "png/ut-png-image.h"
 #include "ut-assert.h"

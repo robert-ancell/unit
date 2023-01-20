@@ -34,6 +34,10 @@ uint8_t ut_png_image_get_bit_depth(UtObject *object);
 
 UtPngColourType ut_png_image_get_colour_type(UtObject *object);
 
+size_t ut_png_image_get_n_channels(UtObject *object);
+
+size_t ut_png_image_get_row_stride(UtObject *object);
+
 UtObject *ut_png_image_get_data(UtObject *object);
 
 bool ut_object_is_png_image(UtObject *object);

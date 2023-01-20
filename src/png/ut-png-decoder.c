@@ -1,26 +1,7 @@
 #include <assert.h>
 
+#include "ut-png.h"
 #include "ut.h"
-
-typedef enum {
-  IMAGE_HEADER = 0x49484452,
-  PALETTE = 0x504c5445,
-  IMAGE_DATA = 0x49444154,
-  IMAGE_END = 0x49454e44,
-  CHROMATICITIES = 0x6348524d,
-  GAMMA = 0x67414d41,
-  ICC_PROFILE = 0x69434350,
-  SIGNIFICANT_BITS = 0x73424954,
-  STANDARD_RGB = 0x73524742,
-  BACKGROUND = 0x624b4744,
-  HISTOGRAM = 0x68495354,
-  PHYSICAL_DIMENSIONS = 0x70485973,
-  SUGGESTED_PALETTE = 0x73504c54,
-  MODIFICATION_TIME = 0x74494d45,
-  TEXT = 0x74455874,
-  COMPRESSED_TEXT = 0x7a545874,
-  INTERNATIONAL_TEXT = 0x69545874
-} ChunkType;
 
 typedef enum {
   DECODER_STATE_SIGNATURE,
@@ -506,7 +487,7 @@ static size_t decode_chunk(UtPngDecoder *self, UtObject *data, size_t offset) {
     return 0;
   }
 
-  ChunkType type = ut_uint8_list_get_uint32_be(data, offset + 4);
+  UtPngChunkType type = ut_uint8_list_get_uint32_be(data, offset + 4);
 
   size_t chunk_data_offset = offset + 8;
   UtObjectRef chunk_data =
@@ -521,46 +502,46 @@ static size_t decode_chunk(UtPngDecoder *self, UtObject *data, size_t offset) {
   }
 
   switch (type) {
-  case IMAGE_HEADER:
+  case UT_PNG_CHUNK_TYPE_IMAGE_HEADER:
     decode_image_header(self, chunk_data);
     break;
-  case PALETTE:
+  case UT_PNG_CHUNK_TYPE_PALETTE:
     decode_palette(self, chunk_data);
     break;
-  case IMAGE_DATA:
+  case UT_PNG_CHUNK_TYPE_IMAGE_DATA:
     decode_image_data(self, chunk_data);
     break;
-  case CHROMATICITIES:
+  case UT_PNG_CHUNK_TYPE_CHROMATICITIES:
     break;
-  case GAMMA:
+  case UT_PNG_CHUNK_TYPE_GAMMA:
     break;
-  case ICC_PROFILE:
+  case UT_PNG_CHUNK_TYPE_ICC_PROFILE:
     break;
-  case SIGNIFICANT_BITS:
+  case UT_PNG_CHUNK_TYPE_SIGNIFICANT_BITS:
     break;
-  case STANDARD_RGB:
+  case UT_PNG_CHUNK_TYPE_STANDARD_RGB:
     break;
-  case IMAGE_END:
+  case UT_PNG_CHUNK_TYPE_IMAGE_END:
     decode_image_end(self, chunk_data);
     break;
-  case BACKGROUND:
+  case UT_PNG_CHUNK_TYPE_BACKGROUND:
     decode_background(self, chunk_data);
     break;
-  case HISTOGRAM:
+  case UT_PNG_CHUNK_TYPE_HISTOGRAM:
     break;
-  case PHYSICAL_DIMENSIONS:
+  case UT_PNG_CHUNK_TYPE_PHYSICAL_DIMENSIONS:
     decode_physical_dimensions(self, chunk_data);
     break;
-  case SUGGESTED_PALETTE:
+  case UT_PNG_CHUNK_TYPE_SUGGESTED_PALETTE:
     break;
-  case MODIFICATION_TIME:
+  case UT_PNG_CHUNK_TYPE_MODIFICATION_TIME:
     decode_modification_time(self, chunk_data);
     break;
-  case TEXT:
+  case UT_PNG_CHUNK_TYPE_TEXT:
     break;
-  case COMPRESSED_TEXT:
+  case UT_PNG_CHUNK_TYPE_COMPRESSED_TEXT:
     break;
-  case INTERNATIONAL_TEXT:
+  case UT_PNG_CHUNK_TYPE_INTERNATIONAL_TEXT:
     break;
   }
 

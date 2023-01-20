@@ -6,7 +6,7 @@
 int main(int argc, char **argv) {
   UtObjectRef greyscale_1x1_data = ut_uint8_list_new_from_hex_string(
       "89504e470d0a1a0a0000000d49484452000000010000000108000000003a7e9b55000000"
-      "0a4944415408d76360000000020001e221bc330000000049454e44ae426082");
+      "0a4944415408996360000000020001f47164a60000000049454e44ae426082");
   UtObjectRef greyscale_1x1_data_stream =
       ut_list_input_stream_new(greyscale_1x1_data);
   UtObjectRef greyscale_1x1_decoder =
@@ -24,7 +24,7 @@ int main(int argc, char **argv) {
 
   UtObjectRef greyscale_2x2_data = ut_uint8_list_new_from_hex_string(
       "89504e470d0a1a0a0000000d494844520000000200000002080000000057dd52f8000000"
-      "0e4944415408d76360a86738f31f000499024bbad1b1310000000049454e44ae426082");
+      "0e4944415408996360a86738f31f000499024bfdba2c2a0000000049454e44ae426082");
   UtObjectRef greyscale_2x2_data_stream =
       ut_list_input_stream_new(greyscale_2x2_data);
   UtObjectRef greyscale_2x2_decoder =
@@ -41,9 +41,9 @@ int main(int argc, char **argv) {
                                  "007fccff");
 
   UtObjectRef rgb_2x2_data = ut_uint8_list_new_from_hex_string(
-      "89504e470d0a1a0a0000000d4948445200000002000000020802000000fdd49a73000000"
-      "164944415408d763f8cfc0c0f09f819181e1ffffff0c001ef604fd48c6091f0000000049"
-      "454e44ae426082");
+      "89504e470d0a1a0a0000000d4948445200000002000000020802000000"
+      "fdd49a730000001149444154089963f8cfc000c60cff8100001fee05fb"
+      "f491978b0000000049454e44ae426082");
   UtObjectRef rgb_2x2_data_stream = ut_list_input_stream_new(rgb_2x2_data);
   UtObjectRef rgb_2x2_decoder = ut_png_decoder_new(rgb_2x2_data_stream);
   UtObjectRef rgb_2x2_image = ut_png_decoder_decode_sync(rgb_2x2_decoder);
@@ -53,7 +53,6 @@ int main(int argc, char **argv) {
   assert(ut_png_image_get_bit_depth(rgb_2x2_image) == 8);
   assert(ut_png_image_get_colour_type(rgb_2x2_image) ==
          UT_PNG_COLOUR_TYPE_TRUECOLOUR);
-  assert(ut_list_get_length(ut_png_image_get_data(rgb_2x2_image)) == 12);
   ut_assert_uint8_list_equal_hex(ut_png_image_get_data(rgb_2x2_image),
                                  "ff000000ff000000ffffffff");
 

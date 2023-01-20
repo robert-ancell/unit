@@ -30,6 +30,22 @@ static const char *colour_type_to_string(UtPngColourType colour_type) {
   }
 }
 
+static size_t get_n_channels(UtPngImage *self) {
+  switch (self->colour_type) {
+  case UT_PNG_COLOUR_TYPE_GREYSCALE:
+  case UT_PNG_COLOUR_TYPE_INDEXED_COLOUR:
+    return 1;
+  case UT_PNG_COLOUR_TYPE_GREYSCALE_WITH_ALPHA:
+    return 2;
+  case UT_PNG_COLOUR_TYPE_TRUECOLOUR:
+    return 3;
+  case UT_PNG_COLOUR_TYPE_TRUECOLOUR_WITH_ALPHA:
+    return 4;
+  default:
+    return 0;
+  }
+}
+
 static void ut_png_image_init(UtObject *object) {
   UtPngImage *self = (UtPngImage *)object;
   self->interlace_method = UT_PNG_INTERLACE_METHOD_NONE;
@@ -128,6 +144,20 @@ UtPngColourType ut_png_image_get_colour_type(UtObject *object) {
   assert(ut_object_is_png_image(object));
   UtPngImage *self = (UtPngImage *)object;
   return self->colour_type;
+}
+
+size_t ut_png_image_get_n_channels(UtObject *object) {
+  assert(ut_object_is_png_image(object));
+  UtPngImage *self = (UtPngImage *)object;
+  return get_n_channels(self);
+}
+
+size_t ut_png_image_get_row_stride(UtObject *object) {
+  assert(ut_object_is_png_image(object));
+  UtPngImage *self = (UtPngImage *)object;
+
+  size_t n_channels = get_n_channels(self);
+  return (((size_t)self->width * self->bit_depth * n_channels) + 7) / 8;
 }
 
 UtObject *ut_png_image_get_data(UtObject *object) {
