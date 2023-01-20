@@ -9,6 +9,7 @@
 #include "dbus/ut-dbus-struct.h"
 #include "dbus/ut-dbus-variant.h"
 #include "deflate/ut-deflate-decoder.h"
+#include "deflate/ut-deflate-encoder.h"
 #include "deflate/ut-deflate-error.h"
 #include "dns/ut-dns-client.h"
 #include "gzip/ut-gzip-decoder.h"

@@ -14,6 +14,7 @@ ut_sources = [
   'dbus/ut-dbus-struct.c',
   'dbus/ut-dbus-variant.c',
   'deflate/ut-deflate-decoder.c',
+  'deflate/ut-deflate-encoder.c',
   'deflate/ut-deflate-error.c',
   'dns/ut-dns-client.c',
   'gzip/ut-gzip-decoder.c',
@@ -260,7 +261,12 @@ test('Huffman Encoder', huffman_encoder_test)
 deflate_decoder_test = executable('ut-deflate-decoder-test',
                                   'deflate/ut-deflate-decoder-test.c',
                                   link_with: ut_lib)
-test('Deflate', deflate_decoder_test)
+test('Deflate Decoder', deflate_decoder_test)
+
+deflate_encoder_test = executable('ut-deflate-encoder-test',
+                                  'deflate/ut-deflate-encoder-test.c',
+                                  link_with: ut_lib)
+test('Deflate Encoder', deflate_encoder_test)
 
 zlib_decoder_test = executable('ut-zlib-decoder-test',
                                'zlib/ut-zlib-decoder-test.c',

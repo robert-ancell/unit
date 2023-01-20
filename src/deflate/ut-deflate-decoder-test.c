@@ -28,7 +28,7 @@ int main(int argc, char **argv) {
   ut_assert_cstring_equal(ut_string_get_text(hello_result_string), "hello");
 
   UtObjectRef hello3_data =
-      ut_uint8_list_new_from_hex_string("cb48cdc9c957c8409000");
+      ut_uint8_list_new_from_hex_string("cb48cdc9c957402201");
   UtObjectRef hello3_data_stream = ut_list_input_stream_new(hello3_data);
   UtObjectRef hello3_decoder = ut_deflate_decoder_new(hello3_data_stream);
   UtObjectRef hello3_result = ut_input_stream_read_sync(hello3_decoder);
