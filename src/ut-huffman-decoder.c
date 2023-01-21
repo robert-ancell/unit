@@ -23,7 +23,8 @@ static UtObjectInterface object_interface = {.type_name = "UtHuffmanDecoder",
                                                  ut_huffman_decoder_cleanup,
                                              .interfaces = {{NULL, NULL}}};
 
-UtObject *ut_huffman_decoder_new(UtObject *symbols, UtObject *code_widths) {
+UtObject *ut_huffman_decoder_new_canonical(UtObject *symbols,
+                                           UtObject *code_widths) {
   UtObject *object = ut_object_new(sizeof(UtHuffmanDecoder), &object_interface);
   UtHuffmanDecoder *self = (UtHuffmanDecoder *)object;
 
