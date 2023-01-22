@@ -46,6 +46,7 @@ ut_sources = [
   'ut-float64-list.c',
   'ut-general-error.c',
   'ut-hash-table.c',
+  'ut-huffman-code.c',
   'ut-huffman-decoder.c',
   'ut-image-buffer.c',
   'ut-input-stream.c',
