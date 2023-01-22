@@ -5,6 +5,8 @@
 
 #pragma once
 
+UtObject *ut_huffman_decoder_new(UtObject *symbols, UtObject *symbol_weights);
+
 UtObject *ut_huffman_decoder_new_canonical(UtObject *symbols,
                                            UtObject *code_widths);
 
