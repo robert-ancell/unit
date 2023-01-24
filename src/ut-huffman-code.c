@@ -20,6 +20,9 @@ void ut_huffman_code_generate(UtObject *symbol_weights, uint16_t *codes,
                               size_t *code_widths) {
   size_t symbols_length = ut_list_get_length(symbol_weights);
 
+  // We only support up to 16 bit symbols.
+  assert(symbols_length <= 0xffff);
+
   // Start tree with leaf nodes for all non-zero weighted elements.
   Node *nodes = malloc(sizeof(Node) * (symbols_length * 2 - 1));
   size_t n_nodes = 0;
@@ -92,7 +95,11 @@ void ut_huffman_code_generate_canonical(UtObject *code_widths,
   size_t n_used = 0;
   for (size_t code_width = 1; n_used < symbols_length; code_width++) {
     for (size_t i = 0; i < symbols_length; i++) {
-      if (code_width == ut_uint8_list_get_element(code_widths, i)) {
+      uint8_t code_width_ = ut_uint8_list_get_element(code_widths, i);
+      // We only support up to 16 bit codes.
+      assert(code_width <= 16);
+
+      if (code_width == code_width_) {
         codes[i] = code;
         code++;
         n_used++;
