@@ -16,10 +16,9 @@ typedef struct {
   double weight;
 } Node;
 
-void ut_huffman_code_generate(UtObject *symbols, UtObject *symbol_weights,
-                              uint16_t *codes, size_t *code_widths) {
-  size_t symbols_length = ut_list_get_length(symbols);
-  assert(ut_list_get_length(symbol_weights) == symbols_length);
+void ut_huffman_code_generate(UtObject *symbol_weights, uint16_t *codes,
+                              size_t *code_widths) {
+  size_t symbols_length = ut_list_get_length(symbol_weights);
 
   // Start tree with leaf nodes for all non-zero weighted elements.
   Node *nodes = malloc(sizeof(Node) * (symbols_length * 2 - 1));

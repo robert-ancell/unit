@@ -40,12 +40,10 @@ static UtObjectInterface object_interface = {.type_name = "UtHuffmanDecoder",
                                                  ut_huffman_decoder_cleanup,
                                              .interfaces = {{NULL, NULL}}};
 
-static UtObject *create_decoder(UtObject *symbols, uint16_t *codes,
+static UtObject *create_decoder(size_t symbols_length, uint16_t *codes,
                                 size_t *code_widths) {
   UtObject *object = ut_object_new(sizeof(UtHuffmanDecoder), &object_interface);
   UtHuffmanDecoder *self = (UtHuffmanDecoder *)object;
-
-  size_t symbols_length = ut_list_get_length(symbols);
 
   self->min_code_width = 17;
   self->max_code_width = 0;
@@ -66,9 +64,8 @@ static UtObject *create_decoder(UtObject *symbols, uint16_t *codes,
        code_width++) {
     uint16_t *code_table = self->code_tables[code_width - 1];
     for (size_t i = 0; i < symbols_length; i++) {
-      uint16_t symbol = ut_uint16_list_get_element(symbols, i);
       if (code_width == code_widths[i]) {
-        code_table[codes[i]] = symbol;
+        code_table[codes[i]] = i;
       }
     }
   }
@@ -76,21 +73,18 @@ static UtObject *create_decoder(UtObject *symbols, uint16_t *codes,
   return object;
 }
 
-UtObject *ut_huffman_decoder_new(UtObject *symbols, UtObject *symbol_weights) {
-  size_t symbols_length = ut_list_get_length(symbols);
-  assert(ut_list_get_length(symbol_weights) == symbols_length);
+UtObject *ut_huffman_decoder_new(UtObject *symbol_weights) {
+  size_t symbols_length = ut_list_get_length(symbol_weights);
 
   uint16_t codes[symbols_length];
   size_t code_widths[symbols_length];
-  ut_huffman_code_generate(symbols, symbol_weights, codes, code_widths);
+  ut_huffman_code_generate(symbol_weights, codes, code_widths);
 
-  return create_decoder(symbols, codes, code_widths);
+  return create_decoder(symbols_length, codes, code_widths);
 }
 
-UtObject *ut_huffman_decoder_new_canonical(UtObject *symbols,
-                                           UtObject *code_widths) {
-  size_t symbols_length = ut_list_get_length(symbols);
-  assert(ut_list_get_length(code_widths) == symbols_length);
+UtObject *ut_huffman_decoder_new_canonical(UtObject *code_widths) {
+  size_t symbols_length = ut_list_get_length(code_widths);
 
   uint16_t codes[symbols_length];
   ut_huffman_code_generate_canonical(code_widths, codes);
@@ -100,7 +94,7 @@ UtObject *ut_huffman_decoder_new_canonical(UtObject *symbols,
     code_widths_[i] = ut_uint8_list_get_element(code_widths, i);
   }
 
-  return create_decoder(symbols, codes, code_widths_);
+  return create_decoder(symbols_length, codes, code_widths_);
 }
 
 size_t ut_huffman_decoder_get_min_code_width(UtObject *object) {

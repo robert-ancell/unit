@@ -3,8 +3,7 @@
 
 static void test_decode() {
   // This is an example from https://en.wikipedia.org/wiki/Huffman_coding
-  UtObjectRef symbols =
-      ut_uint16_list_new_from_elements(6, 'C', 'B', 'E', '_', 'D', 'A');
+  const char *symbols = "CBE_DA";
   UtObjectRef symbol_weights = ut_float64_list_new_from_elements(
       6, 2.0, 6.0, 7.0, 10.0, 10.0, 10.0, 11.0);
   UtObjectRef bits = ut_uint8_list_new_from_elements(115, 1, 0,  // 'A'
@@ -54,7 +53,7 @@ static void test_decode() {
                                                      1, 1, 0,    // 'E'
                                                      0, 1);      // 'D'
 
-  UtObjectRef decoder = ut_huffman_decoder_new(symbols, symbol_weights);
+  UtObjectRef decoder = ut_huffman_decoder_new(symbol_weights);
 
   uint16_t code = 0;
   size_t code_width = 0;
@@ -66,7 +65,7 @@ static void test_decode() {
 
     uint16_t symbol;
     if (ut_huffman_decoder_get_symbol(decoder, code, code_width, &symbol)) {
-      ut_string_append_code_point(text, symbol);
+      ut_string_append_code_point(text, symbols[symbol]);
       code = 0;
       code_width = 0;
     }
@@ -78,9 +77,7 @@ static void test_decode() {
 
 static void test_decode_canonical() {
   // This is an example from https://en.wikipedia.org/wiki/Huffman_coding
-  UtObjectRef symbols = ut_uint16_list_new_from_elements(
-      16, ' ', 'a', 'e', 'f', 'h', 'i', 'm', 'n', 's', 't', 'l', 'o', 'p', 'r',
-      'u', 'x');
+  const char *symbols = " aefhimnstloprux";
   UtObjectRef code_widths = ut_uint8_list_new_from_elements(
       16, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5);
   UtObjectRef bits = ut_uint8_list_new_from_elements(135, 1, 1, 0, 0, // 't'
@@ -121,7 +118,7 @@ static void test_decode_canonical() {
                                                      0, 1, 0          // 'e'
   );
 
-  UtObjectRef decoder = ut_huffman_decoder_new_canonical(symbols, code_widths);
+  UtObjectRef decoder = ut_huffman_decoder_new_canonical(code_widths);
 
   uint16_t code = 0;
   size_t code_width = 0;
@@ -133,7 +130,7 @@ static void test_decode_canonical() {
 
     uint16_t symbol;
     if (ut_huffman_decoder_get_symbol(decoder, code, code_width, &symbol)) {
-      ut_string_append_code_point(text, symbol);
+      ut_string_append_code_point(text, symbols[symbol]);
       code = 0;
       code_width = 0;
     }

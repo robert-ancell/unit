@@ -100,10 +100,8 @@ static bool read_block_header(UtDeflateDecoder *self, UtObject *data,
     self->state = DECODER_STATE_ERROR;
     return true;
   case 2: {
-    UtObjectRef literal_or_length_symbols = ut_uint16_list_new();
     UtObjectRef literal_or_length_code_widths = ut_uint8_list_new();
     for (size_t symbol = 0; symbol <= 287; symbol++) {
-      ut_uint16_list_append(literal_or_length_symbols, symbol);
       uint8_t code_width;
       if (symbol <= 143) {
         code_width = 8;
@@ -117,18 +115,16 @@ static bool read_block_header(UtDeflateDecoder *self, UtObject *data,
       ut_uint8_list_append(literal_or_length_code_widths, code_width);
     }
     ut_object_unref(self->literal_or_length_decoder);
-    self->literal_or_length_decoder = ut_huffman_decoder_new_canonical(
-        literal_or_length_symbols, literal_or_length_code_widths);
+    self->literal_or_length_decoder =
+        ut_huffman_decoder_new_canonical(literal_or_length_code_widths);
 
-    UtObjectRef distance_symbols = ut_uint16_list_new();
     UtObjectRef distance_code_widths = ut_uint8_list_new();
     for (size_t symbol = 0; symbol < 30; symbol++) {
-      ut_uint16_list_append(distance_symbols, symbol);
       ut_uint8_list_append(distance_code_widths, 5);
     }
     ut_object_unref(self->distance_decoder);
-    self->distance_decoder = ut_huffman_decoder_new_canonical(
-        distance_symbols, distance_code_widths);
+    self->distance_decoder =
+        ut_huffman_decoder_new_canonical(distance_code_widths);
 
     self->state = DECODER_STATE_LITERAL_OR_LENGTH;
     return true;
