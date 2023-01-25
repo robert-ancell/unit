@@ -28,6 +28,8 @@ ut_sources = [
   'json/ut-json-encoder.c',
   'ut-assert.c',
   'ut-base64.c',
+  'ut-bit-array.c',
+  'ut-bit-list.c',
   'ut-boolean.c',
   'ut-cancel.c',
   'ut-color.c',
@@ -179,6 +181,11 @@ uint256_test = executable('ut-uint256-test',
                           'ut-uint256-test.c',
                           link_with: ut_lib)
 test('Uint256', uint256_test)
+
+bit_array_test = executable('ut-bit-array-test',
+                            'ut-bit-array-test.c',
+                            link_with: ut_lib)
+test('Bit Array', bit_array_test)
 
 uint8_array_test = executable('ut-uint8-array-test',
                               'ut-uint8-array-test.c',
