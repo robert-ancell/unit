@@ -38,16 +38,36 @@ uint8_t *ut_bit_list_copy_data(UtObject *object) {
   UtBitListInterface *bit_list_interface =
       ut_object_get_interface(object, &ut_bit_list_id);
   assert(bit_list_interface != NULL);
-  const uint8_t *data = ut_bit_list_get_data(object);
-  size_t data_length = ut_list_get_length(object); // FIXME
+
+  size_t bit_count = ut_list_get_length(object);
+  size_t data_length = (bit_count + 7) / 8;
   uint8_t *data_copy = malloc(data_length);
+
+  const uint8_t *data = ut_bit_list_get_data(object);
   if (data != NULL) {
     for (size_t i = 0; i < data_length; i++) {
       data_copy[i] = data[i];
     }
   } else {
-    for (size_t i = 0; i < data_length; i++) {
-      data_copy[i] = bit_list_interface->get_element(object, i);
+    uint8_t byte = 0x00;
+    size_t byte_index = 0;
+    size_t j = 0;
+    for (size_t i = 0; i < bit_count; i++) {
+      if (bit_list_interface->get_element(object, i)) {
+        byte |= 1 << (7 - byte_index);
+      }
+      byte_index++;
+
+      if (byte_index == 8) {
+        data_copy[j] = byte;
+        j++;
+        byte = 0x00;
+        byte_index = 0;
+      }
+    }
+
+    if (byte_index > 0) {
+      data_copy[j] = byte;
     }
   }
 
