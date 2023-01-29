@@ -21,6 +21,9 @@ ut_sources = [
   'http/ut-http-client.c',
   'http/ut-http-header.c',
   'http/ut-http-response.c',
+  'huffman/ut-huffman-code.c',
+  'huffman/ut-huffman-decoder.c',
+  'huffman/ut-huffman-encoder.c',
   'png/ut-png-decoder.c',
   'png/ut-png-error.c',
   'png/ut-png-image.c',
@@ -48,9 +51,6 @@ ut_sources = [
   'ut-float64-list.c',
   'ut-general-error.c',
   'ut-hash-table.c',
-  'ut-huffman-code.c',
-  'ut-huffman-decoder.c',
-  'ut-huffman-encoder.c',
   'ut-image-buffer.c',
   'ut-input-stream.c',
   'ut-input-stream-multiplexer.c',
@@ -248,12 +248,12 @@ json_test = executable('ut-json-test',
 test('JSON', json_test)
 
 huffman_decoder_test = executable('ut-huffman-decoder-test',
-                                  'ut-huffman-decoder-test.c',
+                                  'huffman/ut-huffman-decoder-test.c',
                                   link_with: ut_lib)
 test('Huffman Decoder', huffman_decoder_test)
 
 huffman_encoder_test = executable('ut-huffman-encoder-test',
-                                  'ut-huffman-encoder-test.c',
+                                  'huffman/ut-huffman-encoder-test.c',
                                   link_with: ut_lib)
 test('Huffman Encoder', huffman_encoder_test)
 
