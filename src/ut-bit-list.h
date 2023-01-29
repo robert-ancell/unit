@@ -18,6 +18,8 @@ extern int ut_bit_list_id;
 
 UtObject *ut_bit_list_new();
 
+UtObject *ut_bit_list_new_from_data(const uint8_t *data, size_t bit_count);
+
 UtObject *ut_bit_list_new_from_bin_string(const char *bin);
 
 bool ut_bit_list_get_element(UtObject *object, size_t index);

@@ -203,6 +203,20 @@ UtObject *ut_bit_array_new() {
   return ut_object_new(sizeof(UtBitArray), &object_interface);
 }
 
+UtObject *ut_bit_array_new_from_data(const uint8_t *data, size_t bit_count) {
+  UtObject *object = ut_object_new(sizeof(UtBitArray), &object_interface);
+  UtBitArray *self = (UtBitArray *)object;
+
+  size_t data_length = byte_count(bit_count);
+  self->data = malloc(sizeof(uint8_t) * data_length);
+  memcpy(self->data, data, data_length);
+  self->bit_count = bit_count;
+
+  // FIXME: Clear unused bits
+
+  return object;
+}
+
 UtObject *ut_bit_array_new_from_bin_string(const char *bin) {
   size_t length = strlen(bin);
 

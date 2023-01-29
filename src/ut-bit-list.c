@@ -8,6 +8,10 @@ int ut_bit_list_id = 0;
 
 UtObject *ut_bit_list_new() { return ut_bit_array_new(); }
 
+UtObject *ut_bit_list_new_from_data(const uint8_t *data, size_t bit_count) {
+  return ut_bit_array_new_from_data(data, bit_count);
+}
+
 UtObject *ut_bit_list_new_from_bin_string(const char *bin) {
   return ut_bit_array_new_from_bin_string(bin);
 }
