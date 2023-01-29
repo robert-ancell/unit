@@ -18,6 +18,8 @@ extern int ut_uint8_list_id;
 
 UtObject *ut_uint8_list_new();
 
+UtObject *ut_uint8_list_new_from_data(const uint8_t *data, size_t data_length);
+
 UtObject *ut_uint8_list_new_from_elements(size_t length, ...);
 
 UtObject *ut_uint8_list_new_from_hex_string(const char *hex);

@@ -8,6 +8,10 @@ int ut_uint8_list_id = 0;
 
 UtObject *ut_uint8_list_new() { return ut_uint8_array_new(); }
 
+UtObject *ut_uint8_list_new_from_data(const uint8_t *data, size_t data_length) {
+  return ut_uint8_array_new_from_data(data, data_length);
+}
+
 UtObject *ut_uint8_list_new_from_elements(size_t length, ...) {
   va_list ap;
   va_start(ap, length);
