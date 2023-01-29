@@ -2,7 +2,6 @@
 #include <stdlib.h>
 
 #include "ut-huffman-code.h"
-#include "ut-huffman-decoder.h"
 #include "ut.h"
 
 typedef struct {

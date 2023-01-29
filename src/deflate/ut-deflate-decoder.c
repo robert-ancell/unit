@@ -1,6 +1,5 @@
 #include <assert.h>
 
-#include "ut-huffman-decoder.h"
 #include "ut.h"
 
 typedef enum {

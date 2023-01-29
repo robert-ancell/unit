@@ -1,4 +1,3 @@
-#include "ut-huffman-decoder.h"
 #include "ut.h"
 
 static void test_decode() {

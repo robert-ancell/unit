@@ -1,4 +1,3 @@
-#include "ut-huffman-encoder.h"
 #include "ut.h"
 
 static UtObject *message_to_symbols(const char *symbols, const char *message) {

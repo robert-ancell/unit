@@ -39,6 +39,8 @@
 #include "ut-float64.h"
 #include "ut-general-error.h"
 #include "ut-hash-table.h"
+#include "ut-huffman-decoder.h"
+#include "ut-huffman-encoder.h"
 #include "ut-image-buffer.h"
 #include "ut-input-stream-multiplexer.h"
 #include "ut-input-stream.h"
