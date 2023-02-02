@@ -115,10 +115,20 @@ static void ut_bit_array_insert_object(UtObject *object, size_t index,
 static void ut_bit_array_remove(UtObject *object, size_t index, size_t count) {
   UtBitArray *self = (UtBitArray *)object;
 
-  // Shift following bits left.
-  // FIXME: Very inefficient, could copy blocks of bits.
-  for (size_t i = index + count; i < self->bit_count; i++) {
-    set_element(self, i - count, get_element(self, i));
+  // If removed block is byte aligned then just shift bytes.
+  if (index % 8 == 0 && count % 8 == 0) {
+    size_t byte_index = index / 8;
+    size_t remove_count = count / 8;
+    size_t final_byte_count = byte_count(self->bit_count) - remove_count;
+    for (size_t i = byte_index; i < final_byte_count; i++) {
+      self->data[i] = self->data[i + remove_count];
+    }
+  } else {
+    // Shift following bits left.
+    // FIXME: Very inefficient, could copy blocks of bits.
+    for (size_t i = index + count; i < self->bit_count; i++) {
+      set_element(self, i - count, get_element(self, i));
+    }
   }
 
   resize_list(self, self->bit_count - count);
