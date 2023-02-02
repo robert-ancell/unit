@@ -82,6 +82,14 @@ static void test_insert() {
   ut_assert_cstring_equal(string3, "011011110110");
 }
 
+static void test_remove() {
+  // Remove from the middle.
+  UtObjectRef array2 = ut_bit_array_new_from_bin_string("011011110110");
+  ut_list_remove(array2, 4, 4);
+  ut_cstring_ref string2 = ut_bit_list_to_bin_string(array2);
+  ut_assert_cstring_equal(string2, "01100110");
+}
+
 int main(int argc, char **argv) {
   // Empty array.
   UtObjectRef array1 = ut_bit_array_new();
@@ -96,6 +104,7 @@ int main(int argc, char **argv) {
   test_append();
   test_prepend();
   test_insert();
+  test_remove();
 
   return 0;
 }
