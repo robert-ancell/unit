@@ -8,8 +8,8 @@ typedef enum {
   DECODER_STATE_UNCOMPRESSED_DATA,
   DECODER_STATE_LITERAL_OR_LENGTH,
   DECODER_STATE_LENGTH,
-  DECODER_STATE_DISTANCE_SYMBOL,
-  DECODER_STATE_DISTANCE,
+  DECODER_STATE_DISTANCE1,
+  DECODER_STATE_DISTANCE2,
   DECODER_STATE_DONE,
   DECODER_STATE_ERROR
 } DecoderState;
@@ -32,10 +32,10 @@ typedef struct {
   uint8_t code_width;
   uint16_t length;
   uint16_t length_symbol;
-  uint16_t distance_symbol;
+  uint16_t distance_index;
+  uint16_t distance_extra;
 
   UtObject *literal_or_length_decoder;
-  UtObject *distance_decoder;
 
   UtObject *buffer;
 } UtDeflateDecoder;
@@ -48,14 +48,14 @@ static uint8_t extra_length_bits[29] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 1,
                                         1, 1, 2, 2, 2, 2, 3, 3, 3, 3,
                                         4, 4, 4, 4, 5, 5, 5, 5, 0};
 
-static uint16_t base_distances[30] = {
-    1,    2,    3,    4,    5,    7,    9,    13,    17,    25,
-    33,   49,   65,   97,   129,  193,  257,  385,   513,   769,
-    1025, 1537, 2049, 3073, 4097, 6145, 8193, 12289, 16385, 24577};
+static uint16_t base_distances[32] = {
+    1,    2,    3,    4,    5,    7,     9,     13,    17,  25,   33,
+    49,   65,   97,   129,  193,  257,   385,   513,   769, 1025, 1537,
+    2049, 3073, 4097, 6145, 8193, 12289, 16385, 24577, 0,   0};
 
-static uint8_t distance_bits[29] = {0, 0,  0,  0,  1,  1,  2,  2,  3, 4,
-                                    4, 5,  5,  6,  6,  7,  7,  8,  8, 9,
-                                    9, 10, 10, 11, 11, 12, 12, 13, 13};
+static uint8_t distance_bits[32] = {0,  0,  0,  0,  1,  1,  2,  2, 3, 4, 4,
+                                    5,  5,  6,  6,  7,  7,  8,  8, 9, 9, 10,
+                                    10, 11, 11, 12, 12, 13, 13, 0, 0, 0};
 
 static size_t get_remaining_bits(UtDeflateDecoder *self, UtObject *data,
                                  size_t *offset) {
@@ -116,14 +116,6 @@ static bool read_block_header(UtDeflateDecoder *self, UtObject *data,
     ut_object_unref(self->literal_or_length_decoder);
     self->literal_or_length_decoder =
         ut_huffman_decoder_new_canonical(literal_or_length_code_widths);
-
-    UtObjectRef distance_code_widths = ut_uint8_list_new();
-    for (size_t symbol = 0; symbol < 30; symbol++) {
-      ut_uint8_list_append(distance_code_widths, 5);
-    }
-    ut_object_unref(self->distance_decoder);
-    self->distance_decoder =
-        ut_huffman_decoder_new_canonical(distance_code_widths);
 
     self->state = DECODER_STATE_LITERAL_OR_LENGTH;
     return true;
@@ -255,27 +247,41 @@ static bool read_length(UtDeflateDecoder *self, UtObject *data,
   }
   self->length = base_lengths[self->length_symbol - 257] + extra;
 
-  self->state = DECODER_STATE_DISTANCE_SYMBOL;
+  self->state = DECODER_STATE_DISTANCE1;
   return true;
 }
 
-static bool read_distance_symbol(UtDeflateDecoder *self, UtObject *data,
-                                 size_t *offset) {
-  if (!read_huffman_symbol(self, data, offset, self->distance_decoder,
-                           &self->distance_symbol)) {
-    return self->error != NULL;
-  }
-
-  self->state = DECODER_STATE_DISTANCE;
-
-  return true;
-}
-
-static bool read_distance(UtDeflateDecoder *self, UtObject *data,
-                          size_t *offset) {
+static bool read_distance1(UtDeflateDecoder *self, UtObject *data,
+                           size_t *offset) {
   size_t remaining = get_remaining_bits(self, data, offset);
 
-  uint8_t bit_count = distance_bits[self->distance_symbol];
+  if (remaining < 5) {
+    return false;
+  }
+
+  self->distance_index = 0;
+  for (size_t i = 0; i < 5; i++) {
+    self->distance_index =
+        self->distance_index << 1 | read_bit(self, data, offset);
+  }
+
+  // 30 and 31 are reserved.
+  if (self->distance_index > 30) {
+    self->error = ut_deflate_error_new();
+    self->state = DECODER_STATE_ERROR;
+    return true;
+  }
+
+  self->state = DECODER_STATE_DISTANCE2;
+
+  return true;
+}
+
+static bool read_distance2(UtDeflateDecoder *self, UtObject *data,
+                           size_t *offset) {
+  size_t remaining = get_remaining_bits(self, data, offset);
+
+  uint8_t bit_count = distance_bits[self->distance_index];
   if (remaining < bit_count) {
     return false;
   }
@@ -284,7 +290,7 @@ static bool read_distance(UtDeflateDecoder *self, UtObject *data,
   for (uint8_t i = 0; i < bit_count; i++) {
     extra = extra << 1 | read_bit(self, data, offset);
   }
-  uint16_t distance = base_distances[self->distance_symbol] + extra;
+  uint16_t distance = base_distances[self->distance_index] + extra;
 
   size_t buffer_length = ut_list_get_length(self->buffer);
   if (distance > buffer_length) {
@@ -330,11 +336,11 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
     case DECODER_STATE_LENGTH:
       decoding = read_length(self, data, &offset);
       break;
-    case DECODER_STATE_DISTANCE_SYMBOL:
-      decoding = read_distance_symbol(self, data, &offset);
+    case DECODER_STATE_DISTANCE1:
+      decoding = read_distance1(self, data, &offset);
       break;
-    case DECODER_STATE_DISTANCE:
-      decoding = read_distance(self, data, &offset);
+    case DECODER_STATE_DISTANCE2:
+      decoding = read_distance2(self, data, &offset);
       break;
     case DECODER_STATE_DONE:
       ut_cancel_activate(self->read_cancel);
@@ -372,7 +378,6 @@ static void ut_deflate_decoder_cleanup(UtObject *object) {
   ut_object_unref(self->cancel);
   ut_object_unref(self->error);
   ut_object_unref(self->literal_or_length_decoder);
-  ut_object_unref(self->distance_decoder);
   ut_object_unref(self->buffer);
 }
 
