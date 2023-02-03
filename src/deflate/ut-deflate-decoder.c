@@ -35,7 +35,7 @@ typedef struct {
   uint16_t distance_index;
   uint16_t distance_extra;
 
-  UtObject *literal_or_length_decoder;
+  UtObject *huffman_decoder;
 
   UtObject *buffer;
 } UtDeflateDecoder;
@@ -99,7 +99,7 @@ static bool read_block_header(UtDeflateDecoder *self, UtObject *data,
     self->state = DECODER_STATE_ERROR;
     return true;
   case 2: {
-    UtObjectRef literal_or_length_code_widths = ut_uint8_list_new();
+    UtObjectRef huffman_code_widths = ut_uint8_list_new();
     for (size_t symbol = 0; symbol <= 287; symbol++) {
       uint8_t code_width;
       if (symbol <= 143) {
@@ -111,13 +111,13 @@ static bool read_block_header(UtDeflateDecoder *self, UtObject *data,
       } else {
         code_width = 8;
       }
-      ut_uint8_list_append(literal_or_length_code_widths, code_width);
+      ut_uint8_list_append(huffman_code_widths, code_width);
     }
-    ut_object_unref(self->literal_or_length_decoder);
-    self->literal_or_length_decoder =
-        ut_huffman_decoder_new_canonical(literal_or_length_code_widths);
+    ut_object_unref(self->huffman_decoder);
+    self->huffman_decoder =
+        ut_huffman_decoder_new_canonical(huffman_code_widths);
 
-    self->state = DECODER_STATE_LITERAL_OR_LENGTH;
+    self->state = DECODER_STATE_huffman;
     return true;
   }
   default:
@@ -209,7 +209,7 @@ static bool read_huffman_symbol(UtDeflateDecoder *self, UtObject *data,
 static bool read_literal_or_length(UtDeflateDecoder *self, UtObject *data,
                                    size_t *offset) {
   uint16_t symbol;
-  if (!read_huffman_symbol(self, data, offset, self->literal_or_length_decoder,
+  if (!read_huffman_symbol(self, data, offset, self->huffman_decoder,
                            &symbol)) {
     return self->error != NULL;
   }
@@ -377,7 +377,7 @@ static void ut_deflate_decoder_cleanup(UtObject *object) {
   ut_object_unref(self->read_cancel);
   ut_object_unref(self->cancel);
   ut_object_unref(self->error);
-  ut_object_unref(self->literal_or_length_decoder);
+  ut_object_unref(self->huffman_decoder);
   ut_object_unref(self->buffer);
 }
 
