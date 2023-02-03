@@ -6,7 +6,7 @@ typedef enum {
   DECODER_STATE_BLOCK_HEADER,
   DECODER_STATE_UNCOMPRESSED_LENGTH,
   DECODER_STATE_UNCOMPRESSED_DATA,
-  DECODER_STATE_LITERAL_OR_LENGTH,
+  DECODER_STATE_HUFFMAN_SYMBOL,
   DECODER_STATE_LENGTH,
   DECODER_STATE_DISTANCE1,
   DECODER_STATE_DISTANCE2,
@@ -117,7 +117,7 @@ static bool read_block_header(UtDeflateDecoder *self, UtObject *data,
     self->huffman_decoder =
         ut_huffman_decoder_new_canonical(huffman_code_widths);
 
-    self->state = DECODER_STATE_huffman;
+    self->state = DECODER_STATE_HUFFMAN_SYMBOL;
     return true;
   }
   default:
@@ -165,9 +165,9 @@ static bool read_uncompressed_data(UtDeflateDecoder *self, UtObject *data,
   return true;
 }
 
-static bool read_huffman_symbol(UtDeflateDecoder *self, UtObject *data,
-                                size_t *offset, UtObject *decoder,
-                                uint16_t *symbol) {
+static bool decode_huffman_symbol(UtDeflateDecoder *self, UtObject *data,
+                                  size_t *offset, UtObject *decoder,
+                                  uint16_t *symbol) {
   size_t remaining = get_remaining_bits(self, data, offset);
 
   if (self->code_width == 0) {
@@ -206,11 +206,11 @@ static bool read_huffman_symbol(UtDeflateDecoder *self, UtObject *data,
   return true;
 }
 
-static bool read_literal_or_length(UtDeflateDecoder *self, UtObject *data,
-                                   size_t *offset) {
+static bool read_huffman_symbol(UtDeflateDecoder *self, UtObject *data,
+                                size_t *offset) {
   uint16_t symbol;
-  if (!read_huffman_symbol(self, data, offset, self->huffman_decoder,
-                           &symbol)) {
+  if (!decode_huffman_symbol(self, data, offset, self->huffman_decoder,
+                             &symbol)) {
     return self->error != NULL;
   }
 
@@ -304,7 +304,7 @@ static bool read_distance2(UtDeflateDecoder *self, UtObject *data,
                          ut_uint8_list_get_element(self->buffer, start + i));
   }
 
-  self->state = DECODER_STATE_LITERAL_OR_LENGTH;
+  self->state = DECODER_STATE_HUFFMAN_SYMBOL;
 
   return true;
 }
@@ -330,8 +330,8 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
     case DECODER_STATE_UNCOMPRESSED_DATA:
       decoding = read_uncompressed_data(self, data, &offset);
       break;
-    case DECODER_STATE_LITERAL_OR_LENGTH:
-      decoding = read_literal_or_length(self, data, &offset);
+    case DECODER_STATE_HUFFMAN_SYMBOL:
+      decoding = read_huffman_symbol(self, data, &offset);
       break;
     case DECODER_STATE_LENGTH:
       decoding = read_length(self, data, &offset);
