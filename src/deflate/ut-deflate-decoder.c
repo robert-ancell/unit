@@ -170,40 +170,19 @@ static bool decode_huffman_symbol(UtDeflateDecoder *self, UtObject *data,
                                   uint16_t *symbol) {
   size_t remaining = get_remaining_bits(self, data, offset);
 
-  if (self->code_width == 0) {
-    size_t min_code_width = ut_huffman_decoder_get_min_code_width(decoder);
-    if (remaining < min_code_width) {
-      return false;
-    }
-    self->code = 0;
-    for (size_t i = 0; i < min_code_width; i++) {
-      self->code = self->code << 1 | read_bit(self, data, offset);
-    }
-    self->code_width = min_code_width;
-  }
-
-  size_t max_code_width = ut_huffman_decoder_get_max_code_width(decoder);
-  while (self->code_width < remaining && self->code_width <= max_code_width &&
-         !ut_huffman_decoder_get_symbol(decoder, self->code, self->code_width,
-                                        symbol)) {
+  for (size_t i = 0; i < remaining; i++) {
     self->code = self->code << 1 | read_bit(self, data, offset);
     self->code_width++;
+
+    if (ut_huffman_decoder_get_symbol(decoder, self->code, self->code_width,
+                                      symbol)) {
+      self->code = 0;
+      self->code_width = 0;
+      return true;
+    }
   }
 
-  if (self->code_width >= remaining) {
-    return false;
-  }
-
-  if (self->code_width > max_code_width) {
-    self->error = ut_deflate_error_new();
-    self->state = DECODER_STATE_ERROR;
-    return false;
-  }
-
-  self->code = 0;
-  self->code_width = 0;
-
-  return true;
+  return false;
 }
 
 static bool read_huffman_symbol(UtDeflateDecoder *self, UtObject *data,
@@ -211,7 +190,7 @@ static bool read_huffman_symbol(UtDeflateDecoder *self, UtObject *data,
   uint16_t symbol;
   if (!decode_huffman_symbol(self, data, offset, self->huffman_decoder,
                              &symbol)) {
-    return self->error != NULL;
+    return false;
   }
 
   if (symbol < 256) {

@@ -8,7 +8,6 @@ typedef struct {
   UtObject object;
   uint16_t *code_table_data;
   uint16_t **code_tables;
-  size_t min_code_width;
   size_t max_code_width;
 } UtHuffmanDecoder;
 
@@ -44,14 +43,10 @@ static UtObject *create_decoder(size_t symbols_length, uint16_t *codes,
   UtObject *object = ut_object_new(sizeof(UtHuffmanDecoder), &object_interface);
   UtHuffmanDecoder *self = (UtHuffmanDecoder *)object;
 
-  self->min_code_width = 17;
   self->max_code_width = 0;
   for (size_t i = 0; i < symbols_length; i++) {
     uint8_t code_width = code_widths[i];
     assert(code_width <= 16);
-    if (code_width != 0 && code_width < self->min_code_width) {
-      self->min_code_width = code_width;
-    }
     if (code_width > self->max_code_width) {
       self->max_code_width = code_width;
     }
@@ -94,18 +89,6 @@ UtObject *ut_huffman_decoder_new_canonical(UtObject *code_widths) {
   }
 
   return create_decoder(symbols_length, codes, code_widths_);
-}
-
-size_t ut_huffman_decoder_get_min_code_width(UtObject *object) {
-  assert(ut_object_is_huffman_decoder(object));
-  UtHuffmanDecoder *self = (UtHuffmanDecoder *)object;
-  return self->min_code_width;
-}
-
-size_t ut_huffman_decoder_get_max_code_width(UtObject *object) {
-  assert(ut_object_is_huffman_decoder(object));
-  UtHuffmanDecoder *self = (UtHuffmanDecoder *)object;
-  return self->max_code_width;
 }
 
 bool ut_huffman_decoder_get_symbol(UtObject *object, uint16_t code,
