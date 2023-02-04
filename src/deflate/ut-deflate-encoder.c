@@ -23,6 +23,7 @@ typedef struct {
   UtObject *dictionary;
 
   // Encoded data buffer.
+  bool written_header;
   UtObject *buffer;
   size_t partial_byte;
   size_t partial_byte_length;
@@ -194,7 +195,10 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
     return 0;
   }
 
-  write_block_header(self, true, BLOCK_STATIC_HUFFMAN);
+  if (!self->written_header) {
+    write_block_header(self, true, BLOCK_STATIC_HUFFMAN);
+    self->written_header = true;
+  }
 
   size_t orig_dictionary_length = ut_list_get_length(self->dictionary);
   ut_list_append_list(self->dictionary, data);
