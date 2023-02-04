@@ -168,6 +168,7 @@ ut_sources = [
   'xml/ut-xml-document.c',
   'xml/ut-xml-element.c',
   'zlib/ut-zlib-decoder.c',
+  'zlib/ut-zlib-encoder.c',
   'zlib/ut-zlib-error.c'
 ]
 
@@ -271,7 +272,12 @@ test('Deflate Encoder', deflate_encoder_test)
 zlib_decoder_test = executable('ut-zlib-decoder-test',
                                'zlib/ut-zlib-decoder-test.c',
                                link_with: ut_lib)
-test('zlib', zlib_decoder_test)
+test('zlib Decoder', zlib_decoder_test)
+
+zlib_encoder_test = executable('ut-zlib-encoder-test',
+                               'zlib/ut-zlib-encoder-test.c',
+                               link_with: ut_lib)
+test('zlib Encoder', zlib_encoder_test)
 
 gzip_decoder_test = executable('ut-gzip-decoder-test',
                                'gzip/ut-gzip-decoder-test.c',

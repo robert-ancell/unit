@@ -22,9 +22,7 @@ int main(int argc, char **argv) {
   ut_assert_cstring_equal(ut_string_get_text(single_result_string), "!");
 
   UtObjectRef hello_data =
-      ut_uint8_list_new_from_hex_string("789ccb48cdc9c90700062c0215"
-
-      );
+      ut_uint8_list_new_from_hex_string("789ccb48cdc9c90700062c0215");
   UtObjectRef hello_data_stream = ut_list_input_stream_new(hello_data);
   UtObjectRef hello_decoder = ut_zlib_decoder_new(hello_data_stream);
   UtObjectRef hello_result = ut_input_stream_read_sync(hello_decoder);
