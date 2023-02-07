@@ -22,7 +22,6 @@ typedef struct {
   UtObject *cancel;
   DecoderState state;
   UtObject *deflate_decoder;
-  UtObject *buffer;
   UtObject *error;
 } UtGzipDecoder;
 
@@ -34,14 +33,9 @@ static size_t deflate_read_cb(void *user_data, UtObject *data, bool complete) {
     return 0;
   }
 
-  size_t original_length = ut_list_get_length(self->buffer);
   size_t data_length = ut_list_get_length(data);
-  size_t total_length = original_length + data_length;
-  ut_list_append_list(self->buffer, data);
-  size_t n_used = self->callback(self->user_data, self->buffer, complete);
-  assert(n_used <= total_length);
-  ut_list_resize(self->buffer, total_length - n_used);
-  size_t n_new_used = n_used > original_length ? n_used - original_length : 0;
+  size_t n_used = self->callback(self->user_data, data, complete);
+  assert(n_used <= data_length);
 
   if (complete) {
     self->state = DECODER_STATE_MEMBER_TRAILER;
@@ -49,7 +43,7 @@ static size_t deflate_read_cb(void *user_data, UtObject *data, bool complete) {
                                            self->gzip_input_stream);
   }
 
-  return n_new_used;
+  return n_used;
 }
 
 static char *read_string(UtObject *data, size_t *offset) {
@@ -205,7 +199,6 @@ static void ut_gzip_decoder_init(UtObject *object) {
   UtGzipDecoder *self = (UtGzipDecoder *)object;
   self->read_cancel = ut_cancel_new();
   self->state = DECODER_STATE_MEMBER_HEADER;
-  self->buffer = ut_uint8_list_new();
 }
 
 static void ut_gzip_decoder_cleanup(UtObject *object) {
@@ -217,7 +210,6 @@ static void ut_gzip_decoder_cleanup(UtObject *object) {
   ut_object_unref(self->read_cancel);
   ut_object_unref(self->cancel);
   ut_object_unref(self->deflate_decoder);
-  ut_object_unref(self->buffer);
   ut_object_unref(self->error);
 }
 
