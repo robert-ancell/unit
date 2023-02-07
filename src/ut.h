@@ -13,6 +13,7 @@
 #include "deflate/ut-deflate-error.h"
 #include "dns/ut-dns-client.h"
 #include "gzip/ut-gzip-decoder.h"
+#include "gzip/ut-gzip-encoder.h"
 #include "gzip/ut-gzip-error.h"
 #include "http/ut-http-client.h"
 #include "http/ut-http-header.h"

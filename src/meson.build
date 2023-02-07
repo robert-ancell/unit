@@ -18,6 +18,7 @@ ut_sources = [
   'deflate/ut-deflate-error.c',
   'dns/ut-dns-client.c',
   'gzip/ut-gzip-decoder.c',
+  'gzip/ut-gzip-encoder.c',
   'gzip/ut-gzip-error.c',
   'http/ut-http-client.c',
   'http/ut-http-header.c',
@@ -282,7 +283,12 @@ test('zlib Encoder', zlib_encoder_test)
 gzip_decoder_test = executable('ut-gzip-decoder-test',
                                'gzip/ut-gzip-decoder-test.c',
                                link_with: ut_lib)
-test('GZip', gzip_decoder_test)
+test('GZip Decoder', gzip_decoder_test)
+
+gzip_encoder_test = executable('ut-gzip-encoder-test',
+                               'gzip/ut-gzip-encoder-test.c',
+                               link_with: ut_lib)
+test('GZip Encoder', gzip_encoder_test)
 
 png_decoder_test = executable('ut-png-decoder-test',
                               'png/ut-png-decoder-test.c',
