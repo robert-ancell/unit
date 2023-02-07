@@ -4,6 +4,6 @@
 
 #pragma once
 
-UtObject *ut_png_error_new();
+UtObject *ut_png_error_new(const char *description);
 
 bool ut_object_is_png_error(UtObject *object);
