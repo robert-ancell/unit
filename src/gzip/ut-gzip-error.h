@@ -4,6 +4,6 @@
 
 #pragma once
 
-UtObject *ut_gzip_error_new();
+UtObject *ut_gzip_error_new(const char *description);
 
 bool ut_object_is_gzip_error(UtObject *object);

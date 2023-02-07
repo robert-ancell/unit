@@ -78,7 +78,7 @@ static bool read_member_header(UtGzipDecoder *self, UtObject *data,
   uint8_t id1 = ut_uint8_list_get_element(data, header_start + 0);
   uint8_t id2 = ut_uint8_list_get_element(data, header_start + 1);
   if (id1 != 31 || id2 != 139) {
-    self->error = ut_gzip_error_new();
+    self->error = ut_gzip_error_new("Invalid GZip ID");
     self->state = DECODER_STATE_ERROR;
     return true;
   }
@@ -86,7 +86,7 @@ static bool read_member_header(UtGzipDecoder *self, UtObject *data,
   uint8_t compression_method =
       ut_uint8_list_get_element(data, header_start + 2);
   if (compression_method != 8) {
-    self->error = ut_gzip_error_new();
+    self->error = ut_gzip_error_new("Unsupported GZIP compression method");
     self->state = DECODER_STATE_ERROR;
     return true;
   }
