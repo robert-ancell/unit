@@ -284,8 +284,12 @@ static void process_image_data(UtPngDecoder *self, UtObject *data) {
   size_t offset = 0;
   while (offset < data_length) {
     if (self->line == NULL) {
-      assert(decode_filter_type(ut_uint8_list_get_element(data, offset),
-                                &self->line_filter));
+      if (!decode_filter_type(ut_uint8_list_get_element(data, offset),
+                              &self->line_filter)) {
+        self->error = ut_png_error_new("Invalid PNG filter type");
+        self->state = DECODER_STATE_ERROR;
+        return;
+      }
       offset++;
       self->line = ut_uint8_array_new(); // FIXME: sized
     }
