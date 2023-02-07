@@ -27,7 +27,6 @@ typedef struct {
   uint32_t dictionary_checksum;
   uint32_t checksum;
   UtObject *deflate_decoder;
-  UtObject *buffer;
   UtObject *error;
 } UtZlibDecoder;
 
@@ -251,7 +250,6 @@ static void ut_zlib_decoder_init(UtObject *object) {
   UtZlibDecoder *self = (UtZlibDecoder *)object;
   self->read_cancel = ut_cancel_new();
   self->state = DECODER_STATE_HEADER;
-  self->buffer = ut_uint8_list_new();
 }
 
 static void ut_zlib_decoder_cleanup(UtObject *object) {
@@ -263,7 +261,6 @@ static void ut_zlib_decoder_cleanup(UtObject *object) {
   ut_object_unref(self->read_cancel);
   ut_object_unref(self->cancel);
   ut_object_unref(self->deflate_decoder);
-  ut_object_unref(self->buffer);
   ut_object_unref(self->error);
 }
 
