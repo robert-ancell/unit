@@ -8,13 +8,30 @@ int main(int argc, char **argv) {
   ut_assert_is_not_error(empty_result);
   ut_assert_uint8_list_equal_hex(empty_result, "0300");
 
-  UtObjectRef single_string = ut_string_new("!");
-  UtObjectRef single_data = ut_string_get_utf8(single_string);
+  UtObjectRef single_data = ut_uint8_list_new_from_hex_string("00");
   UtObjectRef single_data_stream = ut_list_input_stream_new(single_data);
   UtObjectRef single_encoder = ut_deflate_encoder_new(single_data_stream);
   UtObjectRef single_result = ut_input_stream_read_sync(single_encoder);
   ut_assert_is_not_error(single_result);
-  ut_assert_uint8_list_equal_hex(single_result, "530400");
+  ut_assert_uint8_list_equal_hex(single_result, "630000");
+
+  UtObjectRef double_data = ut_uint8_list_new_from_hex_string("0000");
+  UtObjectRef double_data_stream = ut_list_input_stream_new(double_data);
+  UtObjectRef double_encoder = ut_deflate_encoder_new(double_data_stream);
+  UtObjectRef double_result = ut_input_stream_read_sync(double_encoder);
+  ut_assert_is_not_error(double_result);
+  ut_assert_uint8_list_equal_hex(double_result, "63600000");
+
+  UtObjectRef single_char_string = ut_string_new("!");
+  UtObjectRef single_char_data = ut_string_get_utf8(single_char_string);
+  UtObjectRef single_char_data_stream =
+      ut_list_input_stream_new(single_char_data);
+  UtObjectRef single_char_encoder =
+      ut_deflate_encoder_new(single_char_data_stream);
+  UtObjectRef single_char_result =
+      ut_input_stream_read_sync(single_char_encoder);
+  ut_assert_is_not_error(single_char_result);
+  ut_assert_uint8_list_equal_hex(single_char_result, "530400");
 
   UtObjectRef hello_string = ut_string_new("hello");
   UtObjectRef hello_data = ut_string_get_utf8(hello_string);

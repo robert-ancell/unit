@@ -87,7 +87,8 @@ static void find_match(UtDeflateEncoder *self, size_t data_length,
   for (size_t distance = 1; distance <= max_distance; distance++) {
     const uint8_t *match = data - distance;
 
-    size_t max_length = distance + data_length;
+    // Can't match more than the data we have.
+    size_t max_length = data_length;
     if (max_length > 285) {
       max_length = 285;
     }

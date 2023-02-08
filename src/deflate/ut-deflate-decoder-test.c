@@ -11,13 +11,31 @@ int main(int argc, char **argv) {
   ut_assert_is_not_error(empty_result);
   assert(ut_list_get_length(empty_result) == 0);
 
-  UtObjectRef single_data = ut_uint8_list_new_from_hex_string("530400");
+  UtObjectRef single_data = ut_uint8_list_new_from_hex_string("630000");
   UtObjectRef single_data_stream = ut_list_input_stream_new(single_data);
   UtObjectRef single_decoder = ut_deflate_decoder_new(single_data_stream);
   UtObjectRef single_result = ut_input_stream_read_sync(single_decoder);
   ut_assert_is_not_error(single_result);
-  UtObjectRef single_result_string = ut_string_new_from_utf8(single_result);
-  ut_assert_cstring_equal(ut_string_get_text(single_result_string), "!");
+  ut_assert_uint8_list_equal_hex(single_result, "00");
+
+  UtObjectRef double_data = ut_uint8_list_new_from_hex_string("63600000");
+  UtObjectRef double_data_stream = ut_list_input_stream_new(double_data);
+  UtObjectRef double_decoder = ut_deflate_decoder_new(double_data_stream);
+  UtObjectRef double_result = ut_input_stream_read_sync(double_decoder);
+  ut_assert_is_not_error(double_result);
+  ut_assert_uint8_list_equal_hex(double_result, "0000");
+
+  UtObjectRef single_char_data = ut_uint8_list_new_from_hex_string("530400");
+  UtObjectRef single_char_data_stream =
+      ut_list_input_stream_new(single_char_data);
+  UtObjectRef single_char_decoder =
+      ut_deflate_decoder_new(single_char_data_stream);
+  UtObjectRef single_char_result =
+      ut_input_stream_read_sync(single_char_decoder);
+  ut_assert_is_not_error(single_char_result);
+  UtObjectRef single_char_result_string =
+      ut_string_new_from_utf8(single_char_result);
+  ut_assert_cstring_equal(ut_string_get_text(single_char_result_string), "!");
 
   UtObjectRef hello_data = ut_uint8_list_new_from_hex_string("cb48cdc9c90700");
   UtObjectRef hello_data_stream = ut_list_input_stream_new(hello_data);
