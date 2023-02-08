@@ -388,6 +388,14 @@ static void decode_image_data(UtPngDecoder *self, UtObject *data) {
   UtObjectRef zlib_stream = ut_list_input_stream_new(data);
   UtObjectRef zlib_decoder = ut_zlib_decoder_new(zlib_stream);
   UtObjectRef image_data = ut_input_stream_read_sync(zlib_decoder);
+  if (ut_object_implements_error(image_data)) {
+    ut_cstring_ref description =
+        ut_cstring_new_printf("Error decoding PNG image data: %s",
+                              ut_error_get_description(image_data));
+    self->error = ut_png_error_new(description);
+    self->state = DECODER_STATE_ERROR;
+    return;
+  }
   process_image_data(self, image_data);
 }
 
