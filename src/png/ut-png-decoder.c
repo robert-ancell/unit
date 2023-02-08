@@ -237,13 +237,37 @@ static void decode_image_header(UtPngDecoder *self, UtObject *data) {
   self->width = ut_uint8_list_get_uint32_be(data, 0);
   self->height = ut_uint8_list_get_uint32_be(data, 4);
   self->bit_depth = ut_uint8_list_get_element(data, 8);
-  bool valid_colour_type =
-      decode_colour_type(ut_uint8_list_get_element(data, 9), &self->colour_type,
-                         &self->n_channels);
+  uint8_t colour_type = ut_uint8_list_get_element(data, 9);
   uint8_t compression_method = ut_uint8_list_get_element(data, 10);
   uint8_t filter_method = ut_uint8_list_get_element(data, 11);
+
+  if (self->width == 0 || self->height == 0) {
+    self->error = ut_png_error_new("Invalid PNG image dimensions");
+    self->state = DECODER_STATE_ERROR;
+    return;
+  }
+
+  bool valid_colour_type =
+      decode_colour_type(colour_type, &self->colour_type, &self->n_channels);
+  if (!valid_colour_type) {
+    self->error = ut_png_error_new("Invalid PNG colour type");
+    self->state = DECODER_STATE_ERROR;
+    return;
+  }
+
+  if (!is_valid_bit_depth(self->colour_type, self->bit_depth)) {
+    self->error = ut_png_error_new("Invalid PNG bit depth");
+    self->state = DECODER_STATE_ERROR;
+    return;
+  }
+
   bool valid_interlace_method = decode_interlace_method(
       ut_uint8_list_get_element(data, 12), &self->interlace_method);
+  if (!valid_interlace_method) {
+    self->error = ut_png_error_new("Invalid PNG interlace method");
+    self->state = DECODER_STATE_ERROR;
+    return;
+  }
 
   self->rowstride =
       (((size_t)self->width * self->bit_depth * self->n_channels) + 7) / 8;
@@ -266,14 +290,6 @@ static void decode_image_header(UtPngDecoder *self, UtObject *data) {
   }
   ut_object_unref(self->line);
   self->line = NULL;
-
-  if (self->width == 0 || self->height == 0 || !valid_colour_type ||
-      !is_valid_bit_depth(self->colour_type, self->bit_depth) ||
-      !valid_interlace_method) {
-    self->error = ut_png_error_new("Invalid PNG image properties");
-    self->state = DECODER_STATE_ERROR;
-    return;
-  }
 }
 
 static void decode_palette(UtPngDecoder *self, UtObject *data) {}
