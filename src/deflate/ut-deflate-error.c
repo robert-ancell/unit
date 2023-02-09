@@ -27,6 +27,8 @@ static UtErrorInterface error_interface = {
 
 static UtObjectInterface object_interface = {
     .type_name = "UtDeflateError",
+    .to_string = ut_deflate_error_to_string,
+    .cleanup = ut_deflate_error_cleanup,
     .interfaces = {{&ut_error_id, &error_interface}, {NULL, NULL}}};
 
 UtObject *ut_deflate_error_new(const char *description) {
