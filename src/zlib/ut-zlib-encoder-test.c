@@ -53,8 +53,8 @@ int main(int argc, char **argv) {
   UtObjectRef window_size_data = ut_uint8_list_new_from_hex_string("DEADBEEF");
   UtObjectRef window_size_data_stream =
       ut_list_input_stream_new(window_size_data);
-  UtObjectRef window_size_encoder =
-      ut_zlib_encoder_new_full(2, 256, window_size_data_stream);
+  UtObjectRef window_size_encoder = ut_zlib_encoder_new_full(
+      UT_ZLIB_COMPRESSION_LEVEL_DEFAULT, 256, window_size_data_stream);
   UtObjectRef window_size_result =
       ut_input_stream_read_sync(window_size_encoder);
   ut_assert_is_not_error(window_size_result);
@@ -63,24 +63,32 @@ int main(int argc, char **argv) {
 
   UtObjectRef level0_data = ut_uint8_list_new_from_hex_string("0000");
   UtObjectRef level0_data_stream = ut_list_input_stream_new(level0_data);
-  UtObjectRef level0_encoder =
-      ut_zlib_encoder_new_full(0, 32768, level0_data_stream);
+  UtObjectRef level0_encoder = ut_zlib_encoder_new_full(
+      UT_ZLIB_COMPRESSION_LEVEL_FASTEST, 32768, level0_data_stream);
   UtObjectRef level0_result = ut_input_stream_read_sync(level0_encoder);
   ut_assert_is_not_error(level0_result);
   ut_assert_uint8_list_equal_hex(level0_result, "78016360000000020001");
 
   UtObjectRef level1_data = ut_uint8_list_new_from_hex_string("0000");
   UtObjectRef level1_data_stream = ut_list_input_stream_new(level1_data);
-  UtObjectRef level1_encoder =
-      ut_zlib_encoder_new_full(2, 32768, level1_data_stream);
+  UtObjectRef level1_encoder = ut_zlib_encoder_new_full(
+      UT_ZLIB_COMPRESSION_LEVEL_FAST, 32768, level1_data_stream);
   UtObjectRef level1_result = ut_input_stream_read_sync(level1_encoder);
   ut_assert_is_not_error(level1_result);
-  ut_assert_uint8_list_equal_hex(level1_result, "789c6360000000020001");
+  ut_assert_uint8_list_equal_hex(level1_result, "785e6360000000020001");
+
+  UtObjectRef level2_data = ut_uint8_list_new_from_hex_string("0000");
+  UtObjectRef level2_data_stream = ut_list_input_stream_new(level2_data);
+  UtObjectRef level2_encoder = ut_zlib_encoder_new_full(
+      UT_ZLIB_COMPRESSION_LEVEL_DEFAULT, 32768, level2_data_stream);
+  UtObjectRef level2_result = ut_input_stream_read_sync(level2_encoder);
+  ut_assert_is_not_error(level2_result);
+  ut_assert_uint8_list_equal_hex(level2_result, "789c6360000000020001");
 
   UtObjectRef level3_data = ut_uint8_list_new_from_hex_string("0000");
   UtObjectRef level3_data_stream = ut_list_input_stream_new(level3_data);
-  UtObjectRef level3_encoder =
-      ut_zlib_encoder_new_full(3, 32768, level3_data_stream);
+  UtObjectRef level3_encoder = ut_zlib_encoder_new_full(
+      UT_ZLIB_COMPRESSION_LEVEL_MAXIMUM, 32768, level3_data_stream);
   UtObjectRef level3_result = ut_input_stream_read_sync(level3_encoder);
   ut_assert_is_not_error(level3_result);
   ut_assert_uint8_list_equal_hex(level3_result, "78da6360000000020001");

@@ -23,7 +23,7 @@ typedef struct {
   UtObject *cancel;
   DecoderState state;
   uint16_t window_size;
-  uint8_t compression_level;
+  UtZlibCompressionLevel compression_level;
   uint32_t dictionary_checksum;
   uint32_t checksum;
   UtObject *deflate_decoder;
@@ -300,7 +300,7 @@ UtObject *ut_zlib_decoder_new(UtObject *input_stream) {
   return object;
 }
 
-uint8_t ut_zlib_decoder_get_compression_level(UtObject *object) {
+UtZlibCompressionLevel ut_zlib_decoder_get_compression_level(UtObject *object) {
   assert(ut_object_is_zlib_decoder(object));
   UtZlibDecoder *self = (UtZlibDecoder *)object;
   return self->compression_level;

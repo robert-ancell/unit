@@ -141,5 +141,6 @@
 #include "zlib/ut-zlib-decoder.h"
 #include "zlib/ut-zlib-encoder.h"
 #include "zlib/ut-zlib-error.h"
+#include "zlib/ut-zlib.h"
 #include "json/ut-json-encoder.h"
 #include "json/ut-json.h"

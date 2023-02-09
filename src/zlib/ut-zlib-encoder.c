@@ -14,7 +14,7 @@ typedef struct {
   void *user_data;
   UtObject *cancel;
 
-  uint8_t compression_level;
+  UtZlibCompressionLevel compression_level;
   size_t window_size;
 
   // Checksum calculated of uncompressed data.
@@ -157,10 +157,11 @@ static UtObjectInterface object_interface = {
                    {NULL, NULL}}};
 
 UtObject *ut_zlib_encoder_new(UtObject *input_stream) {
-  return ut_zlib_encoder_new_full(2, 32768, input_stream);
+  return ut_zlib_encoder_new_full(UT_ZLIB_COMPRESSION_LEVEL_DEFAULT, 32768,
+                                  input_stream);
 }
 
-UtObject *ut_zlib_encoder_new_full(uint8_t compression_level,
+UtObject *ut_zlib_encoder_new_full(UtZlibCompressionLevel compression_level,
                                    size_t window_size, UtObject *input_stream) {
   assert(input_stream != NULL);
   UtObject *object = ut_object_new(sizeof(UtZlibEncoder), &object_interface);

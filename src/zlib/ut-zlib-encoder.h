@@ -1,6 +1,7 @@
 #include <stdbool.h>
 
 #include "ut-object.h"
+#include "ut-zlib.h"
 
 #pragma once
 
@@ -13,7 +14,7 @@ UtObject *ut_zlib_encoder_new(UtObject *input_stream);
 /// the given [compression_level] and [window_size].
 ///
 /// !return-type UtZlibEncoder
-UtObject *ut_zlib_encoder_new_full(uint8_t compression_level,
+UtObject *ut_zlib_encoder_new_full(UtZlibCompressionLevel compression_level,
                                    size_t window_size, UtObject *input_stream);
 
 /// Returns [true] if [object] is a [UtZLibEncoder].

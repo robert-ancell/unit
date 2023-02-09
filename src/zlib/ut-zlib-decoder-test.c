@@ -82,7 +82,22 @@ int main(int argc, char **argv) {
       ut_input_stream_read_sync(level0_data_decoder);
   ut_assert_is_not_error(level0_data_result);
   ut_assert_int_equal(
-      ut_zlib_decoder_get_compression_level(level0_data_decoder), 0);
+      ut_zlib_decoder_get_compression_level(level0_data_decoder),
+      UT_ZLIB_COMPRESSION_LEVEL_FASTEST);
+
+  // Compression level 1 (fast)
+  UtObjectRef level1_data_data =
+      ut_uint8_list_new_from_hex_string("785e6360000000020001");
+  UtObjectRef level1_data_data_stream =
+      ut_list_input_stream_new(level1_data_data);
+  UtObjectRef level1_data_decoder =
+      ut_zlib_decoder_new(level1_data_data_stream);
+  UtObjectRef level1_data_result =
+      ut_input_stream_read_sync(level1_data_decoder);
+  ut_assert_is_not_error(level1_data_result);
+  ut_assert_int_equal(
+      ut_zlib_decoder_get_compression_level(level1_data_decoder),
+      UT_ZLIB_COMPRESSION_LEVEL_FAST);
 
   // Compression level 2 (default)
   UtObjectRef level2_data_data =
@@ -95,7 +110,8 @@ int main(int argc, char **argv) {
       ut_input_stream_read_sync(level2_data_decoder);
   ut_assert_is_not_error(level2_data_result);
   ut_assert_int_equal(
-      ut_zlib_decoder_get_compression_level(level2_data_decoder), 2);
+      ut_zlib_decoder_get_compression_level(level2_data_decoder),
+      UT_ZLIB_COMPRESSION_LEVEL_DEFAULT);
 
   // Compression level 3 (maximum)
   UtObjectRef level3_data_data =
@@ -108,7 +124,8 @@ int main(int argc, char **argv) {
       ut_input_stream_read_sync(level3_data_decoder);
   ut_assert_is_not_error(level3_data_result);
   ut_assert_int_equal(
-      ut_zlib_decoder_get_compression_level(level3_data_decoder), 3);
+      ut_zlib_decoder_get_compression_level(level3_data_decoder),
+      UT_ZLIB_COMPRESSION_LEVEL_MAXIMUM);
 
   return 0;
 }
