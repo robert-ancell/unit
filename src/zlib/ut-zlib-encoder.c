@@ -14,6 +14,8 @@ typedef struct {
   void *user_data;
   UtObject *cancel;
 
+  size_t window_size;
+
   // Checksum calculated of uncompressed data.
   uint32_t checksum;
 
@@ -25,22 +27,34 @@ typedef struct {
   UtObject *buffer;
 } UtZlibEncoder;
 
-static size_t get_window_size_exponent(size_t window_size) {
-  assert(window_size >= 256);
+static bool encode_window_size(size_t window_size, uint8_t *value) {
+  if (window_size < 256 || window_size > 32768) {
+    return false;
+  }
+
   size_t exponent = 8;
   size_t w = window_size >> 8;
   while ((w & 0x1) == 0) {
     w >>= 1;
     exponent++;
   }
-  assert(w == 1);
-  return exponent;
+
+  if (w != 1) {
+    return false;
+  }
+
+  if (value != NULL) {
+    *value = exponent - 8;
+  }
+
+  return true;
 }
 
 static void write_header(UtZlibEncoder *self, uint8_t compression_method,
                          size_t window_size, uint8_t compression_level) {
-  uint8_t cmf =
-      (get_window_size_exponent(window_size) - 8) << 4 | compression_method;
+  uint8_t window_size_value;
+  assert(encode_window_size(window_size, &window_size_value));
+  uint8_t cmf = window_size_value << 4 | compression_method;
   uint8_t flags = compression_level << 6;
 
   uint16_t header_check = (cmf << 8 | flags) % 31;
@@ -75,7 +89,9 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
   }
 
   if (!self->written_header) {
-    write_header(self, METHOD_DEFLATE, 32768, COMPRESSION_DEFAULT);
+    write_header(self, METHOD_DEFLATE,
+                 ut_deflate_encoder_get_window_size(self->deflate_encoder),
+                 COMPRESSION_DEFAULT);
     self->written_header = true;
   }
 
@@ -103,9 +119,6 @@ static void ut_zlib_encoder_init(UtObject *object) {
   UtZlibEncoder *self = (UtZlibEncoder *)object;
   self->read_cancel = ut_cancel_new();
   self->deflate_input_stream = ut_writable_input_stream_new();
-  self->deflate_encoder = ut_deflate_encoder_new(self->deflate_input_stream);
-  ut_input_stream_read(self->deflate_encoder, deflate_read_cb, self,
-                       self->read_cancel);
   self->buffer = ut_uint8_array_new();
 }
 
@@ -143,10 +156,27 @@ static UtObjectInterface object_interface = {
                    {NULL, NULL}}};
 
 UtObject *ut_zlib_encoder_new(UtObject *input_stream) {
+  return ut_zlib_encoder_new_with_window_size(32768, input_stream);
+}
+
+UtObject *ut_zlib_encoder_new_with_window_size(size_t window_size,
+                                               UtObject *input_stream) {
   assert(input_stream != NULL);
   UtObject *object = ut_object_new(sizeof(UtZlibEncoder), &object_interface);
   UtZlibEncoder *self = (UtZlibEncoder *)object;
+
+  if (!encode_window_size(window_size, NULL)) {
+    return ut_zlib_error_new("Invalid window size");
+  }
+  self->window_size = window_size;
+
   self->input_stream = ut_object_ref(input_stream);
+
+  self->deflate_encoder = ut_deflate_encoder_new_with_window_size(
+      window_size, self->deflate_input_stream);
+  ut_input_stream_read(self->deflate_encoder, deflate_read_cb, self,
+                       self->read_cancel);
+
   return object;
 }
 

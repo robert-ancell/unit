@@ -60,5 +60,16 @@ int main(int argc, char **argv) {
   ut_assert_cstring_equal(ut_string_get_text(hello3_result_string),
                           "hello hello hello");
 
+  UtObjectRef window_size_data =
+      ut_uint8_list_new_from_hex_string("0899bbb776df7b0007ee0339");
+  UtObjectRef window_size_data_stream =
+      ut_list_input_stream_new(window_size_data);
+  UtObjectRef window_size_decoder =
+      ut_zlib_decoder_new(window_size_data_stream);
+  UtObjectRef window_size_result =
+      ut_input_stream_read_sync(window_size_decoder);
+  ut_assert_is_not_error(window_size_result);
+  ut_assert_uint8_list_equal_hex(window_size_result, "DEADBEEF");
+
   return 0;
 }

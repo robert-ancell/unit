@@ -50,5 +50,16 @@ int main(int argc, char **argv) {
   ut_assert_uint8_list_equal_hex(hello3_result,
                                  "789ccb48cdc9c9574022013a2e067d");
 
+  UtObjectRef window_size_data = ut_uint8_list_new_from_hex_string("DEADBEEF");
+  UtObjectRef window_size_data_stream =
+      ut_list_input_stream_new(window_size_data);
+  UtObjectRef window_size_encoder =
+      ut_zlib_encoder_new_with_window_size(256, window_size_data_stream);
+  UtObjectRef window_size_result =
+      ut_input_stream_read_sync(window_size_encoder);
+  ut_assert_is_not_error(window_size_result);
+  ut_assert_uint8_list_equal_hex(window_size_result,
+                                 "0899bbb776df7b0007ee0339");
+
   return 0;
 }

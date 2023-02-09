@@ -16,6 +16,8 @@ typedef struct {
   void *user_data;
   UtObject *cancel;
 
+  size_t window_size;
+
   // Encoder to generate compressed bits.
   UtObject *huffman_encoder;
 
@@ -81,6 +83,9 @@ static void find_match(UtDeflateEncoder *self, size_t data_length,
   const uint8_t *data = dictionary + dictionary_length - data_length;
 
   size_t max_distance = dictionary_length - data_length;
+  if (max_distance >= self->window_size) {
+    max_distance = self->window_size;
+  }
 
   size_t best_distance_ = 0;
   size_t best_length_ = 0;
@@ -206,7 +211,7 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
   const uint8_t *dictionary_data = ut_uint8_list_get_data(self->dictionary);
   const uint8_t *new_data = dictionary_data + orig_dictionary_length;
 
-  // TODO: Can trim dictionary as max size is 32k.
+  // TODO: Can trim dictionary to `window_size`
 
   size_t data_length = ut_list_get_length(data);
   for (size_t i = 0; i < data_length;) {
@@ -297,11 +302,23 @@ static UtObjectInterface object_interface = {
                    {NULL, NULL}}};
 
 UtObject *ut_deflate_encoder_new(UtObject *input_stream) {
+  return ut_deflate_encoder_new_with_window_size(32768, input_stream);
+}
+
+UtObject *ut_deflate_encoder_new_with_window_size(size_t window_size,
+                                                  UtObject *input_stream) {
   assert(input_stream != NULL);
   UtObject *object = ut_object_new(sizeof(UtDeflateEncoder), &object_interface);
   UtDeflateEncoder *self = (UtDeflateEncoder *)object;
   self->input_stream = ut_object_ref(input_stream);
+  self->window_size = window_size;
   return object;
+}
+
+size_t ut_deflate_encoder_get_window_size(UtObject *object) {
+  assert(ut_object_is_deflate_encoder(object));
+  UtDeflateEncoder *self = (UtDeflateEncoder *)object;
+  return self->window_size;
 }
 
 bool ut_object_is_deflate_encoder(UtObject *object) {
