@@ -55,8 +55,7 @@ int main(int argc, char **argv) {
   ut_assert_cstring_equal(ut_string_get_text(hello3_result_string),
                           "hello hello hello");
 
-  UtObjectRef literal_data =
-      ut_uint8_list_new_from_hex_string("010100feff2100220022");
+  UtObjectRef literal_data = ut_uint8_list_new_from_hex_string("010100feff21");
   UtObjectRef literal_data_stream = ut_list_input_stream_new(literal_data);
   UtObjectRef literal_decoder = ut_deflate_decoder_new(literal_data_stream);
   UtObjectRef literal_result = ut_input_stream_read_sync(literal_decoder);
