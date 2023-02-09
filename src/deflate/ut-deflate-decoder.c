@@ -95,7 +95,7 @@ static bool read_block_header(UtDeflateDecoder *self, UtObject *data,
     self->state = DECODER_STATE_UNCOMPRESSED_LENGTH;
     return true;
   case 1:
-    self->error = ut_deflate_error_new();
+    self->error = ut_deflate_error_new("Dynamic Huffman not supported");
     self->state = DECODER_STATE_ERROR;
     return true;
   case 2: {
@@ -121,7 +121,7 @@ static bool read_block_header(UtDeflateDecoder *self, UtObject *data,
     return true;
   }
   default:
-    self->error = ut_deflate_error_new();
+    self->error = ut_deflate_error_new("Invalid deflate compression");
     self->state = DECODER_STATE_ERROR;
     return true;
   }
@@ -136,8 +136,10 @@ static bool read_uncompressed_length(UtDeflateDecoder *self, UtObject *data,
 
   self->length = ut_uint8_list_get_uint16_le(data, *offset);
   uint16_t nlength = ut_uint8_list_get_uint16_le(data, *offset + 2);
+
   if ((self->length ^ nlength) != 0xffff) {
-    self->error = ut_deflate_error_new();
+    self->error =
+        ut_deflate_error_new("Invalid deflate uncompressed length checksum");
     self->state = DECODER_STATE_ERROR;
     return true;
   }
@@ -205,7 +207,7 @@ static bool read_huffman_symbol(UtDeflateDecoder *self, UtObject *data,
     self->length_symbol = symbol;
     return true;
   } else {
-    self->error = ut_deflate_error_new();
+    self->error = ut_deflate_error_new("Invalid deflate Huffman code");
     self->state = DECODER_STATE_ERROR;
     return true;
   }
@@ -245,8 +247,8 @@ static bool read_distance1(UtDeflateDecoder *self, UtObject *data,
   }
 
   // 30 and 31 are reserved.
-  if (self->distance_index > 30) {
-    self->error = ut_deflate_error_new();
+  if (self->distance_index > 29) {
+    self->error = ut_deflate_error_new("Invalid deflate distance code");
     self->state = DECODER_STATE_ERROR;
     return true;
   }
@@ -273,7 +275,7 @@ static bool read_distance2(UtDeflateDecoder *self, UtObject *data,
 
   size_t buffer_length = ut_list_get_length(self->buffer);
   if (distance > buffer_length) {
-    self->error = ut_deflate_error_new();
+    self->error = ut_deflate_error_new("Invalid deflate distance");
     self->state = DECODER_STATE_ERROR;
     return true;
   }
