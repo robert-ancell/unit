@@ -71,5 +71,44 @@ int main(int argc, char **argv) {
   ut_assert_is_not_error(window_size_result);
   ut_assert_uint8_list_equal_hex(window_size_result, "DEADBEEF");
 
+  // Compression level 0 (fastest)
+  UtObjectRef level0_data_data =
+      ut_uint8_list_new_from_hex_string("78016360000000020001");
+  UtObjectRef level0_data_data_stream =
+      ut_list_input_stream_new(level0_data_data);
+  UtObjectRef level0_data_decoder =
+      ut_zlib_decoder_new(level0_data_data_stream);
+  UtObjectRef level0_data_result =
+      ut_input_stream_read_sync(level0_data_decoder);
+  ut_assert_is_not_error(level0_data_result);
+  ut_assert_int_equal(
+      ut_zlib_decoder_get_compression_level(level0_data_decoder), 0);
+
+  // Compression level 2 (default)
+  UtObjectRef level2_data_data =
+      ut_uint8_list_new_from_hex_string("789c6360000000020001");
+  UtObjectRef level2_data_data_stream =
+      ut_list_input_stream_new(level2_data_data);
+  UtObjectRef level2_data_decoder =
+      ut_zlib_decoder_new(level2_data_data_stream);
+  UtObjectRef level2_data_result =
+      ut_input_stream_read_sync(level2_data_decoder);
+  ut_assert_is_not_error(level2_data_result);
+  ut_assert_int_equal(
+      ut_zlib_decoder_get_compression_level(level2_data_decoder), 2);
+
+  // Compression level 3 (maximum)
+  UtObjectRef level3_data_data =
+      ut_uint8_list_new_from_hex_string("78da6360000000020001");
+  UtObjectRef level3_data_data_stream =
+      ut_list_input_stream_new(level3_data_data);
+  UtObjectRef level3_data_decoder =
+      ut_zlib_decoder_new(level3_data_data_stream);
+  UtObjectRef level3_data_result =
+      ut_input_stream_read_sync(level3_data_decoder);
+  ut_assert_is_not_error(level3_data_result);
+  ut_assert_int_equal(
+      ut_zlib_decoder_get_compression_level(level3_data_decoder), 3);
+
   return 0;
 }

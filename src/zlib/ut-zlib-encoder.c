@@ -14,6 +14,7 @@ typedef struct {
   void *user_data;
   UtObject *cancel;
 
+  uint8_t compression_level;
   size_t window_size;
 
   // Checksum calculated of uncompressed data.
@@ -91,7 +92,7 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
   if (!self->written_header) {
     write_header(self, METHOD_DEFLATE,
                  ut_deflate_encoder_get_window_size(self->deflate_encoder),
-                 COMPRESSION_DEFAULT);
+                 self->compression_level);
     self->written_header = true;
   }
 
@@ -156,18 +157,22 @@ static UtObjectInterface object_interface = {
                    {NULL, NULL}}};
 
 UtObject *ut_zlib_encoder_new(UtObject *input_stream) {
-  return ut_zlib_encoder_new_with_window_size(32768, input_stream);
+  return ut_zlib_encoder_new_full(2, 32768, input_stream);
 }
 
-UtObject *ut_zlib_encoder_new_with_window_size(size_t window_size,
-                                               UtObject *input_stream) {
+UtObject *ut_zlib_encoder_new_full(uint8_t compression_level,
+                                   size_t window_size, UtObject *input_stream) {
   assert(input_stream != NULL);
   UtObject *object = ut_object_new(sizeof(UtZlibEncoder), &object_interface);
   UtZlibEncoder *self = (UtZlibEncoder *)object;
 
+  if (compression_level > 3) {
+    return ut_zlib_error_new("Invalid compression level");
+  }
   if (!encode_window_size(window_size, NULL)) {
     return ut_zlib_error_new("Invalid window size");
   }
+  self->compression_level = compression_level;
   self->window_size = window_size;
 
   self->input_stream = ut_object_ref(input_stream);

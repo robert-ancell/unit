@@ -111,7 +111,7 @@ static bool read_header(UtZlibDecoder *self, UtObject *data, size_t *offset,
 
   uint8_t compression_method = cmf & 0x0f;
   if (compression_method != 8) {
-    self->error = ut_zlib_error_new("Unkown zlib compression method");
+    self->error = ut_zlib_error_new("Unknown zlib compression method");
     self->state = DECODER_STATE_ERROR;
     return true;
   }
@@ -298,6 +298,12 @@ UtObject *ut_zlib_decoder_new(UtObject *input_stream) {
   self->deflate_input_stream =
       ut_input_stream_multiplexer_add(self->multiplexer);
   return object;
+}
+
+uint8_t ut_zlib_decoder_get_compression_level(UtObject *object) {
+  assert(ut_object_is_zlib_decoder(object));
+  UtZlibDecoder *self = (UtZlibDecoder *)object;
+  return self->compression_level;
 }
 
 bool ut_object_is_zlib_decoder(UtObject *object) {
