@@ -57,6 +57,42 @@ static uint8_t distance_bits[32] = {0,  0,  0,  0,  1,  1,  2,  2,  3, 3, 4,
                                     4,  5,  5,  6,  6,  7,  7,  8,  8, 9, 9,
                                     10, 10, 11, 11, 12, 12, 13, 13, 0, 0};
 
+// Prepare to decode an uncompressed data block.
+static void start_uncompressed_block(UtDeflateDecoder *self) {
+  // Clear remaining unused bits
+  self->bit_buffer = 0;
+  self->bit_count = 0;
+  self->state = DECODER_STATE_UNCOMPRESSED_LENGTH;
+}
+
+// Prepare to decode a compressed data block using fixed Huffman codes.
+static void start_fixed_compressed_block(UtDeflateDecoder *self) {
+  UtObjectRef huffman_code_widths = ut_uint8_list_new();
+  for (size_t symbol = 0; symbol <= 287; symbol++) {
+    uint8_t code_width;
+    if (symbol <= 143) {
+      code_width = 8;
+    } else if (symbol <= 255) {
+      code_width = 9;
+    } else if (symbol <= 279) {
+      code_width = 7;
+    } else {
+      code_width = 8;
+    }
+    ut_uint8_list_append(huffman_code_widths, code_width);
+  }
+  ut_object_unref(self->huffman_decoder);
+  self->huffman_decoder = ut_huffman_decoder_new_canonical(huffman_code_widths);
+
+  self->state = DECODER_STATE_HUFFMAN_SYMBOL;
+}
+
+// Prepare to decode a compressed data block using fixed Huffman codes.
+static void start_dynamic_compressed_block(UtDeflateDecoder *self) {
+  self->error = ut_deflate_error_new("Dynamic Huffman not supported");
+  self->state = DECODER_STATE_ERROR;
+}
+
 static size_t get_remaining_bits(UtDeflateDecoder *self, UtObject *data,
                                  size_t *offset) {
   return self->bit_count + (ut_list_get_length(data) - *offset) * 8;
@@ -89,37 +125,14 @@ static bool read_block_header(UtDeflateDecoder *self, UtObject *data,
       read_bit(self, data, offset) << 1 | read_bit(self, data, offset);
   switch (block_type) {
   case 0:
-    // Clear remaining unused bits
-    self->bit_buffer = 0;
-    self->bit_count = 0;
-    self->state = DECODER_STATE_UNCOMPRESSED_LENGTH;
+    start_uncompressed_block(self);
     return true;
   case 1:
-    self->error = ut_deflate_error_new("Dynamic Huffman not supported");
-    self->state = DECODER_STATE_ERROR;
+    start_dynamic_compressed_block(self);
     return true;
-  case 2: {
-    UtObjectRef huffman_code_widths = ut_uint8_list_new();
-    for (size_t symbol = 0; symbol <= 287; symbol++) {
-      uint8_t code_width;
-      if (symbol <= 143) {
-        code_width = 8;
-      } else if (symbol <= 255) {
-        code_width = 9;
-      } else if (symbol <= 279) {
-        code_width = 7;
-      } else {
-        code_width = 8;
-      }
-      ut_uint8_list_append(huffman_code_widths, code_width);
-    }
-    ut_object_unref(self->huffman_decoder);
-    self->huffman_decoder =
-        ut_huffman_decoder_new_canonical(huffman_code_widths);
-
-    self->state = DECODER_STATE_HUFFMAN_SYMBOL;
+  case 2:
+    start_fixed_compressed_block(self);
     return true;
-  }
   default:
     self->error = ut_deflate_error_new("Invalid deflate compression");
     self->state = DECODER_STATE_ERROR;
