@@ -3,6 +3,12 @@
 
 #include "ut.h"
 
+static size_t read_cb(void *user_data, UtObject *data, bool complete) {
+  UtObject *result = user_data;
+  ut_list_append_list(result, data);
+  return ut_list_get_length(data);
+}
+
 int main(int argc, char **argv) {
   UtObjectRef empty_data = ut_uint8_list_new_from_hex_string("0300");
   UtObjectRef empty_data_stream = ut_list_input_stream_new(empty_data);
@@ -91,6 +97,26 @@ int main(int argc, char **argv) {
       ut_string_new_from_utf8(multi_block_result);
   ut_assert_cstring_equal(ut_string_get_text(multi_block_result_string),
                           "hello world");
+
+  // Decode one byte at a time.
+  UtObjectRef short_write_data_stream = ut_writable_input_stream_new();
+  UtObjectRef short_write_decoder =
+      ut_deflate_decoder_new(short_write_data_stream);
+  UtObjectRef short_write_result = ut_uint8_array_new();
+  ut_input_stream_read(short_write_decoder, read_cb, short_write_result, NULL);
+  UtObjectRef short_write_data =
+      ut_uint8_list_new_from_hex_string("cb48cdc9c90700");
+  size_t short_write_data_length = ut_list_get_length(short_write_data);
+  for (size_t i = 0; i < short_write_data_length; i++) {
+    UtObjectRef data = ut_list_get_sublist(short_write_data, i, 1);
+    assert(ut_writable_input_stream_write(short_write_data_stream, data,
+                                          i == short_write_data_length - 1) ==
+           1);
+  }
+  UtObjectRef short_write_result_string =
+      ut_string_new_from_utf8(short_write_result);
+  ut_assert_cstring_equal(ut_string_get_text(short_write_result_string),
+                          "hello");
 
   return 0;
 }

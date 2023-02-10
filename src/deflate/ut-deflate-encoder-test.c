@@ -1,8 +1,16 @@
+#include <assert.h>
+
 #include "ut.h"
 
 static UtObject *get_utf8_data(const char *value) {
   UtObjectRef string = ut_string_new(value);
   return ut_string_get_utf8(string);
+}
+
+static size_t read_cb(void *user_data, UtObject *data, bool complete) {
+  UtObject *result = user_data;
+  ut_list_append_list(result, data);
+  return ut_list_get_length(data);
 }
 
 int main(int argc, char **argv) {
@@ -67,6 +75,22 @@ int main(int argc, char **argv) {
   ut_assert_is_not_error(repeat_phrase_result);
   ut_assert_uint8_list_equal_hex(repeat_phrase_result,
                                  "cb2f2d524803111950665e4962661e00");
+
+  // Encode one character at a time.
+  UtObjectRef short_write_data_stream = ut_writable_input_stream_new();
+  UtObjectRef short_write_encoder =
+      ut_deflate_encoder_new(short_write_data_stream);
+  UtObjectRef short_write_result = ut_uint8_array_new();
+  ut_input_stream_read(short_write_encoder, read_cb, short_write_result, NULL);
+  UtObjectRef short_write_data = get_utf8_data("hello");
+  size_t short_write_data_length = ut_list_get_length(short_write_data);
+  for (size_t i = 0; i < short_write_data_length; i++) {
+    UtObjectRef data = ut_list_get_sublist(short_write_data, i, 1);
+    assert(ut_writable_input_stream_write(short_write_data_stream, data,
+                                          i == short_write_data_length - 1) ==
+           1);
+  }
+  ut_assert_uint8_list_equal_hex(short_write_result, "cb48cdc9c90700");
 
   return 0;
 }
