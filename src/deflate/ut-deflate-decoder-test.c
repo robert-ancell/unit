@@ -1,6 +1,3 @@
-#include <assert.h>
-#include <stdio.h>
-
 #include "ut.h"
 
 static size_t read_cb(void *user_data, UtObject *data, bool complete) {
@@ -15,7 +12,7 @@ int main(int argc, char **argv) {
   UtObjectRef empty_decoder = ut_deflate_decoder_new(empty_data_stream);
   UtObjectRef empty_result = ut_input_stream_read_sync(empty_decoder);
   ut_assert_is_not_error(empty_result);
-  assert(ut_list_get_length(empty_result) == 0);
+  ut_assert_int_equal(ut_list_get_length(empty_result), 0);
 
   UtObjectRef single_data = ut_uint8_list_new_from_hex_string("630000");
   UtObjectRef single_data_stream = ut_list_input_stream_new(single_data);
@@ -109,9 +106,10 @@ int main(int argc, char **argv) {
   size_t short_write_data_length = ut_list_get_length(short_write_data);
   for (size_t i = 0; i < short_write_data_length; i++) {
     UtObjectRef data = ut_list_get_sublist(short_write_data, i, 1);
-    assert(ut_writable_input_stream_write(short_write_data_stream, data,
-                                          i == short_write_data_length - 1) ==
-           1);
+    ut_assert_int_equal(
+        ut_writable_input_stream_write(short_write_data_stream, data,
+                                       i == short_write_data_length - 1),
+        1);
   }
   UtObjectRef short_write_result_string =
       ut_string_new_from_utf8(short_write_result);
