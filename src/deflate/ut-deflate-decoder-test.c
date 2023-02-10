@@ -77,5 +77,20 @@ int main(int argc, char **argv) {
   ut_assert_cstring_equal(ut_string_get_text(repeat_phrase_result_string),
                           "our four hour fountain");
 
+  // Three blocks of Huffman encoded data. "hello", " ", "world"
+  UtObjectRef multi_block_data =
+      ut_uint8_list_new_from_hex_string("ca48cdc9c9074801b0f2fca29c1400");
+  UtObjectRef multi_block_data_stream =
+      ut_list_input_stream_new(multi_block_data);
+  UtObjectRef multi_block_decoder =
+      ut_deflate_decoder_new(multi_block_data_stream);
+  UtObjectRef multi_block_result =
+      ut_input_stream_read_sync(multi_block_decoder);
+  ut_assert_is_not_error(multi_block_result);
+  UtObjectRef multi_block_result_string =
+      ut_string_new_from_utf8(multi_block_result);
+  ut_assert_cstring_equal(ut_string_get_text(multi_block_result_string),
+                          "hello world");
+
   return 0;
 }
