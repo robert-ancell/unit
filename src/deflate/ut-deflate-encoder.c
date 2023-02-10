@@ -214,20 +214,26 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
   // TODO: Can trim dictionary to `window_size`
 
   size_t data_length = ut_list_get_length(data);
-  for (size_t i = 0; i < data_length;) {
+  size_t n_used = 0;
+  while (n_used < data_length) {
     size_t distance, length;
-    find_match(self, data_length - i, &distance, &length);
+    find_match(self, data_length - n_used, &distance, &length);
 
-    // FIXME: If match length is to the end of the dictionary, should wait until
-    // we get more data in case the match is longer.
+    // If we have a match for all the data, stop here if more data to come - the
+    // match might be longer.
+    if (!complete && length == n_used) {
+      ut_list_remove(self->dictionary, orig_dictionary_length + n_used,
+                     data_length - n_used);
+      break;
+    }
 
     if (length >= 3) {
       write_length(self, length);
       write_distance(self, distance);
-      i += length;
+      n_used += length;
     } else {
-      write_symbol(self, self->huffman_encoder, new_data[i]);
-      i++;
+      write_symbol(self, self->huffman_encoder, new_data[n_used]);
+      n_used++;
     }
   }
 
@@ -238,11 +244,11 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
   }
 
   if (ut_list_get_length(self->buffer) > 0 || complete) {
-    size_t n_used = self->callback(self->user_data, self->buffer, complete);
-    ut_list_remove(self->buffer, 0, n_used);
+    size_t n = self->callback(self->user_data, self->buffer, complete);
+    ut_list_remove(self->buffer, 0, n);
   }
 
-  return data_length;
+  return n_used;
 }
 
 static void ut_deflate_encoder_init(UtObject *object) {
