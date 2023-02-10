@@ -132,7 +132,7 @@ int main(int argc, char **argv) {
       UT_ZLIB_COMPRESSION_LEVEL_MAXIMUM);
 
   // Decode one byte at a time.
-  UtObjectRef short_write_data_stream = ut_writable_input_stream_new();
+  UtObjectRef short_write_data_stream = ut_buffered_input_stream_new();
   UtObjectRef short_write_decoder =
       ut_zlib_decoder_new(short_write_data_stream);
   UtObjectRef short_write_result = ut_uint8_array_new();
@@ -140,14 +140,10 @@ int main(int argc, char **argv) {
   UtObjectRef short_write_data =
       ut_uint8_list_new_from_hex_string("789ccb48cdc9c90700062c0215");
   size_t short_write_data_length = ut_list_get_length(short_write_data);
-  size_t write_length = 1;
-  for (size_t i = 0; i < short_write_data_length;) {
-    UtObjectRef data = ut_list_get_sublist(short_write_data, i, write_length);
-    size_t n_used = ut_writable_input_stream_write(
-        short_write_data_stream, data,
-        i + write_length == short_write_data_length);
-    write_length = write_length - n_used + 1;
-    i += n_used;
+  for (size_t i = 0; i < short_write_data_length; i++) {
+    UtObjectRef data = ut_list_get_sublist(short_write_data, i, 1);
+    ut_buffered_input_stream_write(short_write_data_stream, data,
+                                   i == short_write_data_length - 1);
   }
   UtObjectRef short_write_result_string =
       ut_string_new_from_utf8(short_write_result);

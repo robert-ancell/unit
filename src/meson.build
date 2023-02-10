@@ -36,6 +36,7 @@ ut_sources = [
   'ut-bit-array.c',
   'ut-bit-list.c',
   'ut-boolean.c',
+  'ut-buffered-input-stream.c',
   'ut-cancel.c',
   'ut-color.c',
   'ut-constant-utf8-string.c',

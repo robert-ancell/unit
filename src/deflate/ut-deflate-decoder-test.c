@@ -96,7 +96,7 @@ int main(int argc, char **argv) {
                           "hello world");
 
   // Decode one byte at a time.
-  UtObjectRef short_write_data_stream = ut_writable_input_stream_new();
+  UtObjectRef short_write_data_stream = ut_buffered_input_stream_new();
   UtObjectRef short_write_decoder =
       ut_deflate_decoder_new(short_write_data_stream);
   UtObjectRef short_write_result = ut_uint8_array_new();
@@ -106,10 +106,8 @@ int main(int argc, char **argv) {
   size_t short_write_data_length = ut_list_get_length(short_write_data);
   for (size_t i = 0; i < short_write_data_length; i++) {
     UtObjectRef data = ut_list_get_sublist(short_write_data, i, 1);
-    ut_assert_int_equal(
-        ut_writable_input_stream_write(short_write_data_stream, data,
-                                       i == short_write_data_length - 1),
-        1);
+    ut_buffered_input_stream_write(short_write_data_stream, data,
+                                   i == short_write_data_length - 1);
   }
   UtObjectRef short_write_result_string =
       ut_string_new_from_utf8(short_write_result);
