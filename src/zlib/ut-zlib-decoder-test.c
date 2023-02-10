@@ -1,7 +1,11 @@
-#include <assert.h>
-#include <stdio.h>
-
 #include "ut.h"
+
+static size_t read_cb(void *user_data, UtObject *data, bool complete) {
+  UtObject *result = user_data;
+  ut_assert_is_not_error(data);
+  ut_list_append_list(result, data);
+  return ut_list_get_length(data);
+}
 
 int main(int argc, char **argv) {
   UtObjectRef empty_data =
@@ -10,7 +14,7 @@ int main(int argc, char **argv) {
   UtObjectRef empty_decoder = ut_zlib_decoder_new(empty_data_stream);
   UtObjectRef empty_result = ut_input_stream_read_sync(empty_decoder);
   ut_assert_is_not_error(empty_result);
-  assert(ut_list_get_length(empty_result) == 0);
+  ut_assert_int_equal(ut_list_get_length(empty_result), 0);
 
   UtObjectRef single_data =
       ut_uint8_list_new_from_hex_string("789c63000000010001");
@@ -126,6 +130,29 @@ int main(int argc, char **argv) {
   ut_assert_int_equal(
       ut_zlib_decoder_get_compression_level(level3_data_decoder),
       UT_ZLIB_COMPRESSION_LEVEL_MAXIMUM);
+
+  // Decode one byte at a time.
+  UtObjectRef short_write_data_stream = ut_writable_input_stream_new();
+  UtObjectRef short_write_decoder =
+      ut_zlib_decoder_new(short_write_data_stream);
+  UtObjectRef short_write_result = ut_uint8_array_new();
+  ut_input_stream_read(short_write_decoder, read_cb, short_write_result, NULL);
+  UtObjectRef short_write_data =
+      ut_uint8_list_new_from_hex_string("789ccb48cdc9c90700062c0215");
+  size_t short_write_data_length = ut_list_get_length(short_write_data);
+  size_t write_length = 1;
+  for (size_t i = 0; i < short_write_data_length;) {
+    UtObjectRef data = ut_list_get_sublist(short_write_data, i, write_length);
+    size_t n_used = ut_writable_input_stream_write(
+        short_write_data_stream, data,
+        i + write_length == short_write_data_length);
+    write_length = write_length - n_used + 1;
+    i += n_used;
+  }
+  UtObjectRef short_write_result_string =
+      ut_string_new_from_utf8(short_write_result);
+  ut_assert_cstring_equal(ut_string_get_text(short_write_result_string),
+                          "hello");
 
   return 0;
 }
