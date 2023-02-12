@@ -129,6 +129,36 @@ static uint8_t read_bit(UtDeflateDecoder *self, UtObject *data,
   return value;
 }
 
+static uint8_t read_int(UtDeflateDecoder *self, size_t length, UtObject *data,
+                        size_t *offset) {
+  uint8_t value = 0;
+  for (size_t i = 0; i < length; i++) {
+    value = value << 1 | read_bit(self, data, offset);
+  }
+
+  return value;
+}
+
+static bool read_huffman_symbol(UtDeflateDecoder *self, UtObject *data,
+                                size_t *offset, UtObject *decoder,
+                                uint16_t *symbol) {
+  size_t remaining = get_remaining_bits(self, data, offset);
+
+  for (size_t i = 0; i < remaining; i++) {
+    self->code = self->code << 1 | read_bit(self, data, offset);
+    self->code_width++;
+
+    if (ut_huffman_decoder_get_symbol(decoder, self->code, self->code_width,
+                                      symbol)) {
+      self->code = 0;
+      self->code_width = 0;
+      return true;
+    }
+  }
+
+  return false;
+}
+
 static bool read_block_header(UtDeflateDecoder *self, UtObject *data,
                               size_t *offset) {
   size_t remaining = get_remaining_bits(self, data, offset);
@@ -137,8 +167,7 @@ static bool read_block_header(UtDeflateDecoder *self, UtObject *data,
   }
 
   self->is_last_block = read_bit(self, data, offset) == 1;
-  uint8_t block_type =
-      read_bit(self, data, offset) << 1 | read_bit(self, data, offset);
+  uint8_t block_type = read_int(self, 2, data, offset);
   switch (block_type) {
   case 0:
     start_uncompressed_block(self);
@@ -196,31 +225,11 @@ static bool read_uncompressed_data(UtDeflateDecoder *self, UtObject *data,
   return true;
 }
 
-static bool decode_huffman_symbol(UtDeflateDecoder *self, UtObject *data,
-                                  size_t *offset, UtObject *decoder,
-                                  uint16_t *symbol) {
-  size_t remaining = get_remaining_bits(self, data, offset);
-
-  for (size_t i = 0; i < remaining; i++) {
-    self->code = self->code << 1 | read_bit(self, data, offset);
-    self->code_width++;
-
-    if (ut_huffman_decoder_get_symbol(decoder, self->code, self->code_width,
-                                      symbol)) {
-      self->code = 0;
-      self->code_width = 0;
-      return true;
-    }
-  }
-
-  return false;
-}
-
 static bool read_literal_length(UtDeflateDecoder *self, UtObject *data,
                                 size_t *offset) {
   uint16_t symbol;
-  if (!decode_huffman_symbol(self, data, offset,
-                             self->literal_length_huffman_decoder, &symbol)) {
+  if (!read_huffman_symbol(self, data, offset,
+                           self->literal_length_huffman_decoder, &symbol)) {
     return false;
   }
 
@@ -251,10 +260,7 @@ static bool read_length(UtDeflateDecoder *self, UtObject *data,
     return false;
   }
 
-  uint16_t extra = 0;
-  for (uint8_t i = 0; i < bit_count; i++) {
-    extra = extra << 1 | read_bit(self, data, offset);
-  }
+  uint16_t extra = read_int(self, bit_count, data, offset);
   self->length = base_lengths[self->length_symbol - 257] + extra;
 
   self->state = DECODER_STATE_DISTANCE;
@@ -264,8 +270,8 @@ static bool read_length(UtDeflateDecoder *self, UtObject *data,
 static bool read_distance(UtDeflateDecoder *self, UtObject *data,
                           size_t *offset) {
   uint16_t symbol;
-  if (!decode_huffman_symbol(self, data, offset, self->distance_huffman_decoder,
-                             &symbol)) {
+  if (!read_huffman_symbol(self, data, offset, self->distance_huffman_decoder,
+                           &symbol)) {
     return false;
   }
 
@@ -292,10 +298,7 @@ static bool read_distance_extension(UtDeflateDecoder *self, UtObject *data,
     return false;
   }
 
-  uint16_t extra = 0;
-  for (uint8_t i = 0; i < bit_count; i++) {
-    extra = extra << 1 | read_bit(self, data, offset);
-  }
+  uint16_t extra = read_int(self, bit_count, data, offset);
   uint16_t distance = base_distances[self->distance_index] + extra;
 
   size_t buffer_length = ut_list_get_length(self->buffer);
