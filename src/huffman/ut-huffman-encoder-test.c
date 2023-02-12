@@ -146,7 +146,60 @@ static void test_encode_canonical() {
   ut_assert_uint8_list_equal(bits, expected_bits, 135);
 }
 
+static void test_encode_canonical_zero_lengths() {
+  // The same as above, but using zero code withs for the other letters.
+  const char *symbols = " abcdefghijklmnopqrstuvwxyz";
+  UtObjectRef code_widths =
+      ut_uint8_list_new_from_elements(27, 3, 3, 0, 0, 0, 3, 4, 0, 4, 4, 0, 0, 5,
+                                      4, 4, 5, 5, 0, 5, 4, 4, 5, 0, 0, 5, 0, 0);
+  UtObjectRef encoder = ut_huffman_encoder_new_canonical(code_widths);
+
+  const char *message = "this is an example of a huffman tree";
+  UtObjectRef bits = encode(encoder, symbols, message);
+
+  uint8_t expected_bits[135] = {
+      1, 1, 0, 0,    // 't'
+      0, 1, 1, 1,    // 'h'
+      1, 0, 0, 0,    // 'i'
+      1, 0, 1, 1,    // 's'
+      0, 0, 0,       // ' '
+      1, 0, 0, 0,    // 'i'
+      1, 0, 1, 1,    // 's'
+      0, 0, 0,       // ' '
+      0, 0, 1,       // 'a'
+      1, 0, 1, 0,    // 'n'
+      0, 0, 0,       // ' '
+      0, 1, 0,       // 'e'
+      1, 1, 1, 1, 1, // 'x'
+      0, 0, 1,       // 'a'
+      1, 0, 0, 1,    // 'm'
+      1, 1, 1, 0, 0, // 'p'
+      1, 1, 0, 1, 0, // 'l'
+      0, 1, 0,       // 'e'
+      0, 0, 0,       // ' '
+      1, 1, 0, 1, 1, // 'o'
+      0, 1, 1, 0,    // 'f'
+      0, 0, 0,       // ' '
+      0, 0, 1,       // 'a'
+      0, 0, 0,       // ' '
+      0, 1, 1, 1,    // 'h'
+      1, 1, 1, 1, 0, // 'u'
+      0, 1, 1, 0,    // 'f'
+      0, 1, 1, 0,    // 'f'
+      1, 0, 0, 1,    // 'm'
+      0, 0, 1,       // 'a'
+      1, 0, 1, 0,    // 'n'
+      0, 0, 0,       // ' '
+      1, 1, 0, 0,    // 't'
+      1, 1, 1, 0, 1, // 'r'
+      0, 1, 0,       // 'e'
+      0, 1, 0        // 'e'
+  };
+  ut_assert_uint8_list_equal(bits, expected_bits, 135);
+}
+
 int main(int argc, char **argv) {
   test_encode();
   test_encode_canonical();
+  test_encode_canonical_zero_lengths();
 }
