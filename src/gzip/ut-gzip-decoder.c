@@ -94,6 +94,14 @@ static size_t deflate_read_cb(void *user_data, UtObject *data, bool complete) {
     return 0;
   }
 
+  if (ut_object_implements_error(data)) {
+    ut_cstring_ref description = ut_cstring_new_printf(
+        "Error decoding deflate data: %s", ut_error_get_description(data));
+    self->error = ut_gzip_error_new(description);
+    self->state = DECODER_STATE_ERROR;
+    return 0;
+  }
+
   size_t data_length = ut_list_get_length(data);
   size_t n_used = self->callback(self->user_data, data, complete);
   assert(n_used <= data_length);
