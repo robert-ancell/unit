@@ -66,19 +66,20 @@ int main(int argc, char **argv) {
   UtObjectRef literal_result_string = ut_string_new_from_utf8(literal_result);
   ut_assert_cstring_equal(ut_string_get_text(literal_result_string), "!");
 
-  UtObjectRef repeat_phrase_data =
-      ut_uint8_list_new_from_hex_string("cb2f2d524803111950665e4962661e00");
-  UtObjectRef repeat_phrase_data_stream =
-      ut_list_input_stream_new(repeat_phrase_data);
-  UtObjectRef repeat_phrase_decoder =
-      ut_deflate_decoder_new(repeat_phrase_data_stream);
-  UtObjectRef repeat_phrase_result =
-      ut_input_stream_read_sync(repeat_phrase_decoder);
-  ut_assert_is_not_error(repeat_phrase_result);
-  UtObjectRef repeat_phrase_result_string =
-      ut_string_new_from_utf8(repeat_phrase_result);
-  ut_assert_cstring_equal(ut_string_get_text(repeat_phrase_result_string),
-                          "our four hour fountain");
+  // Data encoded using a dynamic Huffman table.
+  UtObjectRef dynamic_huffman_data = ut_uint8_list_new_from_hex_string(
+      "1dc6490100001040c0aca37f883d3c202a979d375e1d0c");
+  UtObjectRef dynamic_huffman_data_stream =
+      ut_list_input_stream_new(dynamic_huffman_data);
+  UtObjectRef dynamic_huffman_decoder =
+      ut_deflate_decoder_new(dynamic_huffman_data_stream);
+  UtObjectRef dynamic_huffman_result =
+      ut_input_stream_read_sync(dynamic_huffman_decoder);
+  ut_assert_is_not_error(dynamic_huffman_result);
+  UtObjectRef dynamic_huffman_result_string =
+      ut_string_new_from_utf8(dynamic_huffman_result);
+  ut_assert_cstring_equal(ut_string_get_text(dynamic_huffman_result_string),
+                          "abaabbbabaababbaababaaaabaaabbbbbaa");
 
   // Three blocks of Huffman encoded data. "hello", " ", "world"
   UtObjectRef multi_block_data =

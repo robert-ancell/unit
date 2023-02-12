@@ -64,6 +64,20 @@ int main(int argc, char **argv) {
   ut_assert_cstring_equal(ut_string_get_text(hello3_result_string),
                           "hello hello hello");
 
+  UtObjectRef dynamic_huffman_data = ut_uint8_list_new_from_hex_string(
+      "789c1dc6490100001040c0aca37f883d3c202a979d375e1d0ceff90d54");
+  UtObjectRef dynamic_huffman_data_stream =
+      ut_list_input_stream_new(dynamic_huffman_data);
+  UtObjectRef dynamic_huffman_decoder =
+      ut_zlib_decoder_new(dynamic_huffman_data_stream);
+  UtObjectRef dynamic_huffman_result =
+      ut_input_stream_read_sync(dynamic_huffman_decoder);
+  ut_assert_is_not_error(dynamic_huffman_result);
+  UtObjectRef dynamic_huffman_result_string =
+      ut_string_new_from_utf8(dynamic_huffman_result);
+  ut_assert_cstring_equal(ut_string_get_text(dynamic_huffman_result_string),
+                          "abaabbbabaababbaababaaaabaaabbbbbaa");
+
   UtObjectRef window_size_data =
       ut_uint8_list_new_from_hex_string("0899bbb776df7b0007ee0339");
   UtObjectRef window_size_data_stream =

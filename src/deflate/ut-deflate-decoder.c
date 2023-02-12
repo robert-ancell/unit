@@ -6,6 +6,12 @@ typedef enum {
   DECODER_STATE_BLOCK_HEADER,
   DECODER_STATE_UNCOMPRESSED_LENGTH,
   DECODER_STATE_UNCOMPRESSED_DATA,
+  DECODER_STATE_DYNAMIC_HUFFMAN_LENGTHS,
+  DECODER_STATE_DYNAMIC_HUFFMAN_CODE_WIDTH_CODE,
+  DECODER_STATE_DYNAMIC_HUFFMAN_CODE_WIDTH,
+  DECODER_STATE_DYNAMIC_HUFFMAN_CODE_WIDTH_REPEAT,
+  DECODER_STATE_DYNAMIC_HUFFMAN_CODE_WIDTH_REPEAT_ZERO_SHORT,
+  DECODER_STATE_DYNAMIC_HUFFMAN_CODE_WIDTH_REPEAT_ZERO_LONG,
   DECODER_STATE_LITERAL_LENGTH,
   DECODER_STATE_LENGTH,
   DECODER_STATE_DISTANCE,
@@ -30,6 +36,14 @@ typedef struct {
 
   // true if the current block is the last block.
   bool is_last_block;
+
+  // Information for dynamic Huffman codes.
+  size_t n_literal_length_codes;
+  size_t n_distance_codes;
+  size_t n_code_width_codes;
+  UtObject *code_width_huffman_decoder;
+  UtObject *code_widths;
+
   uint16_t code;
   uint8_t code_width;
   uint16_t length;
@@ -105,8 +119,7 @@ static void start_fixed_compressed_block(UtDeflateDecoder *self) {
 
 // Prepare to decode a compressed data block using fixed Huffman codes.
 static void start_dynamic_compressed_block(UtDeflateDecoder *self) {
-  self->error = ut_deflate_error_new("Dynamic Huffman not supported");
-  self->state = DECODER_STATE_ERROR;
+  self->state = DECODER_STATE_DYNAMIC_HUFFMAN_LENGTHS;
 }
 
 static size_t get_remaining_bits(UtDeflateDecoder *self, UtObject *data,
@@ -145,7 +158,7 @@ static uint8_t read_int_be(UtDeflateDecoder *self, size_t length,
                            UtObject *data, size_t *offset) {
   uint8_t value = 0;
   for (size_t i = 0; i < length; i++) {
-    value = value << 1 | read_bit(self, data, offset);
+    value |= read_bit(self, data, offset) << i;
   }
 
   return value;
@@ -216,6 +229,167 @@ static bool read_uncompressed_length(UtDeflateDecoder *self, UtObject *data,
 
   self->state = DECODER_STATE_UNCOMPRESSED_DATA;
   *offset += 4;
+  return true;
+}
+
+static bool read_dynamic_huffman_lengths(UtDeflateDecoder *self, UtObject *data,
+                                         size_t *offset) {
+  size_t remaining = get_remaining_bits(self, data, offset);
+  if (remaining < 14) {
+    return false;
+  }
+
+  self->n_literal_length_codes = 257 + read_int_le(self, 5, data, offset);
+  self->n_distance_codes = 1 + read_int_le(self, 5, data, offset);
+  self->n_code_width_codes = 4 + read_int_le(self, 4, data, offset);
+
+  ut_object_unref(self->code_widths);
+  self->code_widths = ut_uint8_list_new();
+
+  ut_object_unref(self->literal_length_huffman_decoder);
+  self->literal_length_huffman_decoder = NULL;
+  ut_object_unref(self->distance_huffman_decoder);
+  self->distance_huffman_decoder = NULL;
+
+  self->state = DECODER_STATE_DYNAMIC_HUFFMAN_CODE_WIDTH_CODE;
+  return true;
+}
+
+static bool read_dynamic_huffman_code_width_code(UtDeflateDecoder *self,
+                                                 UtObject *data,
+                                                 size_t *offset) {
+  size_t remaining = get_remaining_bits(self, data, offset);
+  if (remaining < 3 * self->n_code_width_codes) {
+    return false;
+  }
+
+  // Order that code widths are stored in.
+  const uint8_t code_width_symbol_order[19] = {
+      16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15};
+
+  UtObjectRef code_widths = ut_uint8_array_new_from_elements(
+      19, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+  uint8_t *code_widths_data = ut_uint8_array_get_data(code_widths);
+  for (size_t i = 0; i < self->n_code_width_codes; i++) {
+    uint8_t code_width_symbol = code_width_symbol_order[i];
+    code_widths_data[code_width_symbol] = read_int_le(self, 3, data, offset);
+  }
+  self->code_width_huffman_decoder =
+      ut_huffman_decoder_new_canonical(code_widths);
+
+  self->state = DECODER_STATE_DYNAMIC_HUFFMAN_CODE_WIDTH;
+  return true;
+}
+
+static void use_code_width(UtDeflateDecoder *self, uint8_t code_width) {
+  if (self->state == DECODER_STATE_LITERAL_LENGTH) {
+    self->error =
+        ut_deflate_error_new("Invalid number of deflate repeat codes");
+    self->state = DECODER_STATE_ERROR;
+    return;
+  }
+
+  ut_uint8_list_append(self->code_widths, code_width);
+
+  if (self->literal_length_huffman_decoder == NULL) {
+    if (ut_list_get_length(self->code_widths) == self->n_literal_length_codes) {
+      self->literal_length_huffman_decoder =
+          ut_huffman_decoder_new_canonical(self->code_widths);
+      ut_object_unref(self->code_widths);
+      self->code_widths = ut_uint8_list_new();
+    }
+  } else {
+    if (ut_list_get_length(self->code_widths) == self->n_distance_codes) {
+      self->distance_huffman_decoder =
+          ut_huffman_decoder_new_canonical(self->code_widths);
+      ut_object_unref(self->code_widths);
+      self->code_widths = NULL;
+      self->state = DECODER_STATE_LITERAL_LENGTH;
+    }
+  }
+}
+
+static bool read_dynamic_huffman_code_width(UtDeflateDecoder *self,
+                                            UtObject *data, size_t *offset) {
+  uint16_t symbol;
+  if (!read_huffman_symbol(self, data, offset, self->code_width_huffman_decoder,
+                           &symbol)) {
+    return false;
+  }
+
+  if (symbol <= 15) {
+    use_code_width(self, symbol);
+  } else if (symbol == 16) {
+    self->state = DECODER_STATE_DYNAMIC_HUFFMAN_CODE_WIDTH_REPEAT;
+  } else if (symbol == 17) {
+    self->state = DECODER_STATE_DYNAMIC_HUFFMAN_CODE_WIDTH_REPEAT_ZERO_SHORT;
+  } else if (symbol == 18) {
+    self->state = DECODER_STATE_DYNAMIC_HUFFMAN_CODE_WIDTH_REPEAT_ZERO_LONG;
+  } else {
+    self->error =
+        ut_deflate_error_new("Invalid deflate Huffman code width code");
+    self->state = DECODER_STATE_ERROR;
+  }
+
+  return true;
+}
+
+static void repeat_code_width(UtDeflateDecoder *self, uint8_t code_width,
+                              size_t count) {
+  // Set state first, as it might be changed in use_code_width().
+  self->state = DECODER_STATE_DYNAMIC_HUFFMAN_CODE_WIDTH;
+
+  for (size_t i = 0; i < count && self->state != DECODER_STATE_ERROR; i++) {
+    use_code_width(self, code_width);
+  }
+}
+
+static bool read_dynamic_huffman_code_width_repeat(UtDeflateDecoder *self,
+                                                   UtObject *data,
+                                                   size_t *offset) {
+  size_t remaining = get_remaining_bits(self, data, offset);
+  if (remaining < 2) {
+    return false;
+  }
+
+  size_t repeat_count = 3 + read_int_le(self, 2, data, offset);
+  size_t code_widths_length = ut_list_get_length(self->code_widths);
+  if (code_widths_length == 0) {
+    self->error =
+        ut_deflate_error_new("Invalid deflate Huffman code width repeat");
+    self->state = DECODER_STATE_ERROR;
+    return true;
+  }
+  uint8_t code_width =
+      ut_uint8_list_get_element(self->code_widths, code_widths_length - 1);
+  repeat_code_width(self, code_width, repeat_count);
+
+  return true;
+}
+
+static bool read_dynamic_huffman_code_width_repeat_zero_short(
+    UtDeflateDecoder *self, UtObject *data, size_t *offset) {
+  size_t remaining = get_remaining_bits(self, data, offset);
+  if (remaining < 3) {
+    return false;
+  }
+
+  size_t repeat_count = 3 + read_int_le(self, 3, data, offset);
+  repeat_code_width(self, 0, repeat_count);
+
+  return true;
+}
+
+static bool read_dynamic_huffman_code_width_repeat_zero_long(
+    UtDeflateDecoder *self, UtObject *data, size_t *offset) {
+  size_t remaining = get_remaining_bits(self, data, offset);
+  if (remaining < 7) {
+    return false;
+  }
+
+  size_t repeat_count = 11 + read_int_le(self, 7, data, offset);
+  repeat_code_width(self, 0, repeat_count);
+
   return true;
 }
 
@@ -351,6 +525,26 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
     case DECODER_STATE_UNCOMPRESSED_DATA:
       decoding = read_uncompressed_data(self, data, &offset);
       break;
+    case DECODER_STATE_DYNAMIC_HUFFMAN_LENGTHS:
+      decoding = read_dynamic_huffman_lengths(self, data, &offset);
+      break;
+    case DECODER_STATE_DYNAMIC_HUFFMAN_CODE_WIDTH_CODE:
+      decoding = read_dynamic_huffman_code_width_code(self, data, &offset);
+      break;
+    case DECODER_STATE_DYNAMIC_HUFFMAN_CODE_WIDTH:
+      decoding = read_dynamic_huffman_code_width(self, data, &offset);
+      break;
+    case DECODER_STATE_DYNAMIC_HUFFMAN_CODE_WIDTH_REPEAT:
+      decoding = read_dynamic_huffman_code_width_repeat(self, data, &offset);
+      break;
+    case DECODER_STATE_DYNAMIC_HUFFMAN_CODE_WIDTH_REPEAT_ZERO_SHORT:
+      decoding = read_dynamic_huffman_code_width_repeat_zero_short(self, data,
+                                                                   &offset);
+      break;
+    case DECODER_STATE_DYNAMIC_HUFFMAN_CODE_WIDTH_REPEAT_ZERO_LONG:
+      decoding =
+          read_dynamic_huffman_code_width_repeat_zero_long(self, data, &offset);
+      break;
     case DECODER_STATE_LITERAL_LENGTH:
       decoding = read_literal_length(self, data, &offset);
       break;
@@ -398,6 +592,8 @@ static void ut_deflate_decoder_cleanup(UtObject *object) {
   ut_object_unref(self->read_cancel);
   ut_object_unref(self->cancel);
   ut_object_unref(self->error);
+  ut_object_unref(self->code_width_huffman_decoder);
+  ut_object_unref(self->code_widths);
   ut_object_unref(self->literal_length_huffman_decoder);
   ut_object_unref(self->distance_huffman_decoder);
   ut_object_unref(self->buffer);
