@@ -129,8 +129,20 @@ static uint8_t read_bit(UtDeflateDecoder *self, UtObject *data,
   return value;
 }
 
-static uint8_t read_int(UtDeflateDecoder *self, size_t length, UtObject *data,
-                        size_t *offset) {
+// Read an integer in little endian form.
+static uint8_t read_int_le(UtDeflateDecoder *self, size_t length,
+                           UtObject *data, size_t *offset) {
+  uint8_t value = 0;
+  for (size_t i = 0; i < length; i++) {
+    value |= read_bit(self, data, offset) << i;
+  }
+
+  return value;
+}
+
+// Read an integer in big endian form.
+static uint8_t read_int_be(UtDeflateDecoder *self, size_t length,
+                           UtObject *data, size_t *offset) {
   uint8_t value = 0;
   for (size_t i = 0; i < length; i++) {
     value = value << 1 | read_bit(self, data, offset);
@@ -167,16 +179,16 @@ static bool read_block_header(UtDeflateDecoder *self, UtObject *data,
   }
 
   self->is_last_block = read_bit(self, data, offset) == 1;
-  uint8_t block_type = read_int(self, 2, data, offset);
+  uint8_t block_type = read_int_le(self, 2, data, offset);
   switch (block_type) {
   case 0:
     start_uncompressed_block(self);
     return true;
   case 1:
-    start_dynamic_compressed_block(self);
+    start_fixed_compressed_block(self);
     return true;
   case 2:
-    start_fixed_compressed_block(self);
+    start_dynamic_compressed_block(self);
     return true;
   default:
     self->error = ut_deflate_error_new("Invalid deflate compression");
@@ -260,7 +272,7 @@ static bool read_length(UtDeflateDecoder *self, UtObject *data,
     return false;
   }
 
-  uint16_t extra = read_int(self, bit_count, data, offset);
+  uint16_t extra = read_int_be(self, bit_count, data, offset);
   self->length = base_lengths[self->length_symbol - 257] + extra;
 
   self->state = DECODER_STATE_DISTANCE;
@@ -298,7 +310,7 @@ static bool read_distance_extension(UtDeflateDecoder *self, UtObject *data,
     return false;
   }
 
-  uint16_t extra = read_int(self, bit_count, data, offset);
+  uint16_t extra = read_int_be(self, bit_count, data, offset);
   uint16_t distance = base_distances[self->distance_index] + extra;
 
   size_t buffer_length = ut_list_get_length(self->buffer);
