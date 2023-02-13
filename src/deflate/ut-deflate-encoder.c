@@ -18,8 +18,11 @@ typedef struct {
 
   size_t window_size;
 
-  // Encoder to generate compressed bits.
-  UtObject *huffman_encoder;
+  // Huffman encoder for literal/length codes.
+  UtObject *literal_length_huffman_encoder;
+
+  // Huffman necoder for distance codes.
+  UtObject *distance_huffman_encoder;
 
   // Dictionary of sent data.
   UtObject *dictionary;
@@ -115,29 +118,38 @@ static void find_match(UtDeflateEncoder *self, size_t data_length,
   *best_length = best_length_;
 }
 
+static void write_literal(UtDeflateEncoder *self, uint8_t value) {
+  write_symbol(self, self->literal_length_huffman_encoder, value);
+}
+
 // Write a repeat length.
 static void write_length(UtDeflateEncoder *self, size_t length) {
   if (length <= 2) {
     assert(false);
   } else if (length <= 10) {
-    write_symbol(self, self->huffman_encoder, 257 + length - 3);
+    write_symbol(self, self->literal_length_huffman_encoder, 257 + length - 3);
   } else if (length <= 18) {
-    write_symbol(self, self->huffman_encoder, 265 + ((length - 11) >> 1));
+    write_symbol(self, self->literal_length_huffman_encoder,
+                 265 + ((length - 11) >> 1));
     write_bit(self, (length - 11) % 2);
   } else if (length <= 34) {
-    write_symbol(self, self->huffman_encoder, 269 + ((length - 19) >> 2));
+    write_symbol(self, self->literal_length_huffman_encoder,
+                 269 + ((length - 19) >> 2));
     write_bits(self, (length - 19) % 4, 2);
   } else if (length <= 66) {
-    write_symbol(self, self->huffman_encoder, 273 + ((length - 35) >> 3));
+    write_symbol(self, self->literal_length_huffman_encoder,
+                 273 + ((length - 35) >> 3));
     write_bits(self, (length - 35) % 8, 3);
   } else if (length <= 130) {
-    write_symbol(self, self->huffman_encoder, 277 + ((length - 67) >> 4));
+    write_symbol(self, self->literal_length_huffman_encoder,
+                 277 + ((length - 67) >> 4));
     write_bits(self, (length - 67) % 16, 4);
   } else if (length <= 257) {
-    write_symbol(self, self->huffman_encoder, 281 + ((length - 131) >> 5));
+    write_symbol(self, self->literal_length_huffman_encoder,
+                 281 + ((length - 131) >> 5));
     write_bits(self, (length - 131) % 32, 5);
   } else if (length == 258) {
-    write_symbol(self, self->huffman_encoder, 285);
+    write_symbol(self, self->literal_length_huffman_encoder, 285);
   } else {
     assert(false);
   }
@@ -148,45 +160,58 @@ static void write_distance(UtDeflateEncoder *self, size_t distance) {
   if (distance < 1) {
     assert(false);
   } else if (distance <= 4) {
-    write_bits(self, distance - 1, 5);
+    write_symbol(self, self->distance_huffman_encoder, distance - 1);
   } else if (distance <= 8) {
-    write_bits(self, 4 + ((distance - 5) >> 1), 5);
+    write_symbol(self, self->distance_huffman_encoder,
+                 4 + ((distance - 5) >> 1));
     write_bit(self, (distance - 5) % 2);
   } else if (distance <= 16) {
-    write_bits(self, 6 + ((distance - 9) >> 2), 5);
+    write_symbol(self, self->distance_huffman_encoder,
+                 6 + ((distance - 9) >> 2));
     write_bits(self, (distance - 9) % 4, 2);
   } else if (distance <= 32) {
-    write_bits(self, 8 + ((distance - 17) >> 3), 5);
+    write_symbol(self, self->distance_huffman_encoder,
+                 8 + ((distance - 17) >> 3));
     write_bits(self, (distance - 17) % 8, 3);
   } else if (distance <= 64) {
-    write_bits(self, 8 + ((distance - 33) >> 4), 5);
+    write_symbol(self, self->distance_huffman_encoder,
+                 8 + ((distance - 33) >> 4));
     write_bits(self, (distance - 33) % 16, 4);
   } else if (distance <= 128) {
-    write_bits(self, 8 + ((distance - 65) >> 5), 5);
+    write_symbol(self, self->distance_huffman_encoder,
+                 8 + ((distance - 65) >> 5));
     write_bits(self, (distance - 65) % 32, 5);
   } else if (distance <= 256) {
-    write_bits(self, 8 + ((distance - 129) >> 6), 5);
+    write_symbol(self, self->distance_huffman_encoder,
+                 8 + ((distance - 129) >> 6));
     write_bits(self, (distance - 129) % 64, 6);
   } else if (distance <= 512) {
-    write_bits(self, 8 + ((distance - 257) >> 7), 5);
+    write_symbol(self, self->distance_huffman_encoder,
+                 8 + ((distance - 257) >> 7));
     write_bits(self, (distance - 257) % 128, 7);
   } else if (distance <= 1024) {
-    write_bits(self, 8 + ((distance - 513) >> 8), 5);
+    write_symbol(self, self->distance_huffman_encoder,
+                 8 + ((distance - 513) >> 8));
     write_bits(self, (distance - 513) % 256, 8);
   } else if (distance <= 2048) {
-    write_bits(self, 8 + ((distance - 1025) >> 9), 5);
+    write_symbol(self, self->distance_huffman_encoder,
+                 8 + ((distance - 1025) >> 9));
     write_bits(self, (distance - 1025) % 512, 9);
   } else if (distance <= 4096) {
-    write_bits(self, 8 + ((distance - 2049) >> 10), 5);
+    write_symbol(self, self->distance_huffman_encoder,
+                 8 + ((distance - 2049) >> 10));
     write_bits(self, (distance - 2049) % 1024, 10);
   } else if (distance <= 8192) {
-    write_bits(self, 8 + ((distance - 4097) >> 11), 5);
+    write_symbol(self, self->distance_huffman_encoder,
+                 8 + ((distance - 4097) >> 11));
     write_bits(self, (distance - 4097) % 2048, 11);
   } else if (distance <= 16384) {
-    write_bits(self, 8 + ((distance - 8193) >> 12), 5);
+    write_symbol(self, self->distance_huffman_encoder,
+                 8 + ((distance - 8193) >> 12));
     write_bits(self, (distance - 8193) % 4096, 12);
   } else if (distance <= 32768) {
-    write_bits(self, 8 + ((distance - 16385) >> 13), 5);
+    write_symbol(self, self->distance_huffman_encoder,
+                 8 + ((distance - 16385) >> 13));
     write_bits(self, (distance - 16385) % 8192, 13);
   } else {
     assert(false);
@@ -232,14 +257,14 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
       write_distance(self, distance);
       n_used += length;
     } else {
-      write_symbol(self, self->huffman_encoder, new_data[n_used]);
+      write_literal(self, new_data[n_used]);
       n_used++;
     }
   }
 
   // If complete, use partially filled bytes.
   if (complete) {
-    write_symbol(self, self->huffman_encoder, END_OF_STREAM);
+    write_symbol(self, self->literal_length_huffman_encoder, END_OF_STREAM);
     end_bits(self);
   }
 
@@ -257,7 +282,7 @@ static void ut_deflate_encoder_init(UtObject *object) {
   self->dictionary = ut_uint8_array_new();
   self->buffer = ut_uint8_array_new();
 
-  UtObjectRef huffman_code_widths = ut_uint8_list_new();
+  UtObjectRef literal_length_code_widths = ut_uint8_list_new();
   for (size_t symbol = 0; symbol <= 287; symbol++) {
     uint8_t code_width;
     if (symbol <= 143) {
@@ -269,9 +294,17 @@ static void ut_deflate_encoder_init(UtObject *object) {
     } else {
       code_width = 8;
     }
-    ut_uint8_list_append(huffman_code_widths, code_width);
+    ut_uint8_list_append(literal_length_code_widths, code_width);
   }
-  self->huffman_encoder = ut_huffman_encoder_new_canonical(huffman_code_widths);
+  self->literal_length_huffman_encoder =
+      ut_huffman_encoder_new_canonical(literal_length_code_widths);
+
+  UtObjectRef distance_code_widths = ut_uint8_list_new();
+  for (size_t symbol = 0; symbol < 32; symbol++) {
+    ut_uint8_list_append(distance_code_widths, 5);
+  }
+  self->distance_huffman_encoder =
+      ut_huffman_encoder_new_canonical(distance_code_widths);
 }
 
 static void ut_deflate_encoder_cleanup(UtObject *object) {
@@ -280,7 +313,8 @@ static void ut_deflate_encoder_cleanup(UtObject *object) {
   ut_object_unref(self->input_stream);
   ut_object_unref(self->read_cancel);
   ut_object_unref(self->cancel);
-  ut_object_unref(self->huffman_encoder);
+  ut_object_unref(self->literal_length_huffman_encoder);
+  ut_object_unref(self->distance_huffman_encoder);
   ut_object_unref(self->dictionary);
   ut_object_unref(self->buffer);
 }
