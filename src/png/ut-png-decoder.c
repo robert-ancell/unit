@@ -41,6 +41,7 @@ typedef struct {
   uint8_t n_channels;
   size_t rowstride;
   UtObject *data;
+  UtObject *image;
 } UtPngDecoder;
 
 static uint32_t crc_table[256] = {
@@ -272,6 +273,10 @@ static void decode_image_header(UtPngDecoder *self, UtObject *data) {
   }
   ut_object_unref(self->line);
   self->line = NULL;
+
+  self->data = ut_uint8_array_new(); // FIXME: sized
+  self->image = ut_png_image_new(self->width, self->height, self->bit_depth,
+                                 self->colour_type, self->data);
 }
 
 static void decode_palette(UtPngDecoder *self, UtObject *data) {}
@@ -556,14 +561,11 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
       break;
     case DECODER_STATE_ERROR:
       ut_cancel_activate(self->read_cancel);
-      self->callback(self->user_data, self->error);
+      self->callback(self->user_data);
       return offset;
     case DECODER_STATE_END:
       ut_cancel_activate(self->read_cancel);
-      UtObjectRef image =
-          ut_png_image_new(self->width, self->height, self->bit_depth,
-                           self->colour_type, self->data);
-      self->callback(self->user_data, image);
+      self->callback(self->user_data);
       return offset;
     default:
       assert(false);
@@ -577,18 +579,13 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
   }
 }
 
-static void sync_cb(void *user_data, UtObject *image) {
-  UtObject **result = user_data;
-  assert(*result == NULL);
-  *result = ut_object_ref(image);
-}
+static void done_cb(void *user_data) {}
 
 static void ut_png_decoder_init(UtObject *object) {
   UtPngDecoder *self = (UtPngDecoder *)object;
   self->read_cancel = ut_cancel_new();
   self->state = DECODER_STATE_SIGNATURE;
   self->line_filter = FILTER_TYPE_NONE;
-  self->data = ut_uint8_array_new(); // FIXME: Do later at the required size
 }
 
 static void ut_png_decoder_cleanup(UtObject *object) {
@@ -631,14 +628,30 @@ void ut_png_decoder_decode(UtObject *object, UtPngDecodeCallback callback,
 }
 
 UtObject *ut_png_decoder_decode_sync(UtObject *object) {
-  UtObject *result = NULL;
-  UtObjectRef cancel = ut_cancel_new();
-  ut_png_decoder_decode(object, sync_cb, &result, cancel);
-  ut_cancel_activate(cancel);
-  if (result == NULL) {
-    result = ut_general_error_new("Sync call did not complete");
+  assert(ut_object_is_png_decoder(object));
+  UtPngDecoder *self = (UtPngDecoder *)object;
+
+  ut_png_decoder_decode(object, done_cb, NULL, NULL);
+  if (self->state != DECODER_STATE_END) {
+    if (self->error != NULL) {
+      return ut_object_ref(self->error);
+    } else {
+      return ut_general_error_new("Sync call did not complete");
+    }
   }
-  return result;
+  return ut_object_ref(self->image);
+}
+
+UtObject *ut_png_decoder_get_error(UtObject *object) {
+  assert(ut_object_is_png_decoder(object));
+  UtPngDecoder *self = (UtPngDecoder *)object;
+  return self->error;
+}
+
+UtObject *ut_png_decoder_get_image(UtObject *object) {
+  assert(ut_object_is_png_decoder(object));
+  UtPngDecoder *self = (UtPngDecoder *)object;
+  return self->image;
 }
 
 bool ut_object_is_png_decoder(UtObject *object) {
