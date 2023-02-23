@@ -216,13 +216,12 @@ void _ut_assert_uint8_list_equal_hex(const char *file, int line,
     }
   }
 
-  ut_cstring_ref a_value_string = ut_object_to_string(a_value);
-  ut_cstring_ref b_value_string = ut_object_to_string(b_value);
+  ut_cstring_ref a_value_string = ut_uint8_list_to_hex_string(a_value);
   fprintf(stderr,
           "%s:%d List %s doesn't have expected content:\n"
-          "  %s\n"
-          "  %s\n",
-          file, line, a_name, a_value_string, b_value_string);
+          "  h\"%s\"\n"
+          "  h\"%s\"\n",
+          file, line, a_name, a_value_string, b_hex);
 
   abort();
 }
