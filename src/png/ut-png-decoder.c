@@ -36,9 +36,6 @@ typedef struct {
   // Interlace method being used.
   UtPngInterlaceMethod interlace_method;
 
-  // Width of a scanline in bytes.
-  size_t rowstride;
-
   // Scanline being decoded.
   UtObject *prev_line;
   UtObject *line;
@@ -264,8 +261,6 @@ static void decode_image_header(UtPngDecoder *self, UtObject *data) {
     return;
   }
 
-  self->rowstride = (((size_t)width * bit_depth * n_channels) + 7) / 8;
-
   if (compression_method != 0) {
     set_error(self, "Invalid PNG compression method");
     return;
@@ -275,15 +270,18 @@ static void decode_image_header(UtPngDecoder *self, UtObject *data) {
     set_error(self, "Invalid PNG filter method");
     return;
   }
-  ut_object_unref(self->line);
-  self->line = ut_uint8_array_new_sized(self->rowstride);
-  ut_object_unref(self->prev_line);
-  self->prev_line = ut_uint8_array_new_sized(self->rowstride);
-  self->image_data_count = 0;
 
-  UtObjectRef image_data = ut_uint8_array_new_sized(height * self->rowstride);
+  UtObjectRef image_data = ut_uint8_array_new();
   self->image =
       ut_png_image_new(width, height, bit_depth, colour_type, image_data);
+  size_t row_stride = ut_png_image_get_row_stride(self->image);
+  ut_list_resize(image_data, height * row_stride);
+
+  ut_object_unref(self->line);
+  self->line = ut_uint8_array_new_sized(row_stride);
+  ut_object_unref(self->prev_line);
+  self->prev_line = ut_uint8_array_new_sized(row_stride);
+  self->image_data_count = 0;
 }
 
 static void decode_palette(UtPngDecoder *self, UtObject *data) {}
@@ -292,6 +290,7 @@ static void process_image_data(UtPngDecoder *self, UtObject *data) {
   size_t data_length = ut_list_get_length(data);
 
   uint32_t height = ut_png_image_get_height(self->image);
+  size_t row_stride = ut_png_image_get_row_stride(self->image);
   UtObject *image_data_object = ut_png_image_get_data(self->image);
   uint8_t *image_data = ut_uint8_array_get_data(image_data_object);
   uint8_t *line_data = ut_uint8_array_get_data(self->line);
@@ -299,14 +298,14 @@ static void process_image_data(UtPngDecoder *self, UtObject *data) {
 
   size_t offset = 0;
   while (offset < data_length) {
-    size_t row = self->image_data_count / self->rowstride;
+    size_t row = self->image_data_count / row_stride;
     if (row >= height) {
       set_error(self, "Excess image data");
       return;
     }
 
     // Read filter when starting a line.
-    size_t line_offset = self->image_data_count % self->rowstride;
+    size_t line_offset = self->image_data_count % row_stride;
     if (line_offset == 0) {
       if (!decode_filter_type(ut_uint8_list_get_element(data, offset),
                               &self->line_filter)) {
@@ -358,7 +357,7 @@ static void process_image_data(UtPngDecoder *self, UtObject *data) {
     self->image_data_count++;
 
     // Line complete, swap buffers for prev line.
-    if (line_offset == self->rowstride) {
+    if (line_offset == row_stride) {
       UtObject *t = self->prev_line;
       self->prev_line = self->line;
       self->line = t;
