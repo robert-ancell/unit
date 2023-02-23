@@ -37,8 +37,6 @@ typedef struct {
   UtPngInterlaceMethod interlace_method;
 
   // Scanline being decoded.
-  UtObject *prev_line;
-  UtObject *line;
   FilterType line_filter;
   size_t image_data_count;
 
@@ -277,10 +275,6 @@ static void decode_image_header(UtPngDecoder *self, UtObject *data) {
   size_t row_stride = ut_png_image_get_row_stride(self->image);
   ut_list_resize(image_data, height * row_stride);
 
-  ut_object_unref(self->line);
-  self->line = ut_uint8_array_new_sized(row_stride);
-  ut_object_unref(self->prev_line);
-  self->prev_line = ut_uint8_array_new_sized(row_stride);
   self->image_data_count = 0;
 }
 
@@ -293,11 +287,8 @@ static void process_image_data(UtPngDecoder *self, UtObject *data) {
   size_t row_stride = ut_png_image_get_row_stride(self->image);
   UtObject *image_data_object = ut_png_image_get_data(self->image);
   uint8_t *image_data = ut_uint8_array_get_data(image_data_object);
-  uint8_t *line_data = ut_uint8_array_get_data(self->line);
-  uint8_t *prev_line_data = ut_uint8_array_get_data(self->prev_line);
 
-  size_t offset = 0;
-  while (offset < data_length) {
+  for (size_t offset = 0; offset < data_length; offset++) {
     size_t row = self->image_data_count / row_stride;
     if (row >= height) {
       set_error(self, "Excess image data");
@@ -313,15 +304,17 @@ static void process_image_data(UtPngDecoder *self, UtObject *data) {
         return;
       }
       offset++;
+      if (offset >= data_length) {
+        break;
+      }
     }
 
-    line_data[line_offset] = ut_uint8_list_get_element(data, offset);
-    offset++;
-
-    uint8_t x = line_data[line_offset];
-    uint8_t a = line_offset == 0 ? 0 : line_data[line_offset - 1];
-    uint8_t b = prev_line_data[line_offset];
-    uint8_t c = line_offset == 0 ? 0 : prev_line_data[line_offset - 1];
+    uint8_t x = ut_uint8_list_get_element(data, offset);
+    int32_t a = line_offset == 0 ? 0 : image_data[self->image_data_count - 1];
+    int32_t b = row == 0 ? 0 : image_data[self->image_data_count - row_stride];
+    int32_t c = row == 0 || line_offset == 0
+                    ? 0
+                    : image_data[self->image_data_count - row_stride - 1];
 
     uint8_t recon_x;
     switch (self->line_filter) {
@@ -336,32 +329,30 @@ static void process_image_data(UtPngDecoder *self, UtObject *data) {
       recon_x = x + b;
       break;
     case FILTER_TYPE_AVERAGE:
-      recon_x = (a + b) / 2;
+      recon_x = x + (a + b) / 2;
       break;
     case FILTER_TYPE_PAETH:
-      uint8_t p = a + b - c;
-      uint8_t pa = p > a ? p - a : a - p;
-      uint8_t pb = p > b ? p - b : b - p;
-      uint8_t pc = p > c ? p - c : c - p;
+      int32_t p = a + b - c;
+      int32_t pa = p > a ? p - a : a - p;
+      int32_t pb = p > b ? p - b : b - p;
+      int32_t pc = p > c ? p - c : c - p;
       if (pa <= pb && pa <= pc) {
-        recon_x = a;
+        recon_x = x + a;
       } else if (pb <= pc) {
-        recon_x = b;
+        recon_x = x + b;
       } else {
-        recon_x = c;
+        recon_x = x + c;
       }
       break;
     }
 
     image_data[self->image_data_count] = recon_x;
     self->image_data_count++;
+  }
 
-    // Line complete, swap buffers for prev line.
-    if (line_offset == row_stride) {
-      UtObject *t = self->prev_line;
-      self->prev_line = self->line;
-      self->line = t;
-    }
+  if (self->image_data_count != height * row_stride) {
+    set_error(self, "PNG image data size mismatch");
+    return;
   }
 }
 
@@ -573,8 +564,6 @@ static void ut_png_decoder_cleanup(UtObject *object) {
   ut_object_unref(self->input_stream);
   ut_object_unref(self->read_cancel);
   ut_object_unref(self->cancel);
-  ut_object_unref(self->prev_line);
-  ut_object_unref(self->line);
   ut_object_unref(self->image);
   ut_object_unref(self->error);
 }
