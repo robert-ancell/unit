@@ -575,7 +575,6 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
       UtObjectRef image =
           ut_png_image_new(self->width, self->height, self->bit_depth,
                            self->colour_type, self->data);
-      ut_png_image_set_interlace_method(image, self->interlace_method);
       self->callback(self->user_data, image);
       return offset;
     default:

@@ -13,18 +13,8 @@ typedef enum {
   UT_PNG_COLOUR_TYPE_TRUECOLOUR_WITH_ALPHA
 } UtPngColourType;
 
-typedef enum {
-  UT_PNG_INTERLACE_METHOD_NONE,
-  UT_PNG_INTERLACE_METHOD_ADAM7
-} UtPngInterlaceMethod;
-
 UtObject *ut_png_image_new(uint32_t width, uint32_t height, uint8_t bit_depth,
                            UtPngColourType colour_type, UtObject *data);
-
-void ut_png_image_set_interlace_method(UtObject *object,
-                                       UtPngInterlaceMethod method);
-
-UtPngInterlaceMethod ut_png_image_get_interlace_method(UtObject *object);
 
 uint32_t ut_png_image_get_width(UtObject *object);
 

@@ -9,7 +9,6 @@ typedef struct {
   uint32_t height;
   uint8_t bit_depth;
   UtPngColourType colour_type;
-  UtPngInterlaceMethod interlace_method;
   UtObject *data;
 } UtPngImage;
 
@@ -46,11 +45,6 @@ static size_t get_n_channels(UtPngImage *self) {
   }
 }
 
-static void ut_png_image_init(UtObject *object) {
-  UtPngImage *self = (UtPngImage *)object;
-  self->interlace_method = UT_PNG_INTERLACE_METHOD_NONE;
-}
-
 static void ut_png_image_cleanup(UtObject *object) {
   UtPngImage *self = (UtPngImage *)object;
   ut_object_unref(self->data);
@@ -65,7 +59,6 @@ static char *ut_png_image_to_string(UtObject *object) {
 }
 
 static UtObjectInterface object_interface = {.type_name = "UtPngImage",
-                                             .init = ut_png_image_init,
                                              .cleanup = ut_png_image_cleanup,
                                              .to_string =
                                                  ut_png_image_to_string,
@@ -107,19 +100,6 @@ UtObject *ut_png_image_new(uint32_t width, uint32_t height, uint8_t bit_depth,
   self->colour_type = colour_type;
   self->data = ut_object_ref(data);
   return object;
-}
-
-void ut_png_image_set_interlace_method(UtObject *object,
-                                       UtPngInterlaceMethod method) {
-  assert(ut_object_is_png_image(object));
-  UtPngImage *self = (UtPngImage *)object;
-  self->interlace_method = method;
-}
-
-UtPngInterlaceMethod ut_png_image_get_interlace_method(UtObject *object) {
-  assert(ut_object_is_png_image(object));
-  UtPngImage *self = (UtPngImage *)object;
-  return self->interlace_method;
 }
 
 uint32_t ut_png_image_get_width(UtObject *object) {

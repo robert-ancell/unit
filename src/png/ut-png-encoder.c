@@ -224,7 +224,7 @@ void ut_png_encoder_encode(UtObject *object) {
       ut_png_image_get_bit_depth(self->image),
       encode_colour_type(ut_png_image_get_colour_type(self->image)),
       COMPRESS_DEFLATE, 0,
-      encode_interlace_method(ut_png_image_get_interlace_method(self->image)));
+      encode_interlace_method(UT_PNG_INTERLACE_METHOD_NONE));
   write_image_data(self);
   write_image_end(self);
 }
