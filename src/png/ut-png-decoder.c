@@ -32,7 +32,7 @@ typedef struct {
   UtObject *prev_line;
   UtObject *line;
   FilterType line_filter;
-  size_t line_count;
+  size_t image_data_count;
 
   uint32_t width;
   uint32_t height;
@@ -267,11 +267,11 @@ static void decode_image_header(UtPngDecoder *self, UtObject *data) {
     set_error(self, "Invalid PNG filter method");
     return;
   }
+  ut_object_unref(self->line);
+  self->line = ut_uint8_array_new_sized(self->rowstride);
   ut_object_unref(self->prev_line);
   self->prev_line = ut_uint8_array_new_sized(self->rowstride);
-  ut_object_unref(self->line);
-  self->line = NULL;
-  self->line_count = 0;
+  self->image_data_count = 0;
 
   self->data = ut_uint8_array_new_sized(self->height * self->rowstride);
   self->image = ut_png_image_new(self->width, self->height, self->bit_depth,
@@ -284,120 +284,74 @@ static void process_image_data(UtPngDecoder *self, UtObject *data) {
   size_t data_length = ut_list_get_length(data);
 
   uint8_t *image_data = ut_uint8_array_get_data(self->data);
+  uint8_t *line_data = ut_uint8_array_get_data(self->line);
+  uint8_t *prev_line_data = ut_uint8_array_get_data(self->prev_line);
 
   size_t offset = 0;
   while (offset < data_length) {
-    if (self->line == NULL) {
-      if (self->line_count == self->height) {
-        set_error(self, "Excess image data");
-        return;
-      }
+    size_t row = self->image_data_count / self->rowstride;
+    if (row >= self->height) {
+      set_error(self, "Excess image data");
+      return;
+    }
 
+    // Read filter when starting a line.
+    size_t line_offset = self->image_data_count % self->rowstride;
+    if (line_offset == 0) {
       if (!decode_filter_type(ut_uint8_list_get_element(data, offset),
                               &self->line_filter)) {
         set_error(self, "Invalid PNG filter type");
         return;
       }
       offset++;
-      self->line = ut_uint8_array_new(); // FIXME: sized
     }
 
-    ut_uint8_list_append(self->line, ut_uint8_list_get_element(data, offset));
+    line_data[line_offset] = ut_uint8_list_get_element(data, offset);
     offset++;
 
-    if (ut_list_get_length(self->line) == self->rowstride) {
-      size_t pixel_width = (self->bit_depth * self->n_channels) / 8;
-      if (pixel_width == 0) {
-        pixel_width = 1;
-      }
+    uint8_t x = line_data[line_offset];
+    uint8_t a = line_offset == 0 ? 0 : line_data[line_offset - 1];
+    uint8_t b = prev_line_data[line_offset];
+    uint8_t c = line_offset == 0 ? 0 : prev_line_data[line_offset - 1];
 
-      size_t image_data_offset = self->line_count * self->rowstride;
-      switch (self->line_filter) {
-      case FILTER_TYPE_NONE:
-        for (size_t i = 0; i < self->rowstride; i++) {
-          image_data[image_data_offset] =
-              ut_uint8_list_get_element(self->line, i);
-          image_data_offset++;
-        }
-        break;
-      case FILTER_TYPE_SUB:
-        // FIXME: optimised by having filter functions for each image
-        // depth/format
-        for (size_t i = 0; i < pixel_width; i++) {
-          image_data[image_data_offset] =
-              ut_uint8_list_get_element(self->line, i);
-          image_data_offset++;
-        }
-        for (size_t i = pixel_width; i < self->rowstride; i += pixel_width) {
-          for (size_t j = 0; j < pixel_width; j++) {
-            uint8_t x = ut_uint8_list_get_element(self->line, i + j);
-            uint8_t a =
-                ut_uint8_list_get_element(self->line, i + j - pixel_width);
-            image_data[image_data_offset] = x + a;
-            image_data_offset++;
-          }
-        }
-        break;
-      case FILTER_TYPE_UP:
-        for (size_t i = 0; i < self->rowstride; i++) {
-          uint8_t x = ut_uint8_list_get_element(self->line, i);
-          uint8_t b = ut_uint8_list_get_element(self->prev_line, i);
-          image_data[image_data_offset] = x + b;
-          image_data_offset++;
-        }
-        break;
-      case FILTER_TYPE_AVERAGE:
-        for (size_t i = 0; i < pixel_width; i++) {
-          image_data[image_data_offset] =
-              ut_uint8_list_get_element(self->line, i);
-          image_data_offset++;
-        }
-        for (size_t i = pixel_width; i < self->rowstride; i += pixel_width) {
-          for (size_t j = 0; i < pixel_width; j++) {
-            uint16_t a =
-                ut_uint8_list_get_element(self->line, i + j - pixel_width);
-            uint16_t b = ut_uint8_list_get_element(self->prev_line, i + j);
-            image_data[image_data_offset] = (a + b) / 2;
-            image_data_offset++;
-          }
-        }
-        break;
-      case FILTER_TYPE_PAETH:
-        for (size_t i = 0; i < pixel_width; i++) {
-          image_data[image_data_offset] =
-              ut_uint8_list_get_element(self->line, i);
-          image_data_offset++;
-        }
-        for (size_t i = pixel_width; i < self->rowstride; i += pixel_width) {
-          for (size_t j = 0; i < pixel_width; j++) {
-            uint8_t a =
-                ut_uint8_list_get_element(self->line, i + j - pixel_width);
-            uint8_t b = ut_uint8_list_get_element(self->prev_line, i + j);
-            uint8_t c =
-                ut_uint8_list_get_element(self->prev_line, i + j - pixel_width);
-            uint8_t p = a + b - c;
-            uint8_t pa = p > a ? p - a : a - p;
-            uint8_t pb = p > b ? p - b : b - p;
-            uint8_t pc = p > c ? p - c : c - p;
-            uint8_t value;
-            if (pa <= pb && pa <= pc) {
-              value = a;
-            } else if (pb <= pc) {
-              value = b;
-            } else {
-              value = c;
-            }
-            image_data[image_data_offset] = value;
-            image_data_offset++;
-          }
-        }
-        break;
+    uint8_t recon_x;
+    switch (self->line_filter) {
+    default:
+    case FILTER_TYPE_NONE:
+      recon_x = x;
+      break;
+    case FILTER_TYPE_SUB:
+      recon_x = x + a;
+      break;
+    case FILTER_TYPE_UP:
+      recon_x = x + b;
+      break;
+    case FILTER_TYPE_AVERAGE:
+      recon_x = (a + b) / 2;
+      break;
+    case FILTER_TYPE_PAETH:
+      uint8_t p = a + b - c;
+      uint8_t pa = p > a ? p - a : a - p;
+      uint8_t pb = p > b ? p - b : b - p;
+      uint8_t pc = p > c ? p - c : c - p;
+      if (pa <= pb && pa <= pc) {
+        recon_x = a;
+      } else if (pb <= pc) {
+        recon_x = b;
+      } else {
+        recon_x = c;
       }
+      break;
+    }
 
-      ut_object_unref(self->prev_line);
+    image_data[self->image_data_count] = recon_x;
+    self->image_data_count++;
+
+    // Line complete, swap buffers for prev line.
+    if (line_offset == self->rowstride) {
+      UtObject *t = self->prev_line;
       self->prev_line = self->line;
-      self->line = NULL;
-      self->line_count++;
+      self->line = t;
     }
   }
 }
