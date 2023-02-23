@@ -30,24 +30,26 @@ typedef struct {
   void *user_data;
   UtObject *cancel;
 
+  // Current state of the decoder.
   DecoderState state;
-  UtObject *error;
+
+  // Interlace method being used.
+  UtPngInterlaceMethod interlace_method;
+
+  // Width of a scanline in bytes.
+  size_t rowstride;
+
+  // Scanline being decoded.
   UtObject *prev_line;
   UtObject *line;
   FilterType line_filter;
   size_t image_data_count;
 
-  // Header properties of decoded image.
-  uint32_t width;
-  uint32_t height;
-  uint8_t bit_depth;
-  UtPngColourType colour_type;
-  UtPngInterlaceMethod interlace_method;
-  uint8_t n_channels;
-  size_t rowstride;
-
   // Final image object.
   UtObject *image;
+
+  // Error that occurred during decoding.
+  UtObject *error;
 } UtPngDecoder;
 
 static uint32_t crc_table[256] = {
@@ -143,7 +145,7 @@ static size_t decode_signature(UtPngDecoder *self, UtObject *data,
 }
 
 static bool decode_colour_type(uint8_t value, UtPngColourType *type,
-                               uint8_t *n_channels) {
+                               size_t *n_channels) {
   switch (value) {
   case 0:
     *type = UT_PNG_COLOUR_TYPE_GREYSCALE;
@@ -229,26 +231,28 @@ static void decode_image_header(UtPngDecoder *self, UtObject *data) {
     return;
   }
 
-  self->width = ut_uint8_list_get_uint32_be(data, 0);
-  self->height = ut_uint8_list_get_uint32_be(data, 4);
-  self->bit_depth = ut_uint8_list_get_element(data, 8);
-  uint8_t colour_type = ut_uint8_list_get_element(data, 9);
+  uint32_t width = ut_uint8_list_get_uint32_be(data, 0);
+  uint32_t height = ut_uint8_list_get_uint32_be(data, 4);
+  uint8_t bit_depth = ut_uint8_list_get_element(data, 8);
+  uint8_t colour_type_value = ut_uint8_list_get_element(data, 9);
   uint8_t compression_method = ut_uint8_list_get_element(data, 10);
   uint8_t filter_method = ut_uint8_list_get_element(data, 11);
 
-  if (self->width == 0 || self->height == 0) {
+  if (width == 0 || height == 0) {
     set_error(self, "Invalid PNG image dimensions");
     return;
   }
 
+  UtPngColourType colour_type;
+  size_t n_channels;
   bool valid_colour_type =
-      decode_colour_type(colour_type, &self->colour_type, &self->n_channels);
+      decode_colour_type(colour_type_value, &colour_type, &n_channels);
   if (!valid_colour_type) {
     set_error(self, "Invalid PNG colour type");
     return;
   }
 
-  if (!is_valid_bit_depth(self->colour_type, self->bit_depth)) {
+  if (!is_valid_bit_depth(colour_type, bit_depth)) {
     set_error(self, "Invalid PNG bit depth");
     return;
   }
@@ -260,8 +264,7 @@ static void decode_image_header(UtPngDecoder *self, UtObject *data) {
     return;
   }
 
-  self->rowstride =
-      (((size_t)self->width * self->bit_depth * self->n_channels) + 7) / 8;
+  self->rowstride = (((size_t)width * bit_depth * n_channels) + 7) / 8;
 
   if (compression_method != 0) {
     set_error(self, "Invalid PNG compression method");
@@ -278,10 +281,9 @@ static void decode_image_header(UtPngDecoder *self, UtObject *data) {
   self->prev_line = ut_uint8_array_new_sized(self->rowstride);
   self->image_data_count = 0;
 
-  UtObjectRef image_data =
-      ut_uint8_array_new_sized(self->height * self->rowstride);
-  self->image = ut_png_image_new(self->width, self->height, self->bit_depth,
-                                 self->colour_type, image_data);
+  UtObjectRef image_data = ut_uint8_array_new_sized(height * self->rowstride);
+  self->image =
+      ut_png_image_new(width, height, bit_depth, colour_type, image_data);
 }
 
 static void decode_palette(UtPngDecoder *self, UtObject *data) {}
@@ -289,6 +291,7 @@ static void decode_palette(UtPngDecoder *self, UtObject *data) {}
 static void process_image_data(UtPngDecoder *self, UtObject *data) {
   size_t data_length = ut_list_get_length(data);
 
+  uint32_t height = ut_png_image_get_height(self->image);
   UtObject *image_data_object = ut_png_image_get_data(self->image);
   uint8_t *image_data = ut_uint8_array_get_data(image_data_object);
   uint8_t *line_data = ut_uint8_array_get_data(self->line);
@@ -297,7 +300,7 @@ static void process_image_data(UtPngDecoder *self, UtObject *data) {
   size_t offset = 0;
   while (offset < data_length) {
     size_t row = self->image_data_count / self->rowstride;
-    if (row >= self->height) {
+    if (row >= height) {
       set_error(self, "Excess image data");
       return;
     }
@@ -387,7 +390,7 @@ static void decode_image_end(UtPngDecoder *self, UtObject *data) {
 }
 
 static void decode_background(UtPngDecoder *self, UtObject *data) {
-  switch (self->colour_type) {
+  switch (ut_png_image_get_colour_type(self->image)) {
   case UT_PNG_COLOUR_TYPE_GREYSCALE:
   case UT_PNG_COLOUR_TYPE_GREYSCALE_WITH_ALPHA:
     if (ut_list_get_length(data) != 2) {
@@ -571,9 +574,10 @@ static void ut_png_decoder_cleanup(UtObject *object) {
   ut_object_unref(self->input_stream);
   ut_object_unref(self->read_cancel);
   ut_object_unref(self->cancel);
-  ut_object_unref(self->error);
   ut_object_unref(self->prev_line);
   ut_object_unref(self->line);
+  ut_object_unref(self->image);
+  ut_object_unref(self->error);
 }
 
 static UtObjectInterface object_interface = {.type_name = "UtPngDecoder",
