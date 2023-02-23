@@ -20,9 +20,12 @@ typedef enum {
 
 typedef struct {
   UtObject object;
+
+  // Input stream being read.
   UtObject *input_stream;
   UtObject *read_cancel;
 
+  // Callback to notify when complete.
   UtPngDecodeCallback callback;
   void *user_data;
   UtObject *cancel;
@@ -34,6 +37,7 @@ typedef struct {
   FilterType line_filter;
   size_t image_data_count;
 
+  // Header properties of decoded image.
   uint32_t width;
   uint32_t height;
   uint8_t bit_depth;
@@ -41,7 +45,8 @@ typedef struct {
   UtPngInterlaceMethod interlace_method;
   uint8_t n_channels;
   size_t rowstride;
-  UtObject *data;
+
+  // Final image object.
   UtObject *image;
 } UtPngDecoder;
 
@@ -273,9 +278,10 @@ static void decode_image_header(UtPngDecoder *self, UtObject *data) {
   self->prev_line = ut_uint8_array_new_sized(self->rowstride);
   self->image_data_count = 0;
 
-  self->data = ut_uint8_array_new_sized(self->height * self->rowstride);
+  UtObjectRef image_data =
+      ut_uint8_array_new_sized(self->height * self->rowstride);
   self->image = ut_png_image_new(self->width, self->height, self->bit_depth,
-                                 self->colour_type, self->data);
+                                 self->colour_type, image_data);
 }
 
 static void decode_palette(UtPngDecoder *self, UtObject *data) {}
@@ -283,7 +289,8 @@ static void decode_palette(UtPngDecoder *self, UtObject *data) {}
 static void process_image_data(UtPngDecoder *self, UtObject *data) {
   size_t data_length = ut_list_get_length(data);
 
-  uint8_t *image_data = ut_uint8_array_get_data(self->data);
+  UtObject *image_data_object = ut_png_image_get_data(self->image);
+  uint8_t *image_data = ut_uint8_array_get_data(image_data_object);
   uint8_t *line_data = ut_uint8_array_get_data(self->line);
   uint8_t *prev_line_data = ut_uint8_array_get_data(self->prev_line);
 
@@ -567,7 +574,6 @@ static void ut_png_decoder_cleanup(UtObject *object) {
   ut_object_unref(self->error);
   ut_object_unref(self->prev_line);
   ut_object_unref(self->line);
-  ut_object_unref(self->data);
 }
 
 static UtObjectInterface object_interface = {.type_name = "UtPngDecoder",
