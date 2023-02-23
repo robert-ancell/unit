@@ -104,6 +104,15 @@ static uint32_t crc32(UtObject *data, size_t offset, size_t length) {
   return c ^ 0xffffffff;
 }
 
+static void set_error(UtPngDecoder *self, const char *description) {
+  if (self->state == DECODER_STATE_ERROR) {
+    return;
+  }
+
+  self->error = ut_png_error_new(description);
+  self->state = DECODER_STATE_ERROR;
+}
+
 static size_t decode_signature(UtPngDecoder *self, UtObject *data,
                                size_t offset) {
   if (ut_list_get_length(data) - offset < 8) {
@@ -118,8 +127,7 @@ static size_t decode_signature(UtPngDecoder *self, UtObject *data,
       ut_uint8_list_get_element(data, offset + 5) != 10 ||
       ut_uint8_list_get_element(data, offset + 6) != 26 ||
       ut_uint8_list_get_element(data, offset + 7) != 10) {
-    self->error = ut_png_error_new("Invalid PNG signature");
-    self->state = DECODER_STATE_ERROR;
+    set_error(self, "Invalid PNG signature");
     return 0;
   }
 
@@ -210,8 +218,7 @@ static bool decode_filter_type(uint8_t value, FilterType *type) {
 
 static void decode_image_header(UtPngDecoder *self, UtObject *data) {
   if (ut_list_get_length(data) != 13) {
-    self->error = ut_png_error_new("Insufficient space for PNG image header");
-    self->state = DECODER_STATE_ERROR;
+    set_error(self, "Insufficient space for PNG image header");
     return;
   }
 
@@ -223,30 +230,26 @@ static void decode_image_header(UtPngDecoder *self, UtObject *data) {
   uint8_t filter_method = ut_uint8_list_get_element(data, 11);
 
   if (self->width == 0 || self->height == 0) {
-    self->error = ut_png_error_new("Invalid PNG image dimensions");
-    self->state = DECODER_STATE_ERROR;
+    set_error(self, "Invalid PNG image dimensions");
     return;
   }
 
   bool valid_colour_type =
       decode_colour_type(colour_type, &self->colour_type, &self->n_channels);
   if (!valid_colour_type) {
-    self->error = ut_png_error_new("Invalid PNG colour type");
-    self->state = DECODER_STATE_ERROR;
+    set_error(self, "Invalid PNG colour type");
     return;
   }
 
   if (!is_valid_bit_depth(self->colour_type, self->bit_depth)) {
-    self->error = ut_png_error_new("Invalid PNG bit depth");
-    self->state = DECODER_STATE_ERROR;
+    set_error(self, "Invalid PNG bit depth");
     return;
   }
 
   bool valid_interlace_method = decode_interlace_method(
       ut_uint8_list_get_element(data, 12), &self->interlace_method);
   if (!valid_interlace_method) {
-    self->error = ut_png_error_new("Invalid PNG interlace method");
-    self->state = DECODER_STATE_ERROR;
+    set_error(self, "Invalid PNG interlace method");
     return;
   }
 
@@ -254,14 +257,12 @@ static void decode_image_header(UtPngDecoder *self, UtObject *data) {
       (((size_t)self->width * self->bit_depth * self->n_channels) + 7) / 8;
 
   if (compression_method != 0) {
-    self->error = ut_png_error_new("Invalid PNG compression method");
-    self->state = DECODER_STATE_ERROR;
+    set_error(self, "Invalid PNG compression method");
     return;
   }
 
   if (filter_method != 0) {
-    self->error = ut_png_error_new("Invalid PNG filter method");
-    self->state = DECODER_STATE_ERROR;
+    set_error(self, "Invalid PNG filter method");
     return;
   }
   ut_object_unref(self->prev_line);
@@ -283,8 +284,7 @@ static void process_image_data(UtPngDecoder *self, UtObject *data) {
     if (self->line == NULL) {
       if (!decode_filter_type(ut_uint8_list_get_element(data, offset),
                               &self->line_filter)) {
-        self->error = ut_png_error_new("Invalid PNG filter type");
-        self->state = DECODER_STATE_ERROR;
+        set_error(self, "Invalid PNG filter type");
         return;
       }
       offset++;
@@ -389,8 +389,7 @@ static void decode_image_data(UtPngDecoder *self, UtObject *data) {
     ut_cstring_ref description =
         ut_cstring_new_printf("Error decoding PNG image data: %s",
                               ut_error_get_description(image_data));
-    self->error = ut_png_error_new(description);
-    self->state = DECODER_STATE_ERROR;
+    set_error(self, description);
     return;
   }
   process_image_data(self, image_data);
@@ -398,8 +397,7 @@ static void decode_image_data(UtPngDecoder *self, UtObject *data) {
 
 static void decode_image_end(UtPngDecoder *self, UtObject *data) {
   if (ut_list_get_length(data) != 0) {
-    self->error = ut_png_error_new("Extra data after PNG image");
-    self->state = DECODER_STATE_ERROR;
+    set_error(self, "Extra data after PNG image");
     return;
   }
 
@@ -413,7 +411,6 @@ static void decode_background(UtPngDecoder *self, UtObject *data) {
     if (ut_list_get_length(data) != 2) {
       self->error =
           ut_png_error_new("Insufficient space for PNG greyscale background");
-      self->state = DECODER_STATE_ERROR;
       return;
     }
     /*self->background_colour = */ ut_uint8_list_get_uint16_be(data, 0);
@@ -421,9 +418,7 @@ static void decode_background(UtPngDecoder *self, UtObject *data) {
   case UT_PNG_COLOUR_TYPE_TRUECOLOUR:
   case UT_PNG_COLOUR_TYPE_TRUECOLOUR_WITH_ALPHA:
     if (ut_list_get_length(data) != 6) {
-      self->error =
-          ut_png_error_new("Insufficient space for PNG truecolour background");
-      self->state = DECODER_STATE_ERROR;
+      set_error(self, "Insufficient space for PNG truecolour background");
       /*self->background_colour_r = */ ut_uint8_list_get_uint16_be(data, 0);
       /*self->background_colour_g = */ ut_uint8_list_get_uint16_be(data, 2);
       /*self->background_colour_b = */ ut_uint8_list_get_uint16_be(data, 4);
@@ -432,9 +427,7 @@ static void decode_background(UtPngDecoder *self, UtObject *data) {
     break;
   case UT_PNG_COLOUR_TYPE_INDEXED_COLOUR:
     if (ut_list_get_length(data) != 1) {
-      self->error = ut_png_error_new(
-          "Insufficient space for PNG indexed colour background");
-      self->state = DECODER_STATE_ERROR;
+      set_error(self, "Insufficient space for PNG indexed colour background");
       return;
     }
     /*self->background_colour_b = */ ut_uint8_list_get_element(data, 0);
@@ -446,9 +439,7 @@ static void decode_background(UtPngDecoder *self, UtObject *data) {
 
 static void decode_physical_dimensions(UtPngDecoder *self, UtObject *data) {
   if (ut_list_get_length(data) != 9) {
-    self->error =
-        ut_png_error_new("Insufficient space for PNG image dimensions");
-    self->state = DECODER_STATE_ERROR;
+    set_error(self, "Insufficient space for PNG image dimensions");
     return;
   }
 
@@ -459,9 +450,7 @@ static void decode_physical_dimensions(UtPngDecoder *self, UtObject *data) {
 
 static void decode_modification_time(UtPngDecoder *self, UtObject *data) {
   if (ut_list_get_length(data) != 7) {
-    self->error =
-        ut_png_error_new("Insufficient space for PNG modification time");
-    self->state = DECODER_STATE_ERROR;
+    set_error(self, "Insufficient space for PNG modification time");
     return;
   }
 
@@ -496,8 +485,7 @@ static size_t decode_chunk(UtPngDecoder *self, UtObject *data, size_t offset) {
       ut_uint8_list_get_uint32_be(data, chunk_data_offset + chunk_data_length);
   uint32_t calculated_crc = crc32(data, offset + 4, 4 + chunk_data_length);
   if (calculated_crc != crc) {
-    self->error = ut_png_error_new("PNG chunk CRC mismatch");
-    self->state = DECODER_STATE_ERROR;
+    set_error(self, "PNG chunk CRC mismatch");
     return 0;
   }
 
