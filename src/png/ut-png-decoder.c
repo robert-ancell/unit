@@ -139,28 +139,22 @@ static size_t decode_signature(UtPngDecoder *self, UtObject *data,
   return 8;
 }
 
-static bool decode_colour_type(uint8_t value, UtPngColourType *type,
-                               size_t *n_channels) {
+static bool decode_colour_type(uint8_t value, UtPngColourType *type) {
   switch (value) {
   case 0:
     *type = UT_PNG_COLOUR_TYPE_GREYSCALE;
-    *n_channels = 1;
     return true;
   case 2:
     *type = UT_PNG_COLOUR_TYPE_TRUECOLOUR;
-    *n_channels = 3;
     return true;
   case 3:
     *type = UT_PNG_COLOUR_TYPE_INDEXED_COLOUR;
-    *n_channels = 1;
     return true;
   case 4:
     *type = UT_PNG_COLOUR_TYPE_GREYSCALE_WITH_ALPHA;
-    *n_channels = 2;
     return true;
   case 6:
     *type = UT_PNG_COLOUR_TYPE_TRUECOLOUR_WITH_ALPHA;
-    *n_channels = 4;
     return true;
   default:
     return false;
@@ -239,9 +233,7 @@ static void decode_image_header(UtPngDecoder *self, UtObject *data) {
   }
 
   UtPngColourType colour_type;
-  size_t n_channels;
-  bool valid_colour_type =
-      decode_colour_type(colour_type_value, &colour_type, &n_channels);
+  bool valid_colour_type = decode_colour_type(colour_type_value, &colour_type);
   if (!valid_colour_type) {
     set_error(self, "Invalid PNG colour type");
     return;
