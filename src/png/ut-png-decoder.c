@@ -288,6 +288,14 @@ static void process_image_data(UtPngDecoder *self, UtObject *data) {
   UtObject *image_data_object = ut_png_image_get_data(self->image);
   uint8_t *image_data = ut_uint8_array_get_data(image_data_object);
 
+  // Number of bytes per pixel to be used in filtering.
+  // For bit depths < 8 just filter on bytes.
+  size_t pixel_width = ut_png_image_get_bit_depth(self->image) *
+                       ut_png_image_get_n_channels(self->image) / 8;
+  if (pixel_width < 0) {
+    pixel_width = 1;
+  }
+
   for (size_t offset = 0; offset < data_length; offset++) {
     size_t row = self->image_data_count / row_stride;
     if (row >= height) {
@@ -309,13 +317,26 @@ static void process_image_data(UtPngDecoder *self, UtObject *data) {
       }
     }
 
+    // Calculate the filter inputs:
+    //
+    // +---+---+
+    // | c | b |
+    // +---+---+
+    // | a | x |
+    // +---+---+
     uint8_t x = ut_uint8_list_get_element(data, offset);
-    int32_t a = line_offset == 0 ? 0 : image_data[self->image_data_count - 1];
-    int32_t b = row == 0 ? 0 : image_data[self->image_data_count - row_stride];
-    int32_t c = row == 0 || line_offset == 0
-                    ? 0
-                    : image_data[self->image_data_count - row_stride - 1];
+    int32_t a, b, c;
+    if (line_offset >= pixel_width) {
+      a = image_data[self->image_data_count - pixel_width];
+      c = row == 0
+              ? 0
+              : image_data[self->image_data_count - row_stride - pixel_width];
+    } else {
+      a = c = 0;
+    }
+    b = row == 0 ? 0 : image_data[self->image_data_count - row_stride];
 
+    // Reconstruct the pixel value.
     uint8_t recon_x;
     switch (self->line_filter) {
     default:
