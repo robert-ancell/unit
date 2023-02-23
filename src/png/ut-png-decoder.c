@@ -32,6 +32,7 @@ typedef struct {
   UtObject *prev_line;
   UtObject *line;
   FilterType line_filter;
+  size_t line_count;
 
   uint32_t width;
   uint32_t height;
@@ -267,14 +268,12 @@ static void decode_image_header(UtPngDecoder *self, UtObject *data) {
     return;
   }
   ut_object_unref(self->prev_line);
-  self->prev_line = ut_uint8_array_new(); // FIXME: sized
-  for (size_t i = 0; i < self->rowstride; i++) {
-    ut_uint8_list_append(self->prev_line, 0);
-  }
+  self->prev_line = ut_uint8_array_new_sized(self->rowstride);
   ut_object_unref(self->line);
   self->line = NULL;
+  self->line_count = 0;
 
-  self->data = ut_uint8_array_new(); // FIXME: sized
+  self->data = ut_uint8_array_new_sized(self->height * self->rowstride);
   self->image = ut_png_image_new(self->width, self->height, self->bit_depth,
                                  self->colour_type, self->data);
 }
@@ -284,9 +283,16 @@ static void decode_palette(UtPngDecoder *self, UtObject *data) {}
 static void process_image_data(UtPngDecoder *self, UtObject *data) {
   size_t data_length = ut_list_get_length(data);
 
+  uint8_t *image_data = ut_uint8_array_get_data(self->data);
+
   size_t offset = 0;
   while (offset < data_length) {
     if (self->line == NULL) {
+      if (self->line_count == self->height) {
+        set_error(self, "Excess image data");
+        return;
+      }
+
       if (!decode_filter_type(ut_uint8_list_get_element(data, offset),
                               &self->line_filter)) {
         set_error(self, "Invalid PNG filter type");
@@ -305,26 +311,30 @@ static void process_image_data(UtPngDecoder *self, UtObject *data) {
         pixel_width = 1;
       }
 
+      size_t image_data_offset = self->line_count * self->rowstride;
       switch (self->line_filter) {
       case FILTER_TYPE_NONE:
         for (size_t i = 0; i < self->rowstride; i++) {
-          ut_uint8_list_append(self->data,
-                               ut_uint8_list_get_element(self->line, i));
+          image_data[image_data_offset] =
+              ut_uint8_list_get_element(self->line, i);
+          image_data_offset++;
         }
         break;
       case FILTER_TYPE_SUB:
         // FIXME: optimised by having filter functions for each image
         // depth/format
         for (size_t i = 0; i < pixel_width; i++) {
-          ut_uint8_list_append(self->data,
-                               ut_uint8_list_get_element(self->line, i));
+          image_data[image_data_offset] =
+              ut_uint8_list_get_element(self->line, i);
+          image_data_offset++;
         }
         for (size_t i = pixel_width; i < self->rowstride; i += pixel_width) {
           for (size_t j = 0; j < pixel_width; j++) {
             uint8_t x = ut_uint8_list_get_element(self->line, i + j);
             uint8_t a =
                 ut_uint8_list_get_element(self->line, i + j - pixel_width);
-            ut_uint8_list_append(self->data, x + a);
+            image_data[image_data_offset] = x + a;
+            image_data_offset++;
           }
         }
         break;
@@ -332,27 +342,31 @@ static void process_image_data(UtPngDecoder *self, UtObject *data) {
         for (size_t i = 0; i < self->rowstride; i++) {
           uint8_t x = ut_uint8_list_get_element(self->line, i);
           uint8_t b = ut_uint8_list_get_element(self->prev_line, i);
-          ut_uint8_list_append(self->data, x + b);
+          image_data[image_data_offset] = x + b;
+          image_data_offset++;
         }
         break;
       case FILTER_TYPE_AVERAGE:
         for (size_t i = 0; i < pixel_width; i++) {
-          ut_uint8_list_append(self->data,
-                               ut_uint8_list_get_element(self->line, i));
+          image_data[image_data_offset] =
+              ut_uint8_list_get_element(self->line, i);
+          image_data_offset++;
         }
         for (size_t i = pixel_width; i < self->rowstride; i += pixel_width) {
           for (size_t j = 0; i < pixel_width; j++) {
             uint16_t a =
                 ut_uint8_list_get_element(self->line, i + j - pixel_width);
             uint16_t b = ut_uint8_list_get_element(self->prev_line, i + j);
-            ut_uint8_list_append(self->data, (a + b) / 2);
+            image_data[image_data_offset] = (a + b) / 2;
+            image_data_offset++;
           }
         }
         break;
       case FILTER_TYPE_PAETH:
         for (size_t i = 0; i < pixel_width; i++) {
-          ut_uint8_list_append(self->data,
-                               ut_uint8_list_get_element(self->line, i));
+          image_data[image_data_offset] =
+              ut_uint8_list_get_element(self->line, i);
+          image_data_offset++;
         }
         for (size_t i = pixel_width; i < self->rowstride; i += pixel_width) {
           for (size_t j = 0; i < pixel_width; j++) {
@@ -373,7 +387,8 @@ static void process_image_data(UtPngDecoder *self, UtObject *data) {
             } else {
               value = c;
             }
-            ut_uint8_list_append(self->data, value);
+            image_data[image_data_offset] = value;
+            image_data_offset++;
           }
         }
         break;
@@ -382,6 +397,7 @@ static void process_image_data(UtPngDecoder *self, UtObject *data) {
       ut_object_unref(self->prev_line);
       self->prev_line = self->line;
       self->line = NULL;
+      self->line_count++;
     }
   }
 }

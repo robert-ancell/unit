@@ -228,6 +228,19 @@ UtObject *ut_uint8_array_new() {
   return ut_object_new(sizeof(UtUint8Array), &object_interface);
 }
 
+UtObject *ut_uint8_array_new_sized(size_t length) {
+  UtObject *object = ut_uint8_array_new();
+  UtUint8Array *self = (UtUint8Array *)object;
+
+  self->data = malloc(sizeof(uint8_t) * length);
+  self->data_length = length;
+  for (size_t i = 0; i < length; i++) {
+    self->data[i] = 0;
+  }
+
+  return object;
+}
+
 UtObject *ut_uint8_array_new_from_data(const uint8_t *data,
                                        size_t data_length) {
   UtObject *object = ut_uint8_array_new();
