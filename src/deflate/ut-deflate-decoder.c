@@ -267,8 +267,7 @@ static bool read_dynamic_huffman_code_width_code(UtDeflateDecoder *self,
   const uint8_t code_width_symbol_order[19] = {
       16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15};
 
-  UtObjectRef code_widths = ut_uint8_array_new_from_elements(
-      19, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+  UtObjectRef code_widths = ut_uint8_array_new_sized(19);
   uint8_t *code_widths_data = ut_uint8_array_get_data(code_widths);
   for (size_t i = 0; i < self->n_code_width_codes; i++) {
     uint8_t code_width_symbol = code_width_symbol_order[i];
