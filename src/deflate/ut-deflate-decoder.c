@@ -158,7 +158,7 @@ static uint8_t read_int_be(UtDeflateDecoder *self, size_t length,
                            UtObject *data, size_t *offset) {
   uint8_t value = 0;
   for (size_t i = 0; i < length; i++) {
-    value |= read_bit(self, data, offset) << i;
+    value = value << 1 | read_bit(self, data, offset);
   }
 
   return value;
