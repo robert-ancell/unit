@@ -275,6 +275,12 @@ static bool read_dynamic_huffman_code_width_code(UtDeflateDecoder *self,
   }
   self->code_width_huffman_decoder =
       ut_huffman_decoder_new_canonical(code_widths);
+  if (ut_object_implements_error(self->code_width_huffman_decoder)) {
+    self->error =
+        ut_deflate_error_new("Invalid deflate code width Huffman code");
+    self->state = DECODER_STATE_ERROR;
+    return true;
+  }
 
   self->state = DECODER_STATE_DYNAMIC_HUFFMAN_CODE_WIDTH;
   return true;
@@ -294,6 +300,13 @@ static void use_code_width(UtDeflateDecoder *self, uint8_t code_width) {
     if (ut_list_get_length(self->code_widths) == self->n_literal_length_codes) {
       self->literal_length_huffman_decoder =
           ut_huffman_decoder_new_canonical(self->code_widths);
+      if (ut_object_implements_error(self->literal_length_huffman_decoder)) {
+        self->error =
+            ut_deflate_error_new("Invalid deflate literal/length Huffman code");
+        self->state = DECODER_STATE_ERROR;
+        return;
+      }
+
       ut_object_unref(self->code_widths);
       self->code_widths = ut_uint8_list_new();
     }
@@ -301,6 +314,12 @@ static void use_code_width(UtDeflateDecoder *self, uint8_t code_width) {
     if (ut_list_get_length(self->code_widths) == self->n_distance_codes) {
       self->distance_huffman_decoder =
           ut_huffman_decoder_new_canonical(self->code_widths);
+      if (ut_object_implements_error(self->distance_huffman_decoder)) {
+        self->error =
+            ut_deflate_error_new("Invalid deflate distance Huffman code");
+        self->state = DECODER_STATE_ERROR;
+        return;
+      }
       ut_object_unref(self->code_widths);
       self->code_widths = NULL;
       self->state = DECODER_STATE_LITERAL_LENGTH;
