@@ -14,8 +14,7 @@ typedef enum {
 
 typedef struct {
   UtObject object;
-  UtObject *multiplexer;
-  UtObject *zlib_input_stream;
+  UtObject *input_stream;
   UtObject *deflate_input_stream;
   UtObject *read_cancel;
   UtInputStreamCallback callback;
@@ -52,8 +51,6 @@ static size_t deflate_read_cb(void *user_data, UtObject *data, bool complete) {
         ut_cstring_new_printf("Error decoding deflate data: %s", description);
     self->error = ut_zlib_error_new(description);
     self->state = DECODER_STATE_ERROR;
-    ut_input_stream_multiplexer_set_active(self->multiplexer,
-                                           self->zlib_input_stream);
     return 0;
   }
 
@@ -82,8 +79,6 @@ static size_t deflate_read_cb(void *user_data, UtObject *data, bool complete) {
 
   if (complete) {
     self->state = DECODER_STATE_CHECKSUM;
-    ut_input_stream_multiplexer_set_active(self->multiplexer,
-                                           self->zlib_input_stream);
   }
 
   return total_used;
@@ -140,12 +135,6 @@ static bool read_header(UtZlibDecoder *self, UtObject *data, size_t *offset,
     self->state = DECODER_STATE_DICTIONARY;
   } else {
     self->state = DECODER_STATE_COMPRESSED_DATA;
-    ut_object_unref(self->deflate_decoder);
-    self->deflate_decoder = ut_deflate_decoder_new(self->deflate_input_stream);
-    ut_input_stream_multiplexer_set_active(self->multiplexer,
-                                           self->deflate_input_stream);
-    ut_input_stream_read(self->deflate_decoder, deflate_read_cb, self,
-                         self->read_cancel);
   }
 
   return true;
@@ -176,6 +165,22 @@ static bool read_dictionary(UtZlibDecoder *self, UtObject *data, size_t *offset,
   }
 
   return dictionary_end != dictionary_start;
+}
+
+static bool read_compressed_data(UtZlibDecoder *self, UtObject *data,
+                                 size_t *offset, bool complete) {
+  size_t data_length = ut_list_get_length(data);
+
+  UtObjectRef deflate_data =
+      ut_list_get_sublist(data, *offset, data_length - *offset);
+  size_t deflate_offset = ut_writable_input_stream_write(
+      self->deflate_input_stream, deflate_data, complete);
+  if (deflate_offset == 0) {
+    return false;
+  }
+
+  *offset += deflate_offset;
+  return true;
 }
 
 static bool read_checksum(UtZlibDecoder *self, UtObject *data, size_t *offset,
@@ -224,8 +229,8 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
       decoding = read_dictionary(self, data, &offset, complete);
       break;
     case DECODER_STATE_COMPRESSED_DATA:
-      // Will be processed in other stream.
-      return offset;
+      decoding = read_compressed_data(self, data, &offset, complete);
+      break;
     case DECODER_STATE_CHECKSUM:
       decoding = read_checksum(self, data, &offset, complete);
       break;
@@ -255,8 +260,7 @@ static void ut_zlib_decoder_init(UtObject *object) {
 static void ut_zlib_decoder_cleanup(UtObject *object) {
   UtZlibDecoder *self = (UtZlibDecoder *)object;
   ut_cancel_activate(self->read_cancel);
-  ut_object_unref(self->multiplexer);
-  ut_object_unref(self->zlib_input_stream);
+  ut_object_unref(self->input_stream);
   ut_object_unref(self->deflate_input_stream);
   ut_object_unref(self->read_cancel);
   ut_object_unref(self->cancel);
@@ -273,10 +277,7 @@ static void ut_zlib_decoder_read(UtObject *object,
   self->callback = callback;
   self->user_data = user_data;
   self->cancel = ut_object_ref(cancel);
-  ut_input_stream_multiplexer_set_active(self->multiplexer,
-                                         self->zlib_input_stream);
-  ut_input_stream_read(self->zlib_input_stream, read_cb, self,
-                       self->read_cancel);
+  ut_input_stream_read(self->input_stream, read_cb, self, self->read_cancel);
 }
 
 static UtInputStreamInterface input_stream_interface = {
@@ -293,10 +294,11 @@ UtObject *ut_zlib_decoder_new(UtObject *input_stream) {
   assert(input_stream != NULL);
   UtObject *object = ut_object_new(sizeof(UtZlibDecoder), &object_interface);
   UtZlibDecoder *self = (UtZlibDecoder *)object;
-  self->multiplexer = ut_input_stream_multiplexer_new(input_stream);
-  self->zlib_input_stream = ut_input_stream_multiplexer_add(self->multiplexer);
-  self->deflate_input_stream =
-      ut_input_stream_multiplexer_add(self->multiplexer);
+  self->input_stream = ut_object_ref(input_stream);
+  self->deflate_input_stream = ut_writable_input_stream_new();
+  self->deflate_decoder = ut_deflate_decoder_new(self->deflate_input_stream);
+  ut_input_stream_read(self->deflate_decoder, deflate_read_cb, self,
+                       self->read_cancel);
   return object;
 }
 
