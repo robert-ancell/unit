@@ -86,7 +86,7 @@ void ut_huffman_code_generate(UtObject *symbol_weights, uint16_t *codes,
   free(nodes);
 }
 
-void ut_huffman_code_generate_canonical(UtObject *code_widths,
+bool ut_huffman_code_generate_canonical(UtObject *code_widths,
                                         uint16_t *codes) {
   size_t symbols_length = ut_list_get_length(code_widths);
 
@@ -101,19 +101,36 @@ void ut_huffman_code_generate_canonical(UtObject *code_widths,
 
   // Populate mapping tables.
   uint16_t code = 0;
+  uint16_t last_code = 1;
+  bool complete = false;
   for (size_t code_width = 1; n_used < symbols_length; code_width++) {
+    // Run out of bits.
+    if (complete) {
+      return false;
+    }
+
     for (size_t i = 0; i < symbols_length; i++) {
       uint8_t code_width_ = ut_uint8_list_get_element(code_widths, i);
       // We only support up to 16 bit codes.
-      assert(code_width_ <= 16);
+      if (code_width_ > 16) {
+        return false;
+      }
 
       if (code_width == code_width_) {
+        // Used all the bits for this width - this must be the last code.
+        if (code == last_code) {
+          complete = true;
+        }
+
         codes[i] = code;
         code++;
         n_used++;
-        // FIXME: Check if have run out of codes
       }
     }
     code <<= 1;
+    last_code = last_code << 1 | 0x1;
   }
+
+  // Successful if used all code bits.
+  return complete;
 }

@@ -8,4 +8,4 @@
 void ut_huffman_code_generate(UtObject *symbol_weights, uint16_t *codes,
                               size_t *code_widths);
 
-void ut_huffman_code_generate_canonical(UtObject *code_widths, uint16_t *codes);
+bool ut_huffman_code_generate_canonical(UtObject *code_widths, uint16_t *codes);

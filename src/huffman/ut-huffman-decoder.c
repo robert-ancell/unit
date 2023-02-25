@@ -81,7 +81,9 @@ UtObject *ut_huffman_decoder_new_canonical(UtObject *code_widths) {
   size_t symbols_length = ut_list_get_length(code_widths);
 
   uint16_t codes[symbols_length];
-  ut_huffman_code_generate_canonical(code_widths, codes);
+  if (!ut_huffman_code_generate_canonical(code_widths, codes)) {
+    return ut_general_error_new("Invalid Huffman code widths");
+  }
 
   size_t code_widths_[symbols_length];
   for (size_t i = 0; i < symbols_length; i++) {
