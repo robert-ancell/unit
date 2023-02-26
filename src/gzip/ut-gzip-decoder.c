@@ -154,23 +154,34 @@ static bool read_member_header(UtGzipDecoder *self, UtObject *data,
 
   uint8_t id1 = ut_uint8_list_get_element(data, header_start + 0);
   uint8_t id2 = ut_uint8_list_get_element(data, header_start + 1);
-  if (id1 != 31 || id2 != 139) {
-    self->error = ut_gzip_error_new("Invalid GZip ID");
-    self->state = DECODER_STATE_ERROR;
-    return true;
-  }
-
   uint8_t compression_method =
       ut_uint8_list_get_element(data, header_start + 2);
-  if (compression_method != 8) {
-    self->error = ut_gzip_error_new("Unsupported GZIP compression method");
+  uint8_t flags = ut_uint8_list_get_element(data, header_start + 3);
+  /*uint32_t modification_time = */
+  ut_uint8_list_get_uint32_le(data, header_start + 4);
+  /*uint8_t extra_flags = */
+  ut_uint8_list_get_element(data, header_start + 8);
+  /*uint8_t operating_system = */
+  ut_uint8_list_get_element(data, header_start + 9);
+
+  if (id1 != 31 || id2 != 139) {
+    self->error = ut_gzip_error_new("Invalid gzip ID");
     self->state = DECODER_STATE_ERROR;
     return true;
   }
 
-  uint8_t flags = ut_uint8_list_get_element(data, header_start + 3);
+  if (compression_method != 8) {
+    self->error = ut_gzip_error_new("Unsupported gzip compression method");
+    self->state = DECODER_STATE_ERROR;
+    return true;
+  }
 
-  if ((flags & 0x04) != 0) {
+  bool has_crc = (flags & 0x02) != 0;
+  bool has_extra = (flags & 0x04) != 0;
+  bool has_file_name = (flags & 0x08) != 0;
+  bool has_file_comment = (flags & 0x10) != 0;
+
+  if (has_extra) {
     header_end += 2;
     if (data_length < header_end) {
       return false;
@@ -182,21 +193,21 @@ static bool read_member_header(UtGzipDecoder *self, UtObject *data,
     }
   }
 
-  if ((flags & 0x08) != 0) {
+  if (has_file_name) {
     ut_cstring_ref file_name = read_string(data, &header_end);
     if (file_name == NULL) {
       return false;
     }
   }
 
-  if ((flags & 0x10) != 0) {
+  if (has_file_comment) {
     ut_cstring_ref file_comment = read_string(data, &header_end);
     if (file_comment == NULL) {
       return false;
     }
   }
 
-  if ((flags & 0x02) != 0) {
+  if (has_crc) {
     uint32_t crc = 0;
     for (size_t i = 0; i < header_end; i++) {
       crc = crc32(crc, ut_uint8_list_get_element(data, i));
@@ -209,7 +220,7 @@ static bool read_member_header(UtGzipDecoder *self, UtObject *data,
     header_end += 2;
 
     if (header_crc != (crc & 0xffff)) {
-      self->error = ut_gzip_error_new("GZIP header CRC mismatch");
+      self->error = ut_gzip_error_new("Gzip header CRC mismatch");
       self->state = DECODER_STATE_ERROR;
       return true;
     }
@@ -250,12 +261,12 @@ static bool read_member_trailer(UtGzipDecoder *self, UtObject *data,
   *offset += 8;
 
   if (self->crc != input_data_crc) {
-    self->error = ut_gzip_error_new("GZip data CRC mismatch");
+    self->error = ut_gzip_error_new("gzip data CRC mismatch");
     self->state = DECODER_STATE_ERROR;
     return true;
   }
   if ((self->data_length & 0xffffffff) != input_data_length) {
-    self->error = ut_gzip_error_new("GZip data length mismatch");
+    self->error = ut_gzip_error_new("gzip data length mismatch");
     self->state = DECODER_STATE_ERROR;
     return true;
   }
