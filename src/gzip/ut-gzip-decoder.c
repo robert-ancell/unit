@@ -130,6 +130,7 @@ static char *read_string(UtObject *data, size_t *offset) {
     uint8_t c = ut_uint8_list_get_element(data, i);
     ut_uint8_list_append(value, c);
     if (c == 0) {
+      *offset = i + 1;
       return (char *)ut_uint8_list_take_data(value);
     }
   }
