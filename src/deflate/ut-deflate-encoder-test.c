@@ -62,6 +62,20 @@ int main(int argc, char **argv) {
   ut_assert_is_not_error(hello3_result);
   ut_assert_uint8_list_equal_hex(hello3_result, "cb48cdc9c957402201");
 
+  // Encodes as "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ="
+  // rep(53,53)
+  UtObjectRef alphabet_data =
+      get_utf8_data("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ="
+                    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ=");
+  UtObjectRef alphabet_data_stream = ut_list_input_stream_new(alphabet_data);
+  UtObjectRef alphabet_encoder = ut_deflate_encoder_new(alphabet_data_stream);
+  UtObjectRef alphabet_result = ut_input_stream_read_sync(alphabet_encoder);
+  ut_assert_is_not_error(alphabet_result);
+  ut_assert_uint8_list_equal_hex(
+      alphabet_result,
+      "4b4c4a4e494d4bcfc8cccacec9cdcb2f282c2a2e292d2bafa8ac72747276717573f7f0f4"
+      "f2f6f1f5f30f080c0a0e090d0b8f888cb2254b1300");
+
   // Encodes as "our f" rep(5,4) "h" rep(10,7) "tain"
   UtObjectRef repeat_phrase_data = get_utf8_data("our four hour fountain");
   UtObjectRef repeat_phrase_data_stream =
@@ -72,7 +86,7 @@ int main(int argc, char **argv) {
       ut_input_stream_read_sync(repeat_phrase_encoder);
   ut_assert_is_not_error(repeat_phrase_result);
   ut_assert_uint8_list_equal_hex(repeat_phrase_result,
-                                 "cb2f2d524803111950665e4962661e00");
+                                 "cb2f2d524803111950565e4962661e00");
 
   // Encode one byte at a time.
   UtObjectRef short_write_data_stream = ut_buffered_input_stream_new();

@@ -141,23 +141,11 @@ static uint8_t read_bit(UtDeflateDecoder *self, UtObject *data,
   return value;
 }
 
-// Read an integer in little endian form.
-static uint8_t read_int_le(UtDeflateDecoder *self, size_t length,
-                           UtObject *data, size_t *offset) {
+static uint8_t read_int(UtDeflateDecoder *self, size_t length, UtObject *data,
+                        size_t *offset) {
   uint8_t value = 0;
   for (size_t i = 0; i < length; i++) {
     value |= read_bit(self, data, offset) << i;
-  }
-
-  return value;
-}
-
-// Read an integer in big endian form.
-static uint8_t read_int_be(UtDeflateDecoder *self, size_t length,
-                           UtObject *data, size_t *offset) {
-  uint8_t value = 0;
-  for (size_t i = 0; i < length; i++) {
-    value = value << 1 | read_bit(self, data, offset);
   }
 
   return value;
@@ -191,7 +179,7 @@ static bool read_block_header(UtDeflateDecoder *self, UtObject *data,
   }
 
   self->is_last_block = read_bit(self, data, offset) == 1;
-  uint8_t block_type = read_int_le(self, 2, data, offset);
+  uint8_t block_type = read_int(self, 2, data, offset);
   switch (block_type) {
   case 0:
     start_uncompressed_block(self);
@@ -238,9 +226,9 @@ static bool read_dynamic_huffman_lengths(UtDeflateDecoder *self, UtObject *data,
     return false;
   }
 
-  self->n_literal_length_codes = 257 + read_int_le(self, 5, data, offset);
-  self->n_distance_codes = 1 + read_int_le(self, 5, data, offset);
-  self->n_code_width_codes = 4 + read_int_le(self, 4, data, offset);
+  self->n_literal_length_codes = 257 + read_int(self, 5, data, offset);
+  self->n_distance_codes = 1 + read_int(self, 5, data, offset);
+  self->n_code_width_codes = 4 + read_int(self, 4, data, offset);
 
   ut_object_unref(self->code_widths);
   self->code_widths = ut_uint8_list_new();
@@ -270,7 +258,7 @@ static bool read_dynamic_huffman_code_width_code(UtDeflateDecoder *self,
   uint8_t *code_widths_data = ut_uint8_array_get_data(code_widths);
   for (size_t i = 0; i < self->n_code_width_codes; i++) {
     uint8_t code_width_symbol = code_width_symbol_order[i];
-    code_widths_data[code_width_symbol] = read_int_le(self, 3, data, offset);
+    code_widths_data[code_width_symbol] = read_int(self, 3, data, offset);
   }
   self->code_width_huffman_decoder =
       ut_huffman_decoder_new_canonical(code_widths);
@@ -369,7 +357,7 @@ static bool read_dynamic_huffman_code_width_repeat(UtDeflateDecoder *self,
     return false;
   }
 
-  size_t repeat_count = 3 + read_int_le(self, 2, data, offset);
+  size_t repeat_count = 3 + read_int(self, 2, data, offset);
   size_t code_widths_length = ut_list_get_length(self->code_widths);
   if (code_widths_length == 0) {
     self->error =
@@ -391,7 +379,7 @@ static bool read_dynamic_huffman_code_width_repeat_zero_short(
     return false;
   }
 
-  size_t repeat_count = 3 + read_int_le(self, 3, data, offset);
+  size_t repeat_count = 3 + read_int(self, 3, data, offset);
   repeat_code_width(self, 0, repeat_count);
 
   return true;
@@ -404,7 +392,7 @@ static bool read_dynamic_huffman_code_width_repeat_zero_long(
     return false;
   }
 
-  size_t repeat_count = 11 + read_int_le(self, 7, data, offset);
+  size_t repeat_count = 11 + read_int(self, 7, data, offset);
   repeat_code_width(self, 0, repeat_count);
 
   return true;
@@ -463,7 +451,7 @@ static bool read_length(UtDeflateDecoder *self, UtObject *data,
     return false;
   }
 
-  uint16_t extra = read_int_be(self, bit_count, data, offset);
+  uint16_t extra = read_int(self, bit_count, data, offset);
   self->length = base_lengths[self->length_symbol - 257] + extra;
 
   self->state = DECODER_STATE_DISTANCE;
@@ -501,7 +489,7 @@ static bool read_distance_extension(UtDeflateDecoder *self, UtObject *data,
     return false;
   }
 
-  uint16_t extra = read_int_be(self, bit_count, data, offset);
+  uint16_t extra = read_int(self, bit_count, data, offset);
   uint16_t distance = base_distances[self->distance_index] + extra;
 
   size_t buffer_length = ut_list_get_length(self->buffer);

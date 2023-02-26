@@ -58,6 +58,19 @@ int main(int argc, char **argv) {
   ut_assert_cstring_equal(ut_string_get_text(hello3_result_string),
                           "hello hello hello");
 
+  UtObjectRef alphabet_data = ut_uint8_list_new_from_hex_string(
+      "4b4c4a4e494d4bcfc8cccacec9cdcb2f282c2a2e292d2bafa8ac72747276717573f7f0f4"
+      "f2f6f1f5f30f080c0a0e090d0b8f888cb2254b1300");
+  UtObjectRef alphabet_data_stream = ut_list_input_stream_new(alphabet_data);
+  UtObjectRef alphabet_decoder = ut_deflate_decoder_new(alphabet_data_stream);
+  UtObjectRef alphabet_result = ut_input_stream_read_sync(alphabet_decoder);
+  ut_assert_is_not_error(alphabet_result);
+  UtObjectRef alphabet_result_string = ut_string_new_from_utf8(alphabet_result);
+  ut_assert_cstring_equal(
+      ut_string_get_text(alphabet_result_string),
+      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ="
+      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ=");
+
   UtObjectRef literal_data = ut_uint8_list_new_from_hex_string("010100feff21");
   UtObjectRef literal_data_stream = ut_list_input_stream_new(literal_data);
   UtObjectRef literal_decoder = ut_deflate_decoder_new(literal_data_stream);
