@@ -49,7 +49,6 @@ typedef struct {
   uint16_t length;
   uint16_t length_symbol;
   uint16_t distance_index;
-  uint16_t distance_extra;
 
   // Huffman decoder for literal/length codes.
   UtObject *literal_length_huffman_decoder;
