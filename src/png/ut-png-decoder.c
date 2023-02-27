@@ -272,6 +272,20 @@ static void decode_image_header(UtPngDecoder *self, UtObject *data) {
 
 static void decode_palette(UtPngDecoder *self, UtObject *data) {}
 
+static uint8_t paeth_filter(uint8_t x, int32_t a, int32_t b, int32_t c) {
+  int32_t p = a + b - c;
+  int32_t pa = p > a ? p - a : a - p;
+  int32_t pb = p > b ? p - b : b - p;
+  int32_t pc = p > c ? p - c : c - p;
+  if (pa <= pb && pa <= pc) {
+    return x + a;
+  } else if (pb <= pc) {
+    return x + b;
+  } else {
+    return x + c;
+  }
+}
+
 static void process_image_data(UtPngDecoder *self, UtObject *data) {
   size_t data_length = ut_list_get_length(data);
 
@@ -345,17 +359,7 @@ static void process_image_data(UtPngDecoder *self, UtObject *data) {
       recon_x = x + (a + b) / 2;
       break;
     case FILTER_TYPE_PAETH:
-      int32_t p = a + b - c;
-      int32_t pa = p > a ? p - a : a - p;
-      int32_t pb = p > b ? p - b : b - p;
-      int32_t pc = p > c ? p - c : c - p;
-      if (pa <= pb && pa <= pc) {
-        recon_x = x + a;
-      } else if (pb <= pc) {
-        recon_x = x + b;
-      } else {
-        recon_x = x + c;
-      }
+      recon_x = paeth_filter(x, a, b, c);
       break;
     }
 
