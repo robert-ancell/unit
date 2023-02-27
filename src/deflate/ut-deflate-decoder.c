@@ -141,9 +141,9 @@ static uint8_t read_bit(UtDeflateDecoder *self, UtObject *data,
   return value;
 }
 
-static uint8_t read_int(UtDeflateDecoder *self, size_t length, UtObject *data,
-                        size_t *offset) {
-  uint8_t value = 0;
+static uint16_t read_int(UtDeflateDecoder *self, size_t length, UtObject *data,
+                         size_t *offset) {
+  uint16_t value = 0;
   for (size_t i = 0; i < length; i++) {
     value |= read_bit(self, data, offset) << i;
   }
