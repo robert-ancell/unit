@@ -9,6 +9,7 @@ typedef struct {
   uint32_t height;
   uint8_t bit_depth;
   UtPngColourType colour_type;
+  UtObject *palette;
   UtObject *data;
 } UtPngImage;
 
@@ -29,8 +30,8 @@ static const char *colour_type_to_string(UtPngColourType colour_type) {
   }
 }
 
-static size_t get_n_channels(UtPngImage *self) {
-  switch (self->colour_type) {
+static size_t get_n_channels(UtPngColourType colour_type) {
+  switch (colour_type) {
   case UT_PNG_COLOUR_TYPE_GREYSCALE:
   case UT_PNG_COLOUR_TYPE_INDEXED_COLOUR:
     return 1;
@@ -45,8 +46,15 @@ static size_t get_n_channels(UtPngImage *self) {
   }
 }
 
+static size_t get_row_stride(uint32_t width, UtPngColourType colour_type,
+                             uint8_t bit_depth) {
+  size_t n_channels = get_n_channels(colour_type);
+  return (((size_t)width * bit_depth * n_channels) + 7) / 8;
+}
+
 static void ut_png_image_cleanup(UtObject *object) {
   UtPngImage *self = (UtPngImage *)object;
+  ut_object_unref(self->palette);
   ut_object_unref(self->data);
 }
 
@@ -65,7 +73,8 @@ static UtObjectInterface object_interface = {.type_name = "UtPngImage",
                                              .interfaces = {{NULL, NULL}}};
 
 UtObject *ut_png_image_new(uint32_t width, uint32_t height, uint8_t bit_depth,
-                           UtPngColourType colour_type, UtObject *data) {
+                           UtPngColourType colour_type, UtObject *palette,
+                           UtObject *data) {
   UtObject *object = ut_object_new(sizeof(UtPngImage), &object_interface);
   UtPngImage *self = (UtPngImage *)object;
 
@@ -75,6 +84,8 @@ UtObject *ut_png_image_new(uint32_t width, uint32_t height, uint8_t bit_depth,
   case UT_PNG_COLOUR_TYPE_GREYSCALE:
     assert(bit_depth == 1 || bit_depth == 2 || bit_depth == 4 ||
            bit_depth == 8 || bit_depth == 16);
+    // Palette not allowed.
+    assert(palette == NULL);
     break;
   case UT_PNG_COLOUR_TYPE_TRUECOLOUR:
     assert(bit_depth == 8 || bit_depth == 16);
@@ -82,9 +93,13 @@ UtObject *ut_png_image_new(uint32_t width, uint32_t height, uint8_t bit_depth,
   case UT_PNG_COLOUR_TYPE_INDEXED_COLOUR:
     assert(bit_depth == 1 || bit_depth == 2 || bit_depth == 4 ||
            bit_depth == 8);
+    // Palette required.
+    assert(palette != NULL);
     break;
   case UT_PNG_COLOUR_TYPE_GREYSCALE_WITH_ALPHA:
     assert(bit_depth == 8 || bit_depth == 16);
+    // Palette not allowed.
+    assert(palette == NULL);
     break;
   case UT_PNG_COLOUR_TYPE_TRUECOLOUR_WITH_ALPHA:
     assert(bit_depth == 8 || bit_depth == 16);
@@ -92,13 +107,22 @@ UtObject *ut_png_image_new(uint32_t width, uint32_t height, uint8_t bit_depth,
   default:
     assert(false);
   }
-  // FIXME: Assert data is correct length
+  if (palette != NULL) {
+    size_t palette_length = ut_list_get_length(palette);
+    assert(palette_length % 3 == 0);
+    size_t n_palette_entries = palette_length / 3;
+    assert(n_palette_entries >= 1 && n_palette_entries <= 256);
+  }
+  ut_assert_int_equal(ut_list_get_length(data),
+                      height * get_row_stride(width, colour_type, bit_depth));
 
   self->width = width;
   self->height = height;
   self->bit_depth = bit_depth;
   self->colour_type = colour_type;
+  self->palette = ut_object_ref(palette);
   self->data = ut_object_ref(data);
+
   return object;
 }
 
@@ -129,15 +153,19 @@ UtPngColourType ut_png_image_get_colour_type(UtObject *object) {
 size_t ut_png_image_get_n_channels(UtObject *object) {
   assert(ut_object_is_png_image(object));
   UtPngImage *self = (UtPngImage *)object;
-  return get_n_channels(self);
+  return get_n_channels(self->colour_type);
 }
 
 size_t ut_png_image_get_row_stride(UtObject *object) {
   assert(ut_object_is_png_image(object));
   UtPngImage *self = (UtPngImage *)object;
+  return get_row_stride(self->width, self->colour_type, self->bit_depth);
+}
 
-  size_t n_channels = get_n_channels(self);
-  return (((size_t)self->width * self->bit_depth * n_channels) + 7) / 8;
+UtObject *ut_png_image_get_palette(UtObject *object) {
+  assert(ut_object_is_png_image(object));
+  UtPngImage *self = (UtPngImage *)object;
+  return self->palette;
 }
 
 UtObject *ut_png_image_get_data(UtObject *object) {

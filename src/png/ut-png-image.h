@@ -14,7 +14,8 @@ typedef enum {
 } UtPngColourType;
 
 UtObject *ut_png_image_new(uint32_t width, uint32_t height, uint8_t bit_depth,
-                           UtPngColourType colour_type, UtObject *data);
+                           UtPngColourType colour_type, UtObject *palette,
+                           UtObject *data);
 
 uint32_t ut_png_image_get_width(UtObject *object);
 
@@ -27,6 +28,8 @@ UtPngColourType ut_png_image_get_colour_type(UtObject *object);
 size_t ut_png_image_get_n_channels(UtObject *object);
 
 size_t ut_png_image_get_row_stride(UtObject *object);
+
+UtObject *ut_png_image_get_palette(UtObject *object);
 
 UtObject *ut_png_image_get_data(UtObject *object);
 

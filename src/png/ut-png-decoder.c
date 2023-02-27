@@ -261,16 +261,53 @@ static void decode_image_header(UtPngDecoder *self, UtObject *data) {
     return;
   }
 
-  UtObjectRef image_data = ut_uint8_array_new();
-  self->image =
-      ut_png_image_new(width, height, bit_depth, colour_type, image_data);
-  size_t row_stride = ut_png_image_get_row_stride(self->image);
-  ut_list_resize(image_data, height * row_stride);
+  size_t n_channels;
+  switch (colour_type) {
+  case UT_PNG_COLOUR_TYPE_GREYSCALE:
+  case UT_PNG_COLOUR_TYPE_INDEXED_COLOUR:
+    n_channels = 1;
+    break;
+  case UT_PNG_COLOUR_TYPE_GREYSCALE_WITH_ALPHA:
+    n_channels = 2;
+    break;
+  case UT_PNG_COLOUR_TYPE_TRUECOLOUR:
+    n_channels = 3;
+    break;
+  case UT_PNG_COLOUR_TYPE_TRUECOLOUR_WITH_ALPHA:
+    n_channels = 4;
+    break;
+  default:
+    n_channels = 0;
+    break;
+  }
+  size_t row_stride = (((size_t)width * bit_depth * n_channels) + 7) / 8;
+  UtObjectRef image_data = ut_uint8_array_new_sized(height * row_stride);
+  UtObjectRef palette = NULL;
+  if (colour_type == UT_PNG_COLOUR_TYPE_INDEXED_COLOUR) {
+    // FIXME: Placeholder palette, need to either check later if palette chunk
+    // was missing.
+    palette = ut_uint8_array_new_sized(3);
+  }
+  self->image = ut_png_image_new(width, height, bit_depth, colour_type, palette,
+                                 image_data);
 
   self->image_data_count = 0;
 }
 
-static void decode_palette(UtPngDecoder *self, UtObject *data) {}
+static void decode_palette(UtPngDecoder *self, UtObject *data) {
+  UtObject *palette = ut_png_image_get_palette(self->image);
+  size_t palette_length = ut_list_get_length(data);
+  if (palette_length % 3 != 0) {
+    set_error(self, "Invalid palette size");
+    return;
+  }
+
+  ut_list_resize(palette, palette_length);
+  uint8_t *palette_data = ut_uint8_array_get_data(palette);
+  for (size_t i = 0; i < palette_length; i++) {
+    palette_data[i] = ut_uint8_list_get_element(data, i);
+  }
+}
 
 static uint8_t paeth_filter(uint8_t x, int32_t a, int32_t b, int32_t c) {
   int32_t p = a + b - c;
