@@ -256,12 +256,47 @@ static void test_png_suite_filtering() {
             f99n0g04_image_data);
 }
 
+static void test_png_suite_chunk_ordering() {
+  // grayscale mother image with 1 idat-chunk
+  check_png(oi1n0g16_data, 32, 32, 16, UT_PNG_COLOUR_TYPE_GREYSCALE, NULL, NULL,
+            oi1n0g16_image_data);
+
+  // color mother image with 1 idat-chunk
+  check_png(oi1n2c16_data, 32, 32, 16, UT_PNG_COLOUR_TYPE_TRUECOLOUR, NULL,
+            NULL, oi1n2c16_image_data);
+
+  // grayscale image with 2 idat-chunks
+  check_png(oi2n0g16_data, 32, 32, 16, UT_PNG_COLOUR_TYPE_GREYSCALE, NULL, NULL,
+            oi2n0g16_image_data);
+
+  // color image with 2 idat-chunks
+  check_png(oi2n2c16_data, 32, 32, 16, UT_PNG_COLOUR_TYPE_TRUECOLOUR, NULL,
+            NULL, oi2n2c16_image_data);
+
+  // grayscale image with 4 unequal sized idat-chunks
+  check_png(oi4n0g16_data, 32, 32, 16, UT_PNG_COLOUR_TYPE_GREYSCALE, NULL, NULL,
+            oi4n0g16_image_data);
+
+  // color image with 4 unequal sized idat-chunks
+  check_png(oi4n2c16_data, 32, 32, 16, UT_PNG_COLOUR_TYPE_TRUECOLOUR, NULL,
+            NULL, oi4n2c16_image_data);
+
+  // grayscale image with all idat-chunks length one
+  check_png(oi9n0g16_data, 32, 32, 16, UT_PNG_COLOUR_TYPE_GREYSCALE, NULL, NULL,
+            oi9n0g16_image_data);
+
+  // color image with all idat-chunks length one
+  check_png(oi9n2c16_data, 32, 32, 16, UT_PNG_COLOUR_TYPE_TRUECOLOUR, NULL,
+            NULL, oi9n2c16_image_data);
+}
+
 int main(int argc, char **argv) {
   test_png_suite_basic();
   test_png_suite_interlaced();
   test_png_suite_size();
   test_png_suite_background();
   test_png_suite_filtering();
+  test_png_suite_chunk_ordering();
 
   return 0;
 }
