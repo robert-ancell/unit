@@ -36,6 +36,10 @@ typedef struct {
   // Interlace method being used.
   UtPngInterlaceMethod interlace_method;
 
+  // Image compression decoding.
+  UtObject *image_data_decoder_input_stream;
+  UtObject *image_data_decoder;
+
   // Scanline being decoded.
   size_t image_data_count;
 
@@ -289,7 +293,18 @@ static void process_row(UtPngDecoder *self, FilterType filter, UtObject *row) {
   }
 }
 
-static void process_image_data(UtPngDecoder *self, UtObject *data) {
+// Process zlib decoded image data.
+static size_t data_decoder_read_cb(void *user_data, UtObject *data,
+                                   bool complete) {
+  UtPngDecoder *self = user_data;
+
+  if (ut_object_implements_error(data)) {
+    ut_cstring_ref description = ut_cstring_new_printf(
+        "Error decoding PNG image data: %s", ut_error_get_description(data));
+    set_error(self, description);
+    return 0;
+  }
+
   size_t data_length = ut_list_get_length(data);
 
   uint32_t height = ut_png_image_get_height(self->image);
@@ -299,19 +314,19 @@ static void process_image_data(UtPngDecoder *self, UtObject *data) {
   while (offset < data_length) {
     if (self->image_data_count >= height * row_stride) {
       set_error(self, "Excess image data");
-      return;
+      return offset;
     }
 
     // Insufficient data for row.
     if (offset + 1 + row_stride > data_length) {
-      break;
+      return offset;
     }
 
     // Row starts with a filter.
     FilterType filter;
     if (!decode_filter_type(ut_uint8_list_get_element(data, offset), &filter)) {
       set_error(self, "Invalid PNG filter type");
-      return;
+      return offset;
     }
     offset++;
 
@@ -320,10 +335,7 @@ static void process_image_data(UtPngDecoder *self, UtObject *data) {
     offset += row_stride;
   }
 
-  if (self->image_data_count != height * row_stride) {
-    set_error(self, "PNG image data size mismatch");
-    return;
-  }
+  return offset;
 }
 
 static void decode_image_header(UtPngDecoder *self, UtObject *data) {
@@ -492,22 +504,20 @@ static void decode_modification_time(UtPngDecoder *self, UtObject *data) {
 }
 
 static void decode_image_data(UtPngDecoder *self, UtObject *data) {
-  UtObjectRef zlib_stream = ut_list_input_stream_new(data);
-  UtObjectRef zlib_decoder = ut_zlib_decoder_new(zlib_stream);
-  UtObjectRef image_data = ut_input_stream_read_sync(zlib_decoder);
-  if (ut_object_implements_error(image_data)) {
-    ut_cstring_ref description =
-        ut_cstring_new_printf("Error decoding PNG image data: %s",
-                              ut_error_get_description(image_data));
-    set_error(self, description);
-    return;
-  }
-  process_image_data(self, image_data);
+  ut_buffered_input_stream_write(self->image_data_decoder_input_stream, data,
+                                 false);
 }
 
 static void decode_image_end(UtPngDecoder *self, UtObject *data) {
   if (ut_list_get_length(data) != 0) {
     set_error(self, "Invalid image end PNG chunk");
+    return;
+  }
+
+  uint32_t height = ut_png_image_get_height(self->image);
+  size_t row_stride = ut_png_image_get_row_stride(self->image);
+  if (self->image_data_count != height * row_stride) {
+    set_error(self, "PNG image data size mismatch");
     return;
   }
 
@@ -627,6 +637,8 @@ static void ut_png_decoder_cleanup(UtObject *object) {
   ut_object_unref(self->input_stream);
   ut_object_unref(self->read_cancel);
   ut_object_unref(self->cancel);
+  ut_object_unref(self->image_data_decoder_input_stream);
+  ut_object_unref(self->image_data_decoder);
   ut_object_unref(self->image);
   ut_object_unref(self->error);
 }
@@ -654,6 +666,12 @@ void ut_png_decoder_decode(UtObject *object, UtPngDecodeCallback callback,
   self->callback = callback;
   self->user_data = user_data;
   self->cancel = ut_object_ref(cancel);
+
+  self->image_data_decoder_input_stream = ut_buffered_input_stream_new();
+  self->image_data_decoder =
+      ut_zlib_decoder_new(self->image_data_decoder_input_stream);
+  ut_input_stream_read(self->image_data_decoder, data_decoder_read_cb, self,
+                       self->read_cancel);
 
   ut_input_stream_read(self->input_stream, read_cb, self, self->read_cancel);
 }
