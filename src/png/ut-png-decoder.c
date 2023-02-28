@@ -518,6 +518,7 @@ static size_t decode_chunk(UtPngDecoder *self, UtObject *data, size_t offset) {
   }
 
   UtPngChunkType type = ut_uint8_list_get_uint32_be(data, offset + 4);
+  bool is_ancillary = (type & 0x20000000) != 0;
 
   size_t chunk_data_offset = offset + 8;
   UtObjectRef chunk_data =
@@ -540,37 +541,23 @@ static size_t decode_chunk(UtPngDecoder *self, UtObject *data, size_t offset) {
   case UT_PNG_CHUNK_TYPE_IMAGE_DATA:
     decode_image_data(self, chunk_data);
     break;
-  case UT_PNG_CHUNK_TYPE_CHROMATICITIES:
-    break;
-  case UT_PNG_CHUNK_TYPE_GAMMA:
-    break;
-  case UT_PNG_CHUNK_TYPE_ICC_PROFILE:
-    break;
-  case UT_PNG_CHUNK_TYPE_SIGNIFICANT_BITS:
-    break;
-  case UT_PNG_CHUNK_TYPE_STANDARD_RGB:
-    break;
   case UT_PNG_CHUNK_TYPE_IMAGE_END:
     decode_image_end(self, chunk_data);
     break;
   case UT_PNG_CHUNK_TYPE_BACKGROUND:
     decode_background(self, chunk_data);
     break;
-  case UT_PNG_CHUNK_TYPE_HISTOGRAM:
-    break;
   case UT_PNG_CHUNK_TYPE_PHYSICAL_DIMENSIONS:
     decode_physical_dimensions(self, chunk_data);
-    break;
-  case UT_PNG_CHUNK_TYPE_SUGGESTED_PALETTE:
     break;
   case UT_PNG_CHUNK_TYPE_MODIFICATION_TIME:
     decode_modification_time(self, chunk_data);
     break;
-  case UT_PNG_CHUNK_TYPE_TEXT:
-    break;
-  case UT_PNG_CHUNK_TYPE_COMPRESSED_TEXT:
-    break;
-  case UT_PNG_CHUNK_TYPE_INTERNATIONAL_TEXT:
+  default:
+    if (!is_ancillary) {
+      set_error(self, "Uknown critical PNG chunk");
+      return 0;
+    }
     break;
   }
 
