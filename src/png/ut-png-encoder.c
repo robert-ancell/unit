@@ -149,6 +149,18 @@ static void write_image_header(UtPngEncoder *self, uint32_t width,
   write_chunk(self, chunk);
 }
 
+static void write_palette(UtPngEncoder *self, UtObject *palette) {
+  UtObjectRef chunk = start_chunk(UT_PNG_CHUNK_TYPE_PALETTE);
+  ut_list_append_list(chunk, palette);
+  write_chunk(self, chunk);
+}
+
+static void write_background(UtPngEncoder *self, UtObject *background_colour) {
+  UtObjectRef chunk = start_chunk(UT_PNG_CHUNK_TYPE_BACKGROUND);
+  ut_list_append_list(chunk, background_colour);
+  write_chunk(self, chunk);
+}
+
 static size_t zlib_data_cb(void *user_data, UtObject *data, bool complete) {
   UtObject *chunk = user_data;
   ut_list_append_list(chunk, data);
@@ -225,6 +237,14 @@ void ut_png_encoder_encode(UtObject *object) {
       encode_colour_type(ut_png_image_get_colour_type(self->image)),
       COMPRESS_DEFLATE, 0,
       encode_interlace_method(UT_PNG_INTERLACE_METHOD_NONE));
+  UtObject *palette = ut_png_image_get_palette(self->image);
+  if (palette != NULL) {
+    write_palette(self, palette);
+  }
+  UtObject *background_colour = ut_png_image_get_background_colour(self->image);
+  if (background_colour != NULL) {
+    write_background(self, background_colour);
+  }
   write_image_data(self);
   write_image_end(self);
 }
