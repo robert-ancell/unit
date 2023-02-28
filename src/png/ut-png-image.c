@@ -10,6 +10,7 @@ typedef struct {
   uint8_t bit_depth;
   UtPngColourType colour_type;
   UtObject *palette;
+  UtObject *background_colour;
   UtObject *data;
 } UtPngImage;
 
@@ -55,6 +56,7 @@ static size_t get_row_stride(uint32_t width, UtPngColourType colour_type,
 static void ut_png_image_cleanup(UtObject *object) {
   UtPngImage *self = (UtPngImage *)object;
   ut_object_unref(self->palette);
+  ut_object_unref(self->background_colour);
   ut_object_unref(self->data);
 }
 
@@ -166,6 +168,41 @@ UtObject *ut_png_image_get_palette(UtObject *object) {
   assert(ut_object_is_png_image(object));
   UtPngImage *self = (UtPngImage *)object;
   return self->palette;
+}
+
+void ut_png_image_set_background_colour(UtObject *object,
+                                        UtObject *background_colour) {
+  assert(ut_object_is_png_image(object));
+  UtPngImage *self = (UtPngImage *)object;
+
+  size_t background_colour_length = ut_list_get_length(background_colour);
+  switch (self->colour_type) {
+  case UT_PNG_COLOUR_TYPE_GREYSCALE:
+  case UT_PNG_COLOUR_TYPE_GREYSCALE_WITH_ALPHA:
+    assert(self->bit_depth == 16 ? background_colour_length == 2
+                                 : background_colour_length == 1);
+    break;
+  case UT_PNG_COLOUR_TYPE_TRUECOLOUR:
+  case UT_PNG_COLOUR_TYPE_TRUECOLOUR_WITH_ALPHA:
+    assert(self->bit_depth == 16 ? background_colour_length == 6
+                                 : background_colour_length == 3);
+    break;
+  case UT_PNG_COLOUR_TYPE_INDEXED_COLOUR:
+    assert(background_colour_length == 1);
+    break;
+  default:
+    assert(false);
+    break;
+  }
+
+  ut_object_unref(self->background_colour);
+  self->background_colour = ut_object_ref(background_colour);
+}
+
+UtObject *ut_png_image_get_background_colour(UtObject *object) {
+  assert(ut_object_is_png_image(object));
+  UtPngImage *self = (UtPngImage *)object;
+  return self->background_colour;
 }
 
 UtObject *ut_png_image_get_data(UtObject *object) {

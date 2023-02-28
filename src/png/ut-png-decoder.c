@@ -434,24 +434,35 @@ static void decode_image_end(UtPngDecoder *self, UtObject *data) {
 }
 
 static void decode_background(UtPngDecoder *self, UtObject *data) {
+  UtObjectRef background = NULL;
   switch (ut_png_image_get_colour_type(self->image)) {
   case UT_PNG_COLOUR_TYPE_GREYSCALE:
   case UT_PNG_COLOUR_TYPE_GREYSCALE_WITH_ALPHA:
     if (ut_list_get_length(data) != 2) {
-      self->error =
-          ut_png_error_new("Insufficient space for PNG greyscale background");
+      set_error(self, "Insufficient space for PNG greyscale background");
       return;
     }
-    /*self->background_colour = */ ut_uint8_list_get_uint16_be(data, 0);
+    if (ut_png_image_get_bit_depth(self->image) == 16) {
+      background = ut_list_copy(data);
+    } else {
+      background = ut_uint8_list_new_from_elements(
+          1, ut_uint8_list_get_uint16_be(data, 0) & 0xff);
+    }
     break;
   case UT_PNG_COLOUR_TYPE_TRUECOLOUR:
   case UT_PNG_COLOUR_TYPE_TRUECOLOUR_WITH_ALPHA:
     if (ut_list_get_length(data) != 6) {
       set_error(self, "Insufficient space for PNG truecolour background");
-      /*self->background_colour_r = */ ut_uint8_list_get_uint16_be(data, 0);
-      /*self->background_colour_g = */ ut_uint8_list_get_uint16_be(data, 2);
-      /*self->background_colour_b = */ ut_uint8_list_get_uint16_be(data, 4);
       return;
+    }
+    if (ut_png_image_get_bit_depth(self->image) == 16) {
+      background = ut_list_copy(data);
+    } else {
+      uint16_t r = ut_uint8_list_get_uint16_be(data, 0);
+      uint16_t g = ut_uint8_list_get_uint16_be(data, 2);
+      uint16_t b = ut_uint8_list_get_uint16_be(data, 4);
+      background =
+          ut_uint8_list_new_from_elements(3, r & 0xff, g & 0xff, b & 0xff);
     }
     break;
   case UT_PNG_COLOUR_TYPE_INDEXED_COLOUR:
@@ -459,11 +470,12 @@ static void decode_background(UtPngDecoder *self, UtObject *data) {
       set_error(self, "Insufficient space for PNG indexed colour background");
       return;
     }
-    /*self->background_colour_b = */ ut_uint8_list_get_element(data, 0);
+    background = ut_list_copy(data);
     break;
   default:
     assert(false);
   }
+  ut_png_image_set_background_colour(self->image, background);
 }
 
 static void decode_physical_dimensions(UtPngDecoder *self, UtObject *data) {

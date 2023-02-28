@@ -31,6 +31,11 @@ size_t ut_png_image_get_row_stride(UtObject *object);
 
 UtObject *ut_png_image_get_palette(UtObject *object);
 
+void ut_png_image_set_background_colour(UtObject *object,
+                                        UtObject *background_colour);
+
+UtObject *ut_png_image_get_background_colour(UtObject *object);
+
 UtObject *ut_png_image_get_data(UtObject *object);
 
 bool ut_object_is_png_image(UtObject *object);
