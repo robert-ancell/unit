@@ -37,7 +37,6 @@ typedef struct {
   UtPngInterlaceMethod interlace_method;
 
   // Scanline being decoded.
-  FilterType line_filter;
   size_t image_data_count;
 
   // Final image object.
@@ -333,6 +332,7 @@ static void process_image_data(UtPngDecoder *self, UtObject *data) {
   UtObject *image_data_object = ut_png_image_get_data(self->image);
   uint8_t *image_data = ut_uint8_array_get_data(image_data_object);
 
+  FilterType line_filter;
   for (size_t offset = 0; offset < data_length; offset++) {
     size_t row = self->image_data_count / row_stride;
     if (row >= height) {
@@ -344,7 +344,7 @@ static void process_image_data(UtPngDecoder *self, UtObject *data) {
     size_t line_offset = self->image_data_count % row_stride;
     if (line_offset == 0) {
       if (!decode_filter_type(ut_uint8_list_get_element(data, offset),
-                              &self->line_filter)) {
+                              &line_filter)) {
         set_error(self, "Invalid PNG filter type");
         return;
       }
@@ -382,7 +382,7 @@ static void process_image_data(UtPngDecoder *self, UtObject *data) {
 
     // Reconstruct the pixel value.
     uint8_t recon_x;
-    switch (self->line_filter) {
+    switch (line_filter) {
     default:
     case FILTER_TYPE_NONE:
       recon_x = x;
@@ -609,7 +609,6 @@ static void ut_png_decoder_init(UtObject *object) {
   UtPngDecoder *self = (UtPngDecoder *)object;
   self->read_cancel = ut_cancel_new();
   self->state = DECODER_STATE_SIGNATURE;
-  self->line_filter = FILTER_TYPE_NONE;
 }
 
 static void ut_png_decoder_cleanup(UtObject *object) {
