@@ -213,101 +213,6 @@ static bool decode_filter_type(uint8_t value, FilterType *type) {
   }
 }
 
-static void decode_image_header(UtPngDecoder *self, UtObject *data) {
-  if (ut_list_get_length(data) != 13) {
-    set_error(self, "Insufficient space for PNG image header");
-    return;
-  }
-
-  uint32_t width = ut_uint8_list_get_uint32_be(data, 0);
-  uint32_t height = ut_uint8_list_get_uint32_be(data, 4);
-  uint8_t bit_depth = ut_uint8_list_get_element(data, 8);
-  uint8_t colour_type_value = ut_uint8_list_get_element(data, 9);
-  uint8_t compression_method = ut_uint8_list_get_element(data, 10);
-  uint8_t filter_method = ut_uint8_list_get_element(data, 11);
-
-  if (width == 0 || height == 0) {
-    set_error(self, "Invalid PNG image dimensions");
-    return;
-  }
-
-  UtPngColourType colour_type;
-  bool valid_colour_type = decode_colour_type(colour_type_value, &colour_type);
-  if (!valid_colour_type) {
-    set_error(self, "Invalid PNG colour type");
-    return;
-  }
-
-  if (!is_valid_bit_depth(colour_type, bit_depth)) {
-    set_error(self, "Invalid PNG bit depth");
-    return;
-  }
-
-  bool valid_interlace_method = decode_interlace_method(
-      ut_uint8_list_get_element(data, 12), &self->interlace_method);
-  if (!valid_interlace_method) {
-    set_error(self, "Invalid PNG interlace method");
-    return;
-  }
-
-  if (compression_method != 0) {
-    set_error(self, "Invalid PNG compression method");
-    return;
-  }
-
-  if (filter_method != 0) {
-    set_error(self, "Invalid PNG filter method");
-    return;
-  }
-
-  size_t n_channels;
-  switch (colour_type) {
-  case UT_PNG_COLOUR_TYPE_GREYSCALE:
-  case UT_PNG_COLOUR_TYPE_INDEXED_COLOUR:
-    n_channels = 1;
-    break;
-  case UT_PNG_COLOUR_TYPE_GREYSCALE_WITH_ALPHA:
-    n_channels = 2;
-    break;
-  case UT_PNG_COLOUR_TYPE_TRUECOLOUR:
-    n_channels = 3;
-    break;
-  case UT_PNG_COLOUR_TYPE_TRUECOLOUR_WITH_ALPHA:
-    n_channels = 4;
-    break;
-  default:
-    n_channels = 0;
-    break;
-  }
-  size_t row_stride = (((size_t)width * bit_depth * n_channels) + 7) / 8;
-  UtObjectRef image_data = ut_uint8_array_new_sized(height * row_stride);
-  UtObjectRef palette = NULL;
-  if (colour_type == UT_PNG_COLOUR_TYPE_INDEXED_COLOUR) {
-    // FIXME: Placeholder palette, need to either check later if palette chunk
-    // was missing.
-    palette = ut_uint8_array_new_sized(3);
-  }
-  self->image = ut_png_image_new(width, height, bit_depth, colour_type, palette,
-                                 image_data);
-
-  self->image_data_count = 0;
-}
-
-static void decode_palette(UtPngDecoder *self, UtObject *data) {
-  UtObject *palette = ut_png_image_get_palette(self->image);
-  size_t palette_length = ut_list_get_length(data);
-  if (palette_length % 3 != 0) {
-    set_error(self, "Invalid palette size");
-    return;
-  }
-
-  ut_list_resize(palette, palette_length);
-  uint8_t *palette_data = ut_uint8_array_get_data(palette);
-  for (size_t i = 0; i < palette_length; i++) {
-    palette_data[i] = ut_uint8_list_get_element(data, i);
-  }
-}
-
 static uint8_t paeth_filter(uint8_t x, int32_t a, int32_t b, int32_t c) {
   int32_t p = a + b - c;
   int32_t pa = p > a ? p - a : a - p;
@@ -421,27 +326,99 @@ static void process_image_data(UtPngDecoder *self, UtObject *data) {
   }
 }
 
-static void decode_image_data(UtPngDecoder *self, UtObject *data) {
-  UtObjectRef zlib_stream = ut_list_input_stream_new(data);
-  UtObjectRef zlib_decoder = ut_zlib_decoder_new(zlib_stream);
-  UtObjectRef image_data = ut_input_stream_read_sync(zlib_decoder);
-  if (ut_object_implements_error(image_data)) {
-    ut_cstring_ref description =
-        ut_cstring_new_printf("Error decoding PNG image data: %s",
-                              ut_error_get_description(image_data));
-    set_error(self, description);
+static void decode_image_header(UtPngDecoder *self, UtObject *data) {
+  if (ut_list_get_length(data) != 13) {
+    set_error(self, "Insufficient space for PNG image header");
     return;
   }
-  process_image_data(self, image_data);
+
+  uint32_t width = ut_uint8_list_get_uint32_be(data, 0);
+  uint32_t height = ut_uint8_list_get_uint32_be(data, 4);
+  uint8_t bit_depth = ut_uint8_list_get_element(data, 8);
+  uint8_t colour_type_value = ut_uint8_list_get_element(data, 9);
+  uint8_t compression_method = ut_uint8_list_get_element(data, 10);
+  uint8_t filter_method = ut_uint8_list_get_element(data, 11);
+
+  if (width == 0 || height == 0) {
+    set_error(self, "Invalid PNG image dimensions");
+    return;
+  }
+
+  UtPngColourType colour_type;
+  bool valid_colour_type = decode_colour_type(colour_type_value, &colour_type);
+  if (!valid_colour_type) {
+    set_error(self, "Invalid PNG colour type");
+    return;
+  }
+
+  if (!is_valid_bit_depth(colour_type, bit_depth)) {
+    set_error(self, "Invalid PNG bit depth");
+    return;
+  }
+
+  bool valid_interlace_method = decode_interlace_method(
+      ut_uint8_list_get_element(data, 12), &self->interlace_method);
+  if (!valid_interlace_method) {
+    set_error(self, "Invalid PNG interlace method");
+    return;
+  }
+
+  if (compression_method != 0) {
+    set_error(self, "Invalid PNG compression method");
+    return;
+  }
+
+  if (filter_method != 0) {
+    set_error(self, "Invalid PNG filter method");
+    return;
+  }
+
+  size_t n_channels;
+  switch (colour_type) {
+  case UT_PNG_COLOUR_TYPE_GREYSCALE:
+  case UT_PNG_COLOUR_TYPE_INDEXED_COLOUR:
+    n_channels = 1;
+    break;
+  case UT_PNG_COLOUR_TYPE_GREYSCALE_WITH_ALPHA:
+    n_channels = 2;
+    break;
+  case UT_PNG_COLOUR_TYPE_TRUECOLOUR:
+    n_channels = 3;
+    break;
+  case UT_PNG_COLOUR_TYPE_TRUECOLOUR_WITH_ALPHA:
+    n_channels = 4;
+    break;
+  default:
+    n_channels = 0;
+    break;
+  }
+  size_t row_stride = (((size_t)width * bit_depth * n_channels) + 7) / 8;
+  UtObjectRef image_data = ut_uint8_array_new_sized(height * row_stride);
+  UtObjectRef palette = NULL;
+  if (colour_type == UT_PNG_COLOUR_TYPE_INDEXED_COLOUR) {
+    // FIXME: Placeholder palette, need to either check later if palette chunk
+    // was missing.
+    palette = ut_uint8_array_new_sized(3);
+  }
+  self->image = ut_png_image_new(width, height, bit_depth, colour_type, palette,
+                                 image_data);
+
+  self->image_data_count = 0;
 }
 
-static void decode_image_end(UtPngDecoder *self, UtObject *data) {
-  if (ut_list_get_length(data) != 0) {
-    set_error(self, "Extra data after PNG image");
+static void decode_palette(UtPngDecoder *self, UtObject *data) {
+  UtObject *palette = ut_png_image_get_palette(self->image);
+  size_t palette_length = ut_list_get_length(data);
+  if (palette_length % 3 != 0) {
+    set_error(self, "Invalid palette size");
     return;
   }
 
-  self->state = DECODER_STATE_END;
+  ut_list_resize(palette, palette_length);
+  uint8_t *palette_data = ut_uint8_array_get_data(palette);
+  for (size_t i = 0; i < palette_length; i++) {
+    palette_data[i] = ut_uint8_list_get_element(data, i);
+  }
 }
 
 static void decode_background(UtPngDecoder *self, UtObject *data) {
@@ -514,6 +491,29 @@ static void decode_modification_time(UtPngDecoder *self, UtObject *data) {
   /*self->second =*/ut_uint8_list_get_element(data, 6);
 }
 
+static void decode_image_data(UtPngDecoder *self, UtObject *data) {
+  UtObjectRef zlib_stream = ut_list_input_stream_new(data);
+  UtObjectRef zlib_decoder = ut_zlib_decoder_new(zlib_stream);
+  UtObjectRef image_data = ut_input_stream_read_sync(zlib_decoder);
+  if (ut_object_implements_error(image_data)) {
+    ut_cstring_ref description =
+        ut_cstring_new_printf("Error decoding PNG image data: %s",
+                              ut_error_get_description(image_data));
+    set_error(self, description);
+    return;
+  }
+  process_image_data(self, image_data);
+}
+
+static void decode_image_end(UtPngDecoder *self, UtObject *data) {
+  if (ut_list_get_length(data) != 0) {
+    set_error(self, "Extra data after PNG image");
+    return;
+  }
+
+  self->state = DECODER_STATE_END;
+}
+
 static size_t decode_chunk(UtPngDecoder *self, UtObject *data, size_t offset) {
   size_t data_length = ut_list_get_length(data) - offset;
 
@@ -549,12 +549,6 @@ static size_t decode_chunk(UtPngDecoder *self, UtObject *data, size_t offset) {
   case UT_PNG_CHUNK_TYPE_PALETTE:
     decode_palette(self, chunk_data);
     break;
-  case UT_PNG_CHUNK_TYPE_IMAGE_DATA:
-    decode_image_data(self, chunk_data);
-    break;
-  case UT_PNG_CHUNK_TYPE_IMAGE_END:
-    decode_image_end(self, chunk_data);
-    break;
   case UT_PNG_CHUNK_TYPE_BACKGROUND:
     decode_background(self, chunk_data);
     break;
@@ -563,6 +557,12 @@ static size_t decode_chunk(UtPngDecoder *self, UtObject *data, size_t offset) {
     break;
   case UT_PNG_CHUNK_TYPE_MODIFICATION_TIME:
     decode_modification_time(self, chunk_data);
+    break;
+  case UT_PNG_CHUNK_TYPE_IMAGE_DATA:
+    decode_image_data(self, chunk_data);
+    break;
+  case UT_PNG_CHUNK_TYPE_IMAGE_END:
+    decode_image_end(self, chunk_data);
     break;
   default:
     if (!is_ancillary) {
