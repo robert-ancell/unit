@@ -66,18 +66,20 @@ static size_t deflate_read_cb(void *user_data, UtObject *data, bool complete) {
   size_t data_length = ut_list_get_length(data);
 
   do {
-    UtObjectRef d =
+    size_t remaining_data_length = data_length - total_used;
+    UtObjectRef remaining_data =
         total_used == 0
             ? ut_object_ref(data)
-            : ut_list_get_sublist(data, total_used, data_length - total_used);
-    size_t n_used = self->callback(self->user_data, data, complete);
+            : ut_list_get_sublist(data, total_used, remaining_data_length);
+    size_t n_used = self->callback(self->user_data, remaining_data, complete);
+    assert(n_used <= remaining_data_length);
     total_used += n_used;
 
     for (size_t i = 0; i < n_used; i++) {
-      self->checksum = adler32(self->checksum, ut_uint8_list_get_element(d, i));
+      self->checksum =
+          adler32(self->checksum, ut_uint8_list_get_element(remaining_data, i));
     }
   } while (!ut_cancel_is_active(self->cancel) && total_used < data_length);
-
   assert(total_used <= data_length);
 
   if (ut_cancel_is_active(self->cancel)) {
