@@ -507,7 +507,7 @@ static void decode_image_data(UtPngDecoder *self, UtObject *data) {
 
 static void decode_image_end(UtPngDecoder *self, UtObject *data) {
   if (ut_list_get_length(data) != 0) {
-    set_error(self, "Extra data after PNG image");
+    set_error(self, "Invalid image end PNG chunk");
     return;
   }
 
