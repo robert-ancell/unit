@@ -204,11 +204,7 @@ static bool read_checksum(UtZlibDecoder *self, UtObject *data, size_t *offset,
 
   *offset += 4;
 
-  if (complete && data_length == checksum_end) {
-    self->state = DECODER_STATE_DONE;
-  } else {
-    set_error(self, "Unexpected data after end of Zlib data");
-  }
+  self->state = DECODER_STATE_DONE;
   return true;
 }
 
