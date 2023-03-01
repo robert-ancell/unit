@@ -322,38 +322,16 @@ static uint8_t paeth_filter(uint8_t x, int32_t a, int32_t b, int32_t c) {
   }
 }
 
-static void process_image_data(UtPngDecoder *self, UtObject *data) {
-  size_t data_length = ut_list_get_length(data);
-
-  uint32_t height = ut_png_image_get_height(self->image);
+static void process_row(UtPngDecoder *self, FilterType filter, UtObject *row) {
+  size_t row_length = ut_list_get_length(row);
   uint8_t bit_depth = ut_png_image_get_bit_depth(self->image);
   size_t n_channels = ut_png_image_get_n_channels(self->image);
   size_t row_stride = ut_png_image_get_row_stride(self->image);
   UtObject *image_data_object = ut_png_image_get_data(self->image);
   uint8_t *image_data = ut_uint8_array_get_data(image_data_object);
 
-  FilterType line_filter;
-  for (size_t offset = 0; offset < data_length; offset++) {
-    size_t row = self->image_data_count / row_stride;
-    if (row >= height) {
-      set_error(self, "Excess image data");
-      return;
-    }
-
-    // Read filter when starting a line.
-    size_t line_offset = self->image_data_count % row_stride;
-    if (line_offset == 0) {
-      if (!decode_filter_type(ut_uint8_list_get_element(data, offset),
-                              &line_filter)) {
-        set_error(self, "Invalid PNG filter type");
-        return;
-      }
-      offset++;
-      if (offset >= data_length) {
-        break;
-      }
-    }
-
+  bool first_row = self->image_data_count == 0;
+  for (size_t offset = 0; offset < row_length; offset++) {
     // Calculate the filter inputs:
     //
     // +---+---+
@@ -361,9 +339,9 @@ static void process_image_data(UtPngDecoder *self, UtObject *data) {
     // +---+---+
     // | a | x |
     // +---+---+
-    uint8_t x = ut_uint8_list_get_element(data, offset);
+    uint8_t x = ut_uint8_list_get_element(row, offset);
     int32_t a, b, c;
-    size_t line_bit_offset = line_offset * 8;
+    size_t line_bit_offset = offset * 8;
     size_t pixel_bit_width = bit_depth * n_channels;
     if (line_bit_offset >= pixel_bit_width) {
       size_t left_pixel_offset = (line_bit_offset - pixel_bit_width) / 8;
@@ -371,18 +349,18 @@ static void process_image_data(UtPngDecoder *self, UtObject *data) {
       if (left_pixel_offset == line_bit_offset) {
         left_index = self->image_data_count - 1;
       } else {
-        left_index = self->image_data_count - (line_offset - left_pixel_offset);
+        left_index = self->image_data_count - (offset - left_pixel_offset);
       }
       a = image_data[left_index];
-      c = row == 0 ? 0 : image_data[left_index - row_stride];
+      c = first_row ? 0 : image_data[left_index - row_stride];
     } else {
       a = c = 0;
     }
-    b = row == 0 ? 0 : image_data[self->image_data_count - row_stride];
+    b = first_row ? 0 : image_data[self->image_data_count - row_stride];
 
     // Reconstruct the pixel value.
     uint8_t recon_x;
-    switch (line_filter) {
+    switch (filter) {
     default:
     case FILTER_TYPE_NONE:
       recon_x = x;
@@ -403,6 +381,38 @@ static void process_image_data(UtPngDecoder *self, UtObject *data) {
 
     image_data[self->image_data_count] = recon_x;
     self->image_data_count++;
+  }
+}
+
+static void process_image_data(UtPngDecoder *self, UtObject *data) {
+  size_t data_length = ut_list_get_length(data);
+
+  uint32_t height = ut_png_image_get_height(self->image);
+  size_t row_stride = ut_png_image_get_row_stride(self->image);
+
+  size_t offset = 0;
+  while (offset < data_length) {
+    if (self->image_data_count >= height * row_stride) {
+      set_error(self, "Excess image data");
+      return;
+    }
+
+    // Insufficient data for row.
+    if (offset + 1 + row_stride > data_length) {
+      break;
+    }
+
+    // Row starts with a filter.
+    FilterType filter;
+    if (!decode_filter_type(ut_uint8_list_get_element(data, offset), &filter)) {
+      set_error(self, "Invalid PNG filter type");
+      return;
+    }
+    offset++;
+
+    UtObjectRef row = ut_list_get_sublist(data, offset, row_stride);
+    process_row(self, filter, row);
+    offset += row_stride;
   }
 
   if (self->image_data_count != height * row_stride) {
