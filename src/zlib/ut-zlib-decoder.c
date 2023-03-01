@@ -37,6 +37,15 @@ static uint32_t adler32(uint32_t checksum, uint8_t value) {
   return s2 << 16 | s1;
 }
 
+static void set_error(UtZlibDecoder *self, const char *description) {
+  if (self->state == DECODER_STATE_ERROR) {
+    return;
+  }
+
+  self->error = ut_zlib_error_new(description);
+  self->state = DECODER_STATE_ERROR;
+}
+
 static size_t deflate_read_cb(void *user_data, UtObject *data, bool complete) {
   UtZlibDecoder *self = user_data;
 
@@ -49,8 +58,7 @@ static size_t deflate_read_cb(void *user_data, UtObject *data, bool complete) {
     ut_cstring_ref deflate_description = ut_error_get_description(data);
     ut_cstring_ref description =
         ut_cstring_new_printf("Error decoding deflate data: %s", description);
-    self->error = ut_zlib_error_new(description);
-    self->state = DECODER_STATE_ERROR;
+    set_error(self, description);
     return 0;
   }
 
@@ -99,22 +107,19 @@ static bool read_header(UtZlibDecoder *self, UtObject *data, size_t *offset,
 
   // Header checksum
   if ((cmf << 8 | flags) % 31 != 0) {
-    self->error = ut_zlib_error_new("Zlib header checksum mismatch");
-    self->state = DECODER_STATE_ERROR;
+    set_error(self, "Zlib header checksum mismatch");
     return true;
   }
 
   uint8_t compression_method = cmf & 0x0f;
   if (compression_method != 8) {
-    self->error = ut_zlib_error_new("Unknown zlib compression method");
-    self->state = DECODER_STATE_ERROR;
+    set_error(self, "Unknown zlib compression method");
     return true;
   }
 
   self->window_size = 1 << ((cmf >> 4) + 8);
   if (self->window_size > 32768) {
-    self->error = ut_zlib_error_new("Invalid deflate window size");
-    self->state = DECODER_STATE_ERROR;
+    set_error(self, "Invalid deflate window size");
     return true;
   }
   self->compression_level = flags >> 6;
@@ -159,8 +164,7 @@ static bool read_dictionary(UtZlibDecoder *self, UtObject *data, size_t *offset,
     self->state = DECODER_STATE_COMPRESSED_DATA;
     return true;
   } else if (complete) {
-    self->error = ut_zlib_error_new("Zlib dictionary checksum mismatch");
-    self->state = DECODER_STATE_ERROR;
+    set_error(self, "Zlib dictionary checksum mismatch");
     return true;
   }
 
@@ -194,8 +198,7 @@ static bool read_checksum(UtZlibDecoder *self, UtObject *data, size_t *offset,
 
   uint32_t checksum = ut_uint8_list_get_uint32_be(data, checksum_start);
   if (checksum != self->checksum) {
-    self->error = ut_zlib_error_new("Zlib data checksum mismatch");
-    self->state = DECODER_STATE_ERROR;
+    set_error(self, "Zlib data checksum mismatch");
     return true;
   }
 
@@ -204,8 +207,7 @@ static bool read_checksum(UtZlibDecoder *self, UtObject *data, size_t *offset,
   if (complete && data_length == checksum_end) {
     self->state = DECODER_STATE_DONE;
   } else {
-    self->error = ut_zlib_error_new("Unexpected data after end of Zlib data");
-    self->state = DECODER_STATE_ERROR;
+    set_error(self, "Unexpected data after end of Zlib data");
   }
   return true;
 }
