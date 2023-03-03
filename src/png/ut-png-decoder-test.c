@@ -99,79 +99,207 @@ static void test_png_suite_basic_formats() {
 }
 
 static void test_png_suite_interlacing() {
-  // FIXME
+  // black & white
+  check_png(basi0g01_data, 32, 32, 1, UT_PNG_COLOUR_TYPE_GREYSCALE, NULL, NULL,
+            basi0g01_image_data);
+
+  // 2 bit (4 level) grayscale
+  check_png(basi0g02_data, 32, 32, 2, UT_PNG_COLOUR_TYPE_GREYSCALE, NULL, NULL,
+            basi0g02_image_data);
+
+  // 4 bit (16 level) grayscale
+  check_png(basi0g04_data, 32, 32, 4, UT_PNG_COLOUR_TYPE_GREYSCALE, NULL, NULL,
+            basi0g04_image_data);
+
+  // 8 bit (256 level) grayscale
+  check_png(basi0g08_data, 32, 32, 8, UT_PNG_COLOUR_TYPE_GREYSCALE, NULL, NULL,
+            basi0g08_image_data);
+
+  // 16 bit (64k level) grayscale
+  check_png(basi0g16_data, 32, 32, 16, UT_PNG_COLOUR_TYPE_GREYSCALE, NULL, NULL,
+            basi0g16_image_data);
+
+  // 3x8 bits rgb color
+  check_png(basi2c08_data, 32, 32, 8, UT_PNG_COLOUR_TYPE_TRUECOLOUR, NULL, NULL,
+            basi2c08_image_data);
+
+  // 3x16 bits rgb color
+  check_png(basi2c16_data, 32, 32, 16, UT_PNG_COLOUR_TYPE_TRUECOLOUR, NULL,
+            NULL, basi2c16_image_data);
+
+  // 1 bit (2 color) paletted
+  check_png(basi3p01_data, 32, 32, 1, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR,
+            basi3p01_palette_data, NULL, basi3p01_image_data);
+
+  // 2 bit (4 color) paletted
+  check_png(basi3p02_data, 32, 32, 2, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR,
+            basi3p02_palette_data, NULL, basi3p02_image_data);
+
+  // 4 bit (16 color) paletted
+  check_png(basi3p04_data, 32, 32, 4, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR,
+            basi3p04_palette_data, NULL, basi3p04_image_data);
+
+  // 8 bit (256 color) paletted
+  check_png(basi3p08_data, 32, 32, 8, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR,
+            basi3p08_palette_data, NULL, basi3p08_image_data);
+
+  // 8 bit grayscale + 8 bit alpha-channel
+  check_png(basi4a08_data, 32, 32, 8, UT_PNG_COLOUR_TYPE_GREYSCALE_WITH_ALPHA,
+            NULL, NULL, basi4a08_image_data);
+
+  // 16 bit grayscale + 16 bit alpha-channel
+  check_png(basi4a16_data, 32, 32, 16, UT_PNG_COLOUR_TYPE_GREYSCALE_WITH_ALPHA,
+            NULL, NULL, basi4a16_image_data);
+
+  // 3x8 bits rgb color + 8 bit alpha-channel
+  check_png(basi6a08_data, 32, 32, 8, UT_PNG_COLOUR_TYPE_TRUECOLOUR_WITH_ALPHA,
+            NULL, NULL, basi6a08_image_data);
+
+  // 3x16 bits rgb color + 16 bit alpha-channel
+  check_png(basi6a16_data, 32, 32, 16, UT_PNG_COLOUR_TYPE_TRUECOLOUR_WITH_ALPHA,
+            NULL, NULL, basi6a16_image_data);
 }
 
-static void test_png_suite_sizes() {
-  // FIXME: Interlaced
+static void test_png_suite_odd_sizes() {
+  // 1x1 paletted file, interlaced
+  check_png(s01i3p01_data, 1, 1, 1, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR,
+            s01i3p01_palette_data, NULL, s01i3p01_image_data);
 
   // 1x1 paletted file, no interlacing
   check_png(s01n3p01_data, 1, 1, 1, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR,
             s01n3p01_palette_data, NULL, s01n3p01_image_data);
 
+  // 2x2 paletted file, interlaced
+  check_png(s02i3p01_data, 2, 2, 1, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR,
+            s02i3p01_palette_data, NULL, s02i3p01_image_data);
+
   // 2x2 paletted file, no interlacing
   check_png(s02n3p01_data, 2, 2, 1, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR,
             s02n3p01_palette_data, NULL, s02n3p01_image_data);
+
+  // 3x3 paletted file, interlaced
+  check_png(s03i3p01_data, 3, 3, 1, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR,
+            s03i3p01_palette_data, NULL, s03i3p01_image_data);
 
   // 3x3 paletted file, no interlacing
   check_png(s03n3p01_data, 3, 3, 1, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR,
             s03n3p01_palette_data, NULL, s03n3p01_image_data);
 
+  // 4x4 paletted file, interlaced
+  check_png(s04i3p01_data, 4, 4, 1, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR,
+            s04i3p01_palette_data, NULL, s04i3p01_image_data);
+
   // 4x4 paletted file, no interlacing
   check_png(s04n3p01_data, 4, 4, 1, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR,
             s04n3p01_palette_data, NULL, s04n3p01_image_data);
+
+  // 5x5 paletted file, interlaced
+  check_png(s05i3p02_data, 5, 5, 2, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR,
+            s05i3p02_palette_data, NULL, s05i3p02_image_data);
 
   // 5x5 paletted file, no interlacing
   check_png(s05n3p02_data, 5, 5, 2, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR,
             s05n3p02_palette_data, NULL, s05n3p02_image_data);
 
+  // 6x6 paletted file, interlaced
+  check_png(s06i3p02_data, 6, 6, 2, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR,
+            s06i3p02_palette_data, NULL, s06i3p02_image_data);
+
   // 6x6 paletted file, no interlacing
   check_png(s06n3p02_data, 6, 6, 2, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR,
             s06n3p02_palette_data, NULL, s06n3p02_image_data);
+
+  // 7x7 paletted file, interlaced
+  check_png(s07i3p02_data, 7, 7, 2, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR,
+            s07i3p02_palette_data, NULL, s07i3p02_image_data);
 
   // 7x7 paletted file, no interlacing
   check_png(s07n3p02_data, 7, 7, 2, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR,
             s07n3p02_palette_data, NULL, s07n3p02_image_data);
 
+  // 8x8 paletted file, interlaced
+  check_png(s08i3p02_data, 8, 8, 2, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR,
+            s08i3p02_palette_data, NULL, s08i3p02_image_data);
+
   // 8x8 paletted file, no interlacing
   check_png(s08n3p02_data, 8, 8, 2, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR,
             s08n3p02_palette_data, NULL, s08n3p02_image_data);
+
+  // 9x9 paletted file, interlaced
+  check_png(s09i3p02_data, 9, 9, 2, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR,
+            s09i3p02_palette_data, NULL, s09i3p02_image_data);
 
   // 9x9 paletted file, no interlacing
   check_png(s09n3p02_data, 9, 9, 2, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR,
             s09n3p02_palette_data, NULL, s09n3p02_image_data);
 
+  // 32x32 paletted file, interlaced
+  check_png(s32i3p04_data, 32, 32, 4, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR,
+            s32i3p04_palette_data, NULL, s32i3p04_image_data);
+
   // 32x32 paletted file, no interlacing
   check_png(s32n3p04_data, 32, 32, 4, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR,
             s32n3p04_palette_data, NULL, s32n3p04_image_data);
+
+  // 33x33 paletted file, interlaced
+  check_png(s33i3p04_data, 33, 33, 4, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR,
+            s33i3p04_palette_data, NULL, s33i3p04_image_data);
 
   // 33x33 paletted file, no interlacing
   check_png(s33n3p04_data, 33, 33, 4, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR,
             s33n3p04_palette_data, NULL, s33n3p04_image_data);
 
+  // 34x34 paletted file, interlaced
+  check_png(s34i3p04_data, 34, 34, 4, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR,
+            s34i3p04_palette_data, NULL, s34i3p04_image_data);
+
   // 34x34 paletted file, no interlacing
   check_png(s34n3p04_data, 34, 34, 4, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR,
             s34n3p04_palette_data, NULL, s34n3p04_image_data);
+
+  // 35x35 paletted file, interlaced
+  check_png(s35i3p04_data, 35, 35, 4, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR,
+            s35i3p04_palette_data, NULL, s35i3p04_image_data);
 
   // 35x35 paletted file, no interlacing
   check_png(s35n3p04_data, 35, 35, 4, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR,
             s35n3p04_palette_data, NULL, s35n3p04_image_data);
 
+  // 36x36 paletted file, interlaced
+  check_png(s36i3p04_data, 36, 36, 4, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR,
+            s36i3p04_palette_data, NULL, s36i3p04_image_data);
+
   // 36x36 paletted file, no interlacing
   check_png(s36n3p04_data, 36, 36, 4, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR,
             s36n3p04_palette_data, NULL, s36n3p04_image_data);
+
+  // 37x37 paletted file, interlaced
+  check_png(s37i3p04_data, 37, 37, 4, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR,
+            s37i3p04_palette_data, NULL, s37i3p04_image_data);
 
   // 37x37 paletted file, no interlacing
   check_png(s37n3p04_data, 37, 37, 4, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR,
             s37n3p04_palette_data, NULL, s37n3p04_image_data);
 
+  // 38x38 paletted file, interlaced
+  check_png(s38i3p04_data, 38, 38, 4, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR,
+            s38i3p04_palette_data, NULL, s38i3p04_image_data);
+
   // 38x38 paletted file, no interlacing
   check_png(s38n3p04_data, 38, 38, 4, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR,
             s38n3p04_palette_data, NULL, s38n3p04_image_data);
 
+  // 39x39 paletted file, interlaced
+  check_png(s39i3p04_data, 39, 39, 4, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR,
+            s39i3p04_palette_data, NULL, s39i3p04_image_data);
+
   // 39x39 paletted file, no interlacing
   check_png(s39n3p04_data, 39, 39, 4, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR,
             s39n3p04_palette_data, NULL, s39n3p04_image_data);
+
+  // 40x40 paletted file, interlaced
+  check_png(s40i3p04_data, 40, 40, 4, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR,
+            s40i3p04_palette_data, NULL, s40i3p04_image_data);
 
   // 40x40 paletted file, no interlacing
   check_png(s40n3p04_data, 40, 40, 4, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR,
@@ -179,7 +307,13 @@ static void test_png_suite_sizes() {
 }
 
 static void test_png_suite_background_colours() {
-  // FIXME: Interlaced
+  // 8 bit grayscale, alpha, no background chunk, interlaced
+  check_png(bgai4a08_data, 32, 32, 8, UT_PNG_COLOUR_TYPE_GREYSCALE_WITH_ALPHA,
+            NULL, bgai4a08_background, bgai4a08_image_data);
+
+  // 16 bit grayscale, alpha, no background chunk, interlaced
+  check_png(bgai4a16_data, 32, 32, 16, UT_PNG_COLOUR_TYPE_GREYSCALE_WITH_ALPHA,
+            NULL, bgai4a16_background, bgai4a16_image_data);
 
   // 3x8 bits rgb color, alpha, no background chunk
   check_png(bgan6a08_data, 32, 32, 8, UT_PNG_COLOUR_TYPE_TRUECOLOUR_WITH_ALPHA,
@@ -327,7 +461,7 @@ static void test_png_suite_corrupted_files() {
 int main(int argc, char **argv) {
   test_png_suite_basic_formats();
   test_png_suite_interlacing();
-  test_png_suite_sizes();
+  test_png_suite_odd_sizes();
   test_png_suite_background_colours();
   test_png_suite_transparency();
   test_png_suite_gamma_values();
