@@ -564,12 +564,9 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
     }
   }
 
-  do {
-    size_t n_used = self->callback(self->user_data, self->buffer,
-                                   self->state == DECODER_STATE_DONE);
-    ut_list_remove(self->buffer, 0, n_used);
-  } while (ut_list_get_length(self->buffer) > 0 &&
-           !ut_cancel_is_active(self->cancel));
+  size_t n_used = self->callback(self->user_data, self->buffer,
+                                 self->state == DECODER_STATE_DONE);
+  ut_list_remove(self->buffer, 0, n_used);
 
   return offset;
 }
