@@ -41,6 +41,7 @@ typedef struct {
   UtObject *image_data_decoder;
 
   // Scanline being decoded.
+  size_t interlace_pass;
   size_t row_count;
   UtObject *previous_row;
 
@@ -238,7 +239,8 @@ static void filter_row(UtPngDecoder *self, FilterType filter,
   size_t row_length = ut_list_get_length(filtered_row);
   uint8_t bit_depth = ut_png_image_get_bit_depth(self->image);
   size_t n_channels = ut_png_image_get_n_channels(self->image);
-  const uint8_t *previous_row_data = ut_uint8_list_get_data(previous_row);
+  const uint8_t *previous_row_data =
+      previous_row != NULL ? ut_uint8_list_get_data(previous_row) : NULL;
   uint8_t *row_data = ut_uint8_list_get_writable_data(row);
 
   for (size_t offset = 0; offset < row_length; offset++) {
@@ -259,11 +261,12 @@ static void filter_row(UtPngDecoder *self, FilterType filter,
     }
     if (offset >= left_offset) {
       a = row_data[offset - left_offset];
-      c = previous_row_data[offset - left_offset];
+      c = previous_row_data != NULL ? previous_row_data[offset - left_offset]
+                                    : 0;
     } else {
       a = c = 0;
     }
-    b = previous_row_data[offset];
+    b = previous_row_data != NULL ? previous_row_data[offset] : 0;
 
     // Reconstruct the pixel value.
     uint8_t recon_x;
@@ -290,8 +293,236 @@ static void filter_row(UtPngDecoder *self, FilterType filter,
   }
 }
 
+static void get_adam7_dimensions(size_t width, size_t height, size_t pass,
+                                 size_t *pass_width, size_t *pass_height) {
+  switch (pass) {
+  case 0:
+    *pass_width = (width + 7) / 8;
+    *pass_height = (height + 7) / 8;
+    break;
+  case 1:
+    *pass_width = (width + 2) / 8;
+    *pass_height = (height + 7) / 8;
+    break;
+  case 2:
+    *pass_width = width / 4;
+    *pass_height = (height + 2) / 8;
+    break;
+  case 3:
+    *pass_width = (width + 1) / 4;
+    *pass_height = height / 4;
+    break;
+  case 4:
+    *pass_width = width / 2;
+    *pass_height = (height + 1) / 4;
+    break;
+  case 5:
+    *pass_width = (width + 1) / 2;
+    *pass_height = height / 2;
+    break;
+  case 6:
+    *pass_width = width;
+    *pass_height = (height + 1) / 2;
+    break;
+  default:
+    *pass_width = width;
+    *pass_height = height;
+    break;
+  }
+}
+
+static uint8_t get_sample1(const uint8_t *row, size_t index) {
+  return (row[index / 8] >> (7 - index % 8)) & 0x1;
+}
+
+static uint8_t get_sample2(const uint8_t *row, size_t index) {
+  return (row[index / 4] >> 2 * (3 - index % 4)) & 0x3;
+}
+
+static uint8_t get_sample4(const uint8_t *row, size_t index) {
+  return (row[index / 2] >> 4 * (1 - index % 2)) & 0xf;
+}
+
+static uint8_t get_sample8(const uint8_t *row, size_t index) {
+  return row[index];
+}
+
+static void write_sample1(uint8_t *image_data, size_t row_stride, size_t index,
+                          size_t y, uint8_t value) {
+  uint8_t *row = image_data + (y * row_stride);
+  uint8_t mask = (0x1 << (7 - index % 8)) ^ 0xff;
+  row[index / 8] &= mask;
+  row[index / 8] |= value << (7 - index % 8);
+}
+
+static void write_sample2(uint8_t *image_data, size_t row_stride, size_t index,
+                          size_t y, uint8_t value) {
+  uint8_t *row = image_data + (y * row_stride);
+  uint8_t mask = (0x3 << 2 * (3 - index % 4)) ^ 0xff;
+  row[index / 4] &= mask;
+  row[index / 4] |= value << 2 * (3 - index % 4);
+}
+
+static void write_sample4(uint8_t *image_data, size_t row_stride, size_t index,
+                          size_t y, uint8_t value) {
+  uint8_t *row = image_data + (y * row_stride);
+  uint8_t mask = (0xf << 4 * (1 - index % 2)) ^ 0xff;
+  row[index / 2] &= mask;
+  row[index / 2] |= value << 4 * (1 - index % 2);
+}
+
+static void write_sample8(uint8_t *image_data, size_t row_stride, size_t index,
+                          size_t y, uint8_t value) {
+  uint8_t *row = image_data + (y * row_stride);
+  row[index] = value;
+}
+
+// Take interlace [row] of [row_width] pixels and write it into the final image.
+static void apply_adam7_row(UtPngDecoder *self, UtObject *row,
+                            size_t row_width) {
+  uint32_t image_height = ut_png_image_get_height(self->image);
+  uint32_t image_width = ut_png_image_get_width(self->image);
+  uint8_t bit_depth = ut_png_image_get_bit_depth(self->image);
+  size_t n_channels = ut_png_image_get_n_channels(self->image);
+  size_t row_stride = ut_png_image_get_row_stride(self->image);
+  uint8_t *image_data =
+      ut_uint8_list_get_writable_data(ut_png_image_get_data(self->image));
+
+  // Get the transform for the interlaced row and the size to fill.
+  size_t x0, y0, dx, dy, fill_width, fill_height;
+  switch (self->interlace_pass) {
+  case 0:
+    x0 = 0;
+    y0 = 0;
+    dx = 8;
+    dy = 8;
+    fill_width = 8;
+    fill_height = 8;
+    break;
+  case 1:
+    x0 = 4;
+    y0 = 0;
+    dx = 8;
+    dy = 8;
+    fill_width = 4;
+    fill_height = 8;
+    break;
+  case 2:
+    x0 = 0;
+    y0 = 4;
+    dx = 4;
+    dy = 8;
+    fill_width = 4;
+    fill_height = 4;
+    break;
+  case 3:
+    x0 = 2;
+    y0 = 0;
+    dx = 4;
+    dy = 4;
+    fill_width = 2;
+    fill_height = 4;
+    break;
+  case 4:
+    x0 = 0;
+    y0 = 2;
+    dx = 2;
+    dy = 4;
+    fill_width = 2;
+    fill_height = 2;
+    break;
+  case 5:
+    x0 = 1;
+    y0 = 0;
+    dx = 2;
+    dy = 2;
+    fill_width = 1;
+    fill_height = 2;
+    break;
+  case 6:
+    x0 = 0;
+    y0 = 1;
+    dx = 1;
+    dy = 2;
+    fill_width = 1;
+    fill_height = 1;
+    break;
+  default:
+    x0 = 0;
+    y0 = 0;
+    dx = 1;
+    dy = 1;
+    fill_width = 1;
+    fill_height = 1;
+    break;
+  }
+
+  // Get functions to read/write samples in the required bit depth.
+  size_t n_samples;
+  uint8_t (*get_sample)(const uint8_t *, size_t) = NULL;
+  void (*write_sample)(uint8_t *, size_t, size_t, size_t, uint8_t) = NULL;
+  switch (bit_depth) {
+  case 1:
+    n_samples = 1;
+    get_sample = get_sample1;
+    write_sample = write_sample1;
+    break;
+  case 2:
+    n_samples = 1;
+    get_sample = get_sample2;
+    write_sample = write_sample2;
+    break;
+  case 4:
+    n_samples = 1;
+    get_sample = get_sample4;
+    write_sample = write_sample4;
+    break;
+  case 8:
+    n_samples = n_channels;
+    get_sample = get_sample8;
+    write_sample = write_sample8;
+    break;
+  case 16:
+    n_samples = n_channels * 2;
+    get_sample = get_sample8;
+    write_sample = write_sample8;
+    break;
+  default:
+    return;
+  }
+
+  // Write pixels in final image.
+  const uint8_t *row_data = ut_uint8_list_get_data(row);
+  for (size_t i = 0; i < row_width; i++) {
+    // Get area to fill.
+    size_t px0 = x0 + (i * dx);
+    size_t py0 = y0 + (self->row_count * dy);
+    size_t px1 = px0 + fill_width;
+    if (px1 > image_width) {
+      px1 = image_width;
+    }
+    size_t py1 = py0 + fill_height;
+    if (py1 > image_height) {
+      py1 = image_height;
+    }
+
+    for (size_t s = 0; s < n_samples; s++) {
+      uint8_t sample = get_sample(row_data, i * n_samples + s);
+      for (size_t px = px0; px < px1; px++) {
+        for (size_t py = py0; py < py1; py++) {
+          write_sample(image_data, row_stride, n_samples * px + s, py, sample);
+        }
+      }
+    }
+  }
+}
+
 static bool is_complete(UtPngDecoder *self) {
-  return self->row_count >= ut_png_image_get_height(self->image);
+  if (self->interlace_method == UT_PNG_INTERLACE_METHOD_ADAM7) {
+    return self->interlace_pass >= 7;
+  } else {
+    return self->row_count >= ut_png_image_get_height(self->image);
+  }
 }
 
 // Process zlib decoded image data.
@@ -308,10 +539,21 @@ static size_t data_decoder_read_cb(void *user_data, UtObject *data,
 
   size_t data_length = ut_list_get_length(data);
 
-  uint32_t width = ut_png_image_get_width(self->image);
+  uint32_t image_height = ut_png_image_get_height(self->image);
+  uint32_t image_width = ut_png_image_get_width(self->image);
   uint8_t bit_depth = ut_png_image_get_bit_depth(self->image);
   size_t n_channels = ut_png_image_get_n_channels(self->image);
 
+  size_t width, height;
+  if (self->interlace_method == UT_PNG_INTERLACE_METHOD_ADAM7) {
+    get_adam7_dimensions(image_width, image_height, self->interlace_pass,
+                         &width, &height);
+  } else {
+    width = image_width;
+    height = image_height;
+  }
+
+  // Read rows.
   size_t offset = 0;
   while (offset < data_length) {
     if (is_complete(self)) {
@@ -335,16 +577,49 @@ static size_t data_decoder_read_cb(void *user_data, UtObject *data,
 
     // Apply filter to row.
     UtObjectRef filtered_row = ut_list_get_sublist(data, offset, row_stride);
-    UtObjectRef row =
-        ut_list_get_sublist(ut_png_image_get_data(self->image),
-                            self->row_count * row_stride, row_stride);
+    UtObjectRef row = NULL;
+    if (self->interlace_method == UT_PNG_INTERLACE_METHOD_ADAM7) {
+      // Pass 7 is just every second row, which can be directly written to the
+      // final image.
+      if (self->interlace_pass == 6) {
+        row = ut_list_get_sublist(ut_png_image_get_data(self->image),
+                                  (self->row_count * 2 + 1) * row_stride,
+                                  row_stride);
+      } else {
+        // Write to a buffer that will be spread through image.
+        row = ut_uint8_array_new_sized(row_stride);
+      }
+    } else {
+      // Write directly to final image.
+      row = ut_list_get_sublist(ut_png_image_get_data(self->image),
+                                self->row_count * row_stride, row_stride);
+    }
     filter_row(self, filter, self->previous_row, filtered_row, row);
     offset += row_stride;
-    self->row_count++;
+
+    // Fill pixels from interlaced row.
+    if (self->interlace_method == UT_PNG_INTERLACE_METHOD_ADAM7 &&
+        self->interlace_pass != 6) {
+      apply_adam7_row(self, row, width);
+    }
 
     // Use decoded row as new previous row.
     ut_object_unref(self->previous_row);
     self->previous_row = ut_object_ref(row);
+    self->row_count++;
+
+    // Move to next interlace pass, skipping any passes that have no pixels.
+    if (self->interlace_method == UT_PNG_INTERLACE_METHOD_ADAM7 &&
+        self->row_count >= height) {
+      ut_object_unref(self->previous_row);
+      self->previous_row = NULL;
+      self->row_count = 0;
+      do {
+        self->interlace_pass++;
+        get_adam7_dimensions(image_width, image_height, self->interlace_pass,
+                             &width, &height);
+      } while (self->interlace_pass < 7 && (width == 0 || height == 0));
+    }
   }
 
   return offset;
@@ -426,8 +701,6 @@ static void decode_image_header(UtPngDecoder *self, UtObject *data) {
   }
   self->image = ut_png_image_new(width, height, bit_depth, colour_type, palette,
                                  image_data);
-
-  self->previous_row = ut_uint8_array_new_sized(row_stride);
 }
 
 static void decode_palette(UtPngDecoder *self, UtObject *data) {
