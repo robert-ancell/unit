@@ -58,6 +58,7 @@ typedef struct {
 
   // Decoded data.
   UtObject *buffer;
+  size_t buffer_read_offset;
 } UtDeflateDecoder;
 
 static uint16_t base_lengths[29] = {3,  4,  5,  6,   7,   8,   9,   10,  11, 13,
@@ -564,9 +565,13 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
     }
   }
 
-  size_t n_used = self->callback(self->user_data, self->buffer,
+  size_t buffer_length = ut_list_get_length(self->buffer);
+  UtObjectRef unread_buffer =
+      ut_list_get_sublist(self->buffer, self->buffer_read_offset,
+                          buffer_length - self->buffer_read_offset);
+  size_t n_used = self->callback(self->user_data, unread_buffer,
                                  self->state == DECODER_STATE_DONE);
-  ut_list_remove(self->buffer, 0, n_used);
+  self->buffer_read_offset += n_used;
 
   return offset;
 }
