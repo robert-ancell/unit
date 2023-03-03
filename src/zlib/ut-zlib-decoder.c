@@ -56,8 +56,8 @@ static size_t deflate_read_cb(void *user_data, UtObject *data, bool complete) {
 
   if (ut_object_implements_error(data)) {
     ut_cstring_ref deflate_description = ut_error_get_description(data);
-    ut_cstring_ref description =
-        ut_cstring_new_printf("Error decoding deflate data: %s", description);
+    ut_cstring_ref description = ut_cstring_new_printf(
+        "Error decoding deflate data: %s", deflate_description);
     set_error(self, description);
     return 0;
   }
