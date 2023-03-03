@@ -36,7 +36,7 @@ static void check_png(const char *hex_data, uint32_t width, uint32_t height,
   ut_assert_uint8_list_equal_hex(ut_png_image_get_data(image), hex_image_data);
 }
 
-static void test_png_suite_basic() {
+static void test_png_suite_basic_formats() {
   // black & white
   check_png(basn0g01_data, 32, 32, 1, UT_PNG_COLOUR_TYPE_GREYSCALE, NULL, NULL,
             basn0g01_image_data);
@@ -98,13 +98,11 @@ static void test_png_suite_basic() {
             NULL, NULL, basn6a16_image_data);
 }
 
-// Same as basic tests but with interlacing.
-static void test_png_suite_interlaced() {
+static void test_png_suite_interlacing() {
   // FIXME
 }
 
-// Test various image sizes.
-static void test_png_suite_size() {
+static void test_png_suite_sizes() {
   // FIXME: Interlaced
 
   // 1x1 paletted file, no interlacing
@@ -180,8 +178,7 @@ static void test_png_suite_size() {
             s40n3p04_palette_data, NULL, s40n3p04_image_data);
 }
 
-// Background colours.
-static void test_png_suite_background() {
+static void test_png_suite_background_colours() {
   // FIXME: Interlaced
 
   // 3x8 bits rgb color, alpha, no background chunk
@@ -209,8 +206,15 @@ static void test_png_suite_background() {
             NULL, bgyn6a16_background, bgyn6a16_image_data);
 }
 
-// Image filtering.
-static void test_png_suite_filtering() {
+static void test_png_suite_transparency() {
+  // FIXME
+}
+
+static void test_png_suite_gamma_values() {
+  // FIXME
+}
+
+static void test_png_suite_image_filtering() {
   // grayscale, no interlacing, filter-type 0
   check_png(f00n0g08_data, 32, 32, 8, UT_PNG_COLOUR_TYPE_GREYSCALE, NULL, NULL,
             f00n0g08_image_data);
@@ -256,6 +260,14 @@ static void test_png_suite_filtering() {
             f99n0g04_image_data);
 }
 
+static void test_png_suite_additional_palettes() {
+  // FIXME
+}
+
+static void test_png_suite_ancillary_chunks() {
+  // FIXME
+}
+
 static void test_png_suite_chunk_ordering() {
   // grayscale mother image with 1 idat-chunk
   check_png(oi1n0g16_data, 32, 32, 16, UT_PNG_COLOUR_TYPE_GREYSCALE, NULL, NULL,
@@ -290,13 +302,41 @@ static void test_png_suite_chunk_ordering() {
             NULL, oi9n2c16_image_data);
 }
 
+static void test_png_suite_zlib_compression_level() {
+  // color, no interlacing, compression level 0 (none)
+  check_png(z00n2c08_data, 32, 32, 8, UT_PNG_COLOUR_TYPE_TRUECOLOUR, NULL, NULL,
+            z00n2c08_image_data);
+
+  // color, no interlacing, compression level 3
+  check_png(z03n2c08_data, 32, 32, 8, UT_PNG_COLOUR_TYPE_TRUECOLOUR, NULL, NULL,
+            z03n2c08_image_data);
+
+  // color, no interlacing, compression level 6 (default)
+  check_png(z06n2c08_data, 32, 32, 8, UT_PNG_COLOUR_TYPE_TRUECOLOUR, NULL, NULL,
+            z06n2c08_image_data);
+
+  // color, no interlacing, compression level 9
+  check_png(z09n2c08_data, 32, 32, 8, UT_PNG_COLOUR_TYPE_TRUECOLOUR, NULL, NULL,
+            z09n2c08_image_data);
+}
+
+static void test_png_suite_corrupted_files() {
+  // FIXME
+}
+
 int main(int argc, char **argv) {
-  test_png_suite_basic();
-  test_png_suite_interlaced();
-  test_png_suite_size();
-  test_png_suite_background();
-  test_png_suite_filtering();
+  test_png_suite_basic_formats();
+  test_png_suite_interlacing();
+  test_png_suite_sizes();
+  test_png_suite_background_colours();
+  test_png_suite_transparency();
+  test_png_suite_gamma_values();
+  test_png_suite_image_filtering();
+  test_png_suite_additional_palettes();
+  test_png_suite_ancillary_chunks();
   test_png_suite_chunk_ordering();
+  test_png_suite_zlib_compression_level();
+  test_png_suite_corrupted_files();
 
   return 0;
 }
