@@ -39,7 +39,7 @@ static void render_box(UtRgba8888Buffer *self, size_t left, size_t top,
   uint8_t blue8 = quantize_channel(ut_color_get_blue(color));
   uint8_t alpha8 = quantize_channel(ut_color_get_alpha(color));
 
-  uint8_t *data = ut_uint8_array_get_data(self->data);
+  uint8_t *data = ut_uint8_list_get_writable_data(self->data);
   size_t row_step = (self->width - (right - left)) * 4;
   size_t i = (top * self->width * 4) + (left * 4);
   for (size_t y = top; y < bottom; y++) {

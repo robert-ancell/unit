@@ -237,7 +237,7 @@ static void filter_row(UtPngDecoder *self, FilterType filter, UtObject *row) {
   size_t n_channels = ut_png_image_get_n_channels(self->image);
   size_t row_stride = ut_png_image_get_row_stride(self->image);
   UtObject *image_data_object = ut_png_image_get_data(self->image);
-  uint8_t *image_data = ut_uint8_array_get_data(image_data_object);
+  uint8_t *image_data = ut_uint8_list_get_writable_data(image_data_object);
 
   uint8_t *row_data = image_data + (self->row_count * row_stride);
   uint8_t *prev_row_data = self->row_count > 0 ? row_data - row_stride : NULL;
@@ -431,7 +431,7 @@ static void decode_palette(UtPngDecoder *self, UtObject *data) {
   }
 
   ut_list_resize(palette, palette_length);
-  uint8_t *palette_data = ut_uint8_array_get_data(palette);
+  uint8_t *palette_data = ut_uint8_list_get_writable_data(palette);
   for (size_t i = 0; i < palette_length; i++) {
     palette_data[i] = ut_uint8_list_get_element(data, i);
   }

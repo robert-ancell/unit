@@ -127,6 +127,17 @@ const uint8_t *ut_uint8_list_get_data(UtObject *object) {
   }
 }
 
+uint8_t *ut_uint8_list_get_writable_data(UtObject *object) {
+  UtUint8ListInterface *uint8_list_interface =
+      ut_object_get_interface(object, &ut_uint8_list_id);
+  assert(uint8_list_interface != NULL);
+  if (uint8_list_interface->get_writable_data != NULL) {
+    return uint8_list_interface->get_writable_data(object);
+  } else {
+    return NULL;
+  }
+}
+
 uint8_t *ut_uint8_list_copy_data(UtObject *object) {
   UtUint8ListInterface *uint8_list_interface =
       ut_object_get_interface(object, &ut_uint8_list_id);

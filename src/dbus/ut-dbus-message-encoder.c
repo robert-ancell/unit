@@ -55,7 +55,7 @@ static void write_align_padding(UtObject *buffer, size_t alignment) {
 
 static void rewrite_length(UtObject *buffer, size_t length_offset,
                            uint32_t length) {
-  uint8_t *data = ut_uint8_array_get_data(buffer);
+  uint8_t *data = ut_uint8_list_get_writable_data(buffer);
   data[length_offset] = length & 0xff;
   data[length_offset + 1] = (length >> 8) & 0xff;
   data[length_offset + 2] = (length >> 16) & 0xff;

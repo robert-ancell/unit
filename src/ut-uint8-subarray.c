@@ -16,7 +16,7 @@ typedef struct {
 
 static uint8_t *get_data(UtUint8Subarray *self) {
   assert(ut_list_get_length(self->parent) == self->parent_length);
-  return ut_uint8_array_get_data(self->parent) + self->start;
+  return ut_uint8_list_get_writable_data(self->parent) + self->start;
 }
 
 static uint8_t ut_uint8_subarray_get_element(UtObject *object, size_t index) {
@@ -26,6 +26,11 @@ static uint8_t ut_uint8_subarray_get_element(UtObject *object, size_t index) {
 }
 
 static const uint8_t *ut_uint8_subarray_get_const_data(UtObject *object) {
+  UtUint8Subarray *self = (UtUint8Subarray *)object;
+  return get_data(self);
+}
+
+static uint8_t *ut_uint8_subarray_get_writable_data(UtObject *object) {
   UtUint8Subarray *self = (UtUint8Subarray *)object;
   return get_data(self);
 }
@@ -87,6 +92,7 @@ static void ut_uint8_subarray_cleanup(UtObject *object) {
 static UtUint8ListInterface uint8_list_interface = {
     .get_element = ut_uint8_subarray_get_element,
     .get_data = ut_uint8_subarray_get_const_data,
+    .get_writable_data = ut_uint8_subarray_get_writable_data,
     .take_data = ut_uint8_subarray_take_data};
 
 static UtListInterface list_interface = {
@@ -117,12 +123,6 @@ UtObject *ut_uint8_subarray_new(UtObject *parent, size_t start, size_t length) {
   self->start = start;
   self->length = length;
   return object;
-}
-
-uint8_t *ut_uint8_subarray_get_data(UtObject *object) {
-  assert(ut_object_is_uint8_subarray(object));
-  UtUint8Subarray *self = (UtUint8Subarray *)object;
-  return get_data(self);
 }
 
 bool ut_object_is_uint8_subarray(UtObject *object) {

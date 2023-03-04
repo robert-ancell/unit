@@ -35,7 +35,7 @@ static void read_cb(void *user_data) {
   // Read a block.
   ssize_t n_read =
       read(ut_file_descriptor_get_fd(self->fd),
-           ut_uint8_array_get_data(self->read_buffer) + buffer_length,
+           ut_uint8_list_get_writable_data(self->read_buffer) + buffer_length,
            self->block_size);
   assert(n_read >= 0);
   buffer_length += n_read;

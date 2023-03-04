@@ -17,7 +17,7 @@ int main(int argc, char **argv) {
   ut_string_append_printf(ppm, "%zi %zi\n", width, height);
   ut_string_append(ppm, "255\n");
   UtObject *data = ut_image_buffer_get_data(buffer);
-  uint8_t *d = ut_uint8_array_get_data(data);
+  uint8_t *d = ut_uint8_list_get_writable_data(data);
   for (size_t y = 0; y < height; y++) {
     for (size_t x = 0; x < width; x++) {
       ut_string_append_printf(ppm, "%d %d %d\n", d[0], d[1], d[2]);

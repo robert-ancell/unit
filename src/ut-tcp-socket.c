@@ -81,7 +81,8 @@ static void read_cb(void *user_data) {
   }
 
   struct iovec iov;
-  iov.iov_base = ut_uint8_array_get_data(self->read_buffer) + self->n_read;
+  iov.iov_base =
+      ut_uint8_list_get_writable_data(self->read_buffer) + self->n_read;
   iov.iov_len = block_size;
   uint8_t control_data[CMSG_SPACE(sizeof(int) * 1024)];
   struct msghdr msg;

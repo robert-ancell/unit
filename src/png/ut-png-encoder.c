@@ -113,7 +113,7 @@ static void write_chunk(UtPngEncoder *self, UtObject *chunk) {
 
   // Overwrite length field.
   size_t length = chunk_length - 8;
-  uint8_t *d = ut_uint8_array_get_data(chunk);
+  uint8_t *d = ut_uint8_list_get_writable_data(chunk);
   d[0] = length >> 24;
   d[1] = (length >> 16) & 0xff;
   d[2] = (length >> 8) & 0xff;

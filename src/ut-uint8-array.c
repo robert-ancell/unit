@@ -43,6 +43,11 @@ static const uint8_t *ut_uint8_array_get_const_data(UtObject *object) {
   return self->data;
 }
 
+static uint8_t *ut_uint8_array_get_writable_data(UtObject *object) {
+  UtUint8Array *self = (UtUint8Array *)object;
+  return self->data;
+}
+
 static uint8_t *ut_uint8_array_take_data(UtObject *object) {
   UtUint8Array *self = (UtUint8Array *)object;
   uint8_t *result = self->data;
@@ -159,7 +164,7 @@ static void ut_uint8_array_write(UtObject *object, UtObject *data,
   UtUint8Array *self = (UtUint8Array *)object;
 
   if (ut_object_is_uint8_array(data)) {
-    ut_uint8_array_append(object, ut_uint8_array_get_data(data),
+    ut_uint8_array_append(object, ut_uint8_list_get_writable_data(data),
                           ut_uint8_array_get_length(data));
   } else {
     size_t data_length = ut_list_get_length(data);
@@ -197,6 +202,7 @@ static void ut_uint8_array_cleanup(UtObject *object) {
 static UtUint8ListInterface uint8_list_interface = {
     .get_element = ut_uint8_array_get_element,
     .get_data = ut_uint8_array_get_const_data,
+    .get_writable_data = ut_uint8_array_get_writable_data,
     .take_data = ut_uint8_array_take_data,
     .insert = ut_uint8_array_insert,
     .append = ut_uint8_array_append};
@@ -295,12 +301,6 @@ UtObject *ut_uint8_array_new_from_hex_string(const char *hex) {
   }
 
   return ut_object_ref(object);
-}
-
-uint8_t *ut_uint8_array_get_data(UtObject *object) {
-  assert(ut_object_is_uint8_array(object));
-  UtUint8Array *self = (UtUint8Array *)object;
-  return self->data;
 }
 
 bool ut_object_is_uint8_array(UtObject *object) {
