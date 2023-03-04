@@ -250,18 +250,17 @@ static void process_row(UtPngDecoder *self, FilterType filter, UtObject *row) {
     // +---+---+
     uint8_t x = ut_uint8_list_get_element(row, offset);
     int32_t a, b, c;
-    size_t line_bit_offset = offset * 8;
-    size_t pixel_bit_width = bit_depth * n_channels;
-    if (line_bit_offset >= pixel_bit_width) {
-      size_t left_pixel_offset = (line_bit_offset - pixel_bit_width) / 8;
-      size_t left_index;
-      if (left_pixel_offset == line_bit_offset) {
-        left_index = self->image_data_count - 1;
-      } else {
-        left_index = self->image_data_count - (offset - left_pixel_offset);
-      }
-      a = image_data[left_index];
-      c = first_row ? 0 : image_data[left_index - row_stride];
+    size_t left_offset;
+    if (bit_depth < 8) {
+      left_offset = 1;
+    } else {
+      left_offset = n_channels * (bit_depth / 8);
+    }
+    if (offset >= left_offset) {
+      a = image_data[self->image_data_count - left_offset];
+      c = first_row
+              ? 0
+              : image_data[self->image_data_count - left_offset - row_stride];
     } else {
       a = c = 0;
     }
