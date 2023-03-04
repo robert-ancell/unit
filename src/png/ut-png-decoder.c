@@ -42,6 +42,7 @@ typedef struct {
 
   // Scanline being decoded.
   size_t row_count;
+  UtObject *previous_row;
 
   // Final image object.
   UtObject *image;
@@ -231,16 +232,14 @@ static uint8_t paeth_filter(uint8_t x, int32_t a, int32_t b, int32_t c) {
   }
 }
 
-static void filter_row(UtPngDecoder *self, FilterType filter, UtObject *row) {
-  size_t row_length = ut_list_get_length(row);
+static void filter_row(UtPngDecoder *self, FilterType filter,
+                       UtObject *previous_row, UtObject *filtered_row,
+                       UtObject *row) {
+  size_t row_length = ut_list_get_length(filtered_row);
   uint8_t bit_depth = ut_png_image_get_bit_depth(self->image);
   size_t n_channels = ut_png_image_get_n_channels(self->image);
-  size_t row_stride = ut_png_image_get_row_stride(self->image);
-  UtObject *image_data_object = ut_png_image_get_data(self->image);
-  uint8_t *image_data = ut_uint8_list_get_writable_data(image_data_object);
-
-  uint8_t *row_data = image_data + (self->row_count * row_stride);
-  uint8_t *prev_row_data = self->row_count > 0 ? row_data - row_stride : NULL;
+  const uint8_t *previous_row_data = ut_uint8_list_get_data(previous_row);
+  uint8_t *row_data = ut_uint8_list_get_writable_data(row);
 
   for (size_t offset = 0; offset < row_length; offset++) {
     // Calculate the filter inputs:
@@ -250,7 +249,7 @@ static void filter_row(UtPngDecoder *self, FilterType filter, UtObject *row) {
     // +---+---+
     // | a | x |
     // +---+---+
-    uint8_t x = ut_uint8_list_get_element(row, offset);
+    uint8_t x = ut_uint8_list_get_element(filtered_row, offset);
     int32_t a, b, c;
     size_t left_offset;
     if (bit_depth < 8) {
@@ -260,11 +259,11 @@ static void filter_row(UtPngDecoder *self, FilterType filter, UtObject *row) {
     }
     if (offset >= left_offset) {
       a = row_data[offset - left_offset];
-      c = prev_row_data != NULL ? prev_row_data[offset - left_offset] : 0;
+      c = previous_row_data[offset - left_offset];
     } else {
       a = c = 0;
     }
-    b = prev_row_data != NULL ? prev_row_data[offset] : 0;
+    b = previous_row_data[offset];
 
     // Reconstruct the pixel value.
     uint8_t recon_x;
@@ -335,10 +334,17 @@ static size_t data_decoder_read_cb(void *user_data, UtObject *data,
     offset++;
 
     // Apply filter to row.
-    UtObjectRef row = ut_list_get_sublist(data, offset, row_stride);
-    filter_row(self, filter, row);
+    UtObjectRef filtered_row = ut_list_get_sublist(data, offset, row_stride);
+    UtObjectRef row =
+        ut_list_get_sublist(ut_png_image_get_data(self->image),
+                            self->row_count * row_stride, row_stride);
+    filter_row(self, filter, self->previous_row, filtered_row, row);
     offset += row_stride;
     self->row_count++;
+
+    // Use decoded row as new previous row.
+    ut_object_unref(self->previous_row);
+    self->previous_row = ut_object_ref(row);
   }
 
   return offset;
@@ -420,6 +426,8 @@ static void decode_image_header(UtPngDecoder *self, UtObject *data) {
   }
   self->image = ut_png_image_new(width, height, bit_depth, colour_type, palette,
                                  image_data);
+
+  self->previous_row = ut_uint8_array_new_sized(row_stride);
 }
 
 static void decode_palette(UtPngDecoder *self, UtObject *data) {
@@ -641,6 +649,7 @@ static void ut_png_decoder_cleanup(UtObject *object) {
   ut_object_unref(self->cancel);
   ut_object_unref(self->image_data_decoder_input_stream);
   ut_object_unref(self->image_data_decoder);
+  ut_object_unref(self->previous_row);
   ut_object_unref(self->image);
   ut_object_unref(self->error);
 }
