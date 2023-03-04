@@ -41,7 +41,7 @@ typedef struct {
   UtObject *image_data_decoder;
 
   // Scanline being decoded.
-  size_t image_data_count;
+  size_t row_count;
 
   // Final image object.
   UtObject *image;
@@ -231,7 +231,7 @@ static uint8_t paeth_filter(uint8_t x, int32_t a, int32_t b, int32_t c) {
   }
 }
 
-static void process_row(UtPngDecoder *self, FilterType filter, UtObject *row) {
+static void filter_row(UtPngDecoder *self, FilterType filter, UtObject *row) {
   size_t row_length = ut_list_get_length(row);
   uint8_t bit_depth = ut_png_image_get_bit_depth(self->image);
   size_t n_channels = ut_png_image_get_n_channels(self->image);
@@ -239,7 +239,9 @@ static void process_row(UtPngDecoder *self, FilterType filter, UtObject *row) {
   UtObject *image_data_object = ut_png_image_get_data(self->image);
   uint8_t *image_data = ut_uint8_array_get_data(image_data_object);
 
-  bool first_row = self->image_data_count == 0;
+  uint8_t *row_data = image_data + (self->row_count * row_stride);
+  uint8_t *prev_row_data = self->row_count > 0 ? row_data - row_stride : NULL;
+
   for (size_t offset = 0; offset < row_length; offset++) {
     // Calculate the filter inputs:
     //
@@ -257,14 +259,12 @@ static void process_row(UtPngDecoder *self, FilterType filter, UtObject *row) {
       left_offset = n_channels * (bit_depth / 8);
     }
     if (offset >= left_offset) {
-      a = image_data[self->image_data_count - left_offset];
-      c = first_row
-              ? 0
-              : image_data[self->image_data_count - left_offset - row_stride];
+      a = row_data[offset - left_offset];
+      c = prev_row_data != NULL ? prev_row_data[offset - left_offset] : 0;
     } else {
       a = c = 0;
     }
-    b = first_row ? 0 : image_data[self->image_data_count - row_stride];
+    b = prev_row_data != NULL ? prev_row_data[offset] : 0;
 
     // Reconstruct the pixel value.
     uint8_t recon_x;
@@ -287,9 +287,12 @@ static void process_row(UtPngDecoder *self, FilterType filter, UtObject *row) {
       break;
     }
 
-    image_data[self->image_data_count] = recon_x;
-    self->image_data_count++;
+    row_data[offset] = recon_x;
   }
+}
+
+static bool is_complete(UtPngDecoder *self) {
+  return self->row_count >= ut_png_image_get_height(self->image);
 }
 
 // Process zlib decoded image data.
@@ -306,17 +309,19 @@ static size_t data_decoder_read_cb(void *user_data, UtObject *data,
 
   size_t data_length = ut_list_get_length(data);
 
-  uint32_t height = ut_png_image_get_height(self->image);
-  size_t row_stride = ut_png_image_get_row_stride(self->image);
+  uint32_t width = ut_png_image_get_width(self->image);
+  uint8_t bit_depth = ut_png_image_get_bit_depth(self->image);
+  size_t n_channels = ut_png_image_get_n_channels(self->image);
 
   size_t offset = 0;
   while (offset < data_length) {
-    if (self->image_data_count >= height * row_stride) {
-      set_error(self, "Excess image data");
+    if (is_complete(self)) {
+      set_error(self, "Excess PNG image data");
       return offset;
     }
 
-    // Insufficient data for row.
+    // Check sufficient data for row.
+    size_t row_stride = (width * bit_depth * n_channels + 7) / 8;
     if (offset + 1 + row_stride > data_length) {
       return offset;
     }
@@ -329,9 +334,11 @@ static size_t data_decoder_read_cb(void *user_data, UtObject *data,
     }
     offset++;
 
+    // Apply filter to row.
     UtObjectRef row = ut_list_get_sublist(data, offset, row_stride);
-    process_row(self, filter, row);
+    filter_row(self, filter, row);
     offset += row_stride;
+    self->row_count++;
   }
 
   return offset;
@@ -413,8 +420,6 @@ static void decode_image_header(UtPngDecoder *self, UtObject *data) {
   }
   self->image = ut_png_image_new(width, height, bit_depth, colour_type, palette,
                                  image_data);
-
-  self->image_data_count = 0;
 }
 
 static void decode_palette(UtPngDecoder *self, UtObject *data) {
@@ -513,10 +518,8 @@ static void decode_image_end(UtPngDecoder *self, UtObject *data) {
     return;
   }
 
-  uint32_t height = ut_png_image_get_height(self->image);
-  size_t row_stride = ut_png_image_get_row_stride(self->image);
-  if (self->image_data_count != height * row_stride) {
-    set_error(self, "PNG image data size mismatch");
+  if (!is_complete(self)) {
+    set_error(self, "Insufficient PNG image data");
     return;
   }
 
