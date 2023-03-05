@@ -293,6 +293,8 @@ static void filter_row(UtPngDecoder *self, FilterType filter,
   }
 }
 
+// Gets the dimensions of an Adam7 interlacing [pass] for an image of size
+// [width]x[height].
 static void get_adam7_dimensions(size_t width, size_t height, size_t pass,
                                  size_t *pass_width, size_t *pass_height) {
   switch (pass) {
@@ -301,28 +303,28 @@ static void get_adam7_dimensions(size_t width, size_t height, size_t pass,
     *pass_height = (height + 7) / 8;
     break;
   case 1:
-    *pass_width = (width + 2) / 8;
+    *pass_width = (width + 3) / 8;
     *pass_height = (height + 7) / 8;
     break;
   case 2:
-    *pass_width = width / 4;
-    *pass_height = (height + 2) / 8;
+    *pass_width = (width + 3) / 4;
+    *pass_height = (height + 3) / 8;
     break;
   case 3:
     *pass_width = (width + 1) / 4;
-    *pass_height = height / 4;
+    *pass_height = (height + 3) / 4;
     break;
   case 4:
-    *pass_width = width / 2;
+    *pass_width = (width + 1) / 2;
     *pass_height = (height + 1) / 4;
     break;
   case 5:
-    *pass_width = (width + 1) / 2;
-    *pass_height = height / 2;
+    *pass_width = width / 2;
+    *pass_height = (height + 1) / 2;
     break;
   case 6:
     *pass_width = width;
-    *pass_height = (height + 1) / 2;
+    *pass_height = height / 2;
     break;
   default:
     *pass_width = width;
