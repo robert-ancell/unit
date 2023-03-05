@@ -8,7 +8,7 @@ int main(int argc, char **argv) {
   UtObjectRef greyscale_1x1_image_data =
       ut_uint8_list_new_from_hex_string("00");
   UtObjectRef greyscale_1x1_image = ut_png_image_new(
-      1, 1, 8, UT_PNG_COLOUR_TYPE_GREYSCALE, NULL, greyscale_1x1_image_data);
+      1, 1, 8, UT_PNG_COLOUR_TYPE_GREYSCALE, greyscale_1x1_image_data);
   UtObjectRef greyscale_1x1_encoder =
       ut_png_encoder_new(greyscale_1x1_image, greyscale_1x1_data);
   ut_png_encoder_encode(greyscale_1x1_encoder);
@@ -21,7 +21,7 @@ int main(int argc, char **argv) {
   UtObjectRef greyscale_2x2_image_data =
       ut_uint8_list_new_from_hex_string("007fccff");
   UtObjectRef greyscale_2x2_image = ut_png_image_new(
-      2, 2, 8, UT_PNG_COLOUR_TYPE_GREYSCALE, NULL, greyscale_2x2_image_data);
+      2, 2, 8, UT_PNG_COLOUR_TYPE_GREYSCALE, greyscale_2x2_image_data);
   UtObjectRef greyscale_2x2_encoder =
       ut_png_encoder_new(greyscale_2x2_image, greyscale_2x2_data);
   ut_png_encoder_encode(greyscale_2x2_encoder);
@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
   UtObjectRef rgb_2x2_image_data =
       ut_uint8_list_new_from_hex_string("ff000000ff000000ffffffff");
   UtObjectRef rgb_2x2_image = ut_png_image_new(
-      2, 2, 8, UT_PNG_COLOUR_TYPE_TRUECOLOUR, NULL, rgb_2x2_image_data);
+      2, 2, 8, UT_PNG_COLOUR_TYPE_TRUECOLOUR, rgb_2x2_image_data);
   UtObjectRef rgb_2x2_encoder = ut_png_encoder_new(rgb_2x2_image, rgb_2x2_data);
   ut_png_encoder_encode(rgb_2x2_encoder);
   ut_assert_uint8_list_equal_hex(

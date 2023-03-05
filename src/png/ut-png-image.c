@@ -75,8 +75,7 @@ static UtObjectInterface object_interface = {.type_name = "UtPngImage",
                                              .interfaces = {{NULL, NULL}}};
 
 UtObject *ut_png_image_new(uint32_t width, uint32_t height, uint8_t bit_depth,
-                           UtPngColourType colour_type, UtObject *palette,
-                           UtObject *data) {
+                           UtPngColourType colour_type, UtObject *data) {
   UtObject *object = ut_object_new(sizeof(UtPngImage), &object_interface);
   UtPngImage *self = (UtPngImage *)object;
 
@@ -86,8 +85,6 @@ UtObject *ut_png_image_new(uint32_t width, uint32_t height, uint8_t bit_depth,
   case UT_PNG_COLOUR_TYPE_GREYSCALE:
     assert(bit_depth == 1 || bit_depth == 2 || bit_depth == 4 ||
            bit_depth == 8 || bit_depth == 16);
-    // Palette not allowed.
-    assert(palette == NULL);
     break;
   case UT_PNG_COLOUR_TYPE_TRUECOLOUR:
     assert(bit_depth == 8 || bit_depth == 16);
@@ -95,25 +92,15 @@ UtObject *ut_png_image_new(uint32_t width, uint32_t height, uint8_t bit_depth,
   case UT_PNG_COLOUR_TYPE_INDEXED_COLOUR:
     assert(bit_depth == 1 || bit_depth == 2 || bit_depth == 4 ||
            bit_depth == 8);
-    // Palette required.
-    assert(palette != NULL);
     break;
   case UT_PNG_COLOUR_TYPE_GREYSCALE_WITH_ALPHA:
     assert(bit_depth == 8 || bit_depth == 16);
-    // Palette not allowed.
-    assert(palette == NULL);
     break;
   case UT_PNG_COLOUR_TYPE_TRUECOLOUR_WITH_ALPHA:
     assert(bit_depth == 8 || bit_depth == 16);
     break;
   default:
     assert(false);
-  }
-  if (palette != NULL) {
-    size_t palette_length = ut_list_get_length(palette);
-    assert(palette_length % 3 == 0);
-    size_t n_palette_entries = palette_length / 3;
-    assert(n_palette_entries >= 1 && n_palette_entries <= 256);
   }
   ut_assert_int_equal(ut_list_get_length(data),
                       height * get_row_stride(width, colour_type, bit_depth));
@@ -122,7 +109,6 @@ UtObject *ut_png_image_new(uint32_t width, uint32_t height, uint8_t bit_depth,
   self->height = height;
   self->bit_depth = bit_depth;
   self->colour_type = colour_type;
-  self->palette = ut_object_ref(palette);
   self->data = ut_object_ref(data);
 
   return object;
@@ -162,6 +148,19 @@ size_t ut_png_image_get_row_stride(UtObject *object) {
   assert(ut_object_is_png_image(object));
   UtPngImage *self = (UtPngImage *)object;
   return get_row_stride(self->width, self->colour_type, self->bit_depth);
+}
+
+void ut_png_image_set_palette(UtObject *object, UtObject *palette) {
+  assert(ut_object_is_png_image(object));
+  UtPngImage *self = (UtPngImage *)object;
+
+  size_t palette_length = ut_list_get_length(palette);
+  assert(palette_length % 3 == 0);
+  size_t n_palette_entries = palette_length / 3;
+  assert(n_palette_entries >= 1 && n_palette_entries <= 256);
+
+  ut_object_unref(self->palette);
+  self->palette = ut_object_ref(palette);
 }
 
 UtObject *ut_png_image_get_palette(UtObject *object) {

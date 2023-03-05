@@ -476,7 +476,31 @@ static void test_png_suite_image_filtering() {
 }
 
 static void test_png_suite_additional_palettes() {
-  // FIXME
+  // FIXME: Check suggested palette.
+
+  // six-cube palette-chunk in true-color image
+  check_png(pp0n2c16_data, 32, 32, 16, UT_PNG_COLOUR_TYPE_TRUECOLOUR,
+            pp0n2c16_palette_data, NULL, pp0n2c16_image_data);
+
+  // six-cube palette-chunk in true-color+alpha image
+  check_png(pp0n6a08_data, 32, 32, 8, UT_PNG_COLOUR_TYPE_TRUECOLOUR_WITH_ALPHA,
+            pp0n6a08_palette_data, NULL, pp0n6a08_image_data);
+
+  // six-cube suggested palette (1 byte) in grayscale image
+  check_png(ps1n0g08_data, 32, 32, 8, UT_PNG_COLOUR_TYPE_GREYSCALE, NULL, NULL,
+            ps1n0g08_image_data);
+
+  // six-cube suggested palette (1 byte) in true-color image
+  check_png(ps1n2c16_data, 32, 32, 16, UT_PNG_COLOUR_TYPE_TRUECOLOUR, NULL,
+            NULL, ps1n2c16_image_data);
+
+  // six-cube suggested palette (2 bytes) in grayscale image
+  check_png(ps2n0g08_data, 32, 32, 8, UT_PNG_COLOUR_TYPE_GREYSCALE, NULL, NULL,
+            ps2n0g08_image_data);
+
+  // six-cube suggested palette (2 bytes) in true-color image
+  check_png(ps2n2c16_data, 32, 32, 16, UT_PNG_COLOUR_TYPE_TRUECOLOUR, NULL,
+            NULL, ps2n2c16_image_data);
 }
 
 static void test_png_suite_ancillary_chunks() {

@@ -696,28 +696,23 @@ static void decode_image_header(UtPngDecoder *self, UtObject *data) {
   size_t row_stride = (((size_t)width * bit_depth * n_channels) + 7) / 8;
   UtObjectRef image_data = ut_uint8_array_new_sized(height * row_stride);
   UtObjectRef palette = NULL;
-  if (colour_type == UT_PNG_COLOUR_TYPE_INDEXED_COLOUR) {
-    // FIXME: Placeholder palette, need to either check later if palette chunk
-    // was missing.
-    palette = ut_uint8_array_new_sized(3);
-  }
-  self->image = ut_png_image_new(width, height, bit_depth, colour_type, palette,
-                                 image_data);
+  self->image =
+      ut_png_image_new(width, height, bit_depth, colour_type, image_data);
 }
 
 static void decode_palette(UtPngDecoder *self, UtObject *data) {
-  UtObject *palette = ut_png_image_get_palette(self->image);
   size_t palette_length = ut_list_get_length(data);
   if (palette_length % 3 != 0) {
     set_error(self, "Invalid palette size");
     return;
   }
 
-  ut_list_resize(palette, palette_length);
+  UtObjectRef palette = ut_uint8_array_new_sized(palette_length);
   uint8_t *palette_data = ut_uint8_list_get_writable_data(palette);
   for (size_t i = 0; i < palette_length; i++) {
     palette_data[i] = ut_uint8_list_get_element(data, i);
   }
+  ut_png_image_set_palette(self->image, palette);
 }
 
 static void decode_background(UtPngDecoder *self, UtObject *data) {
