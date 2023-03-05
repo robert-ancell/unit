@@ -408,7 +408,111 @@ static void test_png_suite_additional_palettes() {
 }
 
 static void test_png_suite_ancillary_chunks() {
-  // FIXME
+  // FIXME: Check ancillary data.
+
+  // chroma chunk w:0.3127,0.3290 r:0.64,0.33 g:0.30,0.60 b:0.15,0.06
+  check_png(ccwn2c08_data, 32, 32, 8, UT_PNG_COLOUR_TYPE_TRUECOLOUR, NULL, NULL,
+            ccwn2c08_image_data);
+
+  // chroma chunk w:0.3127,0.3290 r:0.64,0.33 g:0.30,0.60 b:0.15,0.06
+  check_png(ccwn3p08_data, 32, 32, 8, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR,
+            ccwn3p08_palette_data, NULL, ccwn3p08_image_data);
+
+  // physical pixel dimensions, 8x32 flat pixels
+  check_png(cdfn2c08_data, 8, 32, 8, UT_PNG_COLOUR_TYPE_TRUECOLOUR, NULL, NULL,
+            cdfn2c08_image_data);
+
+  // physical pixel dimensions, 32x8 high pixels
+  check_png(cdhn2c08_data, 32, 8, 8, UT_PNG_COLOUR_TYPE_TRUECOLOUR, NULL, NULL,
+            cdhn2c08_image_data);
+
+  // physical pixel dimensions, 8x8 square pixels
+  check_png(cdsn2c08_data, 8, 8, 8, UT_PNG_COLOUR_TYPE_TRUECOLOUR, NULL, NULL,
+            cdsn2c08_image_data);
+
+  // physical pixel dimensions, 1000 pixels per 1 meter
+  check_png(cdun2c08_data, 32, 32, 8, UT_PNG_COLOUR_TYPE_TRUECOLOUR, NULL, NULL,
+            cdun2c08_image_data);
+
+  // histogram 15 colors
+  check_png(ch1n3p04_data, 32, 32, 4, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR,
+            ch1n3p04_palette_data, NULL, ch1n3p04_image_data);
+
+  // histogram 256 colors
+  check_png(ch2n3p08_data, 32, 32, 8, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR,
+            ch2n3p08_palette_data, NULL, ch2n3p08_image_data);
+
+  // modification time, 01-jan-2000 12:34:56
+  check_png(cm0n0g04_data, 32, 32, 4, UT_PNG_COLOUR_TYPE_GREYSCALE, NULL, NULL,
+            cm0n0g04_image_data);
+
+  // modification time, 01-jan-1970 00:00:00
+  check_png(cm7n0g04_data, 32, 32, 4, UT_PNG_COLOUR_TYPE_GREYSCALE, NULL, NULL,
+            cm7n0g04_image_data);
+
+  // modification time, 31-dec-1999 23:59:59
+  check_png(cm9n0g04_data, 32, 32, 4, UT_PNG_COLOUR_TYPE_GREYSCALE, NULL, NULL,
+            cm9n0g04_image_data);
+
+  // color, 13 significant bits
+  check_png(cs3n2c16_data, 32, 32, 16, UT_PNG_COLOUR_TYPE_TRUECOLOUR, NULL,
+            NULL, cs3n2c16_image_data);
+
+  // paletted, 3 significant bits
+  check_png(cs3n3p08_data, 32, 32, 8, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR,
+            cs3n3p08_palette_data, NULL, cs3n3p08_image_data);
+
+  // color, 5 significant bits
+  check_png(cs5n2c08_data, 32, 32, 8, UT_PNG_COLOUR_TYPE_TRUECOLOUR, NULL, NULL,
+            cs5n2c08_image_data);
+
+  // paletted, 5 significant bits
+  check_png(cs5n3p08_data, 32, 32, 8, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR,
+            cs5n3p08_palette_data, NULL, cs5n3p08_image_data);
+
+  // color, 8 significant bits (reference)
+  check_png(cs8n2c08_data, 32, 32, 8, UT_PNG_COLOUR_TYPE_TRUECOLOUR, NULL, NULL,
+            cs8n2c08_image_data);
+
+  // paletted, 8 significant bits (reference)
+  check_png(cs8n3p08_data, 32, 32, 8, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR,
+            cs8n3p08_palette_data, NULL, cs8n3p08_image_data);
+
+  // no textual data
+  check_png(ct0n0g04_data, 32, 32, 4, UT_PNG_COLOUR_TYPE_GREYSCALE, NULL, NULL,
+            ct0n0g04_image_data);
+
+  // with textual data
+  check_png(ct1n0g04_data, 32, 32, 4, UT_PNG_COLOUR_TYPE_GREYSCALE, NULL, NULL,
+            ct1n0g04_image_data);
+
+  // with compressed textual data
+  check_png(ctzn0g04_data, 32, 32, 4, UT_PNG_COLOUR_TYPE_GREYSCALE, NULL, NULL,
+            ctzn0g04_image_data);
+
+  // international UTF-8, english
+  check_png(cten0g04_data, 32, 32, 4, UT_PNG_COLOUR_TYPE_GREYSCALE, NULL, NULL,
+            cten0g04_image_data);
+
+  // international UTF-8, finnish
+  check_png(ctfn0g04_data, 32, 32, 4, UT_PNG_COLOUR_TYPE_GREYSCALE, NULL, NULL,
+            ctfn0g04_image_data);
+
+  // international UTF-8, greek
+  check_png(ctgn0g04_data, 32, 32, 4, UT_PNG_COLOUR_TYPE_GREYSCALE, NULL, NULL,
+            ctgn0g04_image_data);
+
+  // international UTF-8, hindi
+  check_png(cthn0g04_data, 32, 32, 4, UT_PNG_COLOUR_TYPE_GREYSCALE, NULL, NULL,
+            cthn0g04_image_data);
+
+  // international UTF-8, japanese
+  check_png(ctjn0g04_data, 32, 32, 4, UT_PNG_COLOUR_TYPE_GREYSCALE, NULL, NULL,
+            ctjn0g04_image_data);
+
+  // chunk with jpeg exif data
+  check_png(exif2c08_data, 32, 32, 8, UT_PNG_COLOUR_TYPE_TRUECOLOUR, NULL, NULL,
+            exif2c08_image_data);
 }
 
 static void test_png_suite_chunk_ordering() {
