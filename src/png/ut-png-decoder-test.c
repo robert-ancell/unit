@@ -350,7 +350,63 @@ static void test_png_suite_background_colours() {
 }
 
 static void test_png_suite_transparency() {
-  // FIXME
+  // FIXME: Check transparency values
+
+  // transparent, black background chunk
+  check_png(tbbn0g04_data, 32, 32, 4, UT_PNG_COLOUR_TYPE_GREYSCALE, NULL,
+            tbbn0g04_background, tbbn0g04_image_data);
+
+  // transparent, blue background chunk
+  check_png(tbbn2c16_data, 32, 32, 16, UT_PNG_COLOUR_TYPE_TRUECOLOUR, NULL,
+            tbbn2c16_background, tbbn2c16_image_data);
+
+  // transparent, black background chunk
+  check_png(tbbn3p08_data, 32, 32, 8, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR,
+            tbbn3p08_palette_data, tbbn3p08_background, tbbn3p08_image_data);
+
+  // transparent, green background chunk
+  check_png(tbgn2c16_data, 32, 32, 16, UT_PNG_COLOUR_TYPE_TRUECOLOUR, NULL,
+            tbgn2c16_background, tbgn2c16_image_data);
+
+  // transparent, light-gray background chunk
+  check_png(tbgn3p08_data, 32, 32, 8, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR,
+            tbgn3p08_palette_data, tbgn3p08_background, tbgn3p08_image_data);
+
+  // transparent, red background chunk
+  check_png(tbrn2c08_data, 32, 32, 8, UT_PNG_COLOUR_TYPE_TRUECOLOUR, NULL,
+            tbrn2c08_background, tbrn2c08_image_data);
+
+  // transparent, white background chunk
+  check_png(tbwn0g16_data, 32, 32, 16, UT_PNG_COLOUR_TYPE_GREYSCALE, NULL,
+            tbwn0g16_background, tbwn0g16_image_data);
+
+  // transparent, white background chunk
+  check_png(tbwn3p08_data, 32, 32, 8, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR,
+            tbwn3p08_palette_data, tbwn3p08_background, tbwn3p08_image_data);
+
+  // transparent, yellow background chunk
+  check_png(tbyn3p08_data, 32, 32, 8, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR,
+            tbyn3p08_palette_data, tbyn3p08_background, tbyn3p08_image_data);
+
+  // not transparent for reference (logo on gray)
+  check_png(tp0n0g08_data, 32, 32, 8, UT_PNG_COLOUR_TYPE_GREYSCALE, NULL, NULL,
+            tp0n0g08_image_data);
+
+  // not transparent for reference (logo on gray)
+  check_png(tp0n2c08_data, 32, 32, 8, UT_PNG_COLOUR_TYPE_TRUECOLOUR, NULL, NULL,
+            tp0n2c08_image_data);
+
+  // not transparent for reference (logo on gray)
+  check_png(tp0n3p08_data, 32, 32, 8, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR,
+            tp0n3p08_palette_data, NULL, tp0n3p08_image_data);
+
+  // transparent, but no background chunk
+  check_png(tp1n3p08_data, 32, 32, 8, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR,
+            tp1n3p08_palette_data, NULL, tp1n3p08_image_data);
+
+  // multiple levels of transparency, 3 entries
+  check_png(tm3n3p02_data, 32, 32, 2, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR,
+            tm3n3p02_palette_data, NULL, tm3n3p02_image_data);
 }
 
 static void test_png_suite_gamma_values() {
