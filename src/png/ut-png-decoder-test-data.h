@@ -1,3 +1,5 @@
+#include <stdlib.h>
+
 #pragma once
 
 // Test images taken from [PngSuite](http://www.schaik.com/pngsuite) which

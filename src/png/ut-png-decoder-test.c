@@ -1,5 +1,4 @@
 #include <assert.h>
-#include <stdio.h>
 
 #include "ut-png-decoder-test-data.h"
 #include "ut.h"
