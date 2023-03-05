@@ -354,7 +354,79 @@ static void test_png_suite_transparency() {
 }
 
 static void test_png_suite_gamma_values() {
-  // FIXME
+  // FIXME: Check gamma values
+
+  // grayscale, file-gamma = 0.35
+  check_png(g03n0g16_data, 32, 32, 16, UT_PNG_COLOUR_TYPE_GREYSCALE, NULL, NULL,
+            g03n0g16_image_data);
+
+  // color, file-gamma = 0.35
+  check_png(g03n2c08_data, 32, 32, 8, UT_PNG_COLOUR_TYPE_TRUECOLOUR, NULL, NULL,
+            g03n2c08_image_data);
+
+  // paletted, file-gamma = 0.35
+  check_png(g03n3p04_data, 32, 32, 4, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR,
+            g03n3p04_palette_data, NULL, g03n3p04_image_data);
+
+  // grayscale, file-gamma = 0.45
+  check_png(g04n0g16_data, 32, 32, 16, UT_PNG_COLOUR_TYPE_GREYSCALE, NULL, NULL,
+            g04n0g16_image_data);
+
+  // color, file-gamma = 0.45
+  check_png(g04n2c08_data, 32, 32, 8, UT_PNG_COLOUR_TYPE_TRUECOLOUR, NULL, NULL,
+            g04n2c08_image_data);
+
+  // paletted, file-gamma = 0.45
+  check_png(g04n3p04_data, 32, 32, 4, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR,
+            g04n3p04_palette_data, NULL, g04n3p04_image_data);
+
+  // grayscale, file-gamma = 0.55
+  check_png(g05n0g16_data, 32, 32, 16, UT_PNG_COLOUR_TYPE_GREYSCALE, NULL, NULL,
+            g05n0g16_image_data);
+
+  // color, file-gamma = 0.55
+  check_png(g05n2c08_data, 32, 32, 8, UT_PNG_COLOUR_TYPE_TRUECOLOUR, NULL, NULL,
+            g05n2c08_image_data);
+
+  // paletted, file-gamma = 0.55
+  check_png(g05n3p04_data, 32, 32, 4, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR,
+            g05n3p04_palette_data, NULL, g05n3p04_image_data);
+
+  // grayscale, file-gamma = 0.70
+  check_png(g07n0g16_data, 32, 32, 16, UT_PNG_COLOUR_TYPE_GREYSCALE, NULL, NULL,
+            g07n0g16_image_data);
+
+  // color, file-gamma = 0.70
+  check_png(g07n2c08_data, 32, 32, 8, UT_PNG_COLOUR_TYPE_TRUECOLOUR, NULL, NULL,
+            g07n2c08_image_data);
+
+  // paletted, file-gamma = 0.70
+  check_png(g07n3p04_data, 32, 32, 4, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR,
+            g07n3p04_palette_data, NULL, g07n3p04_image_data);
+
+  // grayscale, file-gamma = 1.00
+  check_png(g10n0g16_data, 32, 32, 16, UT_PNG_COLOUR_TYPE_GREYSCALE, NULL, NULL,
+            g10n0g16_image_data);
+
+  // color, file-gamma = 1.00
+  check_png(g10n2c08_data, 32, 32, 8, UT_PNG_COLOUR_TYPE_TRUECOLOUR, NULL, NULL,
+            g10n2c08_image_data);
+
+  // paletted, file-gamma = 1.00
+  check_png(g10n3p04_data, 32, 32, 4, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR,
+            g10n3p04_palette_data, NULL, g10n3p04_image_data);
+
+  // grayscale, file-gamma = 2.50
+  check_png(g25n0g16_data, 32, 32, 16, UT_PNG_COLOUR_TYPE_GREYSCALE, NULL, NULL,
+            g25n0g16_image_data);
+
+  // color, file-gamma = 2.50
+  check_png(g25n2c08_data, 32, 32, 8, UT_PNG_COLOUR_TYPE_TRUECOLOUR, NULL, NULL,
+            g25n2c08_image_data);
+
+  // paletted, file-gamma = 2.50
+  check_png(g25n3p04_data, 32, 32, 4, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR,
+            g25n3p04_palette_data, NULL, g25n3p04_image_data);
 }
 
 static void test_png_suite_image_filtering() {
