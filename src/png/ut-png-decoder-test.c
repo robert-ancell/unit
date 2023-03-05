@@ -36,6 +36,15 @@ static void check_png(const char *hex_data, uint32_t width, uint32_t height,
   ut_assert_uint8_list_equal_hex(ut_png_image_get_data(image), hex_image_data);
 }
 
+// Check the PNG image in [hex_data] is invalid.
+static void check_corrupt_png(const char *hex_data) {
+  UtObjectRef data = ut_uint8_list_new_from_hex_string(hex_data);
+  UtObjectRef data_stream = ut_list_input_stream_new(data);
+  UtObjectRef decoder = ut_png_decoder_new(data_stream);
+  UtObjectRef image = ut_png_decoder_decode_sync(decoder);
+  ut_assert_is_error(image);
+}
+
 static void test_png_suite_basic_formats() {
   // black & white
   check_png(basn0g01_data, 32, 32, 1, UT_PNG_COLOUR_TYPE_GREYSCALE, NULL, NULL,
@@ -455,7 +464,47 @@ static void test_png_suite_zlib_compression_level() {
 }
 
 static void test_png_suite_corrupted_files() {
-  // FIXME
+  // signature byte 1 MSBit reset to zero
+  check_corrupt_png(xs1n0g01_data);
+
+  // signature byte 2 is a 'Q'
+  check_corrupt_png(xs2n0g01_data);
+
+  // signature byte 4 lowercase
+  check_corrupt_png(xs4n0g01_data);
+
+  // 7th byte a space instead of control-Z
+  check_corrupt_png(xs7n0g01_data);
+
+  // added cr bytes
+  check_corrupt_png(xcrn0g04_data);
+
+  // added lf bytes
+  check_corrupt_png(xlfn0g04_data);
+
+  // incorrect IHDR checksum
+  check_corrupt_png(xhdn0g08_data);
+
+  // color type 1
+  check_corrupt_png(xc1n0g08_data);
+
+  // color type 9
+  check_corrupt_png(xc9n2c08_data);
+
+  // bit-depth 0
+  check_corrupt_png(xd0n2c08_data);
+
+  // bit-depth 3
+  check_corrupt_png(xd3n2c08_data);
+
+  // bit-depth 99
+  check_corrupt_png(xd9n2c08_data);
+
+  // missing IDAT chunk
+  check_corrupt_png(xdtn0g01_data);
+
+  // incorrect IDAT checksum
+  check_corrupt_png(xcsn0g01_data);
 }
 
 int main(int argc, char **argv) {
