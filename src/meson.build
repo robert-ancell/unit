@@ -292,6 +292,11 @@ gzip_encoder_test = executable('ut-gzip-encoder-test',
                                link_with: ut_lib)
 test('GZip Encoder', gzip_encoder_test)
 
+png_image_test = executable('ut-png-image-test',
+                            'png/ut-png-image-test.c',
+                            link_with: ut_lib)
+test('PNG Image', png_image_test)
+
 png_decoder_test = executable('ut-png-decoder-test',
                               'png/ut-png-decoder-test.c',
                               link_with: ut_lib)

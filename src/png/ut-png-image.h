@@ -39,4 +39,6 @@ UtObject *ut_png_image_get_background_colour(UtObject *object);
 
 UtObject *ut_png_image_get_data(UtObject *object);
 
+UtObject *ut_png_image_to_rgba(UtObject *object);
+
 bool ut_object_is_png_image(UtObject *object);
