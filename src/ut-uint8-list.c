@@ -116,6 +116,28 @@ double ut_uint8_list_get_float64_be(UtObject *object, size_t index) {
   return *value_pointer;
 }
 
+UtObject *ut_uint8_list_get_array(UtObject *object) {
+  UtUint8ListInterface *uint8_list_interface =
+      ut_object_get_interface(object, &ut_uint8_list_id);
+  assert(uint8_list_interface != NULL);
+  if (uint8_list_interface->get_array != NULL) {
+    return uint8_list_interface->get_array(object);
+  } else {
+    const uint8_t *data = ut_uint8_list_get_data(object);
+    if (data != NULL) {
+      return ut_object_ref(object);
+    } else {
+      size_t data_length = ut_list_get_length(object);
+      UtObject *array = ut_uint8_array_new_sized(data_length);
+      uint8_t *array_data = ut_uint8_list_get_writable_data(array);
+      for (size_t i = 0; i < data_length; i++) {
+        array_data[i] = uint8_list_interface->get_element(object, i);
+      }
+      return array;
+    }
+  }
+}
+
 const uint8_t *ut_uint8_list_get_data(UtObject *object) {
   UtUint8ListInterface *uint8_list_interface =
       ut_object_get_interface(object, &ut_uint8_list_id);
