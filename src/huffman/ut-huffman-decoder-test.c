@@ -1,3 +1,5 @@
+#include <assert.h>
+
 #include "ut.h"
 
 static void test_decode() {
@@ -206,8 +208,26 @@ static void test_decode_canonical_zero_lengths() {
                           "this is an example of a huffman tree");
 }
 
+static void test_decode_canonical_single_symbol() {
+  UtObjectRef code_widths = ut_uint8_list_new_from_elements(1, 1);
+  UtObjectRef decoder = ut_huffman_decoder_new_canonical(code_widths);
+  ut_assert_is_not_error(decoder);
+
+  // Only one code supported.
+  uint16_t symbol;
+  bool matched = ut_huffman_decoder_get_symbol(decoder, 0x0, 1, &symbol);
+  assert(matched);
+  ut_assert_int_equal(symbol, 0);
+
+  // Check unused code detected.
+  matched = ut_huffman_decoder_get_symbol(decoder, 0x1, 1, &symbol);
+  assert(matched);
+  ut_assert_int_equal(symbol, 65535);
+}
+
 int main(int argc, char **argv) {
   test_decode();
   test_decode_canonical();
   test_decode_canonical_zero_lengths();
+  test_decode_canonical_single_symbol();
 }

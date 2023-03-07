@@ -172,6 +172,10 @@ static bool read_huffman_symbol(UtDeflateDecoder *self, UtObject *data,
 
     if (ut_huffman_decoder_get_symbol(decoder, self->code, self->code_width,
                                       symbol)) {
+      if (*symbol == 65535) {
+        set_error(self, "Invalid Huffman code in deflate data");
+        return false;
+      }
       self->code = 0;
       self->code_width = 0;
       return true;
