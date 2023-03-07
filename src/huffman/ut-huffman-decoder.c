@@ -99,10 +99,13 @@ bool ut_huffman_decoder_get_symbol(UtObject *object, uint16_t code,
   UtHuffmanDecoder *self = (UtHuffmanDecoder *)object;
 
   assert(code_width > 0);
-  if (code_width > self->max_code_width) {
-    return false;
-  }
   assert(code < 1 << code_width);
+
+  // Have passed all the valid codes, an error has occurred.
+  if (code_width > self->max_code_width) {
+    *symbol = 65535;
+    return true;
+  }
 
   uint16_t *code_table = self->code_tables[code_width - 1];
   if (code_table == NULL) {
@@ -110,6 +113,12 @@ bool ut_huffman_decoder_get_symbol(UtObject *object, uint16_t code,
   }
   uint16_t symbol_ = code_table[code];
   if (symbol_ == 65535) {
+    // Failed to find a code, this only occurs for a code with a single symbol
+    // (has one unused code).
+    if (code_width == self->max_code_width) {
+      *symbol = 65535;
+      return true;
+    }
     return false;
   }
 

@@ -99,6 +99,15 @@ bool ut_huffman_code_generate_canonical(UtObject *code_widths,
     }
   }
 
+  // Special case - if only one symbol, then we have one code for this (0) and
+  // one unused code (1). In this case we expect an en/decoder to fail if it
+  // attempts to use this unused code.
+  if (n_used == symbols_length - 1 &&
+      ut_uint8_list_get_element(code_widths, 0) == 1) {
+    codes[0] = 0;
+    return true;
+  }
+
   // Populate mapping tables.
   uint16_t code = 0;
   uint16_t last_code = 1;
