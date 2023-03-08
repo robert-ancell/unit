@@ -113,6 +113,11 @@ static uint32_t crc32(UtObject *data, size_t offset, size_t length) {
   return c ^ 0xffffffff;
 }
 
+static void notify_complete(UtPngDecoder *self) {
+  ut_cancel_activate(self->read_cancel);
+  self->callback(self->user_data);
+}
+
 static void set_error(UtPngDecoder *self, const char *description) {
   if (self->state == DECODER_STATE_ERROR) {
     return;
@@ -120,6 +125,12 @@ static void set_error(UtPngDecoder *self, const char *description) {
 
   self->error = ut_png_error_new(description);
   self->state = DECODER_STATE_ERROR;
+  notify_complete(self);
+}
+
+static void set_end(UtPngDecoder *self) {
+  self->state = DECODER_STATE_END;
+  notify_complete(self);
 }
 
 static size_t decode_signature(UtPngDecoder *self, UtObject *data,
@@ -801,7 +812,7 @@ static void decode_image_end(UtPngDecoder *self, UtObject *data) {
     return;
   }
 
-  self->state = DECODER_STATE_END;
+  set_end(self);
 }
 
 static size_t decode_chunk(UtPngDecoder *self, UtObject *data, size_t offset) {
@@ -884,12 +895,7 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
       n_used = decode_chunk(self, data, offset);
       break;
     case DECODER_STATE_ERROR:
-      ut_cancel_activate(self->read_cancel);
-      self->callback(self->user_data);
-      return offset;
     case DECODER_STATE_END:
-      ut_cancel_activate(self->read_cancel);
-      self->callback(self->user_data);
       return offset;
     default:
       assert(false);
@@ -965,13 +971,10 @@ UtObject *ut_png_decoder_decode_sync(UtObject *object) {
   UtPngDecoder *self = (UtPngDecoder *)object;
 
   ut_png_decoder_decode(object, done_cb, NULL, NULL);
-  if (self->state != DECODER_STATE_END) {
-    if (self->error != NULL) {
-      return ut_object_ref(self->error);
-    } else {
-      return ut_general_error_new("Sync call did not complete");
-    }
+  if (self->error != NULL) {
+    return ut_object_ref(self->error);
   }
+
   return ut_object_ref(self->image);
 }
 
