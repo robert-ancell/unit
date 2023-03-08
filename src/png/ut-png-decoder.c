@@ -896,6 +896,9 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
     }
 
     if (n_used == 0 && self->state != DECODER_STATE_ERROR) {
+      if (complete && self->state != DECODER_STATE_END) {
+        set_error(self, "Incomplete PNG");
+      }
       return offset;
     }
 
