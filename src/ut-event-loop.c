@@ -382,7 +382,7 @@ UtObject *ut_event_loop_run() {
     loop->write_watches = remove_cancelled_watches(loop->write_watches);
   }
 
-  UtObjectRef return_value = loop->return_value;
+  UtObjectRef return_value = ut_object_ref(loop->return_value);
 
   Timeout *next_timeout;
   for (Timeout *timeout = loop->timeouts; timeout != NULL;
@@ -409,5 +409,5 @@ UtObject *ut_event_loop_run() {
   ut_object_unref(loop->return_value);
   free(loop);
 
-  return return_value;
+  return ut_object_ref(return_value);
 }
