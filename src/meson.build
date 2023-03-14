@@ -175,6 +175,8 @@ ut_sources = [
   'zlib/ut-zlib-error.c'
 ]
 
+ut_include = include_directories('.')
+
 ut_lib = static_library('ut', ut_sources, dependencies: [m_dep, thread_dep, rt_dep])
 
 cstring_test = executable('ut-cstring-test',

@@ -15,3 +15,4 @@ thread_dep = dependency('threads')
 rt_dep = cc.find_library('rt')
 
 subdir('src')
+subdir('examples')
