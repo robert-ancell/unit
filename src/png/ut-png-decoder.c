@@ -884,6 +884,13 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
     return 0;
   }
 
+  if (ut_object_implements_error(data)) {
+    ut_cstring_ref description = ut_cstring_new_printf(
+        "Failed to read PNG data: %s", ut_error_get_description(data));
+    set_error(self, description);
+    return 0;
+  }
+
   size_t offset = 0;
   while (true) {
     size_t n_used;
