@@ -364,16 +364,6 @@ udp_socket_test = executable('ut-udp-socket-test',
                              link_with: ut_lib)
 test('UDP Socket', udp_socket_test)
 
-x11_client_test = executable('ut-x11-client-test',
-                             'x11/ut-x11-client-test.c',
-                             link_with: ut_lib)
-#test('X11 Client', x11_client_test)
-
-wayland_client_test = executable('ut-wayland-client-test',
-                             'wayland/ut-wayland-client-test.c',
-                             link_with: ut_lib)
-#test('wayland Client', wayland_client_test)
-
 dbus_message_encoder_test = executable('ut-dbus-message-encoder-test',
                                        'dbus/ut-dbus-message-encoder-test.c',
                                        link_with: ut_lib)
