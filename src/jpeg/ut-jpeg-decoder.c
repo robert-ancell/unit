@@ -565,6 +565,7 @@ static size_t decode_define_quantization_table(UtJpegDecoder *self,
     uint8_t precision = precision_and_destination >> 4;
     uint8_t destination = precision_and_destination & 0xf;
 
+    // FIXME: precision 1 is 16 bit
     if (precision != 0) {
       set_error(self, "Invalid JPEG quantization table precision");
       return length;
@@ -912,11 +913,16 @@ static size_t decode_define_arithmetic_coding(UtJpegDecoder *self,
       set_error(self, "Unsupported JPEG Arithmetic conditioning table value");
       return offset;
     }
-  }
 
-  if (true) {
-    set_error(self, "JPEG arithmetic coding not supported");
-    return 0;
+    UtObjectRef decoder = ut_arithmetic_decoder_new(conditioning_table_value);
+
+    if (class == 0) {
+      ut_object_unref(self->dc_decoders[destination]);
+      self->dc_decoders[destination] = ut_object_ref(decoder);
+    } else {
+      ut_object_unref(self->ac_decoders[destination]);
+      self->ac_decoders[destination] = ut_object_ref(decoder);
+    }
   }
 
   self->state = DECODER_STATE_MARKER;
@@ -1123,10 +1129,6 @@ static size_t decode_start_of_scan(UtJpegDecoder *self, UtObject *data) {
     return length;
   }
 
-  if (self->mode == DECODE_MODE_EXTENDED_DCT) {
-    set_error(self, "Extended DCT JPEG not supported");
-    return length;
-  }
   if (self->mode == DECODE_MODE_PROGRESSIVE_DCT) {
     set_error(self, "Progressive DCT JPEG not supported");
     return length;
