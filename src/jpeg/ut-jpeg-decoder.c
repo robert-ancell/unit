@@ -121,8 +121,14 @@ typedef struct {
   // Current component scan is processing.
   size_t scan_component_index;
 
-  // Number of coefficients in current data unit.
-  size_t data_unit_coefficient_count;
+  // First coefficient to be received in current scan.
+  size_t scan_coefficient_start;
+
+  // First coefficient to be received in current scan.
+  size_t scan_coefficient_end;
+
+  // Index of current coefficient in current data unit.
+  size_t data_unit_coefficient_index;
 
   // Number of MCUs processed.
   size_t mcu_count;
@@ -369,7 +375,10 @@ static void process_data_unit(UtJpegDecoder *self) {
     }
   }
 
-  self->state = DECODER_STATE_DC_COEFFICIENT1;
+  self->data_unit_coefficient_index = self->scan_coefficient_start;
+  self->state = self->scan_coefficient_start == 0
+                    ? DECODER_STATE_DC_COEFFICIENT1
+                    : DECODER_STATE_AC_COEFFICIENT1;
 }
 
 // Add a coefficient [value] to the current data unit. Add [run_length] zeros
@@ -380,28 +389,28 @@ static void add_coefficient(UtJpegDecoder *self, size_t run_length,
   const uint8_t *quantization_table_data =
       ut_uint8_list_get_data(component->quantization_table);
 
-  if (self->data_unit_coefficient_count + run_length + 1 > 64) {
+  if (self->data_unit_coefficient_index + run_length >
+      self->scan_coefficient_end) {
     set_error(self, "Too many coefficients in data unit");
     return;
   }
 
   // Pad with zeros.
   for (size_t i = 0; i < run_length; i++) {
-    uint8_t index = self->data_unit_order[self->data_unit_coefficient_count];
+    uint8_t index = self->data_unit_order[self->data_unit_coefficient_index];
     self->encoded_data_unit[index] = 0;
-    self->data_unit_coefficient_count++;
+    self->data_unit_coefficient_index++;
   }
 
   // Put cofficient into data unit in zig-zag order.
-  uint8_t index = self->data_unit_order[self->data_unit_coefficient_count];
+  uint8_t index = self->data_unit_order[self->data_unit_coefficient_index];
   self->encoded_data_unit[index] = value * quantization_table_data[index];
-  self->data_unit_coefficient_count++;
 
-  if (self->data_unit_coefficient_count < 64) {
+  if (self->data_unit_coefficient_index < self->scan_coefficient_end) {
+    self->data_unit_coefficient_index++;
     self->state = DECODER_STATE_AC_COEFFICIENT1;
   } else {
     process_data_unit(self);
-    self->data_unit_coefficient_count = 0;
   }
 }
 
@@ -818,14 +827,18 @@ static size_t decode_start_of_scan(UtJpegDecoder *self, UtObject *data) {
     return length;
   }
 
-  self->data_unit_coefficient_count = 0;
+  self->scan_coefficient_start = selection_start;
+  self->scan_coefficient_end = selection_end;
+  self->data_unit_coefficient_index = self->scan_coefficient_start;
   self->mcu_count = 0;
   self->scan_component_index = 0;
   for (size_t i = 0; i < n_scan_components; i++) {
     self->components[i].previous_dc = 0;
     self->components[i].data_unit_count = 0;
   }
-  self->state = DECODER_STATE_DC_COEFFICIENT1;
+  self->state = self->scan_coefficient_start == 0
+                    ? DECODER_STATE_DC_COEFFICIENT1
+                    : DECODER_STATE_AC_COEFFICIENT1;
 
   return offset;
 }
@@ -887,7 +900,9 @@ static size_t decode_ac_coefficient1(UtJpegDecoder *self, UtObject *data,
 
     // Special cases of fill to end of data unit, and fill with 16 zeros
     if (run_length == 0) {
-      add_coefficient(self, 64 - self->data_unit_coefficient_count - 1, 0);
+      add_coefficient(
+          self, self->scan_coefficient_end - self->data_unit_coefficient_index,
+          0);
     } else if (run_length == 15) {
       add_coefficient(self, 15, 0);
     } else {
