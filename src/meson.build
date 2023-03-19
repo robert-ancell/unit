@@ -1,4 +1,6 @@
 ut_sources = [
+  'arithmetic/ut-arithmetic-decoder.c',
+  'arithmetic/ut-arithmetic-encoder.c',
   'dbus/ut-dbus-array.c',
   'dbus/ut-dbus-auth-client.c',
   'dbus/ut-dbus-auth-server.c',
