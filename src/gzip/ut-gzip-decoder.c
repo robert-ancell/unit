@@ -3,6 +3,8 @@
 
 #include "ut.h"
 
+// https://www.ietf.org/rfc/rfc1952.txt
+
 typedef enum {
   DECODER_STATE_MEMBER_HEADER,
   DECODER_STATE_MEMBER_DATA,
@@ -85,6 +87,19 @@ static uint32_t crc32(uint32_t checksum, uint8_t value) {
   return c ^ 0xffffffff;
 }
 
+static void set_error(UtGzipDecoder *self, const char *description) {
+  if (self->state == DECODER_STATE_ERROR) {
+    return;
+  }
+
+  self->error = ut_png_error_new(description);
+  self->state = DECODER_STATE_ERROR;
+
+  if (!ut_cancel_is_active(self->cancel)) {
+    self->callback(self->user_data, self->error, true);
+  }
+}
+
 static size_t deflate_read_cb(void *user_data, UtObject *data, bool complete) {
   UtGzipDecoder *self = user_data;
 
@@ -96,8 +111,7 @@ static size_t deflate_read_cb(void *user_data, UtObject *data, bool complete) {
   if (ut_object_implements_error(data)) {
     ut_cstring_ref description = ut_cstring_new_printf(
         "Error decoding deflate data: %s", ut_error_get_description(data));
-    self->error = ut_gzip_error_new(description);
-    self->state = DECODER_STATE_ERROR;
+    set_error(self, description);
     return 0;
   }
 
@@ -138,43 +152,40 @@ static char *read_string(UtObject *data, size_t *offset) {
   return NULL;
 }
 
-static bool read_member_header(UtGzipDecoder *self, UtObject *data,
-                               size_t *offset, bool complete) {
+static size_t decode_member_header(UtGzipDecoder *self, UtObject *data,
+                                   bool complete) {
   size_t data_length = ut_list_get_length(data);
 
-  if (*offset == data_length && complete) {
+  if (data_length == 0 && complete) {
     self->state = DECODER_STATE_DONE;
-    return true;
+    return 0;
   }
 
-  size_t header_start = *offset;
-  size_t header_end = header_start + 10;
-  if (data_length < header_end) {
-    return false;
+  if (data_length < 10) {
+    return 0;
   }
 
-  uint8_t id1 = ut_uint8_list_get_element(data, header_start + 0);
-  uint8_t id2 = ut_uint8_list_get_element(data, header_start + 1);
-  uint8_t compression_method =
-      ut_uint8_list_get_element(data, header_start + 2);
-  uint8_t flags = ut_uint8_list_get_element(data, header_start + 3);
+  size_t offset = 0;
+  uint8_t id1 = ut_uint8_list_get_element(data, offset++);
+  uint8_t id2 = ut_uint8_list_get_element(data, offset++);
+  uint8_t compression_method = ut_uint8_list_get_element(data, offset++);
+  uint8_t flags = ut_uint8_list_get_element(data, offset++);
   /*uint32_t modification_time = */
-  ut_uint8_list_get_uint32_le(data, header_start + 4);
+  ut_uint8_list_get_uint32_le(data, offset);
+  offset += 4;
   /*uint8_t extra_flags = */
-  ut_uint8_list_get_element(data, header_start + 8);
+  ut_uint8_list_get_element(data, offset++);
   /*uint8_t operating_system = */
-  ut_uint8_list_get_element(data, header_start + 9);
+  ut_uint8_list_get_element(data, offset++);
 
   if (id1 != 31 || id2 != 139) {
-    self->error = ut_gzip_error_new("Invalid gzip ID");
-    self->state = DECODER_STATE_ERROR;
-    return true;
+    set_error(self, "Invalid gzip ID");
+    return 0;
   }
 
   if (compression_method != 8) {
-    self->error = ut_gzip_error_new("Unsupported gzip compression method");
-    self->state = DECODER_STATE_ERROR;
-    return true;
+    set_error(self, "Unsupported gzip compression method");
+    return 0;
   }
 
   bool has_crc = (flags & 0x02) != 0;
@@ -183,139 +194,109 @@ static bool read_member_header(UtGzipDecoder *self, UtObject *data,
   bool has_file_comment = (flags & 0x10) != 0;
 
   if (has_extra) {
-    header_end += 2;
-    if (data_length < header_end) {
-      return false;
+    if (data_length < offset + 2) {
+      return 0;
     }
-    uint16_t xlen = ut_uint8_list_get_uint16_le(data, header_start + 10);
-    header_end += xlen;
-    if (data_length < header_end) {
-      return false;
+    uint16_t xlen = ut_uint8_list_get_uint16_le(data, offset);
+    offset += 2;
+    if (data_length < offset + xlen) {
+      return 0;
     }
+    offset += xlen;
   }
 
   if (has_file_name) {
-    ut_cstring_ref file_name = read_string(data, &header_end);
+    ut_cstring_ref file_name = read_string(data, &offset);
     if (file_name == NULL) {
-      return false;
+      return 0;
     }
   }
 
   if (has_file_comment) {
-    ut_cstring_ref file_comment = read_string(data, &header_end);
+    ut_cstring_ref file_comment = read_string(data, &offset);
     if (file_comment == NULL) {
-      return false;
+      return 0;
     }
   }
 
   if (has_crc) {
     uint32_t crc = 0;
-    for (size_t i = 0; i < header_end; i++) {
+    for (size_t i = 0; i < offset; i++) {
       crc = crc32(crc, ut_uint8_list_get_element(data, i));
     }
 
-    if (data_length < header_end + 2) {
-      return false;
+    if (data_length < offset + 2) {
+      return 0;
     }
-    uint16_t header_crc = ut_uint8_list_get_uint16_le(data, header_end);
-    header_end += 2;
+    uint16_t header_crc = ut_uint8_list_get_uint16_le(data, offset);
+    offset += 2;
 
     if (header_crc != (crc & 0xffff)) {
-      self->error = ut_gzip_error_new("Gzip header CRC mismatch");
-      self->state = DECODER_STATE_ERROR;
-      return true;
+      set_error(self, "Gzip header CRC mismatch");
+      return 0;
     }
   }
 
-  *offset = header_end;
   self->state = DECODER_STATE_MEMBER_DATA;
-  return true;
+  return offset;
 }
 
-static bool read_member_data(UtGzipDecoder *self, UtObject *data,
-                             size_t *offset, bool complete) {
+static size_t decode_member_trailer(UtGzipDecoder *self, UtObject *data) {
   size_t data_length = ut_list_get_length(data);
-
-  UtObjectRef deflate_data =
-      ut_list_get_sublist(data, *offset, data_length - *offset);
-  size_t deflate_offset = ut_writable_input_stream_write(
-      self->deflate_input_stream, deflate_data, complete);
-  if (deflate_offset == 0) {
-    return false;
+  if (data_length < 8) {
+    return 0;
   }
 
-  *offset += deflate_offset;
-  return true;
-}
-
-static bool read_member_trailer(UtGzipDecoder *self, UtObject *data,
-                                size_t *offset, bool complete) {
-  size_t data_length = ut_list_get_length(data);
-  size_t trailer_start = *offset;
-  size_t trailer_end = trailer_start + 8;
-  if (data_length < trailer_end) {
-    return false;
-  }
-
-  uint32_t input_data_crc = ut_uint8_list_get_uint32_le(data, *offset);
-  uint32_t input_data_length = ut_uint8_list_get_uint32_le(data, *offset + 4);
-  *offset += 8;
+  uint32_t input_data_crc = ut_uint8_list_get_uint32_le(data, 0);
+  uint32_t input_data_length = ut_uint8_list_get_uint32_le(data, 4);
 
   if (self->crc != input_data_crc) {
-    self->error = ut_gzip_error_new("gzip data CRC mismatch");
-    self->state = DECODER_STATE_ERROR;
-    return true;
+    set_error(self, "gzip data CRC mismatch");
+    return 0;
   }
   if ((self->data_length & 0xffffffff) != input_data_length) {
-    self->error = ut_gzip_error_new("gzip data length mismatch");
-    self->state = DECODER_STATE_ERROR;
-    return true;
+    set_error(self, "gzip data length mismatch");
+    return 0;
   }
 
-  if (complete && data_length == trailer_end) {
-    self->state = DECODER_STATE_DONE;
-  } else {
-    self->state = DECODER_STATE_MEMBER_HEADER;
-  }
-  return true;
+  self->state = DECODER_STATE_MEMBER_HEADER;
+
+  return 8;
 }
 
 static size_t read_cb(void *user_data, UtObject *data, bool complete) {
   UtGzipDecoder *self = user_data;
 
+  size_t data_length = ut_list_get_length(data);
   size_t offset = 0;
-  bool decoding = true;
-  while (decoding) {
-    if (ut_cancel_is_active(self->cancel)) {
-      ut_cancel_activate(self->read_cancel);
-      break;
-    }
-
+  while (true) {
+    size_t n_used;
+    UtObjectRef d = ut_list_get_sublist(data, offset, data_length - offset);
+    DecoderState old_state = self->state;
     switch (self->state) {
     case DECODER_STATE_MEMBER_HEADER:
-      decoding = read_member_header(self, data, &offset, complete);
+      n_used = decode_member_header(self, d, complete);
       break;
     case DECODER_STATE_MEMBER_DATA:
-      decoding = read_member_data(self, data, &offset, complete);
+      n_used = ut_writable_input_stream_write(self->deflate_input_stream, d,
+                                              complete);
       break;
     case DECODER_STATE_MEMBER_TRAILER:
-      decoding = read_member_trailer(self, data, &offset, complete);
+      n_used = decode_member_trailer(self, d);
       break;
     case DECODER_STATE_DONE:
-      ut_cancel_activate(self->read_cancel);
-      decoding = false;
-      break;
     case DECODER_STATE_ERROR:
-      ut_cancel_activate(self->read_cancel);
-      if (!ut_cancel_is_active(self->cancel)) {
-        self->callback(self->user_data, self->error, true);
+      return offset;
+    }
+
+    offset += n_used;
+    if (self->state == old_state && n_used == 0) {
+      if (complete && self->state != DECODER_STATE_DONE) {
+        set_error(self, "Incomplete gzip data");
       }
-      decoding = false;
-      break;
+      return offset;
     }
   }
-
-  return offset;
 }
 
 static void ut_gzip_decoder_init(UtObject *object) {
