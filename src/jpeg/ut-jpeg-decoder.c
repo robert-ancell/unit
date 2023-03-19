@@ -153,13 +153,18 @@ static void notify_complete(UtJpegDecoder *self) {
   self->callback(self->user_data);
 }
 
-static void set_error(UtJpegDecoder *self, const char *description) {
+__attribute__((format(printf, 2, 3))) static void
+set_error(UtJpegDecoder *self, const char *format, ...) {
   if (self->state == DECODER_STATE_ERROR) {
     return;
   }
 
   ut_object_unref(self->image);
   self->image = NULL;
+  va_list ap;
+  va_start(ap, format);
+  ut_cstring_ref description = ut_cstring_new_vprintf(format, ap);
+  va_end(ap);
   self->error = ut_jpeg_error_new(description);
   self->state = DECODER_STATE_ERROR;
   notify_complete(self);
@@ -482,10 +487,8 @@ static size_t decode_app0(UtJpegDecoder *self, UtObject *data) {
   uint8_t jpeg_version_major = ut_uint8_list_get_element(data, 7);
   uint8_t jpeg_version_minor = ut_uint8_list_get_element(data, 8);
   if (jpeg_version_major != 1) {
-    ut_cstring_ref description =
-        ut_cstring_new_printf("Unsupported JPEG version %d.%d",
-                              jpeg_version_major, jpeg_version_minor);
-    set_error(self, description);
+    set_error(self, "Unsupported JPEG version %d.%d", jpeg_version_major,
+              jpeg_version_minor);
     return length;
   }
 
@@ -588,9 +591,7 @@ static size_t decode_start_of_frame(UtJpegDecoder *self, UtObject *data) {
   }
 
   if (n_components < 1 || n_components > 4) {
-    ut_cstring_ref description = ut_cstring_new_printf(
-        "Unsupported number of JPEG components %d", n_components);
-    set_error(self, description);
+    set_error(self, "Unsupported number of JPEG components %d", n_components);
     return length;
   }
 
@@ -617,10 +618,8 @@ static size_t decode_start_of_frame(UtJpegDecoder *self, UtObject *data) {
     }
     if (horizontal_sampling_factor < 1 || horizontal_sampling_factor > 4 ||
         vertical_sampling_factor < 1 || vertical_sampling_factor > 4) {
-      ut_cstring_ref description = ut_cstring_new_printf(
-          "Invalid JPEG sampling factor %dx%d for component %zi",
-          horizontal_sampling_factor, vertical_sampling_factor, i);
-      set_error(self, description);
+      set_error(self, "Invalid JPEG sampling factor %dx%d for component %zi",
+                horizontal_sampling_factor, vertical_sampling_factor, i);
       return length;
     }
     if (quantization_table_selector > 3) {
@@ -635,10 +634,8 @@ static size_t decode_start_of_frame(UtJpegDecoder *self, UtObject *data) {
     }
 
     if (horizontal_sampling_factor == 3 || vertical_sampling_factor == 3) {
-      ut_cstring_ref description = ut_cstring_new_printf(
-          "Unsupported sampling factor %dx%d for component %zi",
-          horizontal_sampling_factor, vertical_sampling_factor, i);
-      set_error(self, description);
+      set_error(self, "Unsupported sampling factor %dx%d for component %zi",
+                horizontal_sampling_factor, vertical_sampling_factor, i);
       return length;
     }
     if (horizontal_sampling_factor > mcu_width) {
@@ -658,9 +655,7 @@ static size_t decode_start_of_frame(UtJpegDecoder *self, UtObject *data) {
   self->mcu_height = mcu_height;
 
   if (precision != 8) {
-    ut_cstring_ref description =
-        ut_cstring_new_printf("Unsupported JPEG precision %d", precision);
-    set_error(self, description);
+    set_error(self, "Unsupported JPEG precision %d", precision);
     return length;
   }
 
@@ -733,9 +728,8 @@ static size_t decode_define_huffman_table(UtJpegDecoder *self, UtObject *data) {
 
     UtObjectRef decoder = ut_huffman_decoder_new_canonical(code_widths);
     if (ut_object_implements_error(decoder)) {
-      ut_cstring_ref description = ut_cstring_new_printf(
-          "Invalid JPEG Huffman table: %s", ut_error_get_description(decoder));
-      set_error(self, description);
+      set_error(self, "Invalid JPEG Huffman table: %s",
+                ut_error_get_description(decoder));
       return offset;
     }
     if (class == 0) {
@@ -1011,9 +1005,7 @@ static size_t decode_marker(UtJpegDecoder *self, UtObject *data) {
     self->state = DECODER_STATE_COMMENT;
     break;
   default:
-    ut_cstring_ref description =
-        ut_cstring_new_printf("Unknown JPEG marker %02x", marker_id);
-    set_error(self, description);
+    set_error(self, "Unknown JPEG marker %02x", marker_id);
     break;
   }
 
@@ -1029,9 +1021,8 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
   }
 
   if (ut_object_implements_error(data)) {
-    ut_cstring_ref description = ut_cstring_new_printf(
-        "Failed to read JPEG data: %s", ut_error_get_description(data));
-    set_error(self, description);
+    set_error(self, "Failed to read JPEG data: %s",
+              ut_error_get_description(data));
     return 0;
   }
 
