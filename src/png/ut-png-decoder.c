@@ -133,20 +133,19 @@ static void set_end(UtPngDecoder *self) {
   notify_complete(self);
 }
 
-static size_t decode_signature(UtPngDecoder *self, UtObject *data,
-                               size_t offset) {
-  if (ut_list_get_length(data) - offset < 8) {
+static size_t decode_signature(UtPngDecoder *self, UtObject *data) {
+  if (ut_list_get_length(data) < 8) {
     return 0;
   }
 
-  if (ut_uint8_list_get_element(data, offset + 0) != 137 ||
-      ut_uint8_list_get_element(data, offset + 1) != 80 ||
-      ut_uint8_list_get_element(data, offset + 2) != 78 ||
-      ut_uint8_list_get_element(data, offset + 3) != 71 ||
-      ut_uint8_list_get_element(data, offset + 4) != 13 ||
-      ut_uint8_list_get_element(data, offset + 5) != 10 ||
-      ut_uint8_list_get_element(data, offset + 6) != 26 ||
-      ut_uint8_list_get_element(data, offset + 7) != 10) {
+  if (ut_uint8_list_get_element(data, 0) != 137 ||
+      ut_uint8_list_get_element(data, 1) != 80 ||
+      ut_uint8_list_get_element(data, 2) != 78 ||
+      ut_uint8_list_get_element(data, 3) != 71 ||
+      ut_uint8_list_get_element(data, 4) != 13 ||
+      ut_uint8_list_get_element(data, 5) != 10 ||
+      ut_uint8_list_get_element(data, 6) != 26 ||
+      ut_uint8_list_get_element(data, 7) != 10) {
     set_error(self, "Invalid PNG signature");
     return 0;
   }
@@ -815,29 +814,31 @@ static void decode_image_end(UtPngDecoder *self, UtObject *data) {
   set_end(self);
 }
 
-static size_t decode_chunk(UtPngDecoder *self, UtObject *data, size_t offset) {
-  size_t data_length = ut_list_get_length(data) - offset;
+static size_t decode_chunk(UtPngDecoder *self, UtObject *data) {
+  size_t data_length = ut_list_get_length(data);
 
   // Minimum chunk is 12 bytes (length + type + CRC).
   if (data_length < 12) {
     return 0;
   }
 
-  uint32_t chunk_data_length = ut_uint8_list_get_uint32_be(data, offset + 0);
+  size_t offset = 0;
+  uint32_t chunk_data_length = ut_uint8_list_get_uint32_be(data, offset);
+  offset += 4;
   size_t total_chunk_length = 12 + chunk_data_length;
   if (data_length < total_chunk_length) {
     return 0;
   }
 
-  UtPngChunkType type = ut_uint8_list_get_uint32_be(data, offset + 4);
+  UtPngChunkType type = ut_uint8_list_get_uint32_be(data, offset);
+  offset += 4;
   bool is_ancillary = (type & 0x20000000) != 0;
 
-  size_t chunk_data_offset = offset + 8;
-  UtObjectRef chunk_data =
-      ut_list_get_sublist(data, chunk_data_offset, chunk_data_length);
-  uint32_t crc =
-      ut_uint8_list_get_uint32_be(data, chunk_data_offset + chunk_data_length);
-  uint32_t calculated_crc = crc32(data, offset + 4, 4 + chunk_data_length);
+  UtObjectRef chunk_data = ut_list_get_sublist(data, offset, chunk_data_length);
+  offset += chunk_data_length;
+  uint32_t crc = ut_uint8_list_get_uint32_be(data, offset);
+  offset += 4;
+  uint32_t calculated_crc = crc32(data, 4, 4 + chunk_data_length);
   if (calculated_crc != crc) {
     set_error(self, "PNG chunk CRC mismatch");
     return 0;
@@ -891,15 +892,18 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
     return 0;
   }
 
+  size_t data_length = ut_list_get_length(data);
   size_t offset = 0;
   while (true) {
     size_t n_used;
+    UtObjectRef d = ut_list_get_sublist(data, offset, data_length - offset);
+    DecoderState old_state = self->state;
     switch (self->state) {
     case DECODER_STATE_SIGNATURE:
-      n_used = decode_signature(self, data, offset);
+      n_used = decode_signature(self, d);
       break;
     case DECODER_STATE_CHUNK:
-      n_used = decode_chunk(self, data, offset);
+      n_used = decode_chunk(self, d);
       break;
     case DECODER_STATE_ERROR:
     case DECODER_STATE_END:
@@ -908,7 +912,7 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
       assert(false);
     }
 
-    if (n_used == 0 && self->state != DECODER_STATE_ERROR) {
+    if (self->state == old_state && n_used == 0) {
       if (complete && self->state != DECODER_STATE_END) {
         set_error(self, "Incomplete PNG");
       }
