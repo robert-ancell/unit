@@ -44,6 +44,10 @@ static void set_error(UtZlibDecoder *self, const char *description) {
 
   self->error = ut_zlib_error_new(description);
   self->state = DECODER_STATE_ERROR;
+
+  if (!ut_cancel_is_active(self->cancel)) {
+    self->callback(self->user_data, self->error, true);
+  }
 }
 
 static size_t deflate_read_cb(void *user_data, UtObject *data, bool complete) {
@@ -84,49 +88,45 @@ static size_t deflate_read_cb(void *user_data, UtObject *data, bool complete) {
   return n_used;
 }
 
-static bool read_header(UtZlibDecoder *self, UtObject *data, size_t *offset,
-                        bool complete) {
+static size_t decode_header(UtZlibDecoder *self, UtObject *data) {
   size_t data_length = ut_list_get_length(data);
 
-  size_t header_start = *offset;
-  size_t header_end = header_start + 2;
-  if (data_length < header_end) {
-    return false;
+  if (data_length < 2) {
+    return 0;
   }
 
-  uint8_t cmf = ut_uint8_list_get_element(data, header_start + 0);
-  uint8_t flags = ut_uint8_list_get_element(data, header_start + 1);
+  size_t offset = 0;
+  uint8_t cmf = ut_uint8_list_get_element(data, offset++);
+  uint8_t flags = ut_uint8_list_get_element(data, offset++);
 
   // Header checksum
   if ((cmf << 8 | flags) % 31 != 0) {
     set_error(self, "Zlib header checksum mismatch");
-    return true;
+    return 0;
   }
 
   uint8_t compression_method = cmf & 0x0f;
   if (compression_method != 8) {
     set_error(self, "Unknown zlib compression method");
-    return true;
+    return 0;
   }
 
   self->window_size = 1 << ((cmf >> 4) + 8);
   if (self->window_size > 32768) {
     set_error(self, "Invalid deflate window size");
-    return true;
+    return 0;
   }
   self->compression_level = flags >> 6;
   bool has_preset_dictionary = (flags & 0x20) != 0;
 
   if (has_preset_dictionary) {
-    self->dictionary_checksum =
-        ut_uint8_list_get_uint32_be(data, header_start + 2);
-    header_end += 4;
-    if (data_length < header_end) {
-      return false;
+    if (data_length < offset + 4) {
+      return 0;
     }
+    self->dictionary_checksum = ut_uint8_list_get_uint32_be(data, offset);
+    offset += 4;
   }
 
-  *offset = header_end;
   self->checksum = 1;
   if (has_preset_dictionary) {
     self->state = DECODER_STATE_DICTIONARY;
@@ -134,111 +134,82 @@ static bool read_header(UtZlibDecoder *self, UtObject *data, size_t *offset,
     self->state = DECODER_STATE_COMPRESSED_DATA;
   }
 
-  return true;
+  return offset;
 }
 
-static bool read_dictionary(UtZlibDecoder *self, UtObject *data, size_t *offset,
-                            bool complete) {
+static size_t decode_dictionary(UtZlibDecoder *self, UtObject *data) {
   size_t data_length = ut_list_get_length(data);
 
-  size_t dictionary_start = *offset;
-  size_t dictionary_end = dictionary_start;
-  while (self->checksum != self->dictionary_checksum &&
-         dictionary_end < data_length) {
-    uint8_t value = ut_uint8_list_get_element(data, dictionary_end);
+  size_t offset = 0;
+  while (self->checksum != self->dictionary_checksum && offset < data_length) {
+    uint8_t value = ut_uint8_list_get_element(data, offset++);
     self->checksum = adler32(self->checksum, value);
-    dictionary_end++;
   }
 
-  *offset = dictionary_end;
-  if (self->checksum == self->dictionary_checksum) {
-    self->checksum = 1;
-    self->state = DECODER_STATE_COMPRESSED_DATA;
-    return true;
-  } else if (complete) {
-    set_error(self, "Zlib dictionary checksum mismatch");
-    return true;
+  if (self->checksum != self->dictionary_checksum) {
+    return 0;
   }
 
-  return dictionary_end != dictionary_start;
+  self->checksum = 1;
+  self->state = DECODER_STATE_COMPRESSED_DATA;
+
+  return offset;
 }
 
-static bool read_compressed_data(UtZlibDecoder *self, UtObject *data,
-                                 size_t *offset, bool complete) {
+static size_t decode_checksum(UtZlibDecoder *self, UtObject *data) {
   size_t data_length = ut_list_get_length(data);
-
-  UtObjectRef deflate_data =
-      ut_list_get_sublist(data, *offset, data_length - *offset);
-  size_t deflate_offset = ut_writable_input_stream_write(
-      self->deflate_input_stream, deflate_data, complete);
-  if (deflate_offset == 0) {
-    return false;
+  if (data_length < 4) {
+    return 0;
   }
 
-  *offset += deflate_offset;
-  return true;
-}
-
-static bool read_checksum(UtZlibDecoder *self, UtObject *data, size_t *offset,
-                          bool complete) {
-  size_t data_length = ut_list_get_length(data);
-  size_t checksum_start = *offset;
-  size_t checksum_end = checksum_start + 4;
-  if (data_length < checksum_end) {
-    return false;
-  }
-
-  uint32_t checksum = ut_uint8_list_get_uint32_be(data, checksum_start);
+  uint32_t checksum = ut_uint8_list_get_uint32_be(data, 0);
   if (checksum != self->checksum) {
     set_error(self, "Zlib data checksum mismatch");
-    return true;
+    return 0;
   }
 
-  *offset += 4;
-
   self->state = DECODER_STATE_DONE;
-  return true;
+  return 4;
 }
 
 static size_t read_cb(void *user_data, UtObject *data, bool complete) {
   UtZlibDecoder *self = user_data;
 
+  size_t data_length = ut_list_get_length(data);
   size_t offset = 0;
-  bool decoding = true;
-  while (decoding) {
-    if (ut_cancel_is_active(self->cancel)) {
-      ut_cancel_activate(self->read_cancel);
-      break;
-    }
-
+  while (true) {
+    size_t n_used;
+    UtObjectRef d = ut_list_get_sublist(data, offset, data_length - offset);
+    DecoderState old_state = self->state;
     switch (self->state) {
     case DECODER_STATE_HEADER:
-      decoding = read_header(self, data, &offset, complete);
+      n_used = decode_header(self, d);
       break;
     case DECODER_STATE_DICTIONARY:
-      decoding = read_dictionary(self, data, &offset, complete);
+      n_used = decode_dictionary(self, d);
       break;
     case DECODER_STATE_COMPRESSED_DATA:
-      decoding = read_compressed_data(self, data, &offset, complete);
+      n_used = ut_writable_input_stream_write(self->deflate_input_stream, d,
+                                              complete);
       break;
     case DECODER_STATE_CHECKSUM:
-      decoding = read_checksum(self, data, &offset, complete);
+      n_used = decode_checksum(self, d);
       break;
     case DECODER_STATE_DONE:
-      ut_cancel_activate(self->read_cancel);
-      decoding = false;
-      break;
     case DECODER_STATE_ERROR:
-      ut_cancel_activate(self->read_cancel);
-      if (!ut_cancel_is_active(self->cancel)) {
-        self->callback(self->user_data, self->error, true);
+      return offset;
+    default:
+      assert(false);
+    }
+
+    offset += n_used;
+    if (self->state == old_state && n_used == 0) {
+      if (complete && self->state != DECODER_STATE_DONE) {
+        set_error(self, "Incomplete zlib data");
       }
-      decoding = false;
-      break;
+      return offset;
     }
   }
-
-  return offset;
 }
 
 static void ut_zlib_decoder_init(UtObject *object) {
