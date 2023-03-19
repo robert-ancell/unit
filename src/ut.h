@@ -1,3 +1,5 @@
+#include "arithmetic/ut-arithmetic-decoder.h"
+#include "arithmetic/ut-arithmetic-encoder.h"
 #include "dbus/ut-dbus-array.h"
 #include "dbus/ut-dbus-client.h"
 #include "dbus/ut-dbus-dict.h"
