@@ -32,6 +32,8 @@ ut_sources = [
   'huffman/ut-huffman-code.c',
   'huffman/ut-huffman-decoder.c',
   'huffman/ut-huffman-encoder.c',
+  'lzma2/ut-lzma2-decoder.c',
+  'lzma2/ut-lzma2-error.c',
   'png/ut-png-decoder.c',
   'png/ut-png-encoder.c',
   'png/ut-png-error.c',
@@ -373,6 +375,11 @@ gzip_encoder_test = executable('ut-gzip-encoder-test',
                                'gzip/ut-gzip-encoder-test.c',
                                link_with: ut_lib)
 test('GZip Encoder', gzip_encoder_test)
+
+lzma2_decoder_test = executable('ut-lzma2-decoder-test',
+                                'lzma2/ut-lzma2-decoder-test.c',
+                                link_with: ut_lib)
+test('LZMA2 Decoder', lzma2_decoder_test)
 
 tiff_reader_test = executable('ut-tiff-reader-test',
                                'tiff/ut-tiff-reader-test.c',
