@@ -12,11 +12,10 @@
 
 typedef enum {
   DECODER_STATE_MARKER,
-  DECODER_STATE_START_OF_IMAGE,
-  DECODER_STATE_END_OF_IMAGE,
   DECODER_STATE_DEFINE_QUANTIZATION_TABLE,
   DECODER_STATE_DEFINE_NUMBER_OF_LINES,
   DECODER_STATE_DEFINE_RESTART_INTERVAL,
+  DECODER_STATE_EXPAND_REFERENCE_COMPONENT,
   DECODER_STATE_START_OF_FRAME,
   DECODER_STATE_DEFINE_HUFFMAN_TABLE,
   DECODER_STATE_DEFINE_ARITHMETIC_CODING,
@@ -92,6 +91,9 @@ typedef struct {
 
   // True if using arithmetic coding.
   bool arithmetic_coding;
+
+  // True if using hierarchial progression.
+  bool hierarchial_progression;
 
   // Tables for coefficient quantization values.
   UtObject *quantization_tables[4];
@@ -467,15 +469,20 @@ static bool read_amplitude(UtJpegDecoder *self, UtObject *data, size_t *offset,
   return true;
 }
 
-static size_t decode_start_of_image(UtJpegDecoder *self, UtObject *data) {
+static void handle_restart(UtJpegDecoder *self, uint8_t count) {
+  if (true) {
+    set_error(self, "JPEG restart not supported");
+    return;
+  }
+
   self->state = DECODER_STATE_MARKER;
-  return 0;
 }
 
-static size_t decode_end_of_image(UtJpegDecoder *self, UtObject *data) {
-  set_done(self);
-  return 0;
+static void handle_start_of_image(UtJpegDecoder *self) {
+  self->state = DECODER_STATE_MARKER;
 }
+
+static void handle_end_of_image(UtJpegDecoder *self) { set_done(self); }
 
 static size_t decode_app0(UtJpegDecoder *self, UtObject *data) {
   size_t data_length = ut_list_get_length(data);
@@ -693,6 +700,11 @@ static size_t decode_start_of_frame(UtJpegDecoder *self, UtObject *data) {
   }
   if (precision == 12) {
     set_error(self, "12 bit JPEG precision not supported");
+    return length;
+  }
+
+  if (self->hierarchial_progression) {
+    set_error(self, "Hierarchial progression JPEG not supported");
     return length;
   }
 
@@ -958,6 +970,41 @@ static size_t decode_define_restart_interval(UtJpegDecoder *self,
 
   if (true) {
     set_error(self, "JPEG restart interval not supported");
+    return 0;
+  }
+
+  self->state = DECODER_STATE_MARKER;
+
+  return length;
+}
+
+static size_t decode_expand_reference_component(UtJpegDecoder *self,
+                                                UtObject *data) {
+  size_t data_length = ut_list_get_length(data);
+
+  if (data_length < 2) {
+    return 0;
+  }
+  uint16_t length = ut_uint8_list_get_uint16_be(data, 0);
+  if (length != 3) {
+    set_error(self, "Invalid JPEG expand reference component length %d",
+              length);
+    return 0;
+  }
+
+  uint8_t expand = ut_uint8_list_get_element(data, 2);
+  uint8_t expand_horizontal = expand >> 4;
+  uint8_t expand_vertical = expand & 0xf;
+
+  if (expand_horizontal > 1 || expand_vertical > 1) {
+    set_error(self,
+              "Invalid expand value %dx%d in JPEG expand refrence component",
+              expand_horizontal, expand_vertical);
+    return 0;
+  }
+
+  if (true) {
+    set_error(self, "JPEG expand reference component not supported");
     return 0;
   }
 
@@ -1239,11 +1286,21 @@ static size_t decode_marker(UtJpegDecoder *self, UtObject *data) {
   }
 
   switch (marker_id) {
+  case 0xd0:
+  case 0xd1:
+  case 0xd2:
+  case 0xd3:
+  case 0xd4:
+  case 0xd5:
+  case 0xd6:
+  case 0xd7:
+    handle_restart(self, marker_id = 0xd0);
+    break;
   case 0xd8:
-    self->state = DECODER_STATE_START_OF_IMAGE;
+    handle_start_of_image(self);
     break;
   case 0xd9:
-    self->state = DECODER_STATE_END_OF_IMAGE;
+    handle_end_of_image(self);
     break;
   case 0xda:
     self->state = DECODER_STATE_START_OF_SCAN;
@@ -1256,6 +1313,13 @@ static size_t decode_marker(UtJpegDecoder *self, UtObject *data) {
     break;
   case 0xdd:
     self->state = DECODER_STATE_DEFINE_RESTART_INTERVAL;
+    break;
+  case 0xde:
+    self->hierarchial_progression = true;
+    self->state = DECODER_STATE_START_OF_FRAME;
+    break;
+  case 0xdf:
+    self->state = DECODER_STATE_EXPAND_REFERENCE_COMPONENT;
     break;
   case 0xc0:
     self->mode = DECODE_MODE_BASELINE_DCT;
@@ -1365,12 +1429,6 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
     case DECODER_STATE_MARKER:
       n_used = decode_marker(self, d);
       break;
-    case DECODER_STATE_START_OF_IMAGE:
-      n_used = decode_start_of_image(self, d);
-      break;
-    case DECODER_STATE_END_OF_IMAGE:
-      n_used = decode_end_of_image(self, d);
-      break;
     case DECODER_STATE_DEFINE_QUANTIZATION_TABLE:
       n_used = decode_define_quantization_table(self, d);
       break;
@@ -1379,6 +1437,9 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
       break;
     case DECODER_STATE_DEFINE_RESTART_INTERVAL:
       n_used = decode_define_restart_interval(self, d);
+      break;
+    case DECODER_STATE_EXPAND_REFERENCE_COMPONENT:
+      n_used = decode_expand_reference_component(self, d);
       break;
     case DECODER_STATE_START_OF_FRAME:
       n_used = decode_start_of_frame(self, d);
