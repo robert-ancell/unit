@@ -87,6 +87,12 @@ typedef struct {
   // Mode used to decode image.
   DecodeMode mode;
 
+  // True if using differential.
+  bool differential;
+
+  // True if using arithmetic coding.
+  bool arithmetic_coding;
+
   // Tables for coefficient quantization values.
   UtObject *quantization_tables[4];
 
@@ -1070,6 +1076,28 @@ static size_t decode_start_of_scan(UtJpegDecoder *self, UtObject *data) {
     return length;
   }
 
+  if (self->mode == DECODE_MODE_EXTENDED_DCT) {
+    set_error(self, "Extended DCT JPEG not supported");
+    return length;
+  }
+  if (self->mode == DECODE_MODE_PROGRESSIVE_DCT) {
+    set_error(self, "Progressive DCT JPEG not supported");
+    return length;
+  }
+  if (self->mode == DECODE_MODE_LOSSLESS) {
+    set_error(self, "Lossless JPEG not supported");
+    return length;
+  }
+
+  if (self->differential) {
+    set_error(self, "Differential JPEG not supported");
+    return length;
+  }
+  if (self->arithmetic_coding) {
+    set_error(self, "Arithmetic JPEG not supported");
+    return length;
+  }
+
   self->scan_coefficient_start = selection_start;
   self->scan_coefficient_end = selection_end;
   self->data_unit_coefficient_index = self->scan_coefficient_start;
@@ -1233,31 +1261,71 @@ static size_t decode_marker(UtJpegDecoder *self, UtObject *data) {
     self->mode = DECODE_MODE_BASELINE_DCT;
     self->state = DECODER_STATE_START_OF_FRAME;
     break;
-  case 0xc5:
-  case 0xcd:
-    set_error(self, "Differential sequential DCT JPEG not supported");
-    break;
   case 0xc1:
-  case 0xc9:
-    set_error(self, "Extended sequential DCT JPEG not supported");
+    self->mode = DECODE_MODE_EXTENDED_DCT;
+    self->state = DECODER_STATE_START_OF_FRAME;
     break;
   case 0xc2:
-  case 0xc6:
-  case 0xca:
-  case 0xce:
-    set_error(self, "Progressive DCT JPEG not supported");
+    self->mode = DECODE_MODE_PROGRESSIVE_DCT;
+    self->state = DECODER_STATE_START_OF_FRAME;
     break;
   case 0xc3:
-  case 0xc7:
-  case 0xcb:
-  case 0xcf:
-    set_error(self, "Lossless JPEG not supported");
+    self->mode = DECODE_MODE_LOSSLESS;
+    self->state = DECODER_STATE_START_OF_FRAME;
     break;
   case 0xc4:
     self->state = DECODER_STATE_DEFINE_HUFFMAN_TABLE;
     break;
+  case 0xc5:
+    self->differential = true;
+    self->mode = DECODE_MODE_EXTENDED_DCT;
+    self->state = DECODER_STATE_START_OF_FRAME;
+    break;
+  case 0xc6:
+    self->differential = true;
+    self->mode = DECODE_MODE_PROGRESSIVE_DCT;
+    self->state = DECODER_STATE_START_OF_FRAME;
+    break;
+  case 0xc7:
+    self->differential = true;
+    self->mode = DECODE_MODE_LOSSLESS;
+    self->state = DECODER_STATE_START_OF_FRAME;
+    break;
+  case 0xc9:
+    self->arithmetic_coding = true;
+    self->mode = DECODE_MODE_EXTENDED_DCT;
+    self->state = DECODER_STATE_START_OF_FRAME;
+    break;
+  case 0xca:
+    self->arithmetic_coding = true;
+    self->mode = DECODE_MODE_PROGRESSIVE_DCT;
+    self->state = DECODER_STATE_START_OF_FRAME;
+    break;
+  case 0xcb:
+    self->arithmetic_coding = true;
+    self->mode = DECODE_MODE_LOSSLESS;
+    self->state = DECODER_STATE_START_OF_FRAME;
+    break;
   case 0xcc:
     self->state = DECODER_STATE_DEFINE_ARITHMETIC_CODING;
+    break;
+  case 0xcd:
+    self->differential = true;
+    self->arithmetic_coding = true;
+    self->mode = DECODE_MODE_EXTENDED_DCT;
+    self->state = DECODER_STATE_START_OF_FRAME;
+    break;
+  case 0xce:
+    self->differential = true;
+    self->arithmetic_coding = true;
+    self->mode = DECODE_MODE_PROGRESSIVE_DCT;
+    self->state = DECODER_STATE_START_OF_FRAME;
+    break;
+  case 0xcf:
+    self->differential = true;
+    self->arithmetic_coding = true;
+    self->mode = DECODE_MODE_LOSSLESS;
+    self->state = DECODER_STATE_START_OF_FRAME;
     break;
   case 0xe0:
     self->state = DECODER_STATE_APP0;
