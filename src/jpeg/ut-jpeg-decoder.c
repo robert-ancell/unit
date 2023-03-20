@@ -29,6 +29,13 @@ typedef enum {
   DECODER_STATE_ERROR
 } DecoderState;
 
+typedef enum {
+  DECODE_MODE_BASELINE_DCT,
+  DECODE_MODE_EXTENDED_DCT,
+  DECODE_MODE_PROGRESSIVE_DCT,
+  DECODE_MODE_LOSSLESS
+} DecodeMode;
+
 typedef struct {
   // ID assigned to this component.
   uint8_t id;
@@ -74,6 +81,9 @@ typedef struct {
 
   // Current state of the decoder.
   DecoderState state;
+
+  // Mode used to decode image.
+  DecodeMode mode;
 
   // Tables for coefficient quantization values.
   UtObject *quantization_tables[4];
@@ -565,6 +575,20 @@ static size_t decode_define_quantization_table(UtJpegDecoder *self,
   return length;
 }
 
+static bool supported_precision(UtJpegDecoder *self, uint8_t precision) {
+  switch (self->mode) {
+  case DECODE_MODE_BASELINE_DCT:
+    return precision == 8;
+  case DECODE_MODE_EXTENDED_DCT:
+  case DECODE_MODE_PROGRESSIVE_DCT:
+    return precision == 8 || precision == 12;
+  case DECODE_MODE_LOSSLESS:
+    return precision >= 2 && precision <= 16;
+  default:
+    return false;
+  }
+}
+
 static size_t decode_start_of_frame(UtJpegDecoder *self, UtObject *data) {
   size_t data_length = ut_list_get_length(data);
 
@@ -655,8 +679,12 @@ static size_t decode_start_of_frame(UtJpegDecoder *self, UtObject *data) {
   self->mcu_width = mcu_width;
   self->mcu_height = mcu_height;
 
-  if (precision != 8) {
+  if (!supported_precision(self, precision)) {
     set_error(self, "Unsupported JPEG precision %d", precision);
+    return length;
+  }
+  if (precision == 12) {
+    set_error(self, "12 bit JPEG precision not supported");
     return length;
   }
 
@@ -667,6 +695,33 @@ static size_t decode_start_of_frame(UtJpegDecoder *self, UtObject *data) {
   self->state = DECODER_STATE_MARKER;
 
   return length;
+}
+
+static bool supported_huffman_table_class(UtJpegDecoder *self, uint8_t class) {
+  switch (self->mode) {
+  case DECODE_MODE_BASELINE_DCT:
+  case DECODE_MODE_EXTENDED_DCT:
+  case DECODE_MODE_PROGRESSIVE_DCT:
+    return class <= 1;
+  case DECODE_MODE_LOSSLESS:
+    return class == 0;
+  default:
+    return false;
+  }
+}
+
+static bool supported_huffman_table_destination(UtJpegDecoder *self,
+                                                uint8_t destination) {
+  switch (self->mode) {
+  case DECODE_MODE_BASELINE_DCT:
+    return destination <= 1;
+  case DECODE_MODE_EXTENDED_DCT:
+  case DECODE_MODE_PROGRESSIVE_DCT:
+  case DECODE_MODE_LOSSLESS:
+    return destination <= 3;
+  default:
+    return false;
+  }
 }
 
 static size_t decode_define_huffman_table(UtJpegDecoder *self, UtObject *data) {
@@ -711,11 +766,11 @@ static size_t decode_define_huffman_table(UtJpegDecoder *self, UtObject *data) {
     uint8_t class = class_and_destination >> 4;
     uint8_t destination = class_and_destination & 0xf;
 
-    if (class > 1) {
+    if (!supported_huffman_table_class(self, class)) {
       set_error(self, "Unsupported JPEG Huffman table class");
       return offset;
     }
-    if (destination > 1) {
+    if (!supported_huffman_table_destination(self, destination)) {
       set_error(self, "Unsupported JPEG Huffman table destination");
       return offset;
     }
@@ -751,6 +806,51 @@ static size_t decode_define_huffman_table(UtJpegDecoder *self, UtObject *data) {
   return length;
 }
 
+static bool supported_arithmetic_table_class(UtJpegDecoder *self,
+                                             uint8_t class) {
+  switch (self->mode) {
+  case DECODE_MODE_BASELINE_DCT:
+    return false;
+  case DECODE_MODE_EXTENDED_DCT:
+  case DECODE_MODE_PROGRESSIVE_DCT:
+    return class <= 1;
+  case DECODE_MODE_LOSSLESS:
+    return class == 0;
+  default:
+    return false;
+  }
+}
+
+static bool supported_arithmetic_table_destination(UtJpegDecoder *self,
+                                                   uint8_t destination) {
+  switch (self->mode) {
+  case DECODE_MODE_BASELINE_DCT:
+    return false;
+  case DECODE_MODE_EXTENDED_DCT:
+  case DECODE_MODE_PROGRESSIVE_DCT:
+  case DECODE_MODE_LOSSLESS:
+    return destination <= 3;
+  default:
+    return false;
+  }
+}
+
+static bool supported_arithmetic_conditioning_table_value(UtJpegDecoder *self,
+                                                          uint8_t class,
+                                                          uint8_t value) {
+  switch (self->mode) {
+  case DECODE_MODE_BASELINE_DCT:
+    return false;
+  case DECODE_MODE_EXTENDED_DCT:
+  case DECODE_MODE_PROGRESSIVE_DCT:
+    return class == 0 || (value >= 1 && value <= 63);
+  case DECODE_MODE_LOSSLESS:
+    return true;
+  default:
+    return false;
+  }
+}
+
 static size_t decode_define_arithmetic_coding(UtJpegDecoder *self,
                                               UtObject *data) {
   size_t data_length = ut_list_get_length(data);
@@ -779,16 +879,16 @@ static size_t decode_define_arithmetic_coding(UtJpegDecoder *self,
     uint8_t class = class_and_destination >> 4;
     uint8_t destination = class_and_destination & 0xf;
 
-    if (class > 1) {
+    if (!supported_arithmetic_table_class(self, class)) {
       set_error(self, "Unsupported JPEG Arithmetic table class");
       return offset;
     }
-    if (destination > 3) {
+    if (!supported_arithmetic_table_destination(self, destination)) {
       set_error(self, "Unsupported JPEG Arithmetic table destination");
       return offset;
     }
-    if (class != 0 &&
-        (conditioning_table_value < 1 || conditioning_table_value > 63)) {
+    if (!supported_arithmetic_conditioning_table_value(
+            self, class, conditioning_table_value)) {
       set_error(self, "Unsupported JPEG Arithmetic conditioning table value");
       return offset;
     }
@@ -797,6 +897,41 @@ static size_t decode_define_arithmetic_coding(UtJpegDecoder *self,
   self->state = DECODER_STATE_MARKER;
 
   return length;
+}
+
+static bool supported_scan_selection(UtJpegDecoder *self,
+                                     uint8_t selection_start,
+                                     uint8_t selection_end) {
+  switch (self->mode) {
+  case DECODE_MODE_BASELINE_DCT:
+  case DECODE_MODE_EXTENDED_DCT:
+    return selection_start == 0 && selection_end == 63;
+  case DECODE_MODE_PROGRESSIVE_DCT:
+    return selection_end <= 63 && selection_start <= selection_end;
+  case DECODE_MODE_LOSSLESS:
+    return (selection_start >= 1 && selection_start <= 7) && selection_end == 0;
+  default:
+    return false;
+  }
+}
+
+static bool
+supported_successive_approximation(UtJpegDecoder *self,
+                                   uint8_t successive_approximation_high,
+                                   uint8_t successive_approximation_low) {
+  switch (self->mode) {
+  case DECODE_MODE_BASELINE_DCT:
+  case DECODE_MODE_EXTENDED_DCT:
+    return successive_approximation_high == 0 &&
+           successive_approximation_low == 0;
+  case DECODE_MODE_PROGRESSIVE_DCT:
+    return successive_approximation_high <= 13 &&
+           successive_approximation_low <= 13;
+  case DECODE_MODE_LOSSLESS:
+    return successive_approximation_high == 0;
+  default:
+    return false;
+  }
 }
 
 static size_t decode_start_of_scan(UtJpegDecoder *self, UtObject *data) {
@@ -860,12 +995,16 @@ static size_t decode_start_of_scan(UtJpegDecoder *self, UtObject *data) {
   uint8_t selection_start = ut_uint8_list_get_element(data, offset++);
   uint8_t selection_end = ut_uint8_list_get_element(data, offset++);
   uint8_t successive_approximation = ut_uint8_list_get_element(data, offset++);
+  uint8_t successive_approximation_high = successive_approximation >> 4;
+  uint8_t successive_approximation_low = successive_approximation & 0xf;
 
-  if (selection_start != 0 || selection_end != 63) {
-    set_error(self, "Invalid scan selection range in JPEG start of scan");
+  if (!supported_scan_selection(self, selection_start, selection_end)) {
+    set_error(self, "Invalid scan selection range %d-%d in JPEG start of scan",
+              selection_start, selection_end);
     return length;
   }
-  if (successive_approximation != 0) {
+  if (!supported_successive_approximation(self, successive_approximation_high,
+                                          successive_approximation_low) != 0) {
     set_error(self, "Invalid successive approximation in JPEG start of scan");
     return length;
   }
@@ -1021,6 +1160,7 @@ static size_t decode_marker(UtJpegDecoder *self, UtObject *data) {
     self->state = DECODER_STATE_DEFINE_QUANTIZATION_TABLE;
     break;
   case 0xc0:
+    self->mode = DECODE_MODE_BASELINE_DCT;
     self->state = DECODER_STATE_START_OF_FRAME;
     break;
   case 0xc5:
