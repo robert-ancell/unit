@@ -108,16 +108,16 @@ typedef struct {
   size_t mcu_height;
 
   // Huffman decoders for DC coefficients.
-  UtObject *dc_decoders[2];
+  UtObject *dc_decoders[4];
 
   // Maps from DC Huffman symbols to coefficent values.
-  UtObject *dc_tables[2];
+  UtObject *dc_tables[4];
 
   // Huffman decoders for AC coefficients.
-  UtObject *ac_decoders[2];
+  UtObject *ac_decoders[4];
 
   // Maps from AC Huffman symbols to coefficent values.
-  UtObject *ac_tables[2];
+  UtObject *ac_tables[4];
 
   // Order that data unit values are written.
   uint8_t data_unit_order[64];
@@ -1505,8 +1505,6 @@ static void ut_jpeg_decoder_cleanup(UtObject *object) {
   ut_object_unref(self->cancel);
   for (size_t i = 0; i < 4; i++) {
     ut_object_unref(self->quantization_tables[i]);
-  }
-  for (size_t i = 0; i < 2; i++) {
     ut_object_unref(self->dc_decoders[i]);
     ut_object_unref(self->dc_tables[i]);
     ut_object_unref(self->ac_decoders[i]);
