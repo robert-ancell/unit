@@ -1199,10 +1199,6 @@ static size_t decode_start_of_scan(UtJpegDecoder *self, UtObject *data) {
     set_error(self, "Differential JPEG not supported");
     return length;
   }
-  if (self->arithmetic_coding) {
-    set_error(self, "Arithmetic JPEG not supported");
-    return length;
-  }
 
   self->scan_coefficient_start = selection_start;
   self->scan_coefficient_end = selection_end;
