@@ -17,6 +17,7 @@ typedef enum {
   DECODER_STATE_DEFINE_QUANTIZATION_TABLE,
   DECODER_STATE_START_OF_FRAME,
   DECODER_STATE_DEFINE_HUFFMAN_TABLE,
+  DECODER_STATE_DEFINE_ARITHMETIC_CODING,
   DECODER_STATE_START_OF_SCAN,
   DECODER_STATE_DC_COEFFICIENT1,
   DECODER_STATE_DC_COEFFICIENT2,
@@ -750,6 +751,54 @@ static size_t decode_define_huffman_table(UtJpegDecoder *self, UtObject *data) {
   return length;
 }
 
+static size_t decode_define_arithmetic_coding(UtJpegDecoder *self,
+                                              UtObject *data) {
+  size_t data_length = ut_list_get_length(data);
+
+  size_t offset = 0;
+  if (data_length < 2) {
+    return 0;
+  }
+  uint16_t length = ut_uint8_list_get_uint16_be(data, offset);
+  offset += 2;
+  if (data_length < length) {
+    return 0;
+  }
+
+  while (offset < length) {
+    if (length < offset + 2) {
+      set_error(self,
+                "Insufficient space for JPEG Arithmetic conditioning table");
+      return length;
+    }
+
+    uint8_t class_and_destination = ut_uint8_list_get_element(data, offset++);
+    uint8_t conditioning_table_value =
+        ut_uint8_list_get_element(data, offset++);
+
+    uint8_t class = class_and_destination >> 4;
+    uint8_t destination = class_and_destination & 0xf;
+
+    if (class > 1) {
+      set_error(self, "Unsupported JPEG Arithmetic table class");
+      return offset;
+    }
+    if (destination > 3) {
+      set_error(self, "Unsupported JPEG Arithmetic table destination");
+      return offset;
+    }
+    if (class != 0 &&
+        (conditioning_table_value < 1 || conditioning_table_value > 63)) {
+      set_error(self, "Unsupported JPEG Arithmetic conditioning table value");
+      return offset;
+    }
+  }
+
+  self->state = DECODER_STATE_MARKER;
+
+  return length;
+}
+
 static size_t decode_start_of_scan(UtJpegDecoder *self, UtObject *data) {
   size_t data_length = ut_list_get_length(data);
 
@@ -764,7 +813,7 @@ static size_t decode_start_of_scan(UtJpegDecoder *self, UtObject *data) {
   }
 
   uint8_t n_scan_components = ut_uint8_list_get_element(data, offset++);
-  if (length != 6 + n_scan_components * 2) {
+  if (length < 6 + 2 * n_scan_components) {
     set_error(self, "Insufficient data for JPEG start of scan");
     return length;
   }
@@ -974,26 +1023,31 @@ static size_t decode_marker(UtJpegDecoder *self, UtObject *data) {
   case 0xc0:
     self->state = DECODER_STATE_START_OF_FRAME;
     break;
+  case 0xc5:
+  case 0xcd:
+    set_error(self, "Differential sequential DCT JPEG not supported");
+    break;
   case 0xc1:
+  case 0xc9:
     set_error(self, "Extended sequential DCT JPEG not supported");
     break;
   case 0xc2:
+  case 0xc6:
+  case 0xca:
+  case 0xce:
     set_error(self, "Progressive DCT JPEG not supported");
     break;
   case 0xc3:
+  case 0xc7:
+  case 0xcb:
+  case 0xcf:
     set_error(self, "Lossless JPEG not supported");
     break;
   case 0xc4:
     self->state = DECODER_STATE_DEFINE_HUFFMAN_TABLE;
     break;
-  case 0xc9:
-  case 0xca:
-  case 0xcb:
   case 0xcc:
-  case 0xcd:
-  case 0xce:
-  case 0xcf:
-    set_error(self, "Arithmentic JPEG not supported");
+    self->state = DECODER_STATE_DEFINE_ARITHMETIC_CODING;
     break;
   case 0xda:
     self->state = DECODER_STATE_START_OF_SCAN;
@@ -1050,6 +1104,9 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
       break;
     case DECODER_STATE_DEFINE_HUFFMAN_TABLE:
       n_used = decode_define_huffman_table(self, d);
+      break;
+    case DECODER_STATE_DEFINE_ARITHMETIC_CODING:
+      n_used = decode_define_arithmetic_coding(self, d);
       break;
     case DECODER_STATE_START_OF_SCAN:
       n_used = decode_start_of_scan(self, d);
