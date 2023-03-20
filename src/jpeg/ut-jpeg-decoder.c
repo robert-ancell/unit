@@ -15,6 +15,8 @@ typedef enum {
   DECODER_STATE_START_OF_IMAGE,
   DECODER_STATE_END_OF_IMAGE,
   DECODER_STATE_DEFINE_QUANTIZATION_TABLE,
+  DECODER_STATE_DEFINE_NUMBER_OF_LINES,
+  DECODER_STATE_DEFINE_RESTART_INTERVAL,
   DECODER_STATE_START_OF_FRAME,
   DECODER_STATE_DEFINE_HUFFMAN_TABLE,
   DECODER_STATE_DEFINE_ARITHMETIC_CODING,
@@ -894,6 +896,65 @@ static size_t decode_define_arithmetic_coding(UtJpegDecoder *self,
     }
   }
 
+  if (true) {
+    set_error(self, "JPEG arithmetic coding not supported");
+    return 0;
+  }
+
+  self->state = DECODER_STATE_MARKER;
+
+  return length;
+}
+
+static size_t decode_define_number_of_lines(UtJpegDecoder *self,
+                                            UtObject *data) {
+  size_t data_length = ut_list_get_length(data);
+
+  if (data_length < 2) {
+    return 0;
+  }
+  uint16_t length = ut_uint8_list_get_uint16_be(data, 0);
+  if (length != 4) {
+    set_error(self, "Invalid JPEG define number of lines length %d", length);
+    return 0;
+  }
+
+  uint16_t number_of_lines = ut_uint8_list_get_uint16_be(data, 2);
+  if (number_of_lines == 0) {
+    set_error(self, "Invalid JPEG number of lines");
+    return 0;
+  }
+
+  if (true) {
+    set_error(self, "JPEG number of lines not supported");
+    return 0;
+  }
+
+  self->state = DECODER_STATE_MARKER;
+
+  return length;
+}
+
+static size_t decode_define_restart_interval(UtJpegDecoder *self,
+                                             UtObject *data) {
+  size_t data_length = ut_list_get_length(data);
+
+  if (data_length < 2) {
+    return 0;
+  }
+  uint16_t length = ut_uint8_list_get_uint16_be(data, 0);
+  if (length != 4) {
+    set_error(self, "Invalid JPEG define restart interval length %d", length);
+    return 0;
+  }
+
+  /*uint16_t restart_interval =*/ut_uint8_list_get_uint16_be(data, 2);
+
+  if (true) {
+    set_error(self, "JPEG restart interval not supported");
+    return 0;
+  }
+
   self->state = DECODER_STATE_MARKER;
 
   return length;
@@ -1156,8 +1217,17 @@ static size_t decode_marker(UtJpegDecoder *self, UtObject *data) {
   case 0xd9:
     self->state = DECODER_STATE_END_OF_IMAGE;
     break;
+  case 0xda:
+    self->state = DECODER_STATE_START_OF_SCAN;
+    break;
   case 0xdb:
     self->state = DECODER_STATE_DEFINE_QUANTIZATION_TABLE;
+    break;
+  case 0xdc:
+    self->state = DECODER_STATE_DEFINE_NUMBER_OF_LINES;
+    break;
+  case 0xdd:
+    self->state = DECODER_STATE_DEFINE_RESTART_INTERVAL;
     break;
   case 0xc0:
     self->mode = DECODE_MODE_BASELINE_DCT;
@@ -1188,9 +1258,6 @@ static size_t decode_marker(UtJpegDecoder *self, UtObject *data) {
     break;
   case 0xcc:
     self->state = DECODER_STATE_DEFINE_ARITHMETIC_CODING;
-    break;
-  case 0xda:
-    self->state = DECODER_STATE_START_OF_SCAN;
     break;
   case 0xe0:
     self->state = DECODER_STATE_APP0;
@@ -1238,6 +1305,12 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
       break;
     case DECODER_STATE_DEFINE_QUANTIZATION_TABLE:
       n_used = decode_define_quantization_table(self, d);
+      break;
+    case DECODER_STATE_DEFINE_NUMBER_OF_LINES:
+      n_used = decode_define_number_of_lines(self, d);
+      break;
+    case DECODER_STATE_DEFINE_RESTART_INTERVAL:
+      n_used = decode_define_restart_interval(self, d);
       break;
     case DECODER_STATE_START_OF_FRAME:
       n_used = decode_start_of_frame(self, d);
