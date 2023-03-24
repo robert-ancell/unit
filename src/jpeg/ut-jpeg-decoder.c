@@ -20,15 +20,17 @@ typedef enum {
   DECODER_STATE_DEFINE_HUFFMAN_TABLE,
   DECODER_STATE_DEFINE_ARITHMETIC_CODING,
   DECODER_STATE_START_OF_SCAN,
-  DECODER_STATE_DC_COEFFICIENT1,
-  DECODER_STATE_DC_COEFFICIENT2,
-  DECODER_STATE_AC_COEFFICIENT1,
-  DECODER_STATE_AC_COEFFICIENT2,
+  DECODER_STATE_SCAN,
   DECODER_STATE_APP0,
   DECODER_STATE_COMMENT,
   DECODER_STATE_DONE,
   DECODER_STATE_ERROR
 } DecoderState;
+
+typedef enum {
+  SCAN_DECODER_STATE_COEFFICIENT_MAGNITUDE,
+  SCAN_DECODER_STATE_COEFFICIENT_AMPLITUDE,
+} ScanDecoderState;
 
 typedef enum {
   DECODE_MODE_BASELINE_DCT,
@@ -83,6 +85,9 @@ typedef struct {
   // Current state of the decoder.
   DecoderState state;
 
+  // Current state of the scan decoder.
+  ScanDecoderState scan_decoder_state;
+
   // Mode used to decode image.
   DecodeMode mode;
 
@@ -130,8 +135,11 @@ typedef struct {
   uint16_t code;
   uint8_t code_width;
 
-  // First byte of decoded coefficient.
-  uint8_t coefficient_start;
+  // Magnitude of coefficient.
+  uint8_t coefficient_magnitude;
+
+  // Number of zeros before this coefficient.
+  size_t run_length;
 
   // Encoded data unit coefficients.
   int16_t encoded_data_unit[64];
@@ -402,9 +410,6 @@ static void process_data_unit(UtJpegDecoder *self) {
   }
 
   self->data_unit_coefficient_index = self->scan_coefficient_start;
-  self->state = self->scan_coefficient_start == 0
-                    ? DECODER_STATE_DC_COEFFICIENT1
-                    : DECODER_STATE_AC_COEFFICIENT1;
 }
 
 // Add a coefficient [value] to the current data unit. Add [run_length] zeros
@@ -434,7 +439,6 @@ static void add_coefficient(UtJpegDecoder *self, size_t run_length,
 
   if (self->data_unit_coefficient_index < self->scan_coefficient_end) {
     self->data_unit_coefficient_index++;
-    self->state = DECODER_STATE_AC_COEFFICIENT1;
   } else {
     process_data_unit(self);
   }
@@ -1154,96 +1158,99 @@ static size_t decode_start_of_scan(UtJpegDecoder *self, UtObject *data) {
     self->components[i].previous_dc = 0;
     self->components[i].data_unit_count = 0;
   }
-  self->state = self->scan_coefficient_start == 0
-                    ? DECODER_STATE_DC_COEFFICIENT1
-                    : DECODER_STATE_AC_COEFFICIENT1;
+  self->state = DECODER_STATE_SCAN;
 
   return offset;
 }
 
-static size_t decode_dc_coefficient1(UtJpegDecoder *self, UtObject *data,
-                                     bool complete) {
+static bool decode_coefficient_magnitude(UtJpegDecoder *self, UtObject *data,
+                                         size_t *offset) {
   JpegComponent *component = self->scan_components[self->scan_component_index];
 
-  size_t offset = 0;
-  uint16_t symbol;
-  if (!read_huffman_symbol(self, data, &offset, component->dc_decoder,
-                           &symbol)) {
-    return offset;
-  }
-
-  self->coefficient_start =
-      ut_uint8_list_get_element(component->dc_table, symbol);
-
-  self->state = DECODER_STATE_DC_COEFFICIENT2;
-
-  return offset;
-}
-
-static size_t decode_dc_coefficient2(UtJpegDecoder *self, UtObject *data,
-                                     bool complete) {
-  JpegComponent *component = self->scan_components[self->scan_component_index];
-
-  size_t offset = 0;
-  int16_t diff = 0;
-  size_t coefficient_length = self->coefficient_start;
-  if (!read_amplitude(self, data, &offset, coefficient_length, &diff)) {
-    return offset;
-  }
-
-  int16_t dc = component->previous_dc + diff;
-  component->previous_dc = dc;
-  add_coefficient(self, 0, dc);
-
-  return offset;
-}
-
-static size_t decode_ac_coefficient1(UtJpegDecoder *self, UtObject *data,
-                                     bool complete) {
-  JpegComponent *component = self->scan_components[self->scan_component_index];
-
-  size_t offset = 0;
-  uint16_t symbol;
-  if (!read_huffman_symbol(self, data, &offset, component->ac_decoder,
-                           &symbol)) {
-    return offset;
-  }
-
-  self->coefficient_start =
-      ut_uint8_list_get_element(component->ac_table, symbol);
-
-  size_t coefficient_length = self->coefficient_start & 0xf;
-  if (coefficient_length == 0) {
-    size_t run_length = self->coefficient_start >> 4;
-
-    // Special cases of fill to end of data unit, and fill with 16 zeros
-    if (run_length == 0) {
-      add_coefficient(
-          self, self->scan_coefficient_end - self->data_unit_coefficient_index,
-          0);
-    } else if (run_length == 15) {
-      add_coefficient(self, 15, 0);
-    } else {
-      // FIXME: undefined
-      assert(false);
-    }
+  UtObject *decoder, *table;
+  if (self->data_unit_coefficient_index == 0) {
+    decoder = component->dc_decoder;
+    table = component->dc_table;
   } else {
-    self->state = DECODER_STATE_AC_COEFFICIENT2;
+    decoder = component->ac_decoder;
+    table = component->ac_table;
   }
 
-  return offset;
+  uint16_t symbol;
+  if (!read_huffman_symbol(self, data, offset, decoder, &symbol)) {
+    return false;
+  }
+  uint8_t value = ut_uint8_list_get_element(table, symbol);
+
+  if (self->data_unit_coefficient_index == 0) {
+    self->coefficient_magnitude = value;
+    self->run_length = 0;
+  } else {
+    self->coefficient_magnitude = value & 0xf;
+    self->run_length = value >> 4;
+    if (self->coefficient_magnitude == 0) {
+      // Special cases of fill to end of data unit, and fill with 16 zeros
+      if (self->run_length == 0) {
+        add_coefficient(
+            self,
+            self->scan_coefficient_end - self->data_unit_coefficient_index, 0);
+      } else if (self->run_length == 15) {
+        add_coefficient(self, 15, 0);
+      } else {
+        // FIXME: undefined
+        assert(false);
+      }
+
+      // Coefficient finished, decode next one.
+      return true;
+    }
+  }
+
+  self->scan_decoder_state = SCAN_DECODER_STATE_COEFFICIENT_AMPLITUDE;
+
+  return true;
 }
 
-static size_t decode_ac_coefficient2(UtJpegDecoder *self, UtObject *data,
-                                     bool complete) {
-  size_t offset = 0;
-  size_t run_length = self->coefficient_start >> 4;
-  size_t coefficient_length = self->coefficient_start & 0xf;
-  int16_t ac;
-  if (!read_amplitude(self, data, &offset, coefficient_length, &ac)) {
-    return offset;
+static bool decode_coefficient_amplitude(UtJpegDecoder *self, UtObject *data,
+                                         size_t *offset) {
+  JpegComponent *component = self->scan_components[self->scan_component_index];
+
+  int16_t value = 0;
+  if (!read_amplitude(self, data, offset, self->coefficient_magnitude,
+                      &value)) {
+    return false;
   }
-  add_coefficient(self, run_length, ac);
+
+  int16_t coefficient;
+  if (self->data_unit_coefficient_index == 0) {
+    int16_t diff = value;
+    int16_t dc = component->previous_dc + diff;
+    component->previous_dc = dc;
+    coefficient = dc;
+  } else {
+    coefficient = value;
+  }
+  add_coefficient(self, self->run_length, coefficient);
+
+  self->scan_decoder_state = SCAN_DECODER_STATE_COEFFICIENT_MAGNITUDE;
+
+  return true;
+}
+
+static size_t decode_scan(UtJpegDecoder *self, UtObject *data) {
+  size_t offset = 0;
+
+  bool have_coefficient;
+  do {
+    switch (self->scan_decoder_state) {
+    case SCAN_DECODER_STATE_COEFFICIENT_MAGNITUDE:
+      have_coefficient = decode_coefficient_magnitude(self, data, &offset);
+      break;
+    case SCAN_DECODER_STATE_COEFFICIENT_AMPLITUDE:
+      have_coefficient = decode_coefficient_amplitude(self, data, &offset);
+      break;
+    }
+  } while (have_coefficient);
 
   return offset;
 }
@@ -1453,17 +1460,8 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
     case DECODER_STATE_START_OF_SCAN:
       n_used = decode_start_of_scan(self, d);
       break;
-    case DECODER_STATE_DC_COEFFICIENT1:
-      n_used = decode_dc_coefficient1(self, d, complete);
-      break;
-    case DECODER_STATE_DC_COEFFICIENT2:
-      n_used = decode_dc_coefficient2(self, d, complete);
-      break;
-    case DECODER_STATE_AC_COEFFICIENT1:
-      n_used = decode_ac_coefficient1(self, d, complete);
-      break;
-    case DECODER_STATE_AC_COEFFICIENT2:
-      n_used = decode_ac_coefficient2(self, d, complete);
+    case DECODER_STATE_SCAN:
+      n_used = decode_scan(self, d);
       break;
     case DECODER_STATE_APP0:
       n_used = decode_app0(self, d);
