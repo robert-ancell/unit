@@ -445,35 +445,6 @@ static void add_coefficient(UtJpegDecoder *self, size_t run_length,
   }
 }
 
-// Read an amplitude of [length] bits.
-static bool read_amplitude(UtJpegDecoder *self, UtObject *data, size_t *offset,
-                           size_t length, int16_t *amplitude) {
-  if (length == 0) {
-    *amplitude = 0;
-    return true;
-  }
-
-  uint16_t value;
-  if (!read_int(self, data, offset, length, &value)) {
-    return false;
-  }
-
-  // Upper half of values are positive, lower half are negative, i.e.
-  // 0 bits:  0
-  // 1 bit:  -1, 1
-  // 2 bits: -3,-2, 2, 3
-  // 3 bits: -7,-6,-5,-4, 4, 5, 6, 7
-  // ...
-  int16_t min_amplitude = 1 << (length - 1);
-  if (value >= min_amplitude) {
-    *amplitude = value;
-  } else {
-    *amplitude = value - (min_amplitude * 2) + 1;
-  }
-
-  return true;
-}
-
 static void handle_restart(UtJpegDecoder *self, uint8_t count) {
   if (true) {
     set_error(self, "JPEG restart not supported");
@@ -1205,22 +1176,38 @@ static bool decode_coefficient_amplitude(UtJpegDecoder *self, UtObject *data,
                                          size_t *offset) {
   JpegComponent *component = self->scan_components[self->scan_component_index];
 
-  int16_t value = 0;
-  if (!read_amplitude(self, data, offset, self->coefficient_magnitude,
-                      &value)) {
-    return false;
+  int16_t amplitude;
+  if (self->coefficient_magnitude == 0) {
+    amplitude = 0;
+  } else {
+    uint16_t value;
+    if (!read_int(self, data, offset, self->coefficient_magnitude, &value)) {
+      return false;
+    }
+
+    // Upper half of values are positive, lower half are negative, i.e.
+    // 0 bits:  0
+    // 1 bit:  -1, 1
+    // 2 bits: -3,-2, 2, 3
+    // 3 bits: -7,-6,-5,-4, 4, 5, 6, 7
+    // ...
+    int16_t min_amplitude = 1 << (self->coefficient_magnitude - 1);
+    if (value >= min_amplitude) {
+      amplitude = value;
+    } else {
+      amplitude = value - (min_amplitude * 2) + 1;
+    }
   }
 
   size_t run_length;
   int16_t coefficient;
   if (self->data_unit_coefficient_index == 0) {
-    int16_t diff = value;
-    int16_t dc = component->previous_dc + diff;
+    int16_t dc = component->previous_dc + amplitude;
     component->previous_dc = dc;
     run_length = 0;
     coefficient = dc;
   } else {
-    coefficient = value;
+    coefficient = amplitude;
   }
   add_coefficient(self, run_length, coefficient);
 
