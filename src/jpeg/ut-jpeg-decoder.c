@@ -1188,7 +1188,7 @@ static size_t decode_dc_coefficient2(UtJpegDecoder *self, UtObject *data,
   int16_t diff = 0;
   size_t coefficient_length = self->coefficient_start;
   if (!read_amplitude(self, data, &offset, coefficient_length, &diff)) {
-    return false;
+    return offset;
   }
 
   int16_t dc = component->previous_dc + diff;
@@ -1241,7 +1241,7 @@ static size_t decode_ac_coefficient2(UtJpegDecoder *self, UtObject *data,
   size_t coefficient_length = self->coefficient_start & 0xf;
   int16_t ac;
   if (!read_amplitude(self, data, &offset, coefficient_length, &ac)) {
-    return false;
+    return offset;
   }
   add_coefficient(self, run_length, ac);
 
