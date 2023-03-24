@@ -30,6 +30,7 @@ typedef enum {
 typedef enum {
   SCAN_DECODER_STATE_COEFFICIENT_MAGNITUDE,
   SCAN_DECODER_STATE_COEFFICIENT_AMPLITUDE,
+  SCAN_DECODER_STATE_COEFFICIENT_END_OF_BLOCK_COUNT
 } ScanDecoderState;
 
 typedef enum {
@@ -1188,20 +1189,9 @@ static bool decode_coefficient_magnitude(UtJpegDecoder *self, UtObject *data,
   } else {
     self->coefficient_magnitude = value & 0xf;
     self->run_length = value >> 4;
-    if (self->coefficient_magnitude == 0) {
-      // Special cases of fill to end of data unit, and fill with 16 zeros
-      if (self->run_length == 0) {
-        add_coefficient(
-            self,
-            self->scan_coefficient_end - self->data_unit_coefficient_index, 0);
-      } else if (self->run_length == 15) {
-        add_coefficient(self, 15, 0);
-      } else {
-        // FIXME: undefined
-        assert(false);
-      }
-
-      // Coefficient finished, decode next one.
+    if (self->coefficient_magnitude == 0 && self->run_length < 15) {
+      self->scan_decoder_state =
+          SCAN_DECODER_STATE_COEFFICIENT_END_OF_BLOCK_COUNT;
       return true;
     }
   }
@@ -1221,16 +1211,46 @@ static bool decode_coefficient_amplitude(UtJpegDecoder *self, UtObject *data,
     return false;
   }
 
+  size_t run_length;
   int16_t coefficient;
   if (self->data_unit_coefficient_index == 0) {
     int16_t diff = value;
     int16_t dc = component->previous_dc + diff;
     component->previous_dc = dc;
+    run_length = 0;
     coefficient = dc;
   } else {
     coefficient = value;
   }
-  add_coefficient(self, self->run_length, coefficient);
+  add_coefficient(self, run_length, coefficient);
+
+  self->scan_decoder_state = SCAN_DECODER_STATE_COEFFICIENT_MAGNITUDE;
+
+  return true;
+}
+
+static bool decode_coefficient_end_of_block_count(UtJpegDecoder *self,
+                                                  UtObject *data,
+                                                  size_t *offset) {
+  size_t length = self->run_length;
+
+  size_t count;
+  if (length == 0) {
+    count = 1;
+  } else {
+    uint16_t value;
+    if (!read_int(self, data, offset, length, &value)) {
+      return false;
+    }
+    count = (1 << length) + value;
+  }
+
+  add_coefficient(
+      self, self->scan_coefficient_end - self->data_unit_coefficient_index, 0);
+  for (size_t i = 1; i < count; i++) {
+    add_coefficient(
+        self, self->scan_coefficient_end - self->scan_coefficient_start, 0);
+  }
 
   self->scan_decoder_state = SCAN_DECODER_STATE_COEFFICIENT_MAGNITUDE;
 
@@ -1248,6 +1268,10 @@ static size_t decode_scan(UtJpegDecoder *self, UtObject *data) {
       break;
     case SCAN_DECODER_STATE_COEFFICIENT_AMPLITUDE:
       have_coefficient = decode_coefficient_amplitude(self, data, &offset);
+      break;
+    case SCAN_DECODER_STATE_COEFFICIENT_END_OF_BLOCK_COUNT:
+      have_coefficient =
+          decode_coefficient_end_of_block_count(self, data, &offset);
       break;
     }
   } while (have_coefficient);
