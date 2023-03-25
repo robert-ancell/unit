@@ -1207,6 +1207,7 @@ static bool decode_coefficient_amplitude(UtJpegDecoder *self, UtObject *data,
     run_length = 0;
     coefficient = dc;
   } else {
+    run_length = self->run_length;
     coefficient = amplitude;
   }
   add_coefficient(self, run_length, coefficient);
