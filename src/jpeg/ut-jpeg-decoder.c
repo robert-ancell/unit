@@ -1262,7 +1262,7 @@ static size_t decode_scan(UtJpegDecoder *self, UtObject *data) {
           decode_coefficient_end_of_block_count(self, data, &offset);
       break;
     }
-  } while (have_coefficient);
+  } while (have_coefficient && self->state != DECODER_STATE_ERROR);
 
   return offset;
 }
