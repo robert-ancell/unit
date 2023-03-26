@@ -152,6 +152,19 @@ UtObject *ut_uint64_array_new() {
   return ut_object_new(sizeof(UtUint64Array), &object_interface);
 }
 
+UtObject *ut_uint64_array_new_sized(size_t length) {
+  UtObject *object = ut_uint64_array_new();
+  UtUint64Array *self = (UtUint64Array *)object;
+
+  self->data = malloc(sizeof(uint64_t) * length);
+  self->data_length = length;
+  for (size_t i = 0; i < length; i++) {
+    self->data[i] = 0;
+  }
+
+  return object;
+}
+
 UtObject *ut_uint64_array_new_from_elements(size_t length, ...) {
   va_list ap;
   va_start(ap, length);
