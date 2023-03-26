@@ -27,6 +27,17 @@ const int16_t *ut_int16_list_get_data(UtObject *object) {
   return int16_list_interface->get_data(object);
 }
 
+int16_t *ut_int16_list_get_writable_data(UtObject *object) {
+  UtInt16ListInterface *int16_list_interface =
+      ut_object_get_interface(object, &ut_int16_list_id);
+  assert(int16_list_interface != NULL);
+  if (int16_list_interface->get_writable_data != NULL) {
+    return int16_list_interface->get_writable_data(object);
+  } else {
+    return NULL;
+  }
+}
+
 int16_t *ut_int16_list_take_data(UtObject *object) {
   UtInt16ListInterface *int16_list_interface =
       ut_object_get_interface(object, &ut_int16_list_id);

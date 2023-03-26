@@ -20,6 +20,28 @@ uint64_t ut_uint64_list_get_element(UtObject *object, size_t index) {
   return uint64_list_interface->get_element(object, index);
 }
 
+const uint64_t *ut_uint64_list_get_data(UtObject *object) {
+  UtUint64ListInterface *uint64_list_interface =
+      ut_object_get_interface(object, &ut_uint64_list_id);
+  assert(uint64_list_interface != NULL);
+  if (uint64_list_interface->get_data != NULL) {
+    return uint64_list_interface->get_data(object);
+  } else {
+    return NULL;
+  }
+}
+
+uint64_t *ut_uint64_list_get_writable_data(UtObject *object) {
+  UtUint64ListInterface *uint64_list_interface =
+      ut_object_get_interface(object, &ut_uint64_list_id);
+  assert(uint64_list_interface != NULL);
+  if (uint64_list_interface->get_writable_data != NULL) {
+    return uint64_list_interface->get_writable_data(object);
+  } else {
+    return NULL;
+  }
+}
+
 uint64_t *ut_uint64_list_take_data(UtObject *object) {
   UtUint64ListInterface *uint64_list_interface =
       ut_object_get_interface(object, &ut_uint64_list_id);

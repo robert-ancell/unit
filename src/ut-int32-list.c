@@ -20,6 +20,28 @@ int32_t ut_int32_list_get_element(UtObject *object, size_t index) {
   return int32_list_interface->get_element(object, index);
 }
 
+const int32_t *ut_int32_list_get_data(UtObject *object) {
+  UtInt32ListInterface *int32_list_interface =
+      ut_object_get_interface(object, &ut_int32_list_id);
+  assert(int32_list_interface != NULL);
+  if (int32_list_interface->get_data != NULL) {
+    return int32_list_interface->get_data(object);
+  } else {
+    return NULL;
+  }
+}
+
+int32_t *ut_int32_list_get_writable_data(UtObject *object) {
+  UtInt32ListInterface *int32_list_interface =
+      ut_object_get_interface(object, &ut_int32_list_id);
+  assert(int32_list_interface != NULL);
+  if (int32_list_interface->get_writable_data != NULL) {
+    return int32_list_interface->get_writable_data(object);
+  } else {
+    return NULL;
+  }
+}
+
 int32_t *ut_int32_list_take_data(UtObject *object) {
   UtInt32ListInterface *int32_list_interface =
       ut_object_get_interface(object, &ut_int32_list_id);
