@@ -470,6 +470,67 @@ static void handle_start_of_image(UtJpegDecoder *self) {
 
 static void handle_end_of_image(UtJpegDecoder *self) { set_done(self); }
 
+static void decode_jfif(UtJpegDecoder *self, UtObject *data) {
+  size_t data_length = ut_list_get_length(data);
+
+  if (data_length < 9) {
+    set_error(self, "Insufficient data for JPEG JFIF APP0");
+    return;
+  }
+
+  uint8_t jpeg_version_major = ut_uint8_list_get_element(data, 0);
+  uint8_t jpeg_version_minor = ut_uint8_list_get_element(data, 1);
+  if (jpeg_version_major != 1) {
+    set_error(self, "Unsupported JPEG version %d.%d", jpeg_version_major,
+              jpeg_version_minor);
+    return;
+  }
+
+  self->density_units = ut_uint8_list_get_element(data, 2);
+  if (self->density_units > 2) {
+    set_error(self, "Invalid JPEG density units %d", self->density_units);
+    return;
+  }
+  self->horizontal_pixel_density = ut_uint8_list_get_uint16_be(data, 3);
+  self->vertical_pixel_density = ut_uint8_list_get_uint16_be(data, 5);
+  self->thumbnail_width = ut_uint8_list_get_element(data, 7);
+  self->thumbnail_height = ut_uint8_list_get_element(data, 8);
+  size_t thumbnail_size = self->thumbnail_width * self->thumbnail_height * 3;
+  if (data_length < 9 + thumbnail_size) {
+    set_error(self, "Insufficient space for JPEG thumbnail");
+    return;
+  }
+  ut_object_unref(self->thumbnail_data);
+  self->thumbnail_data = thumbnail_size > 0 ? ut_uint8_array_new() : NULL;
+  for (size_t i = 0; i < thumbnail_size; i++) {
+    ut_uint8_list_append(self->thumbnail_data,
+                         ut_uint8_list_get_element(data, 9 + i));
+  }
+}
+
+static void decode_jfxx(UtJpegDecoder *self, UtObject *data) {
+  size_t data_length = ut_list_get_length(data);
+
+  if (data_length < 1) {
+    set_error(self, "Insufficient data for JPEG JFXX APP0");
+    return;
+  }
+
+  uint8_t extension_code = ut_uint8_list_get_element(data, 0);
+
+  switch (extension_code) {
+  case 0x10:
+    // FIXME: Thumbnail is JPEG
+    break;
+  case 0x11:
+    // FIXME: Thumbnail one byte per pixel (palette)
+    break;
+  case 0x13:
+    // FIXME: Thumbnail three bytes per pixel (RGB)
+    break;
+  }
+}
+
 static size_t decode_app0(UtJpegDecoder *self, UtObject *data) {
   size_t data_length = ut_list_get_length(data);
 
@@ -481,48 +542,25 @@ static size_t decode_app0(UtJpegDecoder *self, UtObject *data) {
     return 0;
   }
 
-  if (length < 16) {
-    set_error(self, "Insufficient data for JPEG app0 block header");
+  // Ignore if insufficient space for JFIF/JFXX identifier - some unknown APP0
+  // block.
+  if (length < 7) {
     return length;
   }
 
-  // FIXME: Also support 'JFXX'
-  if (ut_uint8_list_get_element(data, 2) != 'J' ||
-      ut_uint8_list_get_element(data, 3) != 'F' ||
-      ut_uint8_list_get_element(data, 4) != 'I' ||
-      ut_uint8_list_get_element(data, 5) != 'F' ||
-      ut_uint8_list_get_element(data, 6) != '\0') {
-    set_error(self, "Invalid signature for JPEG app0 block");
+  char identifier[5];
+  for (size_t i = 0; i < 5; i++) {
+    identifier[i] = ut_uint8_list_get_element(data, 2 + i);
+  }
+  if (identifier[4] != '\0') {
     return length;
   }
+  UtObjectRef app0_data = ut_list_get_sublist(data, 7, length - 7);
 
-  uint8_t jpeg_version_major = ut_uint8_list_get_element(data, 7);
-  uint8_t jpeg_version_minor = ut_uint8_list_get_element(data, 8);
-  if (jpeg_version_major != 1) {
-    set_error(self, "Unsupported JPEG version %d.%d", jpeg_version_major,
-              jpeg_version_minor);
-    return length;
-  }
-
-  self->density_units = ut_uint8_list_get_element(data, 9);
-  if (self->density_units > 2) {
-    set_error(self, "Invalid JPEG density units %d", self->density_units);
-    return length;
-  }
-  self->horizontal_pixel_density = ut_uint8_list_get_uint16_be(data, 10);
-  self->vertical_pixel_density = ut_uint8_list_get_uint16_be(data, 12);
-  self->thumbnail_width = ut_uint8_list_get_element(data, 14);
-  self->thumbnail_height = ut_uint8_list_get_element(data, 15);
-  size_t thumbnail_size = self->thumbnail_width * self->thumbnail_height * 3;
-  if (length < 16 + thumbnail_size) {
-    set_error(self, "Insufficient space for JPEG thumbnail");
-    return length;
-  }
-  ut_object_unref(self->thumbnail_data);
-  self->thumbnail_data = thumbnail_size > 0 ? ut_uint8_array_new() : NULL;
-  for (size_t i = 0; i < thumbnail_size; i++) {
-    ut_uint8_list_append(self->thumbnail_data,
-                         ut_uint8_list_get_element(data, 16 + i));
+  if (ut_cstring_equal(identifier, "JFIF")) {
+    decode_jfif(self, app0_data);
+  } else if (ut_cstring_equal(identifier, "JFXX")) {
+    decode_jfxx(self, app0_data);
   }
 
   self->state = DECODER_STATE_MARKER;
