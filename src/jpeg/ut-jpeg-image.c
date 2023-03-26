@@ -1,9 +1,7 @@
 #include <assert.h>
 #include <stdint.h>
 
-#include "ut-cstring.h"
-#include "ut-jpeg-image.h"
-#include "ut-list.h"
+#include "ut.h"
 
 typedef struct {
   UtObject object;
