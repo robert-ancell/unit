@@ -66,8 +66,8 @@ typedef struct {
   // Number of data units decoded in the current MCU.
   size_t data_unit_count;
 
-  // Encoded data unit coefficients.
-  int16_t encoded_data_unit[64];
+  // Encoded image coefficients.
+  UtObject *coefficients;
 } JpegComponent;
 
 typedef struct {
@@ -350,8 +350,10 @@ static void process_data_unit(UtJpegDecoder *self) {
       (component->data_unit_count / component->horizontal_sampling_factor) * 8;
 
   // Do inverse DCT on data unit.
+  int16_t *encoded_data_unit =
+      ut_int16_list_get_writable_data(component->coefficients);
   int16_t decoded_data_unit[64];
-  jpeg_inverse_dct(self->dct_alpha, self->dct_cos, component->encoded_data_unit,
+  jpeg_inverse_dct(self->dct_alpha, self->dct_cos, encoded_data_unit,
                    decoded_data_unit);
 
   // Check if this is the final component being written.
@@ -427,16 +429,19 @@ static void add_coefficient(UtJpegDecoder *self, size_t run_length,
     return;
   }
 
+  int16_t *encoded_data_unit =
+      ut_int16_list_get_writable_data(component->coefficients);
+
   // Pad with zeros.
   for (size_t i = 0; i < run_length; i++) {
     uint8_t index = self->data_unit_order[self->data_unit_coefficient_index];
-    component->encoded_data_unit[index] = 0;
+    encoded_data_unit[index] = 0;
     self->data_unit_coefficient_index++;
   }
 
   // Put cofficient into data unit in zig-zag order.
   uint8_t index = self->data_unit_order[self->data_unit_coefficient_index];
-  component->encoded_data_unit[index] = value * quantization_table_data[index];
+  encoded_data_unit[index] = value * quantization_table_data[index];
 
   if (self->data_unit_coefficient_index < self->scan_coefficient_end) {
     self->data_unit_coefficient_index++;
@@ -666,6 +671,8 @@ static size_t decode_start_of_frame(UtJpegDecoder *self, UtObject *data) {
     self->components[i].horizontal_sampling_factor = horizontal_sampling_factor;
     self->components[i].vertical_sampling_factor = vertical_sampling_factor;
     self->components[i].quantization_table = quantization_table;
+
+    self->components[i].coefficients = ut_int16_array_new_sized(64);
   }
   self->mcu_width = mcu_width;
   self->mcu_height = mcu_height;
@@ -1233,8 +1240,11 @@ static bool decode_coefficient_end_of_block_count(UtJpegDecoder *self,
     count = (1 << length) + value;
   }
 
+  // Fill remaining coefficients on current data unit.
   add_coefficient(
       self, self->scan_coefficient_end - self->data_unit_coefficient_index, 0);
+
+  // Following data units are all empty.
   for (size_t i = 1; i < count; i++) {
     add_coefficient(
         self, self->scan_coefficient_end - self->scan_coefficient_start, 0);
@@ -1519,6 +1529,7 @@ static void ut_jpeg_decoder_cleanup(UtObject *object) {
     ut_object_unref(self->dc_tables[i]);
     ut_object_unref(self->ac_decoders[i]);
     ut_object_unref(self->ac_tables[i]);
+    ut_object_unref(self->components[i].coefficients);
   }
   free(self->comment);
   ut_object_unref(self->image);
