@@ -22,6 +22,7 @@ typedef enum {
   DECODER_STATE_START_OF_SCAN,
   DECODER_STATE_SCAN,
   DECODER_STATE_APP0,
+  DECODER_STATE_APP1,
   DECODER_STATE_COMMENT,
   DECODER_STATE_DONE,
   DECODER_STATE_ERROR
@@ -561,6 +562,43 @@ static size_t decode_app0(UtJpegDecoder *self, UtObject *data) {
     decode_jfif(self, app0_data);
   } else if (ut_cstring_equal(identifier, "JFXX")) {
     decode_jfxx(self, app0_data);
+  }
+
+  self->state = DECODER_STATE_MARKER;
+
+  return length;
+}
+
+static void decode_exif(UtJpegDecoder *self, UtObject *data) {}
+
+static size_t decode_app1(UtJpegDecoder *self, UtObject *data) {
+  size_t data_length = ut_list_get_length(data);
+
+  if (data_length < 2) {
+    return 0;
+  }
+  uint16_t length = ut_uint8_list_get_uint16_be(data, 0);
+  if (data_length < length) {
+    return 0;
+  }
+
+  // Ignore if insufficient space for Exif identifier - some unknown APP1
+  // block.
+  if (length < 8) {
+    return length;
+  }
+
+  char identifier[6];
+  for (size_t i = 0; i < 6; i++) {
+    identifier[i] = ut_uint8_list_get_element(data, 2 + i);
+  }
+  if (identifier[4] != '\0' || identifier[5] != '\0') {
+    return length;
+  }
+  UtObjectRef app1_data = ut_list_get_sublist(data, 8, length - 8);
+
+  if (ut_cstring_equal(identifier, "Exif")) {
+    decode_exif(self, app1_data);
   }
 
   self->state = DECODER_STATE_MARKER;
@@ -1472,6 +1510,9 @@ static size_t decode_marker(UtJpegDecoder *self, UtObject *data) {
   case 0xe0:
     self->state = DECODER_STATE_APP0;
     break;
+  case 0xe1:
+    self->state = DECODER_STATE_APP1;
+    break;
   case 0xfe:
     self->state = DECODER_STATE_COMMENT;
     break;
@@ -1536,6 +1577,9 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
       break;
     case DECODER_STATE_APP0:
       n_used = decode_app0(self, d);
+      break;
+    case DECODER_STATE_APP1:
+      n_used = decode_app1(self, d);
       break;
     case DECODER_STATE_COMMENT:
       n_used = decode_comment(self, d);
