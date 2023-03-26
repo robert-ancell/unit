@@ -75,4 +75,6 @@ char *ut_tiff_reader_get_copyright(UtObject *object);
 
 UtObject *ut_tiff_reader_get_subfile(UtObject *object, uint32_t offset);
 
+UtObject *ut_tiff_reader_get_error(UtObject *object);
+
 bool ut_object_is_tiff_reader(UtObject *object);

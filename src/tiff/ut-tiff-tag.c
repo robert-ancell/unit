@@ -11,7 +11,7 @@ typedef struct {
 
 static char *ut_tiff_tag_to_string(UtObject *object) {
   UtTiffTag *self = (UtTiffTag *)object;
-  return ut_cstring_new_printf("<UtTiffTag>(%04x, %04x)", self->id, self->type);
+  return ut_cstring_new_printf("<UtTiffTag>(0x%04x, %d)", self->id, self->type);
 }
 
 static void ut_tiff_tag_cleanup(UtObject *object) {

@@ -17,6 +17,8 @@ ut_sources = [
   'deflate/ut-deflate-encoder.c',
   'deflate/ut-deflate-error.c',
   'dns/ut-dns-client.c',
+  'exif/ut-exif-error.c',
+  'exif/ut-exif-metadata.c',
   'gzip/ut-gzip-decoder.c',
   'gzip/ut-gzip-encoder.c',
   'gzip/ut-gzip-error.c',
@@ -353,6 +355,11 @@ tiff_reader_test = executable('ut-tiff-reader-test',
                                'tiff/ut-tiff-reader-test.c',
                                link_with: ut_lib)
 test('TIFF Reader', tiff_reader_test)
+
+exif_metadata_test = executable('ut-exif-metadata-test',
+                                'exif/ut-exif-metadata-test.c',
+                                link_with: ut_lib)
+test('Exif metadata', exif_metadata_test)
 
 png_image_test = executable('ut-png-image-test',
                             'png/ut-png-image-test.c',

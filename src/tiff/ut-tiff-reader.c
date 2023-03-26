@@ -847,6 +847,7 @@ char *ut_tiff_reader_get_copyright(UtObject *object) {
 
 UtObject *ut_tiff_reader_get_subfile(UtObject *object, uint32_t offset) {
   assert(ut_object_is_tiff_reader(object));
+  assert(offset != 0);
   UtTiffReader *self = (UtTiffReader *)object;
 
   if (!decode_header(self)) {
@@ -855,7 +856,7 @@ UtObject *ut_tiff_reader_get_subfile(UtObject *object, uint32_t offset) {
 
   UtObject *subfile_object =
       ut_object_new(sizeof(UtTiffReader), &object_interface);
-  UtTiffReader *subfile_self = (UtTiffReader *)object;
+  UtTiffReader *subfile_self = (UtTiffReader *)subfile_object;
   subfile_self->data = ut_object_ref(self->data);
   subfile_self->little_endian = self->little_endian;
   subfile_self->ifd_offset = offset;

@@ -12,6 +12,8 @@
 #include "deflate/ut-deflate-encoder.h"
 #include "deflate/ut-deflate-error.h"
 #include "dns/ut-dns-client.h"
+#include "exif/ut-exif-error.h"
+#include "exif/ut-exif-metadata.h"
 #include "gzip/ut-gzip-decoder.h"
 #include "gzip/ut-gzip-encoder.h"
 #include "gzip/ut-gzip-error.h"
