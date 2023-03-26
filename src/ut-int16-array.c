@@ -30,6 +30,11 @@ static const int16_t *ut_int16_array_get_const_data(UtObject *object) {
   return self->data;
 }
 
+static int16_t *ut_int16_array_get_writable_data(UtObject *object) {
+  UtInt16Array *self = (UtInt16Array *)object;
+  return self->data;
+}
+
 static int16_t *ut_int16_array_take_data(UtObject *object) {
   UtInt16Array *self = (UtInt16Array *)object;
   int16_t *result = self->data;
@@ -127,6 +132,7 @@ static void ut_int16_array_cleanup(UtObject *object) {
 static UtInt16ListInterface int16_list_interface = {
     .get_element = ut_int16_array_get_element,
     .get_data = ut_int16_array_get_const_data,
+    .get_writable_data = ut_int16_array_get_writable_data,
     .take_data = ut_int16_array_take_data,
     .insert = ut_int16_array_insert};
 

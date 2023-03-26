@@ -30,6 +30,11 @@ static const int32_t *ut_int32_array_get_const_data(UtObject *object) {
   return self->data;
 }
 
+static int32_t *ut_int32_array_get_writable_data(UtObject *object) {
+  UtInt32Array *self = (UtInt32Array *)object;
+  return self->data;
+}
+
 static int32_t *ut_int32_array_take_data(UtObject *object) {
   UtInt32Array *self = (UtInt32Array *)object;
   int32_t *result = self->data;
@@ -126,6 +131,7 @@ static void ut_int32_array_cleanup(UtObject *object) {
 static UtInt32ListInterface int32_list_interface = {
     .get_element = ut_int32_array_get_element,
     .get_data = ut_int32_array_get_const_data,
+    .get_writable_data = ut_int32_array_get_writable_data,
     .take_data = ut_int32_array_take_data,
     .insert = ut_int32_array_insert};
 

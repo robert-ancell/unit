@@ -24,7 +24,22 @@ const double *ut_float64_list_get_data(UtObject *object) {
   UtFloat64ListInterface *float64_list_interface =
       ut_object_get_interface(object, &ut_float64_list_id);
   assert(float64_list_interface != NULL);
-  return float64_list_interface->get_data(object);
+  if (float64_list_interface->get_data != NULL) {
+    return float64_list_interface->get_data(object);
+  } else {
+    return NULL;
+  }
+}
+
+double *ut_float64_list_get_writable_data(UtObject *object) {
+  UtFloat64ListInterface *float64_list_interface =
+      ut_object_get_interface(object, &ut_float64_list_id);
+  assert(float64_list_interface != NULL);
+  if (float64_list_interface->get_writable_data != NULL) {
+    return float64_list_interface->get_writable_data(object);
+  } else {
+    return NULL;
+  }
 }
 
 double *ut_float64_list_take_data(UtObject *object) {

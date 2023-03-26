@@ -30,6 +30,11 @@ static const uint64_t *ut_uint64_array_get_const_data(UtObject *object) {
   return self->data;
 }
 
+static uint64_t *ut_uint64_array_get_writable_data(UtObject *object) {
+  UtUint64Array *self = (UtUint64Array *)object;
+  return self->data;
+}
+
 static uint64_t *ut_uint64_array_take_data(UtObject *object) {
   UtUint64Array *self = (UtUint64Array *)object;
   uint64_t *result = self->data;
@@ -127,6 +132,7 @@ static void ut_uint64_array_cleanup(UtObject *object) {
 static UtUint64ListInterface uint64_list_interface = {
     .get_element = ut_uint64_array_get_element,
     .get_data = ut_uint64_array_get_const_data,
+    .get_writable_data = ut_uint64_array_get_writable_data,
     .take_data = ut_uint64_array_take_data,
     .insert = ut_uint64_array_insert};
 

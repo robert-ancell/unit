@@ -29,6 +29,11 @@ static const double *ut_float64_array_get_const_data(UtObject *object) {
   return self->data;
 }
 
+static double *ut_float64_array_get_writable_data(UtObject *object) {
+  UtFloat64Array *self = (UtFloat64Array *)object;
+  return self->data;
+}
+
 static double *ut_float64_array_take_data(UtObject *object) {
   UtFloat64Array *self = (UtFloat64Array *)object;
   double *result = self->data;
@@ -120,6 +125,7 @@ static void ut_float64_array_cleanup(UtObject *object) {
 static UtFloat64ListInterface float64_list_interface = {
     .get_element = ut_float64_array_get_element,
     .get_data = ut_float64_array_get_const_data,
+    .get_writable_data = ut_float64_array_get_writable_data,
     .take_data = ut_float64_array_take_data,
     .insert = ut_float64_array_insert};
 
