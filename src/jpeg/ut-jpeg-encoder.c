@@ -4,8 +4,6 @@
 #include "ut-jpeg.h"
 #include "ut.h"
 
-#define COMPRESS_DEFLATE 0
-
 typedef struct {
   UtObject object;
 
