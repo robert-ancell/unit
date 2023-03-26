@@ -9,6 +9,9 @@ typedef struct {
   UtObject object;
   uint16_t width;
   uint16_t height;
+  UtJpegDensityUnits density_units;
+  uint16_t horizontal_pixel_density;
+  uint16_t vertical_pixel_density;
   size_t n_components;
   UtObject *data;
 } UtJpegImage;
@@ -31,6 +34,9 @@ static UtObjectInterface object_interface = {.type_name = "UtJpegImage",
                                              .interfaces = {{NULL, NULL}}};
 
 UtObject *ut_jpeg_image_new(uint16_t width, uint16_t height,
+                            UtJpegDensityUnits density_units,
+                            uint16_t horizontal_pixel_density,
+                            uint16_t vertical_pixel_density,
                             size_t n_components, UtObject *data) {
   UtObject *object = ut_object_new(sizeof(UtJpegImage), &object_interface);
   UtJpegImage *self = (UtJpegImage *)object;
@@ -38,6 +44,10 @@ UtObject *ut_jpeg_image_new(uint16_t width, uint16_t height,
   assert(ut_list_get_length(data) == width * height * n_components);
 
   self->width = width;
+  self->height = height;
+  self->density_units = density_units;
+  self->horizontal_pixel_density = horizontal_pixel_density;
+  self->vertical_pixel_density = vertical_pixel_density;
   self->height = height;
   self->n_components = n_components;
   self->data = ut_object_ref(data);
@@ -54,6 +64,24 @@ uint16_t ut_jpeg_image_get_height(UtObject *object) {
   assert(ut_object_is_jpeg_image(object));
   UtJpegImage *self = (UtJpegImage *)object;
   return self->height;
+}
+
+UtJpegDensityUnits ut_jpeg_image_get_density_units(UtObject *object) {
+  assert(ut_object_is_jpeg_image(object));
+  UtJpegImage *self = (UtJpegImage *)object;
+  return self->density_units;
+}
+
+uint16_t ut_jpeg_image_get_horizontal_pixel_density(UtObject *object) {
+  assert(ut_object_is_jpeg_image(object));
+  UtJpegImage *self = (UtJpegImage *)object;
+  return self->horizontal_pixel_density;
+}
+
+uint16_t ut_jpeg_image_get_vertical_pixel_density(UtObject *object) {
+  assert(ut_object_is_jpeg_image(object));
+  UtJpegImage *self = (UtJpegImage *)object;
+  return self->vertical_pixel_density;
 }
 
 size_t ut_jpeg_image_get_n_components(UtObject *object) {

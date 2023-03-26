@@ -163,6 +163,11 @@ typedef struct {
   // Number of MCUs processed.
   size_t mcu_count;
 
+  // Density information;
+  UtJpegDensityUnits density_units;
+  uint16_t horizontal_pixel_density;
+  uint16_t vertical_pixel_density;
+
   // Image thumbnail.
   uint16_t thumbnail_width;
   uint16_t thumbnail_height;
@@ -499,9 +504,13 @@ static size_t decode_app0(UtJpegDecoder *self, UtObject *data) {
     return length;
   }
 
-  /*uint8_t density_units =*/ut_uint8_list_get_element(data, 9);
-  /*uint16_t x_density=*/ut_uint8_list_get_uint16_be(data, 10);
-  /*uint16_t x_density=*/ut_uint8_list_get_uint16_be(data, 12);
+  self->density_units = ut_uint8_list_get_element(data, 9);
+  if (self->density_units > 2) {
+    set_error(self, "Invalid JPEG density units %d", self->density_units);
+    return length;
+  }
+  self->horizontal_pixel_density = ut_uint8_list_get_uint16_be(data, 10);
+  self->vertical_pixel_density = ut_uint8_list_get_uint16_be(data, 12);
   self->thumbnail_width = ut_uint8_list_get_element(data, 14);
   self->thumbnail_height = ut_uint8_list_get_element(data, 15);
   size_t thumbnail_size = self->thumbnail_width * self->thumbnail_height * 3;
@@ -693,7 +702,9 @@ static size_t decode_start_of_frame(UtJpegDecoder *self, UtObject *data) {
 
   UtObjectRef image_data =
       ut_uint8_array_new_sized(height * width * n_components);
-  self->image = ut_jpeg_image_new(width, height, n_components, image_data);
+  self->image = ut_jpeg_image_new(
+      width, height, self->density_units, self->horizontal_pixel_density,
+      self->vertical_pixel_density, n_components, image_data);
 
   self->state = DECODER_STATE_MARKER;
 

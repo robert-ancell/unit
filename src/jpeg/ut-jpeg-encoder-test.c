@@ -9,7 +9,8 @@ static void check_jpeg(size_t width, size_t height, size_t n_components,
   UtObjectRef data = ut_uint8_array_new();
   UtObjectRef image_data = ut_uint8_list_new_from_hex_string(hex_image_data);
   UtObjectRef image =
-      ut_jpeg_image_new(width, height, n_components, image_data);
+      ut_jpeg_image_new(width, height, UT_JPEG_DENSITY_UNITS_NONE, 1, 1,
+                        n_components, image_data);
   UtObjectRef encoder = ut_jpeg_encoder_new(image, data);
   ut_jpeg_encoder_encode(encoder);
   ut_assert_uint8_list_equal_hex(data, hex_data);
