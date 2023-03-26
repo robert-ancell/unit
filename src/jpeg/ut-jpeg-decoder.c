@@ -65,6 +65,9 @@ typedef struct {
 
   // Number of data units decoded in the current MCU.
   size_t data_unit_count;
+
+  // Encoded data unit coefficients.
+  int16_t encoded_data_unit[64];
 } JpegComponent;
 
 typedef struct {
@@ -141,9 +144,6 @@ typedef struct {
 
   // Number of zeros before this coefficient.
   size_t run_length;
-
-  // Encoded data unit coefficients.
-  int16_t encoded_data_unit[64];
 
   // Components in the current scan.
   JpegComponent *scan_components[4];
@@ -351,7 +351,7 @@ static void process_data_unit(UtJpegDecoder *self) {
 
   // Do inverse DCT on data unit.
   int16_t decoded_data_unit[64];
-  jpeg_inverse_dct(self->dct_alpha, self->dct_cos, self->encoded_data_unit,
+  jpeg_inverse_dct(self->dct_alpha, self->dct_cos, component->encoded_data_unit,
                    decoded_data_unit);
 
   // Check if this is the final component being written.
@@ -430,13 +430,13 @@ static void add_coefficient(UtJpegDecoder *self, size_t run_length,
   // Pad with zeros.
   for (size_t i = 0; i < run_length; i++) {
     uint8_t index = self->data_unit_order[self->data_unit_coefficient_index];
-    self->encoded_data_unit[index] = 0;
+    component->encoded_data_unit[index] = 0;
     self->data_unit_coefficient_index++;
   }
 
   // Put cofficient into data unit in zig-zag order.
   uint8_t index = self->data_unit_order[self->data_unit_coefficient_index];
-  self->encoded_data_unit[index] = value * quantization_table_data[index];
+  component->encoded_data_unit[index] = value * quantization_table_data[index];
 
   if (self->data_unit_coefficient_index < self->scan_coefficient_end) {
     self->data_unit_coefficient_index++;
