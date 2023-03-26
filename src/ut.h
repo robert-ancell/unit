@@ -58,6 +58,8 @@
 #include "ut-int32-array.h"
 #include "ut-int32-list.h"
 #include "ut-int32.h"
+#include "ut-int64-array.h"
+#include "ut-int64-list.h"
 #include "ut-int64.h"
 #include "ut-ip-address-resolver.h"
 #include "ut-ip-address.h"
