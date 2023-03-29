@@ -38,9 +38,10 @@ UtObject *ut_string_new_from_utf16(UtObject *code_units) {
     if (code_unit <= 0xd7ff || code_unit >= 0xe000) {
       code_point = code_unit;
     } else if ((code_unit & 0xfc00) == 0xd800) {
-      if (i == code_units_length - 1) {
+      if (i + 1 >= code_units_length) {
         code_point = 0xfffd;
       } else {
+        i++;
         uint16_t code_unit2 = ut_uint16_list_get_element(code_units, i);
         if ((code_unit2 & 0xfc00) == 0xdc00) {
           code_point =

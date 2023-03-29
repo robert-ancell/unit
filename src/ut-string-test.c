@@ -46,8 +46,8 @@ static void test_utf16() {
   assert(ut_uint16_list_get_element(utf16, 5) == 0xd83d);
   assert(ut_uint16_list_get_element(utf16, 6) == 0xde00);
 
-  //UtObjectRef string2 = ut_string_new_from_utf16(utf16);
-  //ut_assert_cstring_equal(ut_string_get_text(string2), "$¢€𐐷😀");
+  UtObjectRef string2 = ut_string_new_from_utf16(utf16);
+  ut_assert_cstring_equal(ut_string_get_text(string2), "$¢€𐐷😀");
 }
 
 static void test_iso8859_1() {
