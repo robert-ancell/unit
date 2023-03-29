@@ -213,10 +213,10 @@ map_test = executable('ut-map-test',
                       link_with: ut_lib)
 test('Map', map_test)
 
-utf8_string_test = executable('ut-utf8-string-test',
-                              'ut-utf8-string-test.c',
+string_test = executable('ut-string-test',
+                              'ut-string-test.c',
                               link_with: ut_lib)
-test('String', utf8_string_test)
+test('String', string_test)
 
 const_utf8_string_test = executable('ut-constant-utf8-string-test',
                                     'ut-constant-utf8-string-test.c',

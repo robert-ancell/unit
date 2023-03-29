@@ -57,6 +57,16 @@ UtObject *ut_string_new_from_utf16(UtObject *code_units) {
   return string;
 }
 
+UtObject *ut_string_new_from_iso_8859_1(UtObject *characters) {
+  UtObject *string = ut_string_new("");
+  size_t characters_length = ut_list_get_length(characters);
+  for (size_t i = 0; i < characters_length; i++) {
+    uint16_t character = ut_uint8_list_get_element(characters, i);
+    ut_string_append_code_point(string, character);
+  }
+  return string;
+}
+
 const char *ut_string_get_text(UtObject *object) {
   UtStringInterface *string_interface =
       ut_object_get_interface(object, &ut_string_id);
@@ -159,6 +169,22 @@ UtObject *ut_string_get_utf16(UtObject *object) {
   }
 
   return ut_object_ref(utf16);
+}
+
+UtObject *ut_string_get_iso_8859_1(UtObject *object) {
+  UtObjectRef code_points = ut_string_get_code_points(object);
+  UtObjectRef characters = ut_uint8_list_new();
+  size_t code_points_length = ut_list_get_length(code_points);
+  for (size_t i = 0; i < code_points_length; i++) {
+    uint32_t code_point = ut_uint32_list_get_element(code_points, i);
+    if (code_point <= 0xff) {
+      ut_uint8_list_append(characters, code_point);
+    } else {
+      return ut_general_error_new("Invalid code points");
+    }
+  }
+
+  return ut_object_ref(characters);
 }
 
 bool ut_string_is_mutable(UtObject *object) {

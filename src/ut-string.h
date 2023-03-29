@@ -62,6 +62,13 @@ UtObject *ut_string_new_from_utf8(UtObject *utf8);
 /// !return-ref
 UtObject *ut_string_new_from_utf16(UtObject *code_units);
 
+/// Creates a new [UtString] from ISO 8859-1 encoded [characters].
+///
+/// !arg-type code_units Uint8List
+/// !return-type UtString
+/// !return-ref
+UtObject *ut_string_new_from_iso_8859_1(UtObject *characters);
+
 /// Returns the text inside [object].
 const char *ut_string_get_text(UtObject *object);
 
@@ -88,6 +95,12 @@ UtObject *ut_string_get_utf8(UtObject *object);
 /// !return-type UtUint16List
 /// !return-ref
 UtObject *ut_string_get_utf16(UtObject *object);
+
+/// Generates an ISO 8859-1 encoding of [object].
+///
+/// !return-type UtUint8List
+/// !return-ref
+UtObject *ut_string_get_iso_8859_1(UtObject *object);
 
 /// Returns [true] if [object] can be modified.
 bool ut_string_is_mutable(UtObject *object);
