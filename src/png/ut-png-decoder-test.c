@@ -661,7 +661,7 @@ static void test_png_suite_ancillary_chunks() {
   check_png(ctjn0g04_data, 32, 32, 4, UT_PNG_COLOUR_TYPE_GREYSCALE, NULL, NULL,
             ctjn0g04_image_data);
 
-  // chunk with jpeg exif data
+  // exif - image attributes
   check_png(exif2c08_data, 32, 32, 8, UT_PNG_COLOUR_TYPE_TRUECOLOUR, NULL, NULL,
             exif2c08_image_data);
 }

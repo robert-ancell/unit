@@ -725,6 +725,35 @@ static void decode_palette(UtPngDecoder *self, UtObject *data) {
   ut_png_image_set_palette(self->image, palette);
 }
 
+static void decode_image_data(UtPngDecoder *self, UtObject *data) {
+  ut_buffered_input_stream_write(self->image_data_decoder_input_stream, data,
+                                 false);
+}
+
+static void decode_image_end(UtPngDecoder *self, UtObject *data) {
+  if (ut_list_get_length(data) != 0) {
+    set_error(self, "Invalid image end PNG chunk");
+    return;
+  }
+
+  if (!is_complete(self)) {
+    set_error(self, "Insufficient PNG image data");
+    return;
+  }
+
+  set_end(self);
+}
+
+static void decode_chromaticities(UtPngDecoder *self, UtObject *data) {}
+
+static void decode_gamma(UtPngDecoder *self, UtObject *data) {}
+
+static void decode_icc_profile(UtPngDecoder *self, UtObject *data) {}
+
+static void decode_significant_bits(UtPngDecoder *self, UtObject *data) {}
+
+static void decode_standard_rgb(UtPngDecoder *self, UtObject *data) {}
+
 static void decode_background(UtPngDecoder *self, UtObject *data) {
   UtObjectRef background = NULL;
   switch (ut_png_image_get_colour_type(self->image)) {
@@ -770,6 +799,12 @@ static void decode_background(UtPngDecoder *self, UtObject *data) {
   ut_png_image_set_background_colour(self->image, background);
 }
 
+static void decode_histogram(UtPngDecoder *self, UtObject *data) {}
+
+static void decode_transparency(UtPngDecoder *self, UtObject *data) {}
+
+static void decode_exif(UtPngDecoder *self, UtObject *data) {}
+
 static void decode_physical_dimensions(UtPngDecoder *self, UtObject *data) {
   if (ut_list_get_length(data) != 9) {
     set_error(self, "Insufficient space for PNG image dimensions");
@@ -780,6 +815,8 @@ static void decode_physical_dimensions(UtPngDecoder *self, UtObject *data) {
   /*self->pixels_per_unix_y =*/ut_uint8_list_get_uint32_be(data, 4);
   /*self->unit_specifier =*/ut_uint8_list_get_element(data, 8);
 }
+
+static void decode_suggested_palette(UtPngDecoder *self, UtObject *data) {}
 
 static void decode_modification_time(UtPngDecoder *self, UtObject *data) {
   if (ut_list_get_length(data) != 7) {
@@ -795,24 +832,11 @@ static void decode_modification_time(UtPngDecoder *self, UtObject *data) {
   /*self->second =*/ut_uint8_list_get_element(data, 6);
 }
 
-static void decode_image_data(UtPngDecoder *self, UtObject *data) {
-  ut_buffered_input_stream_write(self->image_data_decoder_input_stream, data,
-                                 false);
-}
+static void decode_international_text(UtPngDecoder *self, UtObject *data) {}
 
-static void decode_image_end(UtPngDecoder *self, UtObject *data) {
-  if (ut_list_get_length(data) != 0) {
-    set_error(self, "Invalid image end PNG chunk");
-    return;
-  }
+static void decode_text(UtPngDecoder *self, UtObject *data) {}
 
-  if (!is_complete(self)) {
-    set_error(self, "Insufficient PNG image data");
-    return;
-  }
-
-  set_end(self);
-}
+static void decode_compressed_text(UtPngDecoder *self, UtObject *data) {}
 
 static size_t decode_chunk(UtPngDecoder *self, UtObject *data) {
   size_t data_length = ut_list_get_length(data);
@@ -851,20 +875,56 @@ static size_t decode_chunk(UtPngDecoder *self, UtObject *data) {
   case UT_PNG_CHUNK_TYPE_PALETTE:
     decode_palette(self, chunk_data);
     break;
-  case UT_PNG_CHUNK_TYPE_BACKGROUND:
-    decode_background(self, chunk_data);
-    break;
-  case UT_PNG_CHUNK_TYPE_PHYSICAL_DIMENSIONS:
-    decode_physical_dimensions(self, chunk_data);
-    break;
-  case UT_PNG_CHUNK_TYPE_MODIFICATION_TIME:
-    decode_modification_time(self, chunk_data);
-    break;
   case UT_PNG_CHUNK_TYPE_IMAGE_DATA:
     decode_image_data(self, chunk_data);
     break;
   case UT_PNG_CHUNK_TYPE_IMAGE_END:
     decode_image_end(self, chunk_data);
+    break;
+  case UT_PNG_CHUNK_TYPE_CHROMATICITIES:
+    decode_chromaticities(self, chunk_data);
+    break;
+  case UT_PNG_CHUNK_TYPE_GAMMA:
+    decode_gamma(self, chunk_data);
+    break;
+  case UT_PNG_CHUNK_TYPE_ICC_PROFILE:
+    decode_icc_profile(self, chunk_data);
+    break;
+  case UT_PNG_CHUNK_TYPE_SIGNIFICANT_BITS:
+    decode_significant_bits(self, chunk_data);
+    break;
+  case UT_PNG_CHUNK_TYPE_STANDARD_RGB:
+    decode_standard_rgb(self, chunk_data);
+    break;
+  case UT_PNG_CHUNK_TYPE_BACKGROUND:
+    decode_background(self, chunk_data);
+    break;
+  case UT_PNG_CHUNK_TYPE_HISTOGRAM:
+    decode_histogram(self, chunk_data);
+    break;
+  case UT_PNG_CHUNK_TYPE_TRANSPARENCY:
+    decode_transparency(self, chunk_data);
+    break;
+  case UT_PNG_CHUNK_TYPE_EXIF:
+    decode_exif(self, chunk_data);
+    break;
+  case UT_PNG_CHUNK_TYPE_PHYSICAL_DIMENSIONS:
+    decode_physical_dimensions(self, chunk_data);
+    break;
+  case UT_PNG_CHUNK_TYPE_SUGGESTED_PALETTE:
+    decode_suggested_palette(self, chunk_data);
+    break;
+  case UT_PNG_CHUNK_TYPE_MODIFICATION_TIME:
+    decode_modification_time(self, chunk_data);
+    break;
+  case UT_PNG_CHUNK_TYPE_INTERNATIONAL_TEXT:
+    decode_international_text(self, chunk_data);
+    break;
+  case UT_PNG_CHUNK_TYPE_TEXT:
+    decode_text(self, chunk_data);
+    break;
+  case UT_PNG_CHUNK_TYPE_COMPRESSED_TEXT:
+    decode_compressed_text(self, chunk_data);
     break;
   default:
     if (!is_ancillary) {
