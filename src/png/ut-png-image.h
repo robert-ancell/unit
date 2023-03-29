@@ -37,6 +37,21 @@ void ut_png_image_set_background_colour(UtObject *object,
 
 UtObject *ut_png_image_get_background_colour(UtObject *object);
 
+void ut_png_image_set_text(UtObject *object, const char *keyword,
+                           const char *text);
+
+void ut_png_image_set_international_text(UtObject *object, const char *keyword,
+                                         const char *language,
+                                         const char *translated_keyword,
+                                         const char *text);
+
+const char *ut_png_image_get_text(UtObject *object, const char *keyword);
+
+const char *
+ut_png_image_get_international_text(UtObject *object, const char *keyword,
+                                    const char *language,
+                                    const char **translated_keyword);
+
 UtObject *ut_png_image_get_data(UtObject *object);
 
 UtObject *ut_png_image_to_rgba(UtObject *object);

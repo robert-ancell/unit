@@ -219,5 +219,43 @@ int main(int argc, char **argv) {
   ut_assert_uint8_list_equal_hex(ta16_rgba, "11223300ddeeff55"
                                             "aabbccaa445566ff");
 
+  UtObjectRef text_image_data = ut_uint8_list_new_from_hex_string("00");
+  UtObjectRef text_image =
+      ut_png_image_new(1, 1, 8, UT_PNG_COLOUR_TYPE_GREYSCALE, text_image_data);
+  ut_png_image_set_text(text_image, "Title", "Test Text");
+  ut_png_image_set_text(text_image, "Author", "Foo <foo@example.com>");
+  ut_png_image_set_text(text_image, "Description", "Lorem Ipsum.\nFoo Bar");
+  ut_assert_cstring_equal(ut_png_image_get_text(text_image, "Title"),
+                          "Test Text");
+  ut_assert_cstring_equal(ut_png_image_get_text(text_image, "Author"),
+                          "Foo <foo@example.com>");
+  ut_assert_cstring_equal(ut_png_image_get_text(text_image, "Description"),
+                          "Lorem Ipsum.\nFoo Bar");
+  assert(ut_png_image_get_text(text_image, "Comment") == NULL);
+
+  UtObjectRef international_text_image_data =
+      ut_uint8_list_new_from_hex_string("00");
+  UtObjectRef international_text_image = ut_png_image_new(
+      1, 1, 8, UT_PNG_COLOUR_TYPE_GREYSCALE, international_text_image_data);
+  ut_png_image_set_international_text(international_text_image, "Title", "de",
+                                      "Titel", "Testtext");
+  ut_png_image_set_international_text(international_text_image, "Author", "DE",
+                                      "Autor", "Foo <foo-de@example.com>");
+  const char *translated_keyword;
+  ut_assert_cstring_equal(
+      ut_png_image_get_international_text(international_text_image, "Title",
+                                          "de", &translated_keyword),
+      "Testtext");
+  ut_assert_cstring_equal(translated_keyword, "Titel");
+  ut_assert_cstring_equal(
+      ut_png_image_get_international_text(international_text_image, "Author",
+                                          "De", &translated_keyword),
+      "Foo <foo-de@example.com>");
+  ut_assert_cstring_equal(translated_keyword, "Autor");
+  assert(ut_png_image_get_international_text(international_text_image, "fi",
+                                             "Title",
+                                             &translated_keyword) == NULL);
+  assert(translated_keyword == NULL);
+
   return 0;
 }

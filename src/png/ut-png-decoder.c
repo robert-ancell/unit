@@ -832,11 +832,229 @@ static void decode_modification_time(UtPngDecoder *self, UtObject *data) {
   /*self->second =*/ut_uint8_list_get_element(data, 6);
 }
 
-static void decode_international_text(UtPngDecoder *self, UtObject *data) {}
+static size_t find_separator(UtObject *data, size_t start) {
+  size_t data_length = ut_list_get_length(data);
+  for (size_t i = start; i < data_length; i++) {
+    if (ut_uint8_list_get_element(data, i) == '\0') {
+      return i;
+    }
+  }
 
-static void decode_text(UtPngDecoder *self, UtObject *data) {}
+  return data_length;
+}
 
-static void decode_compressed_text(UtPngDecoder *self, UtObject *data) {}
+static bool is_printable(uint8_t character) {
+  return (character >= 32 && character <= 126) ||
+         (character >= 161 && character <= 255);
+}
+
+static bool is_alphanumeric(uint8_t character) {
+  return (character >= 'a' && character <= 'z') ||
+         (character >= 'A' && character <= 'Z') ||
+         (character >= '0' && character <= '9');
+}
+
+static bool valid_keyword(UtObject *data) {
+  size_t data_length = ut_list_get_length(data);
+  if (data_length > 79) {
+    return false;
+  }
+
+  for (size_t i = 0; i < data_length; i++) {
+    uint8_t c = ut_uint8_list_get_element(data, i);
+    if (!is_printable(c)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+static bool valid_language(UtObject *data) {
+  size_t data_length = ut_list_get_length(data);
+  for (size_t i = 0; i < data_length; i++) {
+    uint8_t c = ut_uint8_list_get_element(data, i);
+    if (!is_alphanumeric(c) && c != '-') {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+static bool valid_text(UtObject *data) {
+  size_t data_length = ut_list_get_length(data);
+  for (size_t i = 0; i < data_length; i++) {
+    uint8_t c = ut_uint8_list_get_element(data, i);
+    if (!is_printable(c) && c != '\n') {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+static UtObject *decompress_text(UtPngDecoder *self, uint8_t compression_method,
+                                 UtObject *compressed_text) {
+  if (compression_method != 0) {
+    set_error(self, "Invalid compressed text compression method");
+    return NULL;
+  }
+  UtObjectRef zlib_input = ut_list_input_stream_new(compressed_text);
+  UtObjectRef decoder = ut_zlib_decoder_new(zlib_input);
+  UtObjectRef text = ut_input_stream_read_sync(decoder);
+  if (ut_object_implements_error(text)) {
+    set_error(self, "Invalid compressed text");
+    return NULL;
+  }
+  return ut_object_ref(text);
+}
+
+static void decode_international_text(UtPngDecoder *self, UtObject *data) {
+  size_t data_length = ut_list_get_length(data);
+  size_t keyword_end = find_separator(data, 0);
+  if (keyword_end >= data_length) {
+    set_error(self, "Missing separator in PNG international text block");
+    return;
+  }
+
+  if (keyword_end + 3 >= data_length) {
+    set_error(self, "Invalid PNG international text block");
+    return;
+  }
+
+  uint8_t compression_flag = ut_uint8_list_get_element(data, keyword_end + 1);
+  uint8_t compression_method = ut_uint8_list_get_element(data, keyword_end + 2);
+  if (compression_flag > 1) {
+    set_error(self, "Invalid PNG international text block compression flag");
+  }
+
+  size_t language_start = keyword_end + 3;
+  size_t language_end = find_separator(data, language_start);
+  if (language_end >= data_length) {
+    set_error(self,
+              "Missing language separator in PNG international text block");
+    return;
+  }
+
+  size_t translated_keyword_start = language_end + 1;
+  size_t translated_keyword_end = find_separator(data, language_end + 3);
+  if (translated_keyword_end >= data_length) {
+    set_error(
+        self,
+        "Missing translated keyword separator in PNG international text block");
+    return;
+  }
+
+  size_t text_start = translated_keyword_end + 1;
+
+  UtObjectRef keyword = ut_list_get_sublist(data, 0, keyword_end);
+  UtObjectRef language =
+      ut_list_get_sublist(data, language_start, language_end - language_start);
+  UtObjectRef translated_keyword =
+      ut_list_get_sublist(data, translated_keyword_start,
+                          translated_keyword_end - translated_keyword_start);
+  UtObjectRef text_data =
+      ut_list_get_sublist(data, text_start, data_length - text_start);
+  UtObjectRef text = NULL;
+  if (compression_flag != 0) {
+    text = decompress_text(self, compression_method, text);
+    if (text == NULL) {
+      return;
+    }
+  } else {
+    text = ut_object_ref(text_data);
+  }
+
+  if (!valid_keyword(keyword)) {
+    set_error(self, "International text keyword contains invalid characters");
+    return;
+  }
+  if (!valid_language(language)) {
+    set_error(self, "International text language contains invalid characters");
+    return;
+  }
+
+  UtObjectRef keyword_string = ut_string_new_from_iso_8859_1(keyword);
+  UtObjectRef language_string = ut_string_new_from_iso_8859_1(language);
+  UtObjectRef translated_keyword_string =
+      ut_string_new_from_utf8(translated_keyword);
+  UtObjectRef text_string = ut_string_new_from_utf8(text);
+
+  ut_png_image_set_international_text(
+      self->image, ut_string_get_text(keyword_string),
+      ut_string_get_text(language_string),
+      ut_string_get_text(translated_keyword_string),
+      ut_string_get_text(text_string));
+}
+
+static void decode_text(UtPngDecoder *self, UtObject *data) {
+  size_t data_length = ut_list_get_length(data);
+  size_t keyword_end = find_separator(data, 0);
+  if (keyword_end >= data_length) {
+    set_error(self, "Missing separator in text block");
+    return;
+  }
+
+  UtObjectRef keyword = ut_list_get_sublist(data, 0, keyword_end);
+  size_t text_start = keyword_end + 1;
+  UtObjectRef text =
+      ut_list_get_sublist(data, text_start, data_length - text_start);
+
+  if (!valid_keyword(keyword)) {
+    set_error(self, "Text keyword contains invalid characters");
+    return;
+  }
+  if (!valid_text(text)) {
+    set_error(self, "Text contains invalid characters");
+    return;
+  }
+
+  UtObjectRef keyword_string = ut_string_new_from_iso_8859_1(keyword);
+  UtObjectRef text_string = ut_string_new_from_iso_8859_1(text);
+
+  ut_png_image_set_text(self->image, ut_string_get_text(keyword_string),
+                        ut_string_get_text(text_string));
+}
+
+static void decode_compressed_text(UtPngDecoder *self, UtObject *data) {
+  size_t data_length = ut_list_get_length(data);
+  size_t keyword_end = find_separator(data, 0);
+  if (keyword_end >= data_length) {
+    set_error(self, "Missing separator in compressed text block");
+    return;
+  }
+
+  if (keyword_end + 1 >= data_length) {
+    set_error(self, "Invalid PNG compressed text block");
+    return;
+  }
+
+  UtObjectRef keyword = ut_list_get_sublist(data, 0, keyword_end);
+  uint8_t compression_method = ut_uint8_list_get_element(data, keyword_end + 1);
+  size_t compressed_text_start = keyword_end + 2;
+  UtObjectRef compressed_text = ut_list_get_sublist(
+      data, compressed_text_start, data_length - compressed_text_start);
+
+  if (!valid_keyword(keyword)) {
+    set_error(self, "Text keyword contains invalid characters");
+    return;
+  }
+  UtObjectRef text = decompress_text(self, compression_method, compressed_text);
+  if (text == NULL) {
+    return;
+  }
+  if (!valid_text(text)) {
+    set_error(self, "Text contains invalid characters");
+    return;
+  }
+
+  UtObjectRef keyword_string = ut_string_new_from_iso_8859_1(keyword);
+  UtObjectRef text_string = ut_string_new_from_iso_8859_1(text);
+
+  ut_png_image_set_text(self->image, ut_string_get_text(keyword_string),
+                        ut_string_get_text(text_string));
+}
 
 static size_t decode_chunk(UtPngDecoder *self, UtObject *data) {
   size_t data_length = ut_list_get_length(data);

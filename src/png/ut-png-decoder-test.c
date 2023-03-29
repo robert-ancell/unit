@@ -5,10 +5,12 @@
 
 // Check the PNG image in [hex_data] can be decoded and matches the expected
 // properties.
-static void check_png(const char *hex_data, uint32_t width, uint32_t height,
-                      uint8_t bit_depth, UtPngColourType colour_type,
-                      const char *hex_palette_data, const char *hex_background,
-                      const char *hex_image_data) {
+static UtObject *check_png_full(const char *hex_data, uint32_t width,
+                                uint32_t height, uint8_t bit_depth,
+                                UtPngColourType colour_type,
+                                const char *hex_palette_data,
+                                const char *hex_background,
+                                const char *hex_image_data) {
   UtObjectRef data = ut_uint8_list_new_from_hex_string(hex_data);
   UtObjectRef data_stream = ut_list_input_stream_new(data);
   UtObjectRef decoder = ut_png_decoder_new(data_stream);
@@ -33,6 +35,19 @@ static void check_png(const char *hex_data, uint32_t width, uint32_t height,
                                    hex_palette_data);
   }
   ut_assert_uint8_list_equal_hex(ut_png_image_get_data(image), hex_image_data);
+
+  return ut_object_ref(image);
+}
+
+// Check the PNG image in [hex_data] can be decoded and matches the expected
+// properties.
+static void check_png(const char *hex_data, uint32_t width, uint32_t height,
+                      uint8_t bit_depth, UtPngColourType colour_type,
+                      const char *hex_palette_data, const char *hex_background,
+                      const char *hex_image_data) {
+  UtObjectRef image =
+      check_png_full(hex_data, width, height, bit_depth, colour_type,
+                     hex_palette_data, hex_background, hex_image_data);
 }
 
 // Check the PNG image in [hex_data] is invalid.
@@ -634,32 +649,245 @@ static void test_png_suite_ancillary_chunks() {
             ct0n0g04_image_data);
 
   // with textual data
-  check_png(ct1n0g04_data, 32, 32, 4, UT_PNG_COLOUR_TYPE_GREYSCALE, NULL, NULL,
-            ct1n0g04_image_data);
+  UtObjectRef text_image =
+      check_png_full(ct1n0g04_data, 32, 32, 4, UT_PNG_COLOUR_TYPE_GREYSCALE,
+                     NULL, NULL, ct1n0g04_image_data);
+  ut_assert_cstring_equal(ut_png_image_get_text(text_image, "Title"),
+                          "PngSuite");
+  ut_assert_cstring_equal(ut_png_image_get_text(text_image, "Author"),
+                          "Willem A.J. van Schaik\n"
+                          "(willem@schaik.com)");
+  ut_assert_cstring_equal(ut_png_image_get_text(text_image, "Copyright"),
+                          "Copyright Willem van Schaik, Singapore 1995-96");
+  ut_assert_cstring_equal(
+      ut_png_image_get_text(text_image, "Description"),
+      "A compilation of a set of images created to test the\n"
+      "various color-types of the PNG format. Included are\n"
+      "black&white, color, paletted, with alpha channel, with\n"
+      "transparency formats. All bit-depths allowed according\n"
+      "to the spec are present.");
+  ut_assert_cstring_equal(ut_png_image_get_text(text_image, "Software"),
+                          "Created on a NeXTstation color using \"pnmtopng\".");
+  ut_assert_cstring_equal(ut_png_image_get_text(text_image, "Disclaimer"),
+                          "Freeware.");
 
   // with compressed textual data
-  check_png(ctzn0g04_data, 32, 32, 4, UT_PNG_COLOUR_TYPE_GREYSCALE, NULL, NULL,
-            ctzn0g04_image_data);
+  UtObjectRef compressed_text_image =
+      check_png_full(ctzn0g04_data, 32, 32, 4, UT_PNG_COLOUR_TYPE_GREYSCALE,
+                     NULL, NULL, ctzn0g04_image_data);
+  // The following text was uncompressed:
+  ut_assert_cstring_equal(ut_png_image_get_text(compressed_text_image, "Title"),
+                          "PngSuite");
+  ut_assert_cstring_equal(
+      ut_png_image_get_text(compressed_text_image, "Author"),
+      "Willem A.J. van Schaik\n"
+      "(willem@schaik.com)");
+  // The following text was compressed:
+  ut_assert_cstring_equal(
+      ut_png_image_get_text(compressed_text_image, "Copyright"),
+      "Copyright Willem van Schaik, Singapore 1995-96");
+  ut_assert_cstring_equal(
+      ut_png_image_get_text(compressed_text_image, "Description"),
+      "A compilation of a set of images created to test the\n"
+      "various color-types of the PNG format. Included are\n"
+      "black&white, color, paletted, with alpha channel, with\n"
+      "transparency formats. All bit-depths allowed according\n"
+      "to the spec are present.");
+  ut_assert_cstring_equal(
+      ut_png_image_get_text(compressed_text_image, "Software"),
+      "Created on a NeXTstation color using \"pnmtopng\".");
+  ut_assert_cstring_equal(
+      ut_png_image_get_text(compressed_text_image, "Disclaimer"), "Freeware.");
 
   // international UTF-8, english
-  check_png(cten0g04_data, 32, 32, 4, UT_PNG_COLOUR_TYPE_GREYSCALE, NULL, NULL,
-            cten0g04_image_data);
+  UtObjectRef en_text_image =
+      check_png_full(cten0g04_data, 32, 32, 4, UT_PNG_COLOUR_TYPE_GREYSCALE,
+                     NULL, NULL, cten0g04_image_data);
+  const char *translated_keyword;
+  ut_assert_cstring_equal(
+      ut_png_image_get_international_text(en_text_image, "Title", "en",
+                                          &translated_keyword),
+      "PngSuite");
+  ut_assert_cstring_equal(translated_keyword, "Title");
+  ut_assert_cstring_equal(
+      ut_png_image_get_international_text(en_text_image, "Author", "en",
+                                          &translated_keyword),
+      "Willem van Schaik (willem@schaik.com)");
+  ut_assert_cstring_equal(translated_keyword, "Author");
+  ut_assert_cstring_equal(
+      ut_png_image_get_international_text(en_text_image, "Copyright", "en",
+                                          &translated_keyword),
+      "Copyright Willem van Schaik, Canada 2011");
+  ut_assert_cstring_equal(translated_keyword, "Copyright");
+  ut_assert_cstring_equal(
+      ut_png_image_get_international_text(en_text_image, "Description", "en",
+                                          &translated_keyword),
+      "A compilation of a set of images created to test the various "
+      "color-types of the PNG format. Included are black&white, color, "
+      "paletted, with alpha channel, with transparency formats. All bit-depths "
+      "allowed according to the spec are present.");
+  ut_assert_cstring_equal(translated_keyword, "Description");
+  ut_assert_cstring_equal(
+      ut_png_image_get_international_text(en_text_image, "Software", "en",
+                                          &translated_keyword),
+      "Created on a NeXTstation color using \"pnmtopng\".");
+  ut_assert_cstring_equal(translated_keyword, "Software");
+  ut_assert_cstring_equal(
+      ut_png_image_get_international_text(en_text_image, "Disclaimer", "en",
+                                          &translated_keyword),
+      "Freeware.");
+  ut_assert_cstring_equal(translated_keyword, "Disclaimer");
 
   // international UTF-8, finnish
-  check_png(ctfn0g04_data, 32, 32, 4, UT_PNG_COLOUR_TYPE_GREYSCALE, NULL, NULL,
-            ctfn0g04_image_data);
+  UtObjectRef fi_text_image =
+      check_png_full(ctfn0g04_data, 32, 32, 4, UT_PNG_COLOUR_TYPE_GREYSCALE,
+                     NULL, NULL, ctfn0g04_image_data);
+  ut_assert_cstring_equal(
+      ut_png_image_get_international_text(fi_text_image, "Title", "fi",
+                                          &translated_keyword),
+      "PngSuite");
+  ut_assert_cstring_equal(translated_keyword, "Otsikko");
+  ut_assert_cstring_equal(
+      ut_png_image_get_international_text(fi_text_image, "Author", "fi",
+                                          &translated_keyword),
+      "Willem van Schaik (willem@schaik.com)");
+  ut_assert_cstring_equal(translated_keyword, "Tekijä");
+  ut_assert_cstring_equal(
+      ut_png_image_get_international_text(fi_text_image, "Copyright", "fi",
+                                          &translated_keyword),
+      "Copyright Willem van Schaik, Kanada 2011");
+  ut_assert_cstring_equal(translated_keyword, "Tekijänoikeudet");
+  ut_assert_cstring_equal(
+      ut_png_image_get_international_text(fi_text_image, "Description", "fi",
+                                          &translated_keyword),
+      "kokoelma joukon kuvia luotu testata eri väri-tyyppisiä PNG-muodossa. "
+      "Mukana on mustavalkoinen, väri, paletted, alpha-kanava, avoimuuden "
+      "muodossa. Kaikki bit-syvyydessä mukaan sallittua spec on "
+      "​​läsnä.");
+  ut_assert_cstring_equal(translated_keyword, "Kuvaus");
+  ut_assert_cstring_equal(
+      ut_png_image_get_international_text(fi_text_image, "Software", "fi",
+                                          &translated_keyword),
+      "Luotu NeXTstation väriä \"pnmtopng\".");
+  ut_assert_cstring_equal(translated_keyword, "Ohjelmistot");
+  ut_assert_cstring_equal(
+      ut_png_image_get_international_text(fi_text_image, "Disclaimer", "fi",
+                                          &translated_keyword),
+      "Freeware.");
+  ut_assert_cstring_equal(translated_keyword, "Vastuuvapauslauseke");
 
   // international UTF-8, greek
-  check_png(ctgn0g04_data, 32, 32, 4, UT_PNG_COLOUR_TYPE_GREYSCALE, NULL, NULL,
-            ctgn0g04_image_data);
+  UtObjectRef el_text_image =
+      check_png_full(ctgn0g04_data, 32, 32, 4, UT_PNG_COLOUR_TYPE_GREYSCALE,
+                     NULL, NULL, ctgn0g04_image_data);
+  ut_assert_cstring_equal(
+      ut_png_image_get_international_text(el_text_image, "Title", "el",
+                                          &translated_keyword),
+      "PngSuite");
+  ut_assert_cstring_equal(translated_keyword, "Τίτλος");
+  ut_assert_cstring_equal(
+      ut_png_image_get_international_text(el_text_image, "Author", "el",
+                                          &translated_keyword),
+      "Willem van Schaik (willem@schaik.com)");
+  ut_assert_cstring_equal(translated_keyword, "Συγγραφέας");
+  ut_assert_cstring_equal(
+      ut_png_image_get_international_text(el_text_image, "Copyright", "el",
+                                          &translated_keyword),
+      "Πνευματικά δικαιώματα Schaik van Willem, Καναδάς 2011");
+  ut_assert_cstring_equal(translated_keyword, "Πνευματικά δικαιώματα");
+  ut_assert_cstring_equal(
+      ut_png_image_get_international_text(el_text_image, "Description", "el",
+                                          &translated_keyword),
+      "Μια συλλογή από ένα σύνολο εικόνων που δημιουργήθηκαν για τη δοκιμή των "
+      "διαφόρων χρωμάτων-τύπων του μορφή PNG. Περιλαμβάνονται οι ασπρόμαυρες, "
+      "χρώμα, paletted, με άλφα κανάλι, με μορφές της διαφάνειας. Όλοι "
+      "λίγο-βάθη επιτρέπεται σύμφωνα με το spec είναι παρόντες.");
+  ut_assert_cstring_equal(translated_keyword, "Περιγραφή");
+  ut_assert_cstring_equal(
+      ut_png_image_get_international_text(el_text_image, "Software", "el",
+                                          &translated_keyword),
+      "Δημιουργήθηκε σε ένα χρώμα NeXTstation χρησιμοποιώντας \"pnmtopng\".");
+  ut_assert_cstring_equal(translated_keyword, "Λογισμικό");
+  ut_assert_cstring_equal(
+      ut_png_image_get_international_text(el_text_image, "Disclaimer", "el",
+                                          &translated_keyword),
+      "Δωρεάν λογισμικό.");
+  ut_assert_cstring_equal(translated_keyword, "Αποποίηση");
 
   // international UTF-8, hindi
-  check_png(cthn0g04_data, 32, 32, 4, UT_PNG_COLOUR_TYPE_GREYSCALE, NULL, NULL,
-            cthn0g04_image_data);
+  UtObjectRef hi_text_image =
+      check_png_full(cthn0g04_data, 32, 32, 4, UT_PNG_COLOUR_TYPE_GREYSCALE,
+                     NULL, NULL, cthn0g04_image_data);
+  ut_assert_cstring_equal(
+      ut_png_image_get_international_text(hi_text_image, "Title", "hi",
+                                          &translated_keyword),
+      "PngSuite");
+  ut_assert_cstring_equal(translated_keyword, "शीर्षक");
+  ut_assert_cstring_equal(
+      ut_png_image_get_international_text(hi_text_image, "Author", "hi",
+                                          &translated_keyword),
+      "Willem van Schaik (willem@schaik.com)");
+  ut_assert_cstring_equal(translated_keyword, "लेखक");
+  ut_assert_cstring_equal(
+      ut_png_image_get_international_text(hi_text_image, "Copyright", "hi",
+                                          &translated_keyword),
+      "कॉपीराइट Willem van Schaik, 2011 कनाडा");
+  ut_assert_cstring_equal(translated_keyword, "कॉपीराइट");
+  ut_assert_cstring_equal(
+      ut_png_image_get_international_text(hi_text_image, "Description", "hi",
+                                          &translated_keyword),
+      "करने के लिए PNG प्रारूप के विभिन्न रंग प्रकार परीक्षण बनाया छवियों का एक सेट का एक "
+      "संकलन. शामिल काले और सफेद, रंग, पैलेटेड हैं, अल्फा चैनल के साथ पारदर्शिता स्वरूपों के "
+      "साथ. सभी बिट गहराई कल्पना के अनुसार की अनुमति दी मौजूद हैं.");
+  ut_assert_cstring_equal(translated_keyword, "विवरण");
+  ut_assert_cstring_equal(
+      ut_png_image_get_international_text(hi_text_image, "Software", "hi",
+                                          &translated_keyword),
+      "एक NeXTstation \"pnmtopng 'का उपयोग कर रंग पर बनाया गया.");
+  ut_assert_cstring_equal(translated_keyword, "सॉफ्टवेयर");
+  ut_assert_cstring_equal(
+      ut_png_image_get_international_text(hi_text_image, "Disclaimer", "hi",
+                                          &translated_keyword),
+      "फ्रीवेयर.");
+  ut_assert_cstring_equal(translated_keyword, "अस्वीकरण");
 
   // international UTF-8, japanese
-  check_png(ctjn0g04_data, 32, 32, 4, UT_PNG_COLOUR_TYPE_GREYSCALE, NULL, NULL,
-            ctjn0g04_image_data);
+  UtObjectRef ja_text_image =
+      check_png_full(ctjn0g04_data, 32, 32, 4, UT_PNG_COLOUR_TYPE_GREYSCALE,
+                     NULL, NULL, ctjn0g04_image_data);
+  ut_assert_cstring_equal(
+      ut_png_image_get_international_text(ja_text_image, "Title", "ja",
+                                          &translated_keyword),
+      "PngSuite");
+  ut_assert_cstring_equal(translated_keyword, "タイトル");
+  ut_assert_cstring_equal(
+      ut_png_image_get_international_text(ja_text_image, "Author", "ja",
+                                          &translated_keyword),
+      "Willem van Schaik (willem@schaik.com)");
+  ut_assert_cstring_equal(translated_keyword, "著者");
+  ut_assert_cstring_equal(
+      ut_png_image_get_international_text(ja_text_image, "Copyright", "ja",
+                                          &translated_keyword),
+      "著作権ウィレムヴァンシャイク、カナダ2011");
+  ut_assert_cstring_equal(translated_keyword, "本文へ");
+  ut_assert_cstring_equal(
+      ut_png_image_get_international_text(ja_text_image, "Description", "ja",
+                                          &translated_keyword),
+      "PNG形式の様々な色の種類をテストするために作成されたイメージのセットのコ"
+      "ンパイル。含まれているのは透明度のフォーマットで、アルファチャネルを持つ"
+      "、白黒、カラー、パレットです。すべてのビット深度が存在している仕様に従っ"
+      "たことができました。");
+  ut_assert_cstring_equal(translated_keyword, "概要");
+  ut_assert_cstring_equal(
+      ut_png_image_get_international_text(ja_text_image, "Software", "ja",
+                                          &translated_keyword),
+      "\"pnmtopng\"を使用してNeXTstation色上に作成されます。");
+  ut_assert_cstring_equal(translated_keyword, "ソフトウェア");
+  ut_assert_cstring_equal(
+      ut_png_image_get_international_text(ja_text_image, "Disclaimer", "ja",
+                                          &translated_keyword),
+      "フリーウェア。");
+  ut_assert_cstring_equal(translated_keyword, "免責事項");
 
   // exif - image attributes
   check_png(exif2c08_data, 32, 32, 8, UT_PNG_COLOUR_TYPE_TRUECOLOUR, NULL, NULL,
