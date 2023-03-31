@@ -57,6 +57,53 @@ char *ut_cstring_new_uppercase(const char *value) {
   return result;
 }
 
+char *ut_cstring_new_from_words(const char *separator, const char *word0, ...) {
+  if (separator == NULL) {
+    separator = "";
+  }
+  if (word0 == NULL) {
+    return ut_cstring_new("");
+  }
+
+  size_t separator_length = ut_cstring_get_length(separator);
+  size_t word0_length = ut_cstring_get_length(word0);
+
+  size_t word_length = 1;
+  size_t result_length = word0_length;
+  va_list ap;
+
+  va_list ap2;
+  va_copy(ap2, ap);
+  va_start(ap2, word0);
+  while (true) {
+    const char *v = va_arg(ap2, const char *);
+    if (v == NULL) {
+      break;
+    }
+    word_length++;
+    result_length += ut_cstring_get_length(v);
+  }
+  va_end(ap2);
+
+  result_length += (word_length - 1) * ut_cstring_get_length(separator);
+  char *result = malloc(sizeof(char) * (result_length + 1));
+  memcpy(result, word0, word0_length);
+  size_t offset = word0_length;
+  va_start(ap, word0);
+  for (size_t i = 1; i < word_length; i++) {
+    memcpy(result + offset, separator, separator_length);
+    offset += separator_length;
+    const char *v = va_arg(ap, const char *);
+    size_t v_length = ut_cstring_get_length(v);
+    memcpy(result + offset, v, v_length);
+    offset += v_length;
+  }
+  va_end(ap);
+  result[offset] = '\0';
+
+  return result;
+}
+
 void ut_cstring_set(char **string, const char *value) {
   if (*string != NULL) {
     free(*string);
@@ -108,51 +155,4 @@ bool ut_cstring_ends_with(const char *value, const char *suffix) {
     return false;
   }
   return ut_cstring_starts_with(value + value_length - suffix_length, suffix);
-}
-
-char *ut_cstring_join(const char *separator, const char *value0, ...) {
-  if (separator == NULL) {
-    separator = "";
-  }
-  if (value0 == NULL) {
-    return ut_cstring_new("");
-  }
-
-  size_t separator_length = ut_cstring_get_length(separator);
-  size_t value0_length = ut_cstring_get_length(value0);
-
-  size_t value_length = 1;
-  size_t result_length = value0_length;
-  va_list ap;
-
-  va_list ap2;
-  va_copy(ap2, ap);
-  va_start(ap2, value0);
-  while (true) {
-    const char *v = va_arg(ap2, const char *);
-    if (v == NULL) {
-      break;
-    }
-    value_length++;
-    result_length += ut_cstring_get_length(v);
-  }
-  va_end(ap2);
-
-  result_length += (value_length - 1) * ut_cstring_get_length(separator);
-  char *result = malloc(sizeof(char) * (result_length + 1));
-  memcpy(result, value0, value0_length);
-  size_t offset = value0_length;
-  va_start(ap, value0);
-  for (size_t i = 1; i < value_length; i++) {
-    memcpy(result + offset, separator, separator_length);
-    offset += separator_length;
-    const char *v = va_arg(ap, const char *);
-    size_t v_length = ut_cstring_get_length(v);
-    memcpy(result + offset, v, v_length);
-    offset += v_length;
-  }
-  va_end(ap);
-  result[offset] = '\0';
-
-  return result;
 }

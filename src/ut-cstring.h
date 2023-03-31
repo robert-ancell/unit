@@ -44,6 +44,16 @@ char *ut_cstring_new_lowercase(const char *value);
 /// !return-ref
 char *ut_cstring_new_uppercase(const char *value);
 
+/// Creates a new C string containing the provided strings joined together with
+/// [separator]. The supplied values are terminated by [NULL]. For example, the
+/// following will create a new string conatining `"a:b:c"`.
+/// ```c
+/// ut_cstring_ref text = ut_cstring_join(":", "a", "b", "c", NULL);
+/// ```
+///
+/// !return-ref
+char *ut_cstring_new_from_words(const char *separator, const char *word0, ...);
+
 /// Sets [string] to be a new C string containing [value].
 /// If [string] already contains a value, it will be unreferenced first.
 void ut_cstring_set(char **string, const char *value);
@@ -70,13 +80,3 @@ bool ut_cstring_starts_with(const char *value, const char *prefix);
 
 /// Returns [true] if [value] ends with the [prefix].
 bool ut_cstring_ends_with(const char *value, const char *suffix);
-
-/// Creates a new C string containing the provided strings joined together with
-/// [separator]. The supplied values are terminated by [NULL]. For example, the
-/// following will create a new string conatining `"a:b:c"`.
-/// ```c
-/// ut_cstring_ref text = ut_cstring_join(":", "a", "b", "c", NULL);
-/// ```
-///
-/// !return-ref
-char *ut_cstring_join(const char *separator, const char *value0, ...);

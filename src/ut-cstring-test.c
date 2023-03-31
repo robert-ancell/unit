@@ -27,6 +27,17 @@ int main(int argc, char **argv) {
   ut_cstring_ref upper_value = ut_cstring_new_uppercase("HeLlO");
   ut_assert_cstring_equal(upper_value, "HELLO");
 
+  ut_cstring_ref from_words1_value =
+      ut_cstring_new_from_words(",", "one", "two", "three", NULL);
+  ut_assert_cstring_equal(from_words1_value, "one,two,three");
+
+  ut_cstring_ref from_words2_value =
+      ut_cstring_new_from_words(",", "one", NULL);
+  ut_assert_cstring_equal(from_words2_value, "one");
+
+  ut_cstring_ref from_words3_value = ut_cstring_new_from_words(",", NULL);
+  ut_assert_cstring_equal(from_words3_value, "");
+
   ut_cstring_ref printf_value = ut_cstring_new_printf("Number %d", 1);
   ut_assert_cstring_equal(printf_value, "Number 1");
 
@@ -39,16 +50,6 @@ int main(int argc, char **argv) {
   assert(ut_cstring_ends_with(suffix_value, "one"));
   assert(!ut_cstring_ends_with(suffix_value, "two"));
   assert(!ut_cstring_ends_with(suffix_value, "ine"));
-
-  ut_cstring_ref join1_value =
-      ut_cstring_join(",", "one", "two", "three", NULL);
-  ut_assert_cstring_equal(join1_value, "one,two,three");
-
-  ut_cstring_ref join2_value = ut_cstring_join(",", "one", NULL);
-  ut_assert_cstring_equal(join2_value, "one");
-
-  ut_cstring_ref join3_value = ut_cstring_join(",", NULL);
-  ut_assert_cstring_equal(join3_value, "");
 
   return 0;
 }
