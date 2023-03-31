@@ -834,7 +834,7 @@ void ut_x11_client_connect(UtObject *object,
   }
   size_t divider_index = divider - display;
 
-  ut_cstring_ref host = ut_cstring_substring(display, 0, divider_index);
+  ut_cstring_ref host = ut_cstring_new_substring(display, 0, divider_index);
   int display_number = atoi(divider + 1);
 
   assert(callback != NULL);

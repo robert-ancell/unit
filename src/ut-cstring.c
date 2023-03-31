@@ -6,6 +6,11 @@
 
 char *ut_cstring_new(const char *value) { return strdup(value); }
 
+char *ut_cstring_new_substring(const char *value, size_t start, size_t end) {
+  assert(end >= start);
+  return strndup(value + start, end - start);
+}
+
 char *ut_cstring_new_sized(const char *value, size_t length) {
   return strndup(value, length);
 }
@@ -150,9 +155,4 @@ char *ut_cstring_join(const char *separator, const char *value0, ...) {
   result[offset] = '\0';
 
   return result;
-}
-
-char *ut_cstring_substring(const char *value, size_t start, size_t end) {
-  assert(end >= start);
-  return strndup(value + start, end - start);
 }

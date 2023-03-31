@@ -311,12 +311,12 @@ static UtObject *read_value(UtObject *data, size_t *offset,
     return read_signature(data, offset);
   } else if (ut_cstring_starts_with(signature, "(")) {
     assert(ut_cstring_ends_with(signature, ")"));
-    ut_cstring_ref struct_signature = ut_cstring_substring(
+    ut_cstring_ref struct_signature = ut_cstring_new_substring(
         signature, 1, ut_cstring_get_length(signature) - 1);
     return read_struct(data, offset, struct_signature);
   } else if (ut_cstring_starts_with(signature, "a{")) {
     assert(ut_cstring_ends_with(signature, "}"));
-    ut_cstring_ref element_signature = ut_cstring_substring(
+    ut_cstring_ref element_signature = ut_cstring_new_substring(
         signature, 2, ut_cstring_get_length(signature) - 1);
     return read_dict(data, offset, element_signature);
   } else if (ut_cstring_starts_with(signature, "a")) {

@@ -187,7 +187,7 @@ static void connect(UtDBusClient *self) {
   }
 
   assert(ut_cstring_starts_with(self->address, "unix:path="));
-  ut_cstring_ref path = ut_cstring_substring(
+  ut_cstring_ref path = ut_cstring_new_substring(
       self->address, 10, ut_cstring_get_length(self->address));
 
   UtObjectRef address = ut_unix_socket_address_new(path);

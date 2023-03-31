@@ -8,6 +8,12 @@
 /// !return-ref
 char *ut_cstring_new(const char *value);
 
+/// Creates a new C string that copies [end] characters from [value] starting at
+/// the [start] position.
+///
+/// !return-ref
+char *ut_cstring_new_substring(const char *value, size_t start, size_t end);
+
 /// Creates a new C string containing the first [length] characters from
 /// [value].
 ///
@@ -74,9 +80,3 @@ bool ut_cstring_ends_with(const char *value, const char *suffix);
 ///
 /// !return-ref
 char *ut_cstring_join(const char *separator, const char *value0, ...);
-
-/// Craetes a new C string that copies [end] characters from [value] starting at
-/// the [start] position.
-///
-/// !return-ref
-char *ut_cstring_substring(const char *value, size_t start, size_t end);

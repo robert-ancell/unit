@@ -3,6 +3,27 @@
 #include "ut.h"
 
 int main(int argc, char **argv) {
+  ut_cstring_ref new_value = ut_cstring_new("Hello World");
+  ut_assert_cstring_equal(new_value, "Hello World");
+
+  ut_cstring_ref substring1_value = ut_cstring_new_substring("World", 0, 5);
+  ut_assert_cstring_equal(substring1_value, "World");
+
+  ut_cstring_ref substring2_value = ut_cstring_new_substring("World", 1, 5);
+  ut_assert_cstring_equal(substring2_value, "orld");
+
+  ut_cstring_ref substring3_value = ut_cstring_new_substring("World", 0, 4);
+  ut_assert_cstring_equal(substring3_value, "Worl");
+
+  ut_cstring_ref substring4_value = ut_cstring_new_substring("World", 1, 4);
+  ut_assert_cstring_equal(substring4_value, "orl");
+
+  ut_cstring_ref lower_value = ut_cstring_new_lowercase("HeLlO");
+  ut_assert_cstring_equal(lower_value, "hello");
+
+  ut_cstring_ref upper_value = ut_cstring_new_uppercase("HeLlO");
+  ut_assert_cstring_equal(upper_value, "HELLO");
+
   ut_cstring_ref printf_value = ut_cstring_new_printf("Number %d", 1);
   ut_assert_cstring_equal(printf_value, "Number 1");
 
@@ -25,24 +46,6 @@ int main(int argc, char **argv) {
 
   ut_cstring_ref join3_value = ut_cstring_join(",", NULL);
   ut_assert_cstring_equal(join3_value, "");
-
-  ut_cstring_ref substring1_value = ut_cstring_substring("World", 0, 5);
-  ut_assert_cstring_equal(substring1_value, "World");
-
-  ut_cstring_ref substring2_value = ut_cstring_substring("World", 1, 5);
-  ut_assert_cstring_equal(substring2_value, "orld");
-
-  ut_cstring_ref substring3_value = ut_cstring_substring("World", 0, 4);
-  ut_assert_cstring_equal(substring3_value, "Worl");
-
-  ut_cstring_ref substring4_value = ut_cstring_substring("World", 1, 4);
-  ut_assert_cstring_equal(substring4_value, "orl");
-
-  ut_cstring_ref lower_value = ut_cstring_new_lowercase("HeLlO");
-  ut_assert_cstring_equal(lower_value, "hello");
-
-  ut_cstring_ref upper_value = ut_cstring_new_uppercase("HeLlO");
-  ut_assert_cstring_equal(upper_value, "HELLO");
 
   return 0;
 }
