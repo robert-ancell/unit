@@ -18,6 +18,9 @@ int main(int argc, char **argv) {
   ut_cstring_ref substring4_value = ut_cstring_new_substring("World", 1, 4);
   ut_assert_cstring_equal(substring4_value, "orl");
 
+  ut_cstring_ref sized_value = ut_cstring_new_sized("World", 3);
+  ut_assert_cstring_equal(sized_value, "Wor");
+
   ut_cstring_ref lower_value = ut_cstring_new_lowercase("HeLlO");
   ut_assert_cstring_equal(lower_value, "hello");
 
