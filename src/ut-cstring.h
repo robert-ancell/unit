@@ -28,6 +28,16 @@ char *ut_cstring_new_printf(const char *format, ...)
 /// !return-ref
 char *ut_cstring_new_vprintf(const char *format, va_list ap);
 
+/// Creates a new C string that contains [value] converted to lowercase.
+///
+/// !return-ref
+char *ut_cstring_new_lowercase(const char *value);
+
+/// Creates a new C string that contains [value] converted to uppercase.
+///
+/// !return-ref
+char *ut_cstring_new_uppercase(const char *value);
+
 /// Sets [string] to be a new C string containing [value].
 /// If [string] already contains a value, it will be unreferenced first.
 void ut_cstring_set(char **string, const char *value);

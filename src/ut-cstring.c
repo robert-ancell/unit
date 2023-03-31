@@ -30,6 +30,28 @@ char *ut_cstring_new_vprintf(const char *format, va_list ap) {
   return result;
 }
 
+char *ut_cstring_new_lowercase(const char *value) {
+  char *result = strdup(value);
+  for (char *c = result; *c != '\0'; c++) {
+    if (*c >= 'A' && *c <= 'Z') {
+      *c += 32;
+    }
+  }
+
+  return result;
+}
+
+char *ut_cstring_new_uppercase(const char *value) {
+  char *result = strdup(value);
+  for (char *c = result; *c != '\0'; c++) {
+    if (*c >= 'a' && *c <= 'z') {
+      *c -= 32;
+    }
+  }
+
+  return result;
+}
+
 void ut_cstring_set(char **string, const char *value) {
   if (*string != NULL) {
     free(*string);
