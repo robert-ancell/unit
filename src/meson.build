@@ -37,6 +37,9 @@ ut_sources = [
   'jpeg/ut-jpeg-image.c',
   'json/ut-json.c',
   'json/ut-json-encoder.c',
+  'tiff/ut-tiff-error.c',
+  'tiff/ut-tiff-reader.c',
+  'tiff/ut-tiff-tag.c',
   'ut-assert.c',
   'ut-base64.c',
   'ut-bit-array.c',
@@ -305,6 +308,11 @@ gzip_encoder_test = executable('ut-gzip-encoder-test',
                                'gzip/ut-gzip-encoder-test.c',
                                link_with: ut_lib)
 test('GZip Encoder', gzip_encoder_test)
+
+tiff_reader_test = executable('ut-tiff-reader-test',
+                               'tiff/ut-tiff-reader-test.c',
+                               link_with: ut_lib)
+test('TIFF Reader', tiff_reader_test)
 
 png_image_test = executable('ut-png-image-test',
                             'png/ut-png-image-test.c',
