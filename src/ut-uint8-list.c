@@ -74,6 +74,18 @@ int32_t ut_uint8_list_get_int32_be(UtObject *object, size_t index) {
   return (int32_t)ut_uint8_list_get_uint32_be(object, index);
 }
 
+float ut_uint8_list_get_float32_le(UtObject *object, size_t index) {
+  uint32_t value = ut_uint8_list_get_uint32_le(object, index);
+  float *value_pointer = (float *)&value;
+  return *value_pointer;
+}
+
+float ut_uint8_list_get_float32_be(UtObject *object, size_t index) {
+  uint32_t value = ut_uint8_list_get_uint32_be(object, index);
+  float *value_pointer = (float *)&value;
+  return *value_pointer;
+}
+
 uint64_t ut_uint8_list_get_uint64_le(UtObject *object, size_t index) {
   return (uint64_t)ut_uint8_list_get_element(object, index) |
          (uint64_t)ut_uint8_list_get_element(object, index + 1) << 8 |
@@ -240,6 +252,16 @@ void ut_uint8_list_append_int32_le(UtObject *object, int32_t value) {
 
 void ut_uint8_list_append_int32_be(UtObject *object, int32_t value) {
   ut_uint8_list_append_uint32_be(object, (uint32_t)value);
+}
+
+void ut_uint8_list_append_float32_le(UtObject *object, float value) {
+  uint32_t *value_pointer = (uint32_t *)&value;
+  ut_uint8_list_append_uint32_le(object, *value_pointer);
+}
+
+void ut_uint8_list_append_float32_be(UtObject *object, float value) {
+  uint32_t *value_pointer = (uint32_t *)&value;
+  ut_uint8_list_append_uint32_be(object, *value_pointer);
 }
 
 void ut_uint8_list_append_uint64_le(UtObject *object, uint64_t value) {
