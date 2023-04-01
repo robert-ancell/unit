@@ -47,14 +47,13 @@ static void ut_uint32_array_insert(UtObject *object, size_t index,
                                    const uint32_t *data, size_t data_length) {
   UtUint32Array *self = (UtUint32Array *)object;
 
-  size_t orig_data_length = self->data_length;
+  size_t n_after = self->data_length - index;
   resize_list(self, self->data_length + data_length);
 
   // Shift existing data up
-  for (size_t i = index; i < orig_data_length; i++) {
-    size_t new_index = self->data_length - i - 1;
-    size_t old_index = new_index - data_length;
-    self->data[new_index] = self->data[old_index];
+  for (size_t i = 0; i < n_after; i++) {
+    size_t new_index = self->data_length - 1 - i;
+    self->data[new_index] = self->data[new_index - data_length];
   }
 
   // Insert new data
@@ -116,7 +115,7 @@ static char *ut_uint32_array_to_string(UtObject *object) {
     if (i != 0) {
       ut_string_append(string, ", ");
     }
-    ut_string_append_printf(string, "%d", self->data[i]);
+    ut_string_append_printf(string, "%u", self->data[i]);
   }
   ut_string_append(string, "]");
 

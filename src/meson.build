@@ -214,6 +214,46 @@ uint8_array_test = executable('ut-uint8-array-test',
                               link_with: ut_lib)
 test('Uint8 Array', uint8_array_test)
 
+uint16_array_test = executable('ut-uint16-array-test',
+                               'ut-uint16-array-test.c',
+                               link_with: ut_lib)
+test('Uint16 Array', uint16_array_test)
+
+int16_array_test = executable('ut-int16-array-test',
+                               'ut-int16-array-test.c',
+                               link_with: ut_lib)
+test('Int16 Array', int16_array_test)
+
+uint32_array_test = executable('ut-uint32-array-test',
+                               'ut-uint32-array-test.c',
+                               link_with: ut_lib)
+test('Uint32 Array', uint32_array_test)
+
+int32_array_test = executable('ut-int32-array-test',
+                               'ut-int32-array-test.c',
+                               link_with: ut_lib)
+test('Int32 Array', int32_array_test)
+
+uint64_array_test = executable('ut-uint64-array-test',
+                               'ut-uint64-array-test.c',
+                               link_with: ut_lib)
+test('Uint64 Array', uint64_array_test)
+
+int64_array_test = executable('ut-int64-array-test',
+                               'ut-int64-array-test.c',
+                               link_with: ut_lib)
+test('Int64 Array', int64_array_test)
+
+float32_array_test = executable('ut-float32-array-test',
+                                'ut-float32-array-test.c',
+                                link_with: ut_lib)
+test('Float32 Array', float32_array_test)
+
+float64_array_test = executable('ut-float64-array-test',
+                                'ut-float64-array-test.c',
+                                link_with: ut_lib)
+test('Float64 Array', float64_array_test)
+
 map_test = executable('ut-map-test',
                       'ut-map-test.c',
                       link_with: ut_lib)

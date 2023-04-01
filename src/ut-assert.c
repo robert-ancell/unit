@@ -271,14 +271,13 @@ void _ut_assert_uint8_array_equal(const char *file, int line,
   abort();
 }
 
-void _ut_assert_uint16_array_equal(const char *file, int line,
-                                   const char *a_name, const uint16_t *a_value,
-                                   size_t a_length, const uint16_t *b_value,
-                                   size_t b_length) {
-  if (a_length == b_length) {
+void _ut_assert_uint16_list_equal(const char *file, int line,
+                                  const char *a_name, UtObject *a_value,
+                                  uint16_t *b_value, size_t b_length) {
+  if (ut_list_get_length(a_value) == b_length) {
     bool match = true;
-    for (size_t i = 0; i < a_length; i++) {
-      if (a_value[i] != b_value[i]) {
+    for (size_t i = 0; i < b_length; i++) {
+      if (ut_uint16_list_get_element(a_value, i) != b_value[i]) {
         match = false;
         break;
       }
@@ -289,28 +288,58 @@ void _ut_assert_uint16_array_equal(const char *file, int line,
     }
   }
 
-  UtObjectRef a_value_string = ut_string_new("<uint16>[");
   UtObjectRef b_value_string = ut_string_new("<uint16>[");
-  for (size_t i = 0; i < a_length; i++) {
+  for (size_t i = 0; i < b_length; i++) {
     if (i != 0) {
-      ut_string_append(a_value_string, ", ");
+      ut_string_append(b_value_string, ", ");
     }
-    ut_string_append_printf(a_value_string, "%d", a_value[i]);
+    ut_string_append_printf(b_value_string, "%u", b_value[i]);
   }
+  ut_string_append(b_value_string, "]");
+
+  ut_cstring_ref a_value_string = ut_object_to_string(a_value);
+  fprintf(stderr,
+          "%s:%d List %s doesn't have expected content:\n"
+          "  %s\n"
+          "  %s\n",
+          file, line, a_name, a_value_string,
+          ut_string_get_text(b_value_string));
+
+  abort();
+}
+
+void _ut_assert_int16_list_equal(const char *file, int line, const char *a_name,
+                                 UtObject *a_value, int16_t *b_value,
+                                 size_t b_length) {
+  if (ut_list_get_length(a_value) == b_length) {
+    bool match = true;
+    for (size_t i = 0; i < b_length; i++) {
+      if (ut_int16_list_get_element(a_value, i) != b_value[i]) {
+        match = false;
+        break;
+      }
+    }
+
+    if (match) {
+      return;
+    }
+  }
+
+  UtObjectRef b_value_string = ut_string_new("<int16>[");
   for (size_t i = 0; i < b_length; i++) {
     if (i != 0) {
       ut_string_append(b_value_string, ", ");
     }
     ut_string_append_printf(b_value_string, "%d", b_value[i]);
   }
-  ut_string_append(a_value_string, "]");
   ut_string_append(b_value_string, "]");
 
+  ut_cstring_ref a_value_string = ut_object_to_string(a_value);
   fprintf(stderr,
-          "%s:%d Array %s doesn't have expected content:\n"
+          "%s:%d List %s doesn't have expected content:\n"
           "  %s\n"
           "  %s\n",
-          file, line, a_name, ut_string_get_text(a_value_string),
+          file, line, a_name, a_value_string,
           ut_string_get_text(b_value_string));
 
   abort();
@@ -338,7 +367,192 @@ void _ut_assert_uint32_list_equal(const char *file, int line,
     if (i != 0) {
       ut_string_append(b_value_string, ", ");
     }
+    ut_string_append_printf(b_value_string, "%u", b_value[i]);
+  }
+  ut_string_append(b_value_string, "]");
+
+  ut_cstring_ref a_value_string = ut_object_to_string(a_value);
+  fprintf(stderr,
+          "%s:%d List %s doesn't have expected content:\n"
+          "  %s\n"
+          "  %s\n",
+          file, line, a_name, a_value_string,
+          ut_string_get_text(b_value_string));
+
+  abort();
+}
+
+void _ut_assert_int32_list_equal(const char *file, int line, const char *a_name,
+                                 UtObject *a_value, int32_t *b_value,
+                                 size_t b_length) {
+  if (ut_list_get_length(a_value) == b_length) {
+    bool match = true;
+    for (size_t i = 0; i < b_length; i++) {
+      if (ut_int32_list_get_element(a_value, i) != b_value[i]) {
+        match = false;
+        break;
+      }
+    }
+
+    if (match) {
+      return;
+    }
+  }
+
+  UtObjectRef b_value_string = ut_string_new("<int32>[");
+  for (size_t i = 0; i < b_length; i++) {
+    if (i != 0) {
+      ut_string_append(b_value_string, ", ");
+    }
     ut_string_append_printf(b_value_string, "%d", b_value[i]);
+  }
+  ut_string_append(b_value_string, "]");
+
+  ut_cstring_ref a_value_string = ut_object_to_string(a_value);
+  fprintf(stderr,
+          "%s:%d List %s doesn't have expected content:\n"
+          "  %s\n"
+          "  %s\n",
+          file, line, a_name, a_value_string,
+          ut_string_get_text(b_value_string));
+
+  abort();
+}
+
+void _ut_assert_uint64_list_equal(const char *file, int line,
+                                  const char *a_name, UtObject *a_value,
+                                  uint64_t *b_value, size_t b_length) {
+  if (ut_list_get_length(a_value) == b_length) {
+    bool match = true;
+    for (size_t i = 0; i < b_length; i++) {
+      if (ut_uint64_list_get_element(a_value, i) != b_value[i]) {
+        match = false;
+        break;
+      }
+    }
+
+    if (match) {
+      return;
+    }
+  }
+
+  UtObjectRef b_value_string = ut_string_new("<uint64>[");
+  for (size_t i = 0; i < b_length; i++) {
+    if (i != 0) {
+      ut_string_append(b_value_string, ", ");
+    }
+    ut_string_append_printf(b_value_string, "%lu", b_value[i]);
+  }
+  ut_string_append(b_value_string, "]");
+
+  ut_cstring_ref a_value_string = ut_object_to_string(a_value);
+  fprintf(stderr,
+          "%s:%d List %s doesn't have expected content:\n"
+          "  %s\n"
+          "  %s\n",
+          file, line, a_name, a_value_string,
+          ut_string_get_text(b_value_string));
+
+  abort();
+}
+
+void _ut_assert_int64_list_equal(const char *file, int line, const char *a_name,
+                                 UtObject *a_value, int64_t *b_value,
+                                 size_t b_length) {
+  if (ut_list_get_length(a_value) == b_length) {
+    bool match = true;
+    for (size_t i = 0; i < b_length; i++) {
+      if (ut_int64_list_get_element(a_value, i) != b_value[i]) {
+        match = false;
+        break;
+      }
+    }
+
+    if (match) {
+      return;
+    }
+  }
+
+  UtObjectRef b_value_string = ut_string_new("<int64>[");
+  for (size_t i = 0; i < b_length; i++) {
+    if (i != 0) {
+      ut_string_append(b_value_string, ", ");
+    }
+    ut_string_append_printf(b_value_string, "%li", b_value[i]);
+  }
+  ut_string_append(b_value_string, "]");
+
+  ut_cstring_ref a_value_string = ut_object_to_string(a_value);
+  fprintf(stderr,
+          "%s:%d List %s doesn't have expected content:\n"
+          "  %s\n"
+          "  %s\n",
+          file, line, a_name, a_value_string,
+          ut_string_get_text(b_value_string));
+
+  abort();
+}
+
+void _ut_assert_float32_list_equal(const char *file, int line,
+                                   const char *a_name, UtObject *a_value,
+                                   float *b_value, size_t b_length) {
+  if (ut_list_get_length(a_value) == b_length) {
+    bool match = true;
+    for (size_t i = 0; i < b_length; i++) {
+      if (ut_float32_list_get_element(a_value, i) != b_value[i]) {
+        match = false;
+        break;
+      }
+    }
+
+    if (match) {
+      return;
+    }
+  }
+
+  UtObjectRef b_value_string = ut_string_new("<float32>[");
+  for (size_t i = 0; i < b_length; i++) {
+    if (i != 0) {
+      ut_string_append(b_value_string, ", ");
+    }
+    ut_string_append_printf(b_value_string, "%f", b_value[i]);
+  }
+  ut_string_append(b_value_string, "]");
+
+  ut_cstring_ref a_value_string = ut_object_to_string(a_value);
+  fprintf(stderr,
+          "%s:%d List %s doesn't have expected content:\n"
+          "  %s\n"
+          "  %s\n",
+          file, line, a_name, a_value_string,
+          ut_string_get_text(b_value_string));
+
+  abort();
+}
+
+void _ut_assert_float64_list_equal(const char *file, int line,
+                                   const char *a_name, UtObject *a_value,
+                                   double *b_value, size_t b_length) {
+  if (ut_list_get_length(a_value) == b_length) {
+    bool match = true;
+    for (size_t i = 0; i < b_length; i++) {
+      if (ut_float64_list_get_element(a_value, i) != b_value[i]) {
+        match = false;
+        break;
+      }
+    }
+
+    if (match) {
+      return;
+    }
+  }
+
+  UtObjectRef b_value_string = ut_string_new("<float64>[");
+  for (size_t i = 0; i < b_length; i++) {
+    if (i != 0) {
+      ut_string_append(b_value_string, ", ");
+    }
+    ut_string_append_printf(b_value_string, "%g", b_value[i]);
   }
   ut_string_append(b_value_string, "]");
 
