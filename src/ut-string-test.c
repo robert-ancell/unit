@@ -48,6 +48,20 @@ static void test_utf16() {
   ut_assert_cstring_equal(ut_string_get_text(string2), "$¢€𐐷😀");
 }
 
+static void test_ascii() {
+  UtObjectRef string = ut_string_new("H!$~");
+
+  UtObjectRef characters = ut_string_get_ascii(string);
+  ut_assert_int_equal(ut_list_get_length(characters), 4);
+  ut_assert_int_equal(ut_uint8_list_get_element(characters, 0), 'H');
+  ut_assert_int_equal(ut_uint8_list_get_element(characters, 1), '!');
+  ut_assert_int_equal(ut_uint8_list_get_element(characters, 2), '$');
+  ut_assert_int_equal(ut_uint8_list_get_element(characters, 3), '~');
+
+  UtObjectRef string2 = ut_string_new_from_ascii(characters);
+  ut_assert_cstring_equal(ut_string_get_text(string2), "H!$~");
+}
+
 static void test_iso8859_1() {
   UtObjectRef string = ut_string_new("Ün¡+");
 
@@ -139,6 +153,7 @@ int main(int argc, char **argv) {
 
   test_utf8();
   test_utf16();
+  test_ascii();
   test_iso8859_1();
 
   return 0;

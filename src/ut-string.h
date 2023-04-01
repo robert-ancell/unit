@@ -62,9 +62,16 @@ UtObject *ut_string_new_from_utf8(UtObject *utf8);
 /// !return-ref
 UtObject *ut_string_new_from_utf16(UtObject *code_units);
 
+/// Creates a new [UtString] from ASCII encoded [characters].
+///
+/// !arg-type characters Uint8List
+/// !return-type UtString
+/// !return-ref
+UtObject *ut_string_new_from_ascii(UtObject *characters);
+
 /// Creates a new [UtString] from ISO 8859-1 encoded [characters].
 ///
-/// !arg-type code_units Uint8List
+/// !arg-type characters Uint8List
 /// !return-type UtString
 /// !return-ref
 UtObject *ut_string_new_from_iso_8859_1(UtObject *characters);
@@ -95,6 +102,12 @@ UtObject *ut_string_get_utf8(UtObject *object);
 /// !return-type UtUint16List
 /// !return-ref
 UtObject *ut_string_get_utf16(UtObject *object);
+
+/// Generates an ASCII encoding of [object].
+///
+/// !return-type UtUint8List
+/// !return-ref
+UtObject *ut_string_get_ascii(UtObject *object);
 
 /// Generates an ISO 8859-1 encoding of [object].
 ///
