@@ -1,4 +1,3 @@
-#include <assert.h>
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -11,9 +10,9 @@ static void client2_echo_cb(void *user_data, UtObject *out_args) {
   ut_assert_int_equal(ut_list_get_length(out_args), 2);
   UtObjectRef arg0 = ut_list_get_element(out_args, 0);
   UtObjectRef arg1 = ut_list_get_element(out_args, 1);
-  assert(ut_object_implements_string(arg0));
+  ut_assert_true(ut_object_implements_string(arg0));
   ut_assert_cstring_equal(ut_string_get_text(arg0), "Lorem Ipsum");
-  assert(ut_object_is_uint32(arg1));
+  ut_assert_true(ut_object_is_uint32(arg1));
   ut_assert_float_equal(ut_uint32_get_value(arg1), 999);
 
   ut_event_loop_return(NULL);
@@ -41,9 +40,9 @@ static void client1_method_call_cb(void *user_data, UtObject *method_call) {
   ut_assert_int_equal(ut_list_get_length(args), 2);
   UtObjectRef arg0 = ut_list_get_element(args, 0);
   UtObjectRef arg1 = ut_list_get_element(args, 1);
-  assert(ut_object_implements_string(arg0));
+  ut_assert_true(ut_object_implements_string(arg0));
   ut_assert_cstring_equal(ut_string_get_text(arg0), "Hello World!");
-  assert(ut_object_is_uint32(arg1));
+  ut_assert_true(ut_object_is_uint32(arg1));
   ut_assert_int_equal(ut_uint32_get_value(arg1), 42);
 
   UtObjectRef reply_args = ut_list_new_from_elements_take(

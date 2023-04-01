@@ -1,4 +1,3 @@
-#include <assert.h>
 #include <stdio.h>
 
 #include "ut-jpeg-encoder-test-data.h"

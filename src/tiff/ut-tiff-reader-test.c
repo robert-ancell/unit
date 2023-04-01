@@ -1,5 +1,3 @@
-#include <assert.h>
-
 #include "ut.h"
 
 int main(int argc, char **argv) {
@@ -15,7 +13,7 @@ int main(int argc, char **argv) {
       "0100010001005465737420496d61676500004261636b67726f756e6400");
   UtObjectRef reader = ut_tiff_reader_new(data);
   UtObject *tags = ut_tiff_reader_get_tags(reader);
-  assert(tags != NULL);
+  ut_assert_non_null(tags);
   ut_assert_int_equal(ut_tiff_reader_get_image_width(reader), 4);
   ut_assert_int_equal(ut_tiff_reader_get_image_length(reader), 4);
   ut_cstring_ref description = ut_tiff_reader_get_image_description(reader);

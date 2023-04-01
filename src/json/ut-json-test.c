@@ -1,4 +1,3 @@
-#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -129,155 +128,155 @@ static void test_encode() {
 
 static void test_decode() {
   UtObjectRef empty = ut_json_decode("");
-  assert(empty == NULL);
+  ut_assert_null(empty);
 
   UtObjectRef unknown_keyword = ut_json_decode("foo");
-  assert(unknown_keyword == NULL);
+  ut_assert_null(unknown_keyword);
 
   UtObjectRef unknown_container = ut_json_decode("<>");
-  assert(unknown_container == NULL);
+  ut_assert_null(unknown_container);
 
   UtObjectRef null = ut_json_decode("null");
-  assert(null != NULL);
-  assert(ut_object_is_null(null));
+  ut_assert_non_null(null);
+  ut_assert_true(ut_object_is_null(null));
 
   UtObjectRef true_keyword = ut_json_decode("true");
-  assert(true_keyword != NULL);
-  assert(ut_object_is_boolean(true_keyword));
-  assert(ut_boolean_get_value(true_keyword) == true);
+  ut_assert_non_null(true_keyword);
+  ut_assert_true(ut_object_is_boolean(true_keyword));
+  ut_assert_true(ut_boolean_get_value(true_keyword));
 
   UtObjectRef false_keyword = ut_json_decode("false");
-  assert(false_keyword != NULL);
-  assert(ut_object_is_boolean(false_keyword));
-  assert(ut_boolean_get_value(false_keyword) == false);
+  ut_assert_non_null(false_keyword);
+  ut_assert_true(ut_object_is_boolean(false_keyword));
+  ut_assert_false(ut_boolean_get_value(false_keyword));
 
   UtObjectRef zero = ut_json_decode("0");
-  assert(zero != NULL);
-  assert(ut_object_is_int64(zero));
-  assert(ut_int64_get_value(zero) == 0);
+  ut_assert_non_null(zero);
+  ut_assert_true(ut_object_is_int64(zero));
+  ut_assert_int_equal(ut_int64_get_value(zero), 0);
 
   UtObjectRef one = ut_json_decode("1");
-  assert(one != NULL);
-  assert(ut_object_is_int64(one));
-  assert(ut_int64_get_value(one) == 1);
+  ut_assert_non_null(one);
+  ut_assert_true(ut_object_is_int64(one));
+  ut_assert_int_equal(ut_int64_get_value(one), 1);
 
   UtObjectRef minus_one = ut_json_decode("-1");
-  assert(minus_one != NULL);
-  assert(ut_object_is_int64(minus_one));
-  assert(ut_int64_get_value(minus_one) == -1);
+  ut_assert_non_null(minus_one);
+  ut_assert_true(ut_object_is_int64(minus_one));
+  ut_assert_int_equal(ut_int64_get_value(minus_one), -1);
 
   UtObjectRef one_k = ut_json_decode("1024");
-  assert(one_k != NULL);
-  assert(ut_object_is_int64(one_k));
-  assert(ut_int64_get_value(one_k) == 1024);
+  ut_assert_non_null(one_k);
+  ut_assert_true(ut_object_is_int64(one_k));
+  ut_assert_int_equal(ut_int64_get_value(one_k), 1024);
 
   UtObjectRef one_point_one = ut_json_decode("1.1");
-  assert(one_point_one != NULL);
-  assert(ut_object_is_float64(one_point_one));
-  assert(ut_float64_get_value(one_point_one) == 1.1);
+  ut_assert_non_null(one_point_one);
+  ut_assert_true(ut_object_is_float64(one_point_one));
+  ut_assert_float_equal(ut_float64_get_value(one_point_one), 1.1);
 
   UtObjectRef minus_one_point_one = ut_json_decode("-1.1");
-  assert(minus_one_point_one != NULL);
-  assert(ut_object_is_float64(minus_one_point_one));
-  assert(ut_float64_get_value(minus_one_point_one) == -1.1);
+  ut_assert_non_null(minus_one_point_one);
+  ut_assert_true(ut_object_is_float64(minus_one_point_one));
+  ut_assert_float_equal(ut_float64_get_value(minus_one_point_one), -1.1);
 
   UtObjectRef scientific_number = ut_json_decode("1.024e3");
-  assert(scientific_number != NULL);
-  assert(ut_object_is_float64(scientific_number));
-  assert(ut_float64_get_value(scientific_number) == 1024.0);
+  ut_assert_non_null(scientific_number);
+  ut_assert_true(ut_object_is_float64(scientific_number));
+  ut_assert_float_equal(ut_float64_get_value(scientific_number), 1024.0);
 
   UtObjectRef one_M = ut_json_decode("1e6");
-  assert(one_M != NULL);
-  assert(ut_object_is_float64(one_M));
-  assert(ut_float64_get_value(one_M) == 1000000);
+  ut_assert_non_null(one_M);
+  ut_assert_true(ut_object_is_float64(one_M));
+  ut_assert_float_equal(ut_float64_get_value(one_M), 1000000);
 
   UtObjectRef one_u = ut_json_decode("1e-6");
-  assert(one_u != NULL);
-  assert(ut_object_is_float64(one_u));
-  assert(ut_float64_get_value(one_u) == 0.000001);
+  ut_assert_non_null(one_u);
+  ut_assert_true(ut_object_is_float64(one_u));
+  ut_assert_float_equal(ut_float64_get_value(one_u), 0.000001);
 
   UtObjectRef empty_string = ut_json_decode("\"\"");
-  assert(empty_string != NULL);
-  assert(ut_object_implements_string(empty_string));
+  ut_assert_non_null(empty_string);
+  ut_assert_true(ut_object_implements_string(empty_string));
   ut_assert_cstring_equal(ut_string_get_text(empty_string), "");
 
   UtObjectRef string = ut_json_decode("\"Hello World!\"");
-  assert(string != NULL);
-  assert(ut_object_implements_string(string));
+  ut_assert_non_null(string);
+  ut_assert_true(ut_object_implements_string(string));
   ut_assert_cstring_equal(ut_string_get_text(string), "Hello World!");
 
   UtObjectRef escaped_string =
       ut_json_decode("\"\\\"\\\\\\/\\b\\f\\n\\r\\t\\u0012\"");
-  assert(escaped_string != NULL);
-  assert(ut_object_implements_string(escaped_string));
+  ut_assert_non_null(escaped_string);
+  ut_assert_true(ut_object_implements_string(escaped_string));
   ut_assert_cstring_equal(ut_string_get_text(escaped_string),
                           "\"\\/\b\f\n\r\t\x12");
 
   UtObjectRef emoji_string = ut_json_decode("\"😀\"");
-  assert(emoji_string != NULL);
-  assert(ut_object_implements_string(emoji_string));
+  ut_assert_non_null(emoji_string);
+  ut_assert_true(ut_object_implements_string(emoji_string));
   ut_assert_cstring_equal(ut_string_get_text(emoji_string), "😀");
 
   UtObjectRef unterminated_array = ut_json_decode("[");
-  assert(unterminated_array == NULL);
+  ut_assert_null(unterminated_array);
 
   UtObjectRef empty_array = ut_json_decode("[]");
-  assert(empty_array != NULL);
-  assert(ut_object_implements_list(empty_array));
-  assert(ut_list_get_length(empty_array) == 0);
+  ut_assert_non_null(empty_array);
+  ut_assert_true(ut_object_implements_list(empty_array));
+  ut_assert_int_equal(ut_list_get_length(empty_array), 0);
 
   UtObjectRef number_array = ut_json_decode("[1,2,3]");
-  assert(number_array != NULL);
-  assert(ut_object_implements_list(number_array));
-  assert(ut_list_get_length(number_array) == 3);
+  ut_assert_non_null(number_array);
+  ut_assert_true(ut_object_implements_list(number_array));
+  ut_assert_int_equal(ut_list_get_length(number_array), 3);
 
   UtObjectRef mixed_array = ut_json_decode("[false,\"two\",3.1]");
-  assert(mixed_array != NULL);
-  assert(ut_object_implements_list(mixed_array));
-  assert(ut_list_get_length(mixed_array) == 3);
+  ut_assert_non_null(mixed_array);
+  ut_assert_true(ut_object_implements_list(mixed_array));
+  ut_assert_int_equal(ut_list_get_length(mixed_array), 3);
 
   UtObjectRef unterminated_object = ut_json_decode("{");
-  assert(unterminated_object == NULL);
+  ut_assert_null(unterminated_object);
 
   UtObjectRef empty_object = ut_json_decode("{}");
-  assert(empty_object != NULL);
-  assert(ut_object_implements_map(empty_object));
-  assert(ut_map_get_length(empty_object) == 0);
+  ut_assert_non_null(empty_object);
+  ut_assert_true(ut_object_implements_map(empty_object));
+  ut_assert_int_equal(ut_map_get_length(empty_object), 0);
 
   UtObjectRef number_object =
       ut_json_decode("{\"one\":1,\"two\":2,\"three\":3}");
-  assert(number_object != NULL);
-  assert(ut_object_implements_map(number_object));
-  assert(ut_map_get_length(number_object) == 3);
+  ut_assert_non_null(number_object);
+  ut_assert_true(ut_object_implements_map(number_object));
+  ut_assert_int_equal(ut_map_get_length(number_object), 3);
   UtObjectRef number_value1 = ut_map_lookup_string(number_object, "one");
-  assert(number_value1 != NULL);
-  assert(ut_object_is_int64(number_value1));
-  assert(ut_int64_get_value(number_value1) == 1);
+  ut_assert_non_null(number_value1);
+  ut_assert_true(ut_object_is_int64(number_value1));
+  ut_assert_int_equal(ut_int64_get_value(number_value1), 1);
   UtObjectRef number_value2 = ut_map_lookup_string(number_object, "two");
-  assert(number_value2 != NULL);
-  assert(ut_object_is_int64(number_value2));
-  assert(ut_int64_get_value(number_value2) == 2);
+  ut_assert_non_null(number_value2);
+  ut_assert_true(ut_object_is_int64(number_value2));
+  ut_assert_int_equal(ut_int64_get_value(number_value2), 2);
   UtObjectRef number_value3 = ut_map_lookup_string(number_object, "three");
-  assert(number_value3 != NULL);
-  assert(ut_object_is_int64(number_value3));
-  assert(ut_int64_get_value(number_value3) == 3);
+  ut_assert_non_null(number_value3);
+  ut_assert_true(ut_object_is_int64(number_value3));
+  ut_assert_int_equal(ut_int64_get_value(number_value3), 3);
 
   UtObjectRef mixed_object =
       ut_json_decode("{\"boolean\":true,\"number\":42,\"string\":\"foo\"}");
-  assert(mixed_object != NULL);
-  assert(ut_object_implements_map(mixed_object));
-  assert(ut_map_get_length(mixed_object) == 3);
+  ut_assert_non_null(mixed_object);
+  ut_assert_true(ut_object_implements_map(mixed_object));
+  ut_assert_int_equal(ut_map_get_length(mixed_object), 3);
   UtObjectRef mixed_value1 = ut_map_lookup_string(mixed_object, "boolean");
-  assert(mixed_value1 != NULL);
-  assert(ut_object_is_boolean(mixed_value1));
-  assert(ut_boolean_get_value(mixed_value1) == true);
+  ut_assert_non_null(mixed_value1);
+  ut_assert_true(ut_object_is_boolean(mixed_value1));
+  ut_assert_true(ut_boolean_get_value(mixed_value1));
   UtObjectRef mixed_value2 = ut_map_lookup_string(mixed_object, "number");
-  assert(mixed_value2 != NULL);
-  assert(ut_object_is_int64(mixed_value2));
-  assert(ut_int64_get_value(mixed_value2) == 42);
+  ut_assert_non_null(mixed_value2);
+  ut_assert_true(ut_object_is_int64(mixed_value2));
+  ut_assert_int_equal(ut_int64_get_value(mixed_value2), 42);
   UtObjectRef mixed_value3 = ut_map_lookup_string(mixed_object, "string");
-  assert(mixed_value3 != NULL);
-  assert(ut_object_implements_string(mixed_value3));
+  ut_assert_non_null(mixed_value3);
+  ut_assert_true(ut_object_implements_string(mixed_value3));
   ut_assert_cstring_equal(ut_string_get_text(mixed_value3), "foo");
 }
 

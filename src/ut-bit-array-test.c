@@ -1,5 +1,3 @@
-#include <assert.h>
-
 #include "ut.h"
 
 static void test_append() {

@@ -4,6 +4,28 @@
 
 #include "ut-object.h"
 
+/// Asserts that [value] is true.
+#define ut_assert_true(value) _ut_assert_true(__FILE__, __LINE__, #value, value)
+void _ut_assert_true(const char *file, int line, const char *value_name,
+                     bool value);
+
+/// Asserts that [value] is false.
+#define ut_assert_false(value)                                                 \
+  _ut_assert_false(__FILE__, __LINE__, #value, value)
+void _ut_assert_false(const char *file, int line, const char *value_name,
+                      bool value);
+
+/// Asserts that [value] is NULL.
+#define ut_assert_null(value) _ut_assert_null(__FILE__, __LINE__, #value, value)
+void _ut_assert_null(const char *file, int line, const char *value_name,
+                     const void *value);
+
+/// Asserts that [value] is not NULL.
+#define ut_assert_non_null(value)                                              \
+  _ut_assert_non_null(__FILE__, __LINE__, #value, value)
+void _ut_assert_non_null(const char *file, int line, const char *value_name,
+                         const void *value);
+
 /// Asserts that the two objects [a] and [b] are equal.
 #define ut_assert_equal(a, b) _ut_assert_equal(__FILE__, __LINE__, #a, a, #b, b)
 void _ut_assert_equal(const char *file, int line, const char *a_name,

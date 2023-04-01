@@ -1,4 +1,3 @@
-#include <assert.h>
 #include <stdio.h>
 
 #include "ut.h"
@@ -10,7 +9,7 @@ int main(int argc, char **argv) {
   UtObjectRef empty_decoder = ut_gzip_decoder_new(empty_data_stream);
   UtObjectRef empty_result = ut_input_stream_read_sync(empty_decoder);
   ut_assert_is_not_error(empty_result);
-  assert(ut_list_get_length(empty_result) == 0);
+  ut_assert_int_equal(ut_list_get_length(empty_result), 0);
 
   UtObjectRef single_data = ut_uint8_list_new_from_hex_string(
       "1f8b0800000000000003530400d3ff6b9e01000000");

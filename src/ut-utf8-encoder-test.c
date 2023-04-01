@@ -1,16 +1,15 @@
-#include <assert.h>
 #include <stdlib.h>
 
 #include "ut.h"
 
 static size_t read_cb(void *user_data, UtObject *data, bool complete) {
-  assert(ut_list_get_length(data) == 6);
-  assert(ut_uint8_list_get_element(data, 0) == 72);
-  assert(ut_uint8_list_get_element(data, 1) == 105);
-  assert(ut_uint8_list_get_element(data, 2) == 240);
-  assert(ut_uint8_list_get_element(data, 3) == 159);
-  assert(ut_uint8_list_get_element(data, 4) == 152);
-  assert(ut_uint8_list_get_element(data, 5) == 128);
+  ut_assert_int_equal(ut_list_get_length(data), 6);
+  ut_assert_int_equal(ut_uint8_list_get_element(data, 0), 72);
+  ut_assert_int_equal(ut_uint8_list_get_element(data, 1), 105);
+  ut_assert_int_equal(ut_uint8_list_get_element(data, 2), 240);
+  ut_assert_int_equal(ut_uint8_list_get_element(data, 3), 159);
+  ut_assert_int_equal(ut_uint8_list_get_element(data, 4), 152);
+  ut_assert_int_equal(ut_uint8_list_get_element(data, 5), 128);
   ut_event_loop_return(NULL);
   return ut_list_get_length(data);
 }

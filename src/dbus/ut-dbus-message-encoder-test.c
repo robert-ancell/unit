@@ -1,5 +1,3 @@
-#include <assert.h>
-
 #include "ut.h"
 
 #include "dbus/ut-dbus-message-encoder.h"

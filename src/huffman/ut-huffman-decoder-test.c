@@ -1,5 +1,3 @@
-#include <assert.h>
-
 #include "ut.h"
 
 static void test_decode() {
@@ -216,12 +214,12 @@ static void test_decode_canonical_single_symbol() {
   // Only one code supported.
   uint16_t symbol;
   bool matched = ut_huffman_decoder_get_symbol(decoder, 0x0, 1, &symbol);
-  assert(matched);
+  ut_assert_true(matched);
   ut_assert_int_equal(symbol, 0);
 
   // Check unused code detected.
   matched = ut_huffman_decoder_get_symbol(decoder, 0x1, 1, &symbol);
-  assert(matched);
+  ut_assert_true(matched);
   ut_assert_int_equal(symbol, 65535);
 }
 

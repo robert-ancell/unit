@@ -45,6 +45,51 @@ static char *escape_string(const char *value) {
   return append_string(escaped, "\"");
 }
 
+void _ut_assert_true(const char *file, int line, const char *value_name,
+                     bool value) {
+  if (value) {
+    return;
+  }
+
+  fprintf(stderr, "%s:%d Expected %s to be TRUE\n", file, line, value_name);
+
+  abort();
+}
+
+void _ut_assert_false(const char *file, int line, const char *value_name,
+                      bool value) {
+  if (!value) {
+    return;
+  }
+
+  fprintf(stderr, "%s:%d Expected %s to be FALSE\n", file, line, value_name);
+
+  abort();
+}
+
+void _ut_assert_null(const char *file, int line, const char *value_name,
+                     const void *value) {
+  if (value == NULL) {
+    return;
+  }
+
+  fprintf(stderr, "%s:%d Expected %s to be NULL\n", file, line, value_name);
+
+  abort();
+}
+
+void _ut_assert_non_null(const char *file, int line, const char *value_name,
+                         const void *value) {
+  if (value != NULL) {
+    return;
+  }
+
+  fprintf(stderr, "%s:%d Expected %s to be not be NULL\n", file, line,
+          value_name);
+
+  abort();
+}
+
 void _ut_assert_equal(const char *file, int line, const char *a_name,
                       UtObject *a_value, const char *b_name,
                       UtObject *b_value) {

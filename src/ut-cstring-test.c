@@ -1,5 +1,3 @@
-#include <assert.h>
-
 #include "ut.h"
 
 int main(int argc, char **argv) {
@@ -42,14 +40,14 @@ int main(int argc, char **argv) {
   ut_assert_cstring_equal(printf_value, "Number 1");
 
   ut_cstring_ref prefix_value = ut_cstring_new("Food");
-  assert(ut_cstring_starts_with(prefix_value, "Foo"));
-  assert(!ut_cstring_starts_with(prefix_value, "Bar"));
-  assert(!ut_cstring_starts_with(prefix_value, "For"));
+  ut_assert_true(ut_cstring_starts_with(prefix_value, "Foo"));
+  ut_assert_false(ut_cstring_starts_with(prefix_value, "Bar"));
+  ut_assert_false(ut_cstring_starts_with(prefix_value, "For"));
 
   ut_cstring_ref suffix_value = ut_cstring_new("Phone");
-  assert(ut_cstring_ends_with(suffix_value, "one"));
-  assert(!ut_cstring_ends_with(suffix_value, "two"));
-  assert(!ut_cstring_ends_with(suffix_value, "ine"));
+  ut_assert_true(ut_cstring_ends_with(suffix_value, "one"));
+  ut_assert_false(ut_cstring_ends_with(suffix_value, "two"));
+  ut_assert_false(ut_cstring_ends_with(suffix_value, "ine"));
 
   return 0;
 }

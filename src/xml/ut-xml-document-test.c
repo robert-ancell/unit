@@ -1,4 +1,3 @@
-#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -53,76 +52,76 @@ static void test_encode() {
 
 static void test_decode() {
   UtObjectRef empty_document = ut_xml_document_new_from_text("");
-  assert(empty_document == NULL);
+  ut_assert_null(empty_document);
 
   UtObjectRef empty_element_document = ut_xml_document_new_from_text("<tag/>");
-  assert(empty_element_document != NULL);
+  ut_assert_non_null(empty_element_document);
   UtObject *root = ut_xml_document_get_root(empty_element_document);
   ut_assert_cstring_equal(ut_xml_element_get_name(root), "tag");
-  assert(ut_xml_element_get_content(root) == NULL);
+  ut_assert_null(ut_xml_element_get_content(root));
 
   UtObjectRef tag_name_leading_whitespace_document =
       ut_xml_document_new_from_text("< tag/>");
-  assert(tag_name_leading_whitespace_document == NULL);
+  ut_assert_null(tag_name_leading_whitespace_document);
 
   UtObjectRef tag_name_trailing_whitespace_document =
       ut_xml_document_new_from_text("<tag />");
-  assert(tag_name_trailing_whitespace_document != NULL);
+  ut_assert_non_null(tag_name_trailing_whitespace_document);
   root = ut_xml_document_get_root(tag_name_trailing_whitespace_document);
   ut_assert_cstring_equal(ut_xml_element_get_name(root), "tag");
-  assert(ut_xml_element_get_content(root) == NULL);
+  ut_assert_null(ut_xml_element_get_content(root));
 
   UtObjectRef attribute_document =
       ut_xml_document_new_from_text("<tag name=\"value\"/>");
-  assert(attribute_document != NULL);
+  ut_assert_non_null(attribute_document);
 
   UtObjectRef multiple_attribute_document = ut_xml_document_new_from_text(
       "<foo name1=\"'value1'\" name2='\"value2\"'/>");
-  assert(multiple_attribute_document != NULL);
+  ut_assert_non_null(multiple_attribute_document);
 
   UtObjectRef escaped_attribute_document =
       ut_xml_document_new_from_text("<tag name=\"&quot;value&quot;\"/>");
-  assert(escaped_attribute_document != NULL);
+  ut_assert_non_null(escaped_attribute_document);
 
   UtObjectRef no_content_document =
       ut_xml_document_new_from_text("<tag></tag>");
-  assert(no_content_document != NULL);
+  ut_assert_non_null(no_content_document);
   root = ut_xml_document_get_root(no_content_document);
   ut_assert_cstring_equal(ut_xml_element_get_name(root), "tag");
-  assert(ut_xml_element_get_content(root) == NULL);
+  ut_assert_null(ut_xml_element_get_content(root));
 
   UtObjectRef content_document =
       ut_xml_document_new_from_text("<tag>Hello World!</tag>");
-  assert(content_document != NULL);
+  ut_assert_non_null(content_document);
   root = ut_xml_document_get_root(content_document);
   ut_assert_cstring_equal(ut_xml_element_get_name(root), "tag");
   UtObject *content = ut_xml_element_get_content(root);
-  assert(content != NULL);
-  assert(ut_list_get_length(content) == 1);
+  ut_assert_non_null(content);
+  ut_assert_int_equal(ut_list_get_length(content), 1);
   UtObjectRef content_document_content = ut_list_get_element(content, 0);
   ut_assert_cstring_equal(ut_string_get_text(content_document_content),
                           "Hello World!");
 
   UtObjectRef escaped_document = ut_xml_document_new_from_text(
       "<tag>&lt;&quot;Fast&quot; &amp; &apos;Efficient&apos;&gt;</tag>");
-  assert(escaped_document != NULL);
+  ut_assert_non_null(escaped_document);
   root = ut_xml_document_get_root(escaped_document);
   ut_assert_cstring_equal(ut_xml_element_get_name(root), "tag");
-  assert(ut_xml_element_get_content(root) != NULL);
+  ut_assert_non_null(ut_xml_element_get_content(root));
   content = ut_xml_element_get_content(root);
-  assert(content != NULL);
-  assert(ut_list_get_length(content) == 1);
+  ut_assert_non_null(content);
+  ut_assert_int_equal(ut_list_get_length(content), 1);
   UtObjectRef escaped_document_content = ut_list_get_element(content, 0);
   ut_assert_cstring_equal(ut_string_get_text(escaped_document_content),
                           "<\"Fast\" & 'Efficient'>");
 
   UtObjectRef mismatched_tags_document =
       ut_xml_document_new_from_text("<foo></bar>");
-  assert(mismatched_tags_document == NULL);
+  ut_assert_null(mismatched_tags_document);
 
   UtObjectRef interleaved_tags_document =
       ut_xml_document_new_from_text("<foo><bar></foo></bar>");
-  assert(interleaved_tags_document == NULL);
+  ut_assert_null(interleaved_tags_document);
 }
 
 int main(int argc, char **argv) {

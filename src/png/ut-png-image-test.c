@@ -1,5 +1,3 @@
-#include <assert.h>
-
 #include "ut.h"
 
 int main(int argc, char **argv) {
@@ -231,7 +229,7 @@ int main(int argc, char **argv) {
                           "Foo <foo@example.com>");
   ut_assert_cstring_equal(ut_png_image_get_text(text_image, "Description"),
                           "Lorem Ipsum.\nFoo Bar");
-  assert(ut_png_image_get_text(text_image, "Comment") == NULL);
+  ut_assert_null(ut_png_image_get_text(text_image, "Comment"));
 
   UtObjectRef international_text_image_data =
       ut_uint8_list_new_from_hex_string("00");
@@ -252,10 +250,9 @@ int main(int argc, char **argv) {
                                           "De", &translated_keyword),
       "Foo <foo-de@example.com>");
   ut_assert_cstring_equal(translated_keyword, "Autor");
-  assert(ut_png_image_get_international_text(international_text_image, "fi",
-                                             "Title",
-                                             &translated_keyword) == NULL);
-  assert(translated_keyword == NULL);
+  ut_assert_null(ut_png_image_get_international_text(
+      international_text_image, "fi", "Title", &translated_keyword));
+  ut_assert_null(translated_keyword);
 
   return 0;
 }
