@@ -21,6 +21,7 @@ ut_sources = [
   'gzip/ut-gzip-encoder.c',
   'gzip/ut-gzip-error.c',
   'http/ut-http-client.c',
+  'http/ut-http-error.c',
   'http/ut-http-header.c',
   'http/ut-http-response.c',
   'huffman/ut-huffman-code.c',
