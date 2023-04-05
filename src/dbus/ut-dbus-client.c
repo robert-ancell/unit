@@ -7,6 +7,11 @@
 #include "ut-dbus-message-encoder.h"
 #include "ut.h"
 
+typedef enum {
+  DECODER_STATE_AUTHENTICATION,
+  DECODER_STATE_MESSAGES
+} DecoderState;
+
 typedef struct {
   UtObject object;
   UtObject *message;
@@ -44,13 +49,12 @@ typedef struct {
   UtObject *cancel;
   char *address;
   UtObject *socket;
-  UtObject *multiplexer;
   UtObject *auth_input_stream;
   UtObject *message_input_stream;
   UtObject *auth_client;
   UtObject *message_decoder;
   UtObject *message_encoder;
-  bool authenticated;
+  DecoderState state;
   UtObject *read_cancel;
   size_t last_serial;
   UtObject *message_queue;
@@ -141,12 +145,11 @@ static void auth_complete_cb(void *user_data, const char *guid,
                              bool unix_fd_supported, UtObject *error) {
   UtDBusClient *self = user_data;
 
-  self->authenticated = true;
+  self->state = DECODER_STATE_MESSAGES;
 
+  self->message_input_stream = ut_writable_input_stream_new();
   self->message_decoder =
       ut_dbus_message_decoder_new(self->message_input_stream);
-  ut_input_stream_multiplexer_set_active(self->multiplexer,
-                                         self->message_input_stream);
   ut_input_stream_read(self->message_decoder, messages_cb, self,
                        self->read_cancel);
 
@@ -167,6 +170,38 @@ static void auth_complete_cb(void *user_data, const char *guid,
   }
 }
 
+static size_t read_cb(void *user_data, UtObject *data, bool complete) {
+  UtDBusClient *self = user_data;
+
+  size_t data_length = ut_list_get_length(data);
+  size_t offset = 0;
+  while (offset < data_length) {
+    size_t n_used;
+    UtObjectRef d = ut_list_get_sublist(data, offset, data_length - offset);
+    DecoderState old_state = self->state;
+    switch (self->state) {
+    case DECODER_STATE_AUTHENTICATION:
+      n_used =
+          ut_writable_input_stream_write(self->auth_input_stream, d, complete);
+      break;
+    case DECODER_STATE_MESSAGES:
+      n_used = ut_writable_input_stream_write(self->message_input_stream, d,
+                                              complete);
+      break;
+    default:
+      assert(false);
+    }
+
+    if (self->state == old_state && n_used == 0) {
+      break;
+    }
+
+    offset += n_used;
+  }
+
+  return offset;
+}
+
 static void hello_cb(void *user_data, UtObject *out_args) {
   UtDBusClient *self = user_data;
 
@@ -177,6 +212,8 @@ static void hello_cb(void *user_data, UtObject *out_args) {
 static void connect_cb(void *user_data) {
   UtDBusClient *self = (UtDBusClient *)user_data;
 
+  self->state = DECODER_STATE_AUTHENTICATION;
+  ut_input_stream_read(self->socket, read_cb, self, self->cancel);
   ut_dbus_auth_client_run(self->auth_client, auth_complete_cb, self,
                           self->cancel);
 }
@@ -193,13 +230,7 @@ static void connect(UtDBusClient *self) {
   UtObjectRef address = ut_unix_socket_address_new(path);
   self->socket = ut_tcp_socket_new(address, 0);
 
-  self->multiplexer = ut_input_stream_multiplexer_new(self->socket);
-  self->auth_input_stream = ut_input_stream_multiplexer_add(self->multiplexer);
-  self->message_input_stream =
-      ut_input_stream_multiplexer_add(self->multiplexer);
-
-  ut_input_stream_multiplexer_set_active(self->multiplexer,
-                                         self->auth_input_stream);
+  self->auth_input_stream = ut_writable_input_stream_new();
   self->auth_client =
       ut_dbus_auth_client_new(self->auth_input_stream, self->socket);
 
@@ -221,14 +252,14 @@ static void send_message(UtDBusClient *self, UtObject *message,
   self->last_serial++;
 
   // Queue if expecting response or not yet authenticated.
-  if (!self->authenticated || callback != NULL) {
+  if (self->state != DECODER_STATE_MESSAGES || callback != NULL) {
     UtObjectRef queued_message =
         queued_message_new(message, callback, user_data, cancel);
     ut_list_append(self->message_queue, queued_message);
   }
 
   // Send immediately if authenticated.
-  if (self->authenticated) {
+  if (self->state == DECODER_STATE_MESSAGES) {
     UtObjectRef data =
         ut_dbus_message_encoder_encode(self->message_encoder, message);
     ut_output_stream_write(self->socket, data);
@@ -259,7 +290,6 @@ static void ut_dbus_client_cleanup(UtObject *object) {
   ut_object_unref(self->cancel);
   free(self->address);
   ut_object_unref(self->socket);
-  ut_object_unref(self->multiplexer);
   ut_object_unref(self->auth_input_stream);
   ut_object_unref(self->message_input_stream);
   ut_object_unref(self->auth_client);
