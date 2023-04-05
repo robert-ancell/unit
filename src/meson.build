@@ -69,7 +69,6 @@ ut_sources = [
   'ut-hash-table.c',
   'ut-image-buffer.c',
   'ut-input-stream.c',
-  'ut-input-stream-multiplexer.c',
   'ut-int16.c',
   'ut-int16-array.c',
   'ut-int16-list.c',
