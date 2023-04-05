@@ -12,6 +12,11 @@ static UtObject *header_field_new(uint8_t code, UtObject *value) {
                                  NULL);
 }
 
+static UtObject *header_field_new_string(uint8_t code, const char *text) {
+  UtObjectRef value = ut_string_new(text);
+  return header_field_new(code, value);
+}
+
 static void write_padding(UtObject *buffer, size_t count) {
   for (size_t i = 0; i < count; i++) {
     ut_uint8_list_append(buffer, 0);
@@ -242,39 +247,33 @@ UtObject *ut_dbus_message_encoder_encode(UtObject *object, UtObject *message) {
   UtObjectRef header_fields = ut_dbus_array_new("(yv)");
   const char *path = ut_dbus_message_get_path(message);
   if (path != NULL) {
-    ut_list_append_take(header_fields,
-                        header_field_new(1, ut_dbus_object_path_new(path)));
+    UtObjectRef value = ut_dbus_object_path_new(path);
+    ut_list_append_take(header_fields, header_field_new(1, value));
   }
   const char *interface = ut_dbus_message_get_interface(message);
   if (interface != NULL) {
-    ut_list_append_take(header_fields,
-                        header_field_new(2, ut_string_new(interface)));
+    ut_list_append_take(header_fields, header_field_new_string(2, interface));
   }
   const char *member = ut_dbus_message_get_member(message);
   if (member != NULL) {
-    ut_list_append_take(header_fields,
-                        header_field_new(3, ut_string_new(member)));
+    ut_list_append_take(header_fields, header_field_new_string(3, member));
   }
   const char *error_name = ut_dbus_message_get_error_name(message);
   if (error_name != NULL) {
-    ut_list_append_take(header_fields,
-                        header_field_new(4, ut_string_new(error_name)));
+    ut_list_append_take(header_fields, header_field_new_string(4, error_name));
   }
   if (ut_dbus_message_has_reply_serial(message)) {
-    ut_list_append_take(
-        header_fields,
-        header_field_new(
-            5, ut_uint32_new(ut_dbus_message_get_reply_serial(message))));
+    UtObjectRef value =
+        ut_uint32_new(ut_dbus_message_get_reply_serial(message));
+    ut_list_append_take(header_fields, header_field_new(5, value));
   }
   const char *destination = ut_dbus_message_get_destination(message);
   if (destination != NULL) {
-    ut_list_append_take(header_fields,
-                        header_field_new(6, ut_string_new(destination)));
+    ut_list_append_take(header_fields, header_field_new_string(6, destination));
   }
   const char *sender = ut_dbus_message_get_sender(message);
   if (sender != NULL) {
-    ut_list_append_take(header_fields,
-                        header_field_new(7, ut_string_new(sender)));
+    ut_list_append_take(header_fields, header_field_new_string(7, sender));
   }
   if (signature != NULL) {
     ut_list_append_take(header_fields, header_field_new(8, signature));

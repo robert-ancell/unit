@@ -76,12 +76,12 @@ UtObject *ut_dbus_struct_new_take(UtObject *value0, ...) {
   UtObject *object = ut_object_new(sizeof(UtDBusStruct), &object_interface);
   UtDBusStruct *self = (UtDBusStruct *)object;
   assert(value0 != NULL);
-  ut_list_append(self->values, ut_object_ref(value0));
+  ut_list_append_take(self->values, value0);
   va_list ap;
   va_start(ap, value0);
   UtObject *value;
   while ((value = va_arg(ap, UtObject *)) != NULL) {
-    ut_list_append(self->values, ut_object_ref(value));
+    ut_list_append_take(self->values, value);
   }
   va_end(ap);
   return object;

@@ -26,9 +26,13 @@ static UtObjectInterface object_interface = {.type_name = "UtDBusVariant",
                                              .interfaces = {{NULL, NULL}}};
 
 UtObject *ut_dbus_variant_new(UtObject *value) {
+  return ut_dbus_variant_new_take(ut_object_ref(value));
+}
+
+UtObject *ut_dbus_variant_new_take(UtObject *value) {
   UtObject *object = ut_object_new(sizeof(UtDBusVariant), &object_interface);
   UtDBusVariant *self = (UtDBusVariant *)object;
-  self->value = ut_object_ref(value);
+  self->value = value;
   return object;
 }
 
