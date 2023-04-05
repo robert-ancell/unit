@@ -194,6 +194,11 @@ ut_include = include_directories('.')
 
 ut_lib = static_library('ut', ut_sources, dependencies: [m_dep, thread_dep, rt_dep])
 
+object_test = executable('ut-object-test',
+                         'ut-object-test.c',
+                         link_with: ut_lib)
+test('Object', object_test)
+
 cstring_test = executable('ut-cstring-test',
                           'ut-cstring-test.c',
                           link_with: ut_lib)
