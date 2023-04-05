@@ -81,5 +81,15 @@ int main(int argc, char **argv) {
   ut_object_clear(&o);
   ut_assert_null(o);
 
+  UtObject *object6 = test_object_new(123);
+  UtObject *weak_ref1, *weak_ref2;
+  ut_object_weak_ref(object6, &weak_ref1);
+  ut_object_weak_ref(object6, &weak_ref2);
+  ut_assert_true(weak_ref1 == object6);
+  ut_assert_true(weak_ref2 == object6);
+  ut_object_unref(object6);
+  ut_assert_null(weak_ref1);
+  ut_assert_null(weak_ref2);
+
   return 0;
 }

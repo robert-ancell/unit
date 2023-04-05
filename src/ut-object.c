@@ -5,11 +5,18 @@
 
 #include "ut.h"
 
+typedef struct _WeakReference WeakReference;
+struct _WeakReference {
+  UtObject **object_ref;
+  WeakReference *next;
+};
+
 UtObject *ut_object_new(size_t object_size, UtObjectInterface *interface) {
   UtObject *object = malloc(object_size);
   memset(object, 0, object_size);
   object->interface = interface;
   object->ref_count = 1;
+  object->weak_references = NULL;
 
   if (interface->init != NULL) {
     interface->init(object);
@@ -79,11 +86,57 @@ void ut_object_unref(UtObject *object) {
   assert(object->ref_count > 0);
 
   object->ref_count--;
-  if (object->ref_count == 0) {
-    if (object->interface->cleanup != NULL) {
-      object->interface->cleanup(object);
+  if (object->ref_count > 0) {
+    return;
+  }
+
+  WeakReference *ref = object->weak_references;
+  while (ref != NULL) {
+    *ref->object_ref = NULL;
+    WeakReference *next_ref = ref->next;
+    free(ref);
+    ref = next_ref;
+  }
+  object->weak_references = NULL;
+  if (object->interface->cleanup != NULL) {
+    object->interface->cleanup(object);
+  }
+  free(object);
+}
+
+void ut_object_weak_ref(UtObject *object, UtObject **object_ref) {
+  if (object == NULL) {
+    *object_ref = NULL;
+    return;
+  }
+
+  WeakReference *ref = malloc(sizeof(WeakReference));
+  ref->object_ref = object_ref;
+  ref->next = object->weak_references;
+  object->weak_references = ref;
+  *object_ref = object;
+}
+
+void ut_object_weak_unref(UtObject **object_ref) {
+  UtObject *object = *object_ref;
+  if (object == NULL) {
+    return;
+  }
+
+  WeakReference *prev_ref = NULL;
+  WeakReference *ref = object->weak_references;
+  while (ref != NULL) {
+    if (ref->object_ref == object_ref) {
+      if (prev_ref == NULL) {
+        object->weak_references = ref->next;
+      } else {
+        prev_ref->next = ref->next;
+      }
+      free(ref);
+      return;
     }
-    free(object);
+    prev_ref = ref;
+    ref = ref->next;
   }
 }
 

@@ -22,6 +22,7 @@ typedef struct {
 struct _UtObject {
   UtObjectInterface *interface;
   int ref_count;
+  void *weak_references;
 };
 
 UtObject *ut_object_new(size_t object_size, UtObjectInterface *functions);
@@ -41,6 +42,10 @@ UtObject *ut_object_ref(UtObject *object);
 
 // Does nothing if [object] is NULL.
 void ut_object_unref(UtObject *object);
+
+void ut_object_weak_ref(UtObject *object, UtObject **object_ref);
+
+void ut_object_weak_unref(UtObject **object_ref);
 
 static inline void ut_object_set(UtObject **object, UtObject *value) {
   ut_object_unref(*object);
