@@ -92,24 +92,8 @@ static void ut_fd_input_stream_read(UtObject *object,
   ut_event_loop_add_read_watch(self->fd, read_cb, self, self->watch_cancel);
 }
 
-static void ut_fd_input_stream_check_buffer(UtObject *object) {
-  UtFdInputStream *self = (UtFdInputStream *)object;
-  assert(self->callback != NULL);
-
-  if (ut_list_get_length(self->read_buffer) > 0) {
-    size_t buffer_length = ut_list_get_length(self->read_buffer);
-    size_t n_used =
-        self->callback(self->user_data, self->read_buffer, self->complete);
-    assert(n_used <= buffer_length);
-    ut_list_remove(self->read_buffer, 0, n_used);
-  }
-
-  ut_event_loop_add_read_watch(self->fd, read_cb, self, self->watch_cancel);
-}
-
 static UtInputStreamInterface input_stream_interface = {
-    .read = ut_fd_input_stream_read,
-    .check_buffer = ut_fd_input_stream_check_buffer};
+    .read = ut_fd_input_stream_read};
 
 static UtObjectInterface object_interface = {
     .type_name = "UtFdInputStream",
