@@ -160,7 +160,7 @@ static UtObject *decode_ascii_data(UtTiffReader *self, size_t count,
     set_error(self, "TIFF ASCII tag not nul terminated");
   }
   for (size_t i = 0; i < count - 1; i++) {
-    if (read_uint8(self, tag_data_offset + count) > 127) {
+    if (read_uint8(self, tag_data_offset + i) > 127) {
       set_error(self, "TIFF ASCII tag contains invalid data");
     }
   }
