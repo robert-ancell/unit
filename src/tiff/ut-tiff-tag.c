@@ -11,7 +11,9 @@ typedef struct {
 
 static char *ut_tiff_tag_to_string(UtObject *object) {
   UtTiffTag *self = (UtTiffTag *)object;
-  return ut_cstring_new_printf("<UtTiffTag>(%04x, %04x)", self->id, self->type);
+  ut_cstring_ref data_string = ut_object_to_string(self->data);
+  return ut_cstring_new_printf("<UtTiffTag>(0x%04x, 0x%04x, %s)", self->id,
+                               self->type, data_string);
 }
 
 static void ut_tiff_tag_cleanup(UtObject *object) {
@@ -66,18 +68,23 @@ uint16_t ut_tiff_tag_get_type(UtObject *object) {
   return self->type;
 }
 
+size_t ut_tiff_tag_get_count(UtObject *object) {
+  assert(ut_object_is_tiff_tag(object));
+  UtTiffTag *self = (UtTiffTag *)object;
+  return ut_list_get_length(self->data);
+}
+
 UtObject *ut_tiff_tag_get_data(UtObject *object) {
   assert(ut_object_is_tiff_tag(object));
   UtTiffTag *self = (UtTiffTag *)object;
   return self->data;
 }
 
-uint8_t ut_tiff_tag_get_byte(UtObject *object) {
+uint8_t ut_tiff_tag_get_byte(UtObject *object, size_t index) {
   assert(ut_object_is_tiff_tag(object));
   UtTiffTag *self = (UtTiffTag *)object;
   assert(self->type == UT_TIFF_TAG_TYPE_BYTE);
-  assert(ut_list_get_length(self->data) == 1);
-  return ut_uint8_list_get_element(self->data, 0);
+  return ut_uint8_list_get_element(self->data, index);
 }
 
 char *ut_tiff_tag_get_ascii(UtObject *object) {
@@ -89,20 +96,28 @@ char *ut_tiff_tag_get_ascii(UtObject *object) {
   return ut_string_take_text(string);
 }
 
-uint16_t ut_tiff_tag_get_short(UtObject *object) {
+uint16_t ut_tiff_tag_get_short(UtObject *object, size_t index) {
   assert(ut_object_is_tiff_tag(object));
   UtTiffTag *self = (UtTiffTag *)object;
   assert(self->type == UT_TIFF_TAG_TYPE_SHORT);
-  assert(ut_list_get_length(self->data) == 1);
-  return ut_uint16_list_get_element(self->data, 0);
+  return ut_uint16_list_get_element(self->data, index);
 }
 
-uint32_t ut_tiff_tag_get_long(UtObject *object) {
+uint32_t ut_tiff_tag_get_long(UtObject *object, size_t index) {
   assert(ut_object_is_tiff_tag(object));
   UtTiffTag *self = (UtTiffTag *)object;
   assert(self->type == UT_TIFF_TAG_TYPE_LONG);
-  assert(ut_list_get_length(self->data) == 1);
-  return ut_uint32_list_get_element(self->data, 0);
+  return ut_uint32_list_get_element(self->data, index);
+}
+
+uint32_t ut_tiff_tag_get_short_or_long(UtObject *object, size_t index) {
+  assert(ut_object_is_tiff_tag(object));
+  UtTiffTag *self = (UtTiffTag *)object;
+  assert(self->type == UT_TIFF_TAG_TYPE_SHORT ||
+         self->type == UT_TIFF_TAG_TYPE_LONG);
+  return self->type == UT_TIFF_TAG_TYPE_SHORT
+             ? ut_uint16_list_get_element(self->data, index)
+             : ut_uint32_list_get_element(self->data, index);
 }
 
 bool ut_object_is_tiff_tag(UtObject *object) {

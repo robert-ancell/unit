@@ -39,6 +39,7 @@ ut_sources = [
   'json/ut-json.c',
   'json/ut-json-encoder.c',
   'tiff/ut-tiff-error.c',
+  'tiff/ut-tiff-image.c',
   'tiff/ut-tiff-reader.c',
   'tiff/ut-tiff-tag.c',
   'ut-assert.c',
@@ -358,6 +359,11 @@ tiff_reader_test = executable('ut-tiff-reader-test',
                                'tiff/ut-tiff-reader-test.c',
                                link_with: ut_lib)
 test('TIFF Reader', tiff_reader_test)
+
+tiff_image_test = executable('ut-tiff-image-test',
+                             'tiff/ut-tiff-image-test.c',
+                             link_with: ut_lib)
+test('TIFF Image', tiff_image_test)
 
 png_image_test = executable('ut-png-image-test',
                             'png/ut-png-image-test.c',

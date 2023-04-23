@@ -30,6 +30,7 @@
 #include "png/ut-png-error.h"
 #include "png/ut-png-image.h"
 #include "tiff/ut-tiff-error.h"
+#include "tiff/ut-tiff-image.h"
 #include "tiff/ut-tiff-reader.h"
 #include "tiff/ut-tiff-tag.h"
 #include "ut-assert.h"

@@ -26,11 +26,9 @@ typedef struct {
 } UtTiffReader;
 
 static void set_error(UtTiffReader *self, const char *description) {
-  if (self->error != NULL) {
-    return;
+  if (self->error == NULL) {
+    self->error = ut_tiff_error_new(description);
   }
-
-  self->error = ut_tiff_error_new(description);
 }
 
 static uint8_t read_uint8(UtTiffReader *self, size_t offset) {
@@ -531,11 +529,11 @@ static bool validate_tag(UtObject *tag) {
   case UT_TIFF_TAG_JPEG_AC_TABLES:
     // FIXME: Count SamplesPerPixel
     return type == UT_TIFF_TAG_TYPE_LONG;
-  case UT_TIFF_TAG_JPEG_Y_CB_CR_COEFFICIENTS:
+  case UT_TIFF_TAG_JPEG_YCBCR_COEFFICIENTS:
     return type == UT_TIFF_TAG_TYPE_RATIONAL && count == 3;
-  case UT_TIFF_TAG_JPEG_Y_CB_CR_SUBSAMPLING:
+  case UT_TIFF_TAG_JPEG_YCBCR_SUBSAMPLING:
     return type == UT_TIFF_TAG_TYPE_SHORT && count == 2;
-  case UT_TIFF_TAG_JPEG_Y_CB_CR_POSITIONING:
+  case UT_TIFF_TAG_JPEG_YCBCR_POSITIONING:
     return type == UT_TIFF_TAG_TYPE_SHORT && count == 1;
   case UT_TIFF_TAG_REFERENCE_BLACK_WHITE:
     // FIXME: Count 2*SamplesPerPixel
@@ -651,7 +649,7 @@ static uint16_t get_short(UtObject *object, uint16_t id) {
     return 0;
   }
 
-  return ut_tiff_tag_get_short(tag);
+  return ut_tiff_tag_get_short(tag, 0);
 }
 
 static uint32_t get_short_or_long(UtObject *object, uint16_t id) {
@@ -660,11 +658,7 @@ static uint32_t get_short_or_long(UtObject *object, uint16_t id) {
     return 0;
   }
 
-  if (ut_tiff_tag_get_type(tag) == UT_TIFF_TAG_TYPE_SHORT) {
-    return ut_tiff_tag_get_short(tag);
-  } else {
-    return ut_tiff_tag_get_long(tag);
-  }
+  return ut_tiff_tag_get_short_or_long(tag, 0);
 }
 
 static char *get_ascii(UtObject *object, uint16_t id) {
@@ -865,6 +859,7 @@ UtObject *ut_tiff_reader_get_subfile(UtObject *object, uint32_t offset) {
 UtObject *ut_tiff_reader_get_error(UtObject *object) {
   assert(ut_object_is_tiff_reader(object));
   UtTiffReader *self = (UtTiffReader *)object;
+  decode_tags(self);
   return self->error;
 }
 

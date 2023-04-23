@@ -74,9 +74,9 @@ typedef enum {
   UT_TIFF_TAG_JPEG_Q_TABLES = 0x0207,
   UT_TIFF_TAG_JPEG_DC_TABLES = 0x0208,
   UT_TIFF_TAG_JPEG_AC_TABLES = 0x0209,
-  UT_TIFF_TAG_JPEG_Y_CB_CR_COEFFICIENTS = 0x0211,
-  UT_TIFF_TAG_JPEG_Y_CB_CR_SUBSAMPLING = 0x0212,
-  UT_TIFF_TAG_JPEG_Y_CB_CR_POSITIONING = 0x0213,
+  UT_TIFF_TAG_JPEG_YCBCR_COEFFICIENTS = 0x0211,
+  UT_TIFF_TAG_JPEG_YCBCR_SUBSAMPLING = 0x0212,
+  UT_TIFF_TAG_JPEG_YCBCR_POSITIONING = 0x0213,
   UT_TIFF_TAG_REFERENCE_BLACK_WHITE = 0x0214,
   UT_TIFF_TAG_COPYRIGHT = 0x8298,
   UT_TIFF_TAG_EXIF_IFD = 0x8769,
@@ -98,6 +98,33 @@ typedef enum {
   UT_TIFF_TAG_TYPE_DOUBLE = 12
 } UtTiffTagType;
 
+typedef enum {
+  UT_TIFF_COMPRESSION_NONE = 1,
+  UT_TIFF_COMPRESSION_CCIT_1D = 2,
+  UT_TIFF_COMPRESSION_GROUP_3_FAX = 3,
+  UT_TIFF_COMPRESSION_GROUP_4_FAX = 4,
+  UT_TIFF_COMPRESSION_LZW = 5,
+  UT_TIFF_COMPRESSION_JPEG = 6,
+  UT_TIFF_COMPRESSION_PACK_BITS = 32773
+} UtTiffCompression;
+
+typedef enum {
+  UT_TIFF_PHOTOMETRIC_INTERPRETATION_WHITE_IS_ZERO = 0,
+  UT_TIFF_PHOTOMETRIC_INTERPRETATION_BLACK_IS_ZERO = 1,
+  UT_TIFF_PHOTOMETRIC_INTERPRETATION_RGB = 2,
+  UT_TIFF_PHOTOMETRIC_INTERPRETATION_RGB_PALETTE = 3,
+  UT_TIFF_PHOTOMETRIC_INTERPRETATION_TRANSPARENCY_MASK = 4,
+  UT_TIFF_PHOTOMETRIC_INTERPRETATION_CMYK = 5,
+  UT_TIFF_PHOTOMETRIC_INTERPRETATION_YCBCR = 6,
+  UT_TIFF_PHOTOMETRIC_INTERPRETATION_CIELAB = 8
+} UtTiffPhotometricInterpretation;
+
+typedef enum {
+  UT_TIFF_RESOLUTION_UNIT_NONE = 1,
+  UT_TIFF_RESOLUTION_UNIT_INCH = 2,
+  UT_TIFF_RESOLUTION_UNIT_CENTIMETER = 3
+} UtTiffResolutionUnit;
+
 UtObject *ut_tiff_tag_new(uint16_t id, uint16_t type, UtObject *data);
 
 UtObject *ut_tiff_tag_new_single_byte(uint16_t id, uint8_t value);
@@ -110,14 +137,18 @@ uint16_t ut_tiff_tag_get_id(UtObject *object);
 
 uint16_t ut_tiff_tag_get_type(UtObject *object);
 
+size_t ut_tiff_tag_get_count(UtObject *object);
+
 UtObject *ut_tiff_tag_get_data(UtObject *object);
 
-uint8_t ut_tiff_tag_get_byte(UtObject *object);
+uint8_t ut_tiff_tag_get_byte(UtObject *object, size_t index);
 
 char *ut_tiff_tag_get_ascii(UtObject *object);
 
-uint16_t ut_tiff_tag_get_short(UtObject *object);
+uint16_t ut_tiff_tag_get_short(UtObject *object, size_t index);
 
-uint32_t ut_tiff_tag_get_long(UtObject *object);
+uint32_t ut_tiff_tag_get_long(UtObject *object, size_t index);
+
+uint32_t ut_tiff_tag_get_short_or_long(UtObject *object, size_t index);
 
 bool ut_object_is_tiff_tag(UtObject *object);
