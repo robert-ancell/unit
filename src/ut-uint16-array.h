@@ -15,6 +15,6 @@ UtObject *ut_uint16_array_new_from_elements(size_t length, ...);
 
 UtObject *ut_uint16_array_new_from_va_elements(size_t length, va_list ap);
 
-uint16_t *ut_uint16_array_get_data(UtObject *object);
+UtObject *ut_uint16_array_new_from_hex_string(const char *hex);
 
 bool ut_object_is_uint16_array(UtObject *object);

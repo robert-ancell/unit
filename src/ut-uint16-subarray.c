@@ -17,7 +17,7 @@ typedef struct {
 
 static uint16_t *get_data(UtUint16Subarray *self) {
   assert(ut_list_get_length(self->parent) == self->parent_length);
-  return ut_uint16_array_get_data(self->parent) + self->start;
+  return ut_uint16_list_get_writable_data(self->parent) + self->start;
 }
 
 static uint16_t ut_uint16_subarray_get_element(UtObject *object, size_t index) {

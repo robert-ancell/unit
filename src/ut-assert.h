@@ -94,6 +94,14 @@ void _ut_assert_uint16_list_equal(const char *file, int line,
                                   const char *a_name, UtObject *a_value,
                                   uint16_t *b_value, size_t b_length);
 
+/// Asserts that the [UtUint16List] object [a] has the same contents a the
+/// hexadecimal string [b_hex].
+#define ut_assert_uint16_list_equal_hex(a, b_hex)                              \
+  _ut_assert_uint16_list_equal_hex(__FILE__, __LINE__, #a, a, b_hex)
+void _ut_assert_uint16_list_equal_hex(const char *file, int line,
+                                      const char *a_name, UtObject *a_value,
+                                      const char *b_hex);
+
 /// Asserts that the [UtInt16List] object [a] has the same contents a the C
 /// array [b].
 #define ut_assert_int16_list_equal(a, b, b_length)                             \

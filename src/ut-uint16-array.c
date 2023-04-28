@@ -2,6 +2,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "ut-uint16-subarray.h"
 #include "ut.h"
@@ -18,6 +19,18 @@ static void resize_list(UtUint16Array *self, size_t length) {
     self->data[i] = 0;
   }
   self->data_length = length;
+}
+
+static int get_nibble(char c) {
+  if (c >= '0' && c <= '9') {
+    return c - '0';
+  } else if (c >= 'a' && c <= 'f') {
+    return c - 'a' + 10;
+  } else if (c >= 'A' && c <= 'F') {
+    return c - 'A' + 10;
+  } else {
+    return -1;
+  }
 }
 
 static uint16_t ut_uint16_array_get_element(UtObject *object, size_t index) {
@@ -190,10 +203,28 @@ UtObject *ut_uint16_array_new_from_va_elements(size_t length, va_list ap) {
   return object;
 }
 
-uint16_t *ut_uint16_array_get_data(UtObject *object) {
-  assert(ut_object_is_uint16_array(object));
+UtObject *ut_uint16_array_new_from_hex_string(const char *hex) {
+  size_t hex_length = strlen(hex);
+  if (hex_length % 4 != 0) {
+    return ut_error_new("Invalid hexadecimal string length");
+  }
+  size_t length = hex_length / 4;
+
+  UtObjectRef object = ut_uint16_array_new();
   UtUint16Array *self = (UtUint16Array *)object;
-  return self->data;
+  resize_list(self, length);
+  for (size_t i = 0; i < length; i++) {
+    int nibble0 = get_nibble(hex[i * 4]);
+    int nibble1 = get_nibble(hex[(i * 4) + 1]);
+    int nibble2 = get_nibble(hex[(i * 4) + 2]);
+    int nibble3 = get_nibble(hex[(i * 4) + 3]);
+    if (nibble0 < 0 || nibble1 < 0 || nibble2 < 0 || nibble3 < 0) {
+      return ut_error_new("Invalid hexadecimal string");
+    }
+    self->data[i] = nibble0 << 12 | nibble1 << 8 | nibble2 << 4 | nibble3;
+  }
+
+  return ut_object_ref(object);
 }
 
 bool ut_object_is_uint16_array(UtObject *object) {

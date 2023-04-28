@@ -13,6 +13,10 @@ UtObject *ut_uint16_list_new_from_elements(size_t length, ...) {
   va_end(ap);
 }
 
+UtObject *ut_uint16_list_new_from_hex_string(const char *hex) {
+  return ut_uint16_array_new_from_hex_string(hex);
+}
+
 uint16_t ut_uint16_list_get_element(UtObject *object, size_t index) {
   UtUint16ListInterface *uint16_list_interface =
       ut_object_get_interface(object, &ut_uint16_list_id);
@@ -75,6 +79,28 @@ void ut_uint16_list_insert_block(UtObject *object, size_t index,
   assert(uint16_list_interface != NULL);
   assert(ut_list_is_mutable(object));
   uint16_list_interface->insert(object, index, data, data_length);
+}
+
+char *ut_uint16_list_to_hex_string(UtObject *object) {
+  UtUint16ListInterface *uint16_list_interface =
+      ut_object_get_interface(object, &ut_uint16_list_id);
+  assert(uint16_list_interface != NULL);
+
+  size_t length = ut_list_get_length(object);
+  const uint16_t *data = ut_uint16_list_get_data(object);
+  UtObjectRef hex_string = ut_string_new("");
+  if (data != NULL) {
+    for (size_t i = 0; i < length; i++) {
+      ut_string_append_printf(hex_string, "%04x", data[i]);
+    }
+  } else {
+    for (size_t i = 0; i < length; i++) {
+      ut_string_append_printf(hex_string, "%04x",
+                              ut_uint16_list_get_element(object, i));
+    }
+  }
+
+  return ut_string_take_text(hex_string);
 }
 
 bool ut_object_implements_uint16_list(UtObject *object) {
