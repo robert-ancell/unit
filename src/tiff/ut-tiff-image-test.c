@@ -51,9 +51,14 @@ int main(int argc, char **argv) {
   check_tiff(grayscale8_invert_data, 32, 32,
              UT_TIFF_PHOTOMETRIC_INTERPRETATION_WHITE_IS_ZERO, 8, 1, NULL,
              grayscale8_invert_image_data);
+  check_tiff(grayscale8_alpha_data, 32, 32,
+             UT_TIFF_PHOTOMETRIC_INTERPRETATION_BLACK_IS_ZERO, 8, 2, NULL,
+             grayscale8_alpha_image_data);
 
   check_tiff(rgb_data, 32, 32, UT_TIFF_PHOTOMETRIC_INTERPRETATION_RGB, 8, 3,
              NULL, rgb_image_data);
+  check_tiff(rgb_alpha_data, 32, 32, UT_TIFF_PHOTOMETRIC_INTERPRETATION_RGB, 8,
+             4, NULL, rgb_alpha_image_data);
 
   check_tiff(palette4_data, 32, 32,
              UT_TIFF_PHOTOMETRIC_INTERPRETATION_RGB_PALETTE, 4, 1,

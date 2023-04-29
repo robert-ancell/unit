@@ -216,7 +216,7 @@ UtObject *ut_tiff_image_new_from_data(UtObject *data) {
   switch (photometric_interpretation) {
   case UT_TIFF_PHOTOMETRIC_INTERPRETATION_WHITE_IS_ZERO:
   case UT_TIFF_PHOTOMETRIC_INTERPRETATION_BLACK_IS_ZERO:
-    if (samples_per_pixel != 1) {
+    if (samples_per_pixel < 1) {
       return ut_tiff_error_new(
           "Invalid samples per pixel in bilevel/grayscale TIFF image");
     }

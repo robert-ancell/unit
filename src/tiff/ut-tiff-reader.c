@@ -494,7 +494,7 @@ static bool validate_tag(UtObject *tag) {
   case UT_TIFF_TAG_TARGET_PRINTER:
     return type == UT_TIFF_TAG_TYPE_ASCII;
   case UT_TIFF_TAG_EXTRA_SAMPLES:
-    return type == UT_TIFF_TAG_TYPE_BYTE;
+    return type == UT_TIFF_TAG_TYPE_SHORT;
   case UT_TIFF_TAG_SAMPLE_FORMAT:
     // FIXME: Count must be SamplesPerPixel
     return type == UT_TIFF_TAG_TYPE_SHORT;
