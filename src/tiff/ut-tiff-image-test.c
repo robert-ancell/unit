@@ -34,6 +34,9 @@ int main(int argc, char **argv) {
   check_tiff(bilevel_invert_data, 32, 32,
              UT_TIFF_PHOTOMETRIC_INTERPRETATION_WHITE_IS_ZERO, 1, 1, NULL,
              bilevel_invert_image_data);
+  check_tiff(bilevel_packbits_data, 32, 32,
+             UT_TIFF_PHOTOMETRIC_INTERPRETATION_BLACK_IS_ZERO, 1, 1, NULL,
+             bilevel_packbits_image_data);
 
   check_tiff(grayscale4_data, 32, 32,
              UT_TIFF_PHOTOMETRIC_INTERPRETATION_BLACK_IS_ZERO, 4, 1, NULL,

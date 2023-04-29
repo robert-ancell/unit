@@ -101,6 +101,38 @@ static bool get_short_or_long_tag(UtObject *reader, uint16_t id,
   }
 }
 
+static bool decode_pack_bits(UtObject *input, UtObject *output) {
+  size_t input_length = ut_list_get_length(input);
+
+  for (size_t i = 0; i < input_length; i++) {
+    int8_t b = (int8_t)ut_uint8_list_get_element(input, i);
+    size_t count, repeat_count;
+    if (b >= 0) {
+      count = b + 1;
+      repeat_count = 1;
+    } else if (b == -128) {
+      count = 0;
+      repeat_count = 0;
+    } else {
+      count = 1;
+      repeat_count = 1 - b;
+    }
+
+    if (i + count >= input_length) {
+      return false;
+    }
+    for (size_t j = 0; j < count; j++) {
+      i++;
+      uint8_t value = ut_uint8_list_get_element(input, i);
+      for (size_t k = 0; k < repeat_count; k++) {
+        ut_uint8_list_append(output, value);
+      }
+    }
+  }
+
+  return true;
+}
+
 UtObject *ut_tiff_image_new_from_data(UtObject *data) {
   UtObjectRef reader = ut_tiff_reader_new(data);
   UtObject *error = ut_tiff_reader_get_error(reader);
@@ -144,10 +176,12 @@ UtObject *ut_tiff_image_new_from_data(UtObject *data) {
                      false, 2)) {
     return ut_tiff_error_new("Invalid TIFF resolution unit tag");
   }
-  uint16_t compression;
-  if (!get_short_tag(reader, UT_TIFF_TAG_COMPRESSION, &compression, true, 0)) {
+  uint16_t compression_value;
+  if (!get_short_tag(reader, UT_TIFF_TAG_COMPRESSION, &compression_value, true,
+                     0)) {
     return ut_tiff_error_new("Invalid TIFF compression tag");
   }
+  UtTiffCompression compression = compression_value;
 
   uint32_t rows_per_strip;
   if (!get_short_or_long_tag(reader, UT_TIFF_TAG_ROWS_PER_STRIP,
@@ -191,7 +225,8 @@ UtObject *ut_tiff_image_new_from_data(UtObject *data) {
       return ut_tiff_error_new(
           "Unsupported bits per sample in bilevel/grayscale TIFF image");
     }
-    if (compression != 1) {
+    if (compression != UT_TIFF_COMPRESSION_UNCOMPRESSED &&
+        compression != UT_TIFF_COMPRESSION_PACK_BITS) {
       return ut_tiff_error_new("Unsupported TIFF compression");
     }
     break;
@@ -205,7 +240,8 @@ UtObject *ut_tiff_image_new_from_data(UtObject *data) {
       return ut_tiff_error_new("Unsupported bits per sample in RGB TIFF image");
     }
     bits_per_sample = 8;
-    if (compression != 1) {
+    if (compression != UT_TIFF_COMPRESSION_UNCOMPRESSED &&
+        compression != UT_TIFF_COMPRESSION_PACK_BITS) {
       return ut_tiff_error_new("Unsupported TIFF compression");
     }
     break;
@@ -219,7 +255,8 @@ UtObject *ut_tiff_image_new_from_data(UtObject *data) {
       return ut_tiff_error_new(
           "Unsupported bits per sample in color_map color TIFF image");
     }
-    if (compression != 1) {
+    if (compression != UT_TIFF_COMPRESSION_UNCOMPRESSED &&
+        compression != UT_TIFF_COMPRESSION_PACK_BITS) {
       return ut_tiff_error_new("Unsupported TIFF compression");
     }
 
@@ -254,7 +291,18 @@ UtObject *ut_tiff_image_new_from_data(UtObject *data) {
     }
 
     UtObjectRef strip = ut_list_get_sublist(data, offset, byte_count);
-    ut_list_append_list(image_data, strip);
+    switch (compression) {
+    case UT_TIFF_COMPRESSION_UNCOMPRESSED:
+      ut_list_append_list(image_data, strip);
+      break;
+    case UT_TIFF_COMPRESSION_PACK_BITS:
+      if (!decode_pack_bits(strip, image_data)) {
+        return ut_tiff_error_new("Invalid TIFF PackBits data");
+      }
+      break;
+    default:
+      assert(false);
+    }
   }
 
   UtObject *image =
