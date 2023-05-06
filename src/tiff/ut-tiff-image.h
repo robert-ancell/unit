@@ -25,6 +25,8 @@ uint16_t ut_tiff_image_get_bits_per_sample(UtObject *object);
 
 uint16_t ut_tiff_image_get_samples_per_pixel(UtObject *object);
 
+size_t ut_tiff_image_get_row_stride(UtObject *object);
+
 void ut_tiff_image_set_color_map(UtObject *object, UtObject *color_map);
 
 UtObject *ut_tiff_image_get_color_map(UtObject *object);

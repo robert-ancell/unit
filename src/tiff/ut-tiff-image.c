@@ -54,6 +54,11 @@ ut_tiff_image_new(uint32_t width, uint32_t length,
   return object;
 }
 
+static size_t get_row_stride(uint32_t width, uint8_t bits_per_sample,
+                             size_t samples_per_pixel) {
+  return (((size_t)width * bits_per_sample * samples_per_pixel) + 7) / 8;
+}
+
 static bool get_short_tag(UtObject *reader, uint16_t id, uint16_t *value,
                           bool required, uint16_t default_value) {
   UtObject *tag = ut_tiff_reader_get_tag(reader, id);
@@ -343,6 +348,13 @@ uint16_t ut_tiff_image_get_samples_per_pixel(UtObject *object) {
   assert(ut_object_is_tiff_image(object));
   UtTiffImage *self = (UtTiffImage *)object;
   return self->samples_per_pixel;
+}
+
+size_t ut_tiff_image_get_row_stride(UtObject *object) {
+  assert(ut_object_is_tiff_image(object));
+  UtTiffImage *self = (UtTiffImage *)object;
+  return get_row_stride(self->width, self->bits_per_sample,
+                        self->samples_per_pixel);
 }
 
 void ut_tiff_image_set_color_map(UtObject *object, UtObject *color_map) {
