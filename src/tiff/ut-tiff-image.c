@@ -15,7 +15,7 @@ typedef struct {
   UtObject *data;
 } UtTiffImage;
 
-static size_t get_row_stride(uint32_t width, uint8_t bits_per_sample,
+static size_t get_row_stride(uint32_t width, size_t bits_per_sample,
                              size_t samples_per_pixel) {
   return (((size_t)width * bits_per_sample * samples_per_pixel) + 7) / 8;
 }
@@ -92,6 +92,55 @@ static bool decode_pack_bits(UtObject *input, UtObject *output) {
       uint8_t value = ut_uint8_list_get_element(input, i);
       for (size_t k = 0; k < repeat_count; k++) {
         ut_uint8_list_append(output, value);
+      }
+    }
+  }
+
+  return true;
+}
+
+static bool decode_deflate(UtObject *input, UtObject *output) {
+  UtObjectRef input_stream = ut_list_input_stream_new(input);
+  UtObjectRef zlib_decoder = ut_zlib_decoder_new(input_stream);
+  UtObjectRef decoded_data = ut_input_stream_read_sync(zlib_decoder);
+  if (ut_object_implements_error(decoded_data)) {
+    return false;
+  }
+
+  ut_list_append_list(output, decoded_data);
+
+  return true;
+}
+
+static bool decode_horizontal_differencing(
+    size_t width, size_t length, UtTiffPlanarConfiguration planar_configuration,
+    size_t bits_per_sample, size_t samples_per_pixel, UtObject *image_data) {
+  // FIXME: Support other bit depths.
+  if (bits_per_sample != 8) {
+    return false;
+  }
+
+  uint8_t *d = ut_uint8_list_get_writable_data(image_data);
+  if (planar_configuration == UT_TIFF_PLANAR_CONFIGURATION_CHUNKY) {
+    size_t offset = 0;
+    for (size_t y = 0; y < length; y++) {
+      offset += samples_per_pixel;
+      for (size_t x = 1; x < width; x++) {
+        for (size_t s = 0; s < samples_per_pixel; s++) {
+          d[offset + s] += d[offset + s - samples_per_pixel];
+        }
+        offset += samples_per_pixel;
+      }
+    }
+  } else if (planar_configuration == UT_TIFF_PLANAR_CONFIGURATION_PLANAR) {
+    size_t offset = 0;
+    for (size_t s = 0; s < samples_per_pixel; s++) {
+      for (size_t y = 0; y < length; y++) {
+        offset++;
+        for (size_t x = 1; x < width; x++) {
+          d[offset] += d[offset - 1];
+          offset++;
+        }
       }
     }
   }
@@ -200,6 +249,21 @@ UtObject *ut_tiff_image_new_from_data(UtObject *data) {
                      false, 2)) {
     return ut_tiff_error_new("Invalid TIFF resolution unit tag");
   }
+
+  uint16_t predictor_value;
+  if (!get_short_tag(reader, UT_TIFF_TAG_PREDICTOR, &predictor_value, false,
+                     1)) {
+    return ut_tiff_error_new("Invalid TIFF predictor tag");
+  }
+  UtTiffPredictor predictor = predictor_value;
+  switch (predictor) {
+  case UT_TIFF_PREDICTOR_NONE:
+  case UT_TIFF_PREDICTOR_HORIZONTAL_DIFFERENCING:
+    break;
+  default:
+    return ut_tiff_error_new("Unsupported TIFF predictor");
+  }
+
   uint16_t compression_value;
   if (!get_short_tag(reader, UT_TIFF_TAG_COMPRESSION, &compression_value, true,
                      0)) {
@@ -250,7 +314,8 @@ UtObject *ut_tiff_image_new_from_data(UtObject *data) {
           "Unsupported bits per sample in bilevel/grayscale TIFF image");
     }
     if (compression != UT_TIFF_COMPRESSION_UNCOMPRESSED &&
-        compression != UT_TIFF_COMPRESSION_PACK_BITS) {
+        compression != UT_TIFF_COMPRESSION_PACK_BITS &&
+        compression != UT_TIFF_COMPRESSION_DEFLATE) {
       return ut_tiff_error_new("Unsupported TIFF compression");
     }
     break;
@@ -265,7 +330,8 @@ UtObject *ut_tiff_image_new_from_data(UtObject *data) {
     }
     bits_per_sample = 8;
     if (compression != UT_TIFF_COMPRESSION_UNCOMPRESSED &&
-        compression != UT_TIFF_COMPRESSION_PACK_BITS) {
+        compression != UT_TIFF_COMPRESSION_PACK_BITS &&
+        compression != UT_TIFF_COMPRESSION_DEFLATE) {
       return ut_tiff_error_new("Unsupported TIFF compression");
     }
     break;
@@ -324,9 +390,20 @@ UtObject *ut_tiff_image_new_from_data(UtObject *data) {
         return ut_tiff_error_new("Invalid TIFF PackBits data");
       }
       break;
+    case UT_TIFF_COMPRESSION_DEFLATE:
+      if (!decode_deflate(strip, image_data)) {
+        return ut_tiff_error_new("Invalid TIFF Deflate data");
+      }
+      break;
     default:
       assert(false);
     }
+  }
+
+  if (predictor == UT_TIFF_PREDICTOR_HORIZONTAL_DIFFERENCING) {
+    decode_horizontal_differencing(image_width, image_length,
+                                   planar_configuration, bits_per_sample,
+                                   samples_per_pixel, image_data);
   }
 
   UtObject *image = ut_tiff_image_new(
