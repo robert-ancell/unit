@@ -14,46 +14,6 @@ typedef struct {
   UtObject *data;
 } UtTiffImage;
 
-static void ut_tiff_image_cleanup(UtObject *object) {
-  UtTiffImage *self = (UtTiffImage *)object;
-  ut_object_unref(self->color_map);
-  ut_object_unref(self->data);
-}
-
-static char *ut_tiff_image_to_string(UtObject *object) {
-  UtTiffImage *self = (UtTiffImage *)object;
-  return ut_cstring_new_printf("<UtTiffImage>(width: %d, length: %d)",
-                               self->width, self->length);
-}
-
-static UtObjectInterface object_interface = {.type_name = "UtTiffImage",
-                                             .cleanup = ut_tiff_image_cleanup,
-                                             .to_string =
-                                                 ut_tiff_image_to_string,
-                                             .interfaces = {{NULL, NULL}}};
-
-UtObject *
-ut_tiff_image_new(uint32_t width, uint32_t length,
-                  UtTiffPhotometricInterpretation photometric_interpretation,
-                  uint16_t bits_per_sample, uint16_t samples_per_pixel,
-                  UtObject *data) {
-  UtObject *object = ut_object_new(sizeof(UtTiffImage), &object_interface);
-  UtTiffImage *self = (UtTiffImage *)object;
-
-  assert(width > 0);
-  assert(length > 0);
-  // FIXMEut_assert_int_equal(ut_list_get_length(data), length * width * 3);
-
-  self->width = width;
-  self->length = length;
-  self->photometric_interpretation = photometric_interpretation;
-  self->bits_per_sample = bits_per_sample;
-  self->samples_per_pixel = samples_per_pixel;
-  self->data = ut_object_ref(data);
-
-  return object;
-}
-
 static size_t get_row_stride(uint32_t width, uint8_t bits_per_sample,
                              size_t samples_per_pixel) {
   return (((size_t)width * bits_per_sample * samples_per_pixel) + 7) / 8;
@@ -136,6 +96,46 @@ static bool decode_pack_bits(UtObject *input, UtObject *output) {
   }
 
   return true;
+}
+
+static void ut_tiff_image_cleanup(UtObject *object) {
+  UtTiffImage *self = (UtTiffImage *)object;
+  ut_object_unref(self->color_map);
+  ut_object_unref(self->data);
+}
+
+static char *ut_tiff_image_to_string(UtObject *object) {
+  UtTiffImage *self = (UtTiffImage *)object;
+  return ut_cstring_new_printf("<UtTiffImage>(width: %d, length: %d)",
+                               self->width, self->length);
+}
+
+static UtObjectInterface object_interface = {.type_name = "UtTiffImage",
+                                             .cleanup = ut_tiff_image_cleanup,
+                                             .to_string =
+                                                 ut_tiff_image_to_string,
+                                             .interfaces = {{NULL, NULL}}};
+
+UtObject *
+ut_tiff_image_new(uint32_t width, uint32_t length,
+                  UtTiffPhotometricInterpretation photometric_interpretation,
+                  uint16_t bits_per_sample, uint16_t samples_per_pixel,
+                  UtObject *data) {
+  UtObject *object = ut_object_new(sizeof(UtTiffImage), &object_interface);
+  UtTiffImage *self = (UtTiffImage *)object;
+
+  assert(width > 0);
+  assert(length > 0);
+  // FIXMEut_assert_int_equal(ut_list_get_length(data), length * width * 3);
+
+  self->width = width;
+  self->length = length;
+  self->photometric_interpretation = photometric_interpretation;
+  self->bits_per_sample = bits_per_sample;
+  self->samples_per_pixel = samples_per_pixel;
+  self->data = ut_object_ref(data);
+
+  return object;
 }
 
 UtObject *ut_tiff_image_new_from_data(UtObject *data) {
