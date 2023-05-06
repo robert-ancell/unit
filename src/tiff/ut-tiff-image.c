@@ -8,6 +8,7 @@ typedef struct {
   uint32_t width;
   uint32_t length;
   UtTiffPhotometricInterpretation photometric_interpretation;
+  UtTiffPlanarConfiguration planar_configuration;
   uint16_t bits_per_sample;
   uint16_t samples_per_pixel;
   UtObject *color_map;
@@ -119,6 +120,7 @@ static UtObjectInterface object_interface = {.type_name = "UtTiffImage",
 UtObject *
 ut_tiff_image_new(uint32_t width, uint32_t length,
                   UtTiffPhotometricInterpretation photometric_interpretation,
+                  UtTiffPlanarConfiguration planar_configuration,
                   uint16_t bits_per_sample, uint16_t samples_per_pixel,
                   UtObject *data) {
   UtObject *object = ut_object_new(sizeof(UtTiffImage), &object_interface);
@@ -131,6 +133,7 @@ ut_tiff_image_new(uint32_t width, uint32_t length,
   self->width = width;
   self->length = length;
   self->photometric_interpretation = photometric_interpretation;
+  self->planar_configuration = planar_configuration;
   self->bits_per_sample = bits_per_sample;
   self->samples_per_pixel = samples_per_pixel;
   self->data = ut_object_ref(data);
@@ -176,6 +179,22 @@ UtObject *ut_tiff_image_new_from_data(UtObject *data) {
   }
   UtTiffPhotometricInterpretation photometric_interpretation =
       photometric_interpretation_value;
+
+  uint16_t planar_configuration_value;
+  if (!get_short_tag(reader, UT_TIFF_TAG_PLANAR_CONFIGURATION,
+                     &planar_configuration_value, false, 1)) {
+    return ut_tiff_error_new("Invalid TIFF planar configuration tag");
+  }
+  UtTiffPhotometricInterpretation planar_configuration =
+      planar_configuration_value;
+  switch (planar_configuration) {
+  case UT_TIFF_PLANAR_CONFIGURATION_CHUNKY:
+  case UT_TIFF_PLANAR_CONFIGURATION_PLANAR:
+    break;
+  default:
+    return ut_tiff_error_new("Unsupported TIFF planar configuration");
+  }
+
   uint16_t resolution_unit;
   if (!get_short_tag(reader, UT_TIFF_TAG_RESOLUTION_UNIT, &resolution_unit,
                      false, 2)) {
@@ -310,9 +329,9 @@ UtObject *ut_tiff_image_new_from_data(UtObject *data) {
     }
   }
 
-  UtObject *image =
-      ut_tiff_image_new(image_width, image_length, photometric_interpretation,
-                        bits_per_sample, samples_per_pixel, image_data);
+  UtObject *image = ut_tiff_image_new(
+      image_width, image_length, photometric_interpretation,
+      planar_configuration, bits_per_sample, samples_per_pixel, image_data);
   if (color_map != NULL) {
     ut_tiff_image_set_color_map(image, color_map);
   }
@@ -336,6 +355,13 @@ ut_tiff_image_get_photometric_interpretation(UtObject *object) {
   assert(ut_object_is_tiff_image(object));
   UtTiffImage *self = (UtTiffImage *)object;
   return self->photometric_interpretation;
+}
+
+UtTiffPlanarConfiguration
+ut_tiff_image_get_planar_configuration(UtObject *object) {
+  assert(ut_object_is_tiff_image(object));
+  UtTiffImage *self = (UtTiffImage *)object;
+  return self->planar_configuration;
 }
 
 uint16_t ut_tiff_image_get_bits_per_sample(UtObject *object) {

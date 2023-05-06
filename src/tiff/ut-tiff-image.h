@@ -9,6 +9,7 @@
 UtObject *
 ut_tiff_image_new(uint32_t width, uint32_t length,
                   UtTiffPhotometricInterpretation photometric_interpretation,
+                  UtTiffPlanarConfiguration planar_configuration,
                   uint16_t bits_per_sample, uint16_t samples_per_pixel,
                   UtObject *data);
 
@@ -20,6 +21,9 @@ uint32_t ut_tiff_image_get_length(UtObject *object);
 
 UtTiffPhotometricInterpretation
 ut_tiff_image_get_photometric_interpretation(UtObject *object);
+
+UtTiffPlanarConfiguration
+ut_tiff_image_get_planar_configuration(UtObject *object);
 
 uint16_t ut_tiff_image_get_bits_per_sample(UtObject *object);
 

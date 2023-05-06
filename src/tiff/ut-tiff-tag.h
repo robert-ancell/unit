@@ -120,6 +120,11 @@ typedef enum {
 } UtTiffPhotometricInterpretation;
 
 typedef enum {
+  UT_TIFF_PLANAR_CONFIGURATION_CHUNKY = 1,
+  UT_TIFF_PLANAR_CONFIGURATION_PLANAR = 2
+} UtTiffPlanarConfiguration;
+
+typedef enum {
   UT_TIFF_RESOLUTION_UNIT_NONE = 1,
   UT_TIFF_RESOLUTION_UNIT_INCH = 2,
   UT_TIFF_RESOLUTION_UNIT_CENTIMETER = 3
