@@ -38,6 +38,7 @@ ut_sources = [
   'jpeg/ut-jpeg-image.c',
   'json/ut-json.c',
   'json/ut-json-encoder.c',
+  'lzw/ut-lzw-decoder.c',
   'lzw/ut-lzw-encoder.c',
   'lzw/ut-lzw-error.c',
   'tiff/ut-tiff-error.c',
@@ -335,6 +336,11 @@ deflate_encoder_test = executable('ut-deflate-encoder-test',
                                   'deflate/ut-deflate-encoder-test.c',
                                   link_with: ut_lib)
 test('Deflate Encoder', deflate_encoder_test)
+
+lzw_decoder_test = executable('ut-lzw-decoder-test',
+                              'lzw/ut-lzw-decoder-test.c',
+                              link_with: ut_lib)
+test('LZW Decoder', lzw_decoder_test)
 
 lzw_encoder_test = executable('ut-lzw-encoder-test',
                               'lzw/ut-lzw-encoder-test.c',

@@ -25,6 +25,7 @@
 #include "jpeg/ut-jpeg-encoder.h"
 #include "jpeg/ut-jpeg-error.h"
 #include "jpeg/ut-jpeg-image.h"
+#include "lzw/ut-lzw-decoder.h"
 #include "lzw/ut-lzw-encoder.h"
 #include "lzw/ut-lzw-error.h"
 #include "png/ut-png-decoder.h"
