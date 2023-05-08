@@ -2,14 +2,18 @@
 
 #include "ut.h"
 
+static void done(int return_code) {
+  UtObjectRef return_value = ut_int32_new(return_code);
+  ut_event_loop_return(return_value);
+}
+
 static size_t decode_cb(void *user_data, UtObject *data, bool complete) {
   size_t data_length = ut_list_get_length(data);
 
   UtObjectRef image = ut_tiff_image_new_from_data(data);
   if (ut_object_implements_error(image)) {
     printf("Failed to decode: %s\n", ut_error_get_description(image));
-    UtObjectRef return_code = ut_int32_new(1);
-    ut_event_loop_return(return_code);
+    done(1);
     return 0;
   }
 
@@ -35,8 +39,7 @@ static size_t decode_cb(void *user_data, UtObject *data, bool complete) {
     printf("P3\n");
     break;
   default:
-    UtObjectRef return_code = ut_int32_new(1);
-    ut_event_loop_return(return_code);
+    done(1);
     return data_length;
   }
   printf("%zi %zi\n", width, length);
@@ -78,8 +81,7 @@ static size_t decode_cb(void *user_data, UtObject *data, bool complete) {
     printf("\n");
   }
 
-  UtObjectRef return_code = ut_int32_new(0);
-  ut_event_loop_return(return_code);
+  done(0);
 
   return data_length;
 }
