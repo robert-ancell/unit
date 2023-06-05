@@ -44,7 +44,6 @@ ut_sources = [
   'tiff/ut-tiff-tag.c',
   'ut-assert.c',
   'ut-base64.c',
-  'ut-bit-array.c',
   'ut-bit-list.c',
   'ut-boolean.c',
   'ut-buffered-input-stream.c',
@@ -210,11 +209,6 @@ uint256_test = executable('ut-uint256-test',
                           link_with: ut_lib)
 test('Uint256', uint256_test)
 
-bit_array_test = executable('ut-bit-array-test',
-                            'ut-bit-array-test.c',
-                            link_with: ut_lib)
-test('Bit Array', bit_array_test)
-
 uint8_array_test = executable('ut-uint8-array-test',
                               'ut-uint8-array-test.c',
                               link_with: ut_lib)
@@ -259,6 +253,11 @@ float64_array_test = executable('ut-float64-array-test',
                                 'ut-float64-array-test.c',
                                 link_with: ut_lib)
 test('Float64 Array', float64_array_test)
+
+bit_list_test = executable('ut-bit-list-test',
+                           'ut-bit-list-test.c',
+                           link_with: ut_lib)
+test('Bit list', bit_list_test)
 
 map_test = executable('ut-map-test',
                       'ut-map-test.c',

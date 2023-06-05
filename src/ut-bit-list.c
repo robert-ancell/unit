@@ -1,84 +1,125 @@
 #include <assert.h>
-#include <stdarg.h>
-#include <stdlib.h>
+#include <string.h>
 
 #include "ut.h"
 
-int ut_bit_list_id = 0;
+typedef struct {
+  UtObject object;
 
-UtObject *ut_bit_list_new() { return ut_bit_array_new(); }
+  // The data packed into 8 bit bytes.
+  UtObject *data;
 
-UtObject *ut_bit_list_new_from_data(const uint8_t *data, size_t bit_count) {
-  return ut_bit_array_new_from_data(data, bit_count);
+  // The total number of bits in [data].
+  size_t bit_count;
+
+  // FIXME: Endianess
+} UtBitList;
+
+static bool get_element(UtBitList *self, size_t index) {
+  size_t byte_index = index / 8;
+  size_t bit_index = index % 8;
+  uint8_t mask = 1 << (7 - bit_index);
+  uint8_t byte = ut_uint8_list_get_element(self->data, byte_index);
+  return (byte & mask) != 0;
+}
+
+static void append(UtBitList *self, uint8_t data, size_t bit_count) {
+  size_t data_length = ut_list_get_length(self->data);
+  size_t unused_count = (data_length * 8) - self->bit_count;
+
+  // FIXME: Optimize single bit case
+
+  if (unused_count == 0) {
+    ut_uint8_list_append(self->data, data << (8 - bit_count));
+  } else {
+    // Split data across bytes.
+    size_t bit_count1 = unused_count < bit_count ? unused_count : bit_count;
+    size_t bit_count2 = bit_count - bit_count1;
+    uint8_t data1 = data >> bit_count2;
+    uint8_t data2 = data & ((1 << bit_count2) - 1);
+
+    uint8_t *d = ut_uint8_list_get_writable_data(self->data);
+    assert(d != NULL);
+    d[data_length - 1] |= data1 << (unused_count - bit_count1);
+    if (bit_count2 > 0) {
+      ut_uint8_list_append(self->data, data2 << (8 - bit_count2));
+    }
+  }
+
+  self->bit_count += bit_count;
+}
+
+static char *ut_bit_list_to_string(UtObject *object) {
+  UtBitList *self = (UtBitList *)object;
+  UtObjectRef string = ut_string_new("<bool>[");
+  for (size_t i = 0; i < self->bit_count; i++) {
+    if (i != 0) {
+      ut_string_append(string, ", ");
+    }
+    ut_string_append(string, get_element(self, i) ? "true" : "false");
+  }
+  ut_string_append(string, "]");
+
+  return ut_string_take_text(string);
+}
+
+static void ut_bit_list_cleanup(UtObject *object) {
+  UtBitList *self = (UtBitList *)object;
+  ut_object_unref(self->data);
+}
+
+static UtObjectInterface object_interface = {.type_name = "UtBitList",
+                                             .to_string = ut_bit_list_to_string,
+                                             .cleanup = ut_bit_list_cleanup,
+                                             .interfaces = {{NULL, NULL}}};
+
+UtObject *ut_bit_list_new() {
+  UtObjectRef data = ut_uint8_list_new();
+  return ut_bit_list_new_from_data(data, 0);
+}
+
+UtObject *ut_bit_list_new_from_data(UtObject *data, size_t bit_count) {
+  UtObject *object = ut_object_new(sizeof(UtBitList), &object_interface);
+  UtBitList *self = (UtBitList *)object;
+  assert(ut_list_get_length(data) >= bit_count * 8);
+  self->data = ut_object_ref(data);
+  self->bit_count = bit_count;
+  return object;
 }
 
 UtObject *ut_bit_list_new_from_bin_string(const char *bin) {
-  return ut_bit_array_new_from_bin_string(bin);
+  UtObject *object = ut_bit_list_new();
+  UtBitList *self = (UtBitList *)object;
+
+  size_t bin_length = strlen(bin);
+  for (size_t i = 0; i < bin_length; i++) {
+    uint8_t value;
+    switch (bin[i]) {
+    case '0':
+      value = 0;
+      break;
+    case '1':
+      value = 1;
+      break;
+    default:
+      return ut_error_new("Invalid binary string");
+    }
+    // FIXME: Do in 8 bit blocks
+    append(self, value, 1);
+  }
+  return object;
 }
 
 bool ut_bit_list_get_element(UtObject *object, size_t index) {
-  UtBitListInterface *bit_list_interface =
-      ut_object_get_interface(object, &ut_bit_list_id);
-  assert(bit_list_interface != NULL);
-  return bit_list_interface->get_element(object, index);
+  assert(ut_object_is_bit_list(object));
+  UtBitList *self = (UtBitList *)object;
+  return get_element(self, index);
 }
 
-const uint8_t *ut_bit_list_get_data(UtObject *object) {
-  UtBitListInterface *bit_list_interface =
-      ut_object_get_interface(object, &ut_bit_list_id);
-  assert(bit_list_interface != NULL);
-  if (bit_list_interface->get_data != NULL) {
-    return bit_list_interface->get_data(object);
-  } else {
-    return NULL;
-  }
-}
-
-uint8_t *ut_bit_list_copy_data(UtObject *object) {
-  UtBitListInterface *bit_list_interface =
-      ut_object_get_interface(object, &ut_bit_list_id);
-  assert(bit_list_interface != NULL);
-
-  size_t bit_count = ut_list_get_length(object);
-  size_t data_length = (bit_count + 7) / 8;
-  uint8_t *data_copy = malloc(data_length);
-
-  const uint8_t *data = ut_bit_list_get_data(object);
-  if (data != NULL) {
-    for (size_t i = 0; i < data_length; i++) {
-      data_copy[i] = data[i];
-    }
-  } else {
-    uint8_t byte = 0x00;
-    size_t byte_index = 0;
-    size_t j = 0;
-    for (size_t i = 0; i < bit_count; i++) {
-      if (bit_list_interface->get_element(object, i)) {
-        byte |= 1 << (7 - byte_index);
-      }
-      byte_index++;
-
-      if (byte_index == 8) {
-        data_copy[j] = byte;
-        j++;
-        byte = 0x00;
-        byte_index = 0;
-      }
-    }
-
-    if (byte_index > 0) {
-      data_copy[j] = byte;
-    }
-  }
-
-  return data_copy;
-}
-
-uint8_t *ut_bit_list_take_data(UtObject *object) {
-  UtBitListInterface *bit_list_interface =
-      ut_object_get_interface(object, &ut_bit_list_id);
-  assert(bit_list_interface != NULL);
-  return bit_list_interface->take_data(object);
+UtObject *ut_bit_list_get_data(UtObject *object) {
+  assert(ut_object_is_bit_list(object));
+  UtBitList *self = (UtBitList *)object;
+  return self->data;
 }
 
 void ut_bit_list_append(UtObject *object, bool value) {
@@ -86,59 +127,24 @@ void ut_bit_list_append(UtObject *object, bool value) {
 }
 
 void ut_bit_list_append_bits(UtObject *object, uint8_t data, size_t bit_count) {
-  UtBitListInterface *bit_list_interface =
-      ut_object_get_interface(object, &ut_bit_list_id);
-  assert(bit_list_interface != NULL);
-  assert(ut_list_is_mutable(object));
-  bit_list_interface->append(object, data, bit_count);
-}
-
-void ut_bit_list_prepend(UtObject *object, bool value) {
-  ut_bit_list_prepend_bits(object, value ? 0x01 : 0x00, 1);
-}
-
-void ut_bit_list_prepend_bits(UtObject *object, uint8_t data,
-                              size_t bit_count) {
-  ut_bit_list_insert_bits(object, 0, data, bit_count);
-}
-
-void ut_bit_list_insert(UtObject *object, size_t index, bool value) {
-  ut_bit_list_insert_bits(object, index, value ? 0x01 : 0x00, 1);
-}
-
-void ut_bit_list_insert_bits(UtObject *object, size_t index, uint8_t data,
-                             size_t bit_count) {
-  UtBitListInterface *bit_list_interface =
-      ut_object_get_interface(object, &ut_bit_list_id);
-  assert(bit_list_interface != NULL);
-  assert(ut_list_is_mutable(object));
-  bit_list_interface->insert(object, index, data, bit_count);
+  assert(ut_object_is_bit_list(object));
+  UtBitList *self = (UtBitList *)object;
+  append(self, data, bit_count);
 }
 
 char *ut_bit_list_to_bin_string(UtObject *object) {
-  UtBitListInterface *bit_list_interface =
-      ut_object_get_interface(object, &ut_bit_list_id);
-  assert(bit_list_interface != NULL);
+  assert(ut_object_is_bit_list(object));
+  UtBitList *self = (UtBitList *)object;
 
-  size_t length = ut_list_get_length(object);
-  const uint8_t *data = ut_bit_list_get_data(object);
   UtObjectRef bin_string = ut_string_new("");
-  if (data != NULL) {
-    for (size_t i = 0; i < length; i++) {
-      uint8_t mask = 1 << (7 - (i % 8));
-      bool is_set = (data[i / 8] & mask) != 0;
-      ut_string_append(bin_string, is_set ? "1" : "0");
-    }
-  } else {
-    for (size_t i = 0; i < length; i++) {
-      ut_string_append(bin_string,
-                       ut_bit_list_get_element(object, i) ? "1" : "0");
-    }
+  // FIXME: Do in 8 bit blocks
+  for (size_t i = 0; i < self->bit_count; i++) {
+    ut_string_append(bin_string, get_element(self, i) ? "1" : "0");
   }
 
   return ut_string_take_text(bin_string);
 }
 
-bool ut_object_implements_bit_list(UtObject *object) {
-  return ut_object_get_interface(object, &ut_bit_list_id) != NULL;
+bool ut_object_is_bit_list(UtObject *object) {
+  return ut_object_is_type(object, &object_interface);
 }
