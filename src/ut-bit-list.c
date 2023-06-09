@@ -6,6 +6,9 @@
 typedef struct {
   UtObject object;
 
+  // True if bits are packed little endian
+  bool little_endian;
+
   // The data packed into 8 bit bytes.
   UtObject *data;
 
@@ -73,24 +76,21 @@ static UtObjectInterface object_interface = {.type_name = "UtBitList",
                                              .cleanup = ut_bit_list_cleanup,
                                              .interfaces = {{NULL, NULL}}};
 
-UtObject *ut_bit_list_new() {
-  UtObjectRef data = ut_uint8_list_new();
-  return ut_bit_list_new_from_data(data, 0);
-}
-
-UtObject *ut_bit_list_new_from_data(UtObject *data, size_t bit_count) {
+static UtObject *bit_list_new(bool little_endian, UtObject *data, size_t bit_count)
+{
   UtObject *object = ut_object_new(sizeof(UtBitList), &object_interface);
   UtBitList *self = (UtBitList *)object;
   assert(ut_list_get_length(data) >= bit_count * 8);
-  self->data = ut_object_ref(data);
+   self->little_endian = little_endian;
+   self->data = data != NULL ? ut_object_ref(data) : ut_uint8_list_new();
   self->bit_count = bit_count;
-  return object;
+   return object;
 }
 
-UtObject *ut_bit_list_new_from_bin_string(const char *bin) {
-  UtObject *object = ut_bit_list_new();
+static UtObject *bit_list_new_from_bin_string(bool little_endian, const char *bin)
+{
+  UtObject *object = bit_list_new(little_endian, NULL, 0);
   UtBitList *self = (UtBitList *)object;
-
   size_t bin_length = strlen(bin);
   for (size_t i = 0; i < bin_length; i++) {
     uint8_t value;
@@ -107,7 +107,32 @@ UtObject *ut_bit_list_new_from_bin_string(const char *bin) {
     // FIXME: Do in 8 bit blocks
     append(self, value, 1);
   }
-  return object;
+
+   return object;
+}
+
+UtObject *ut_bit_list_new_le() {
+  return bit_list_new(true, NULL, 0);
+}
+
+UtObject *ut_bit_list_new_be() {
+  return bit_list_new(false, NULL, 0);
+}
+
+UtObject *ut_bit_list_new_le_from_data(UtObject *data, size_t bit_count) {
+  return bit_list_new(true, data, bit_count);
+}
+
+UtObject *ut_bit_list_new_be_from_data(UtObject *data, size_t bit_count) {
+  return bit_list_new(false, data, bit_count);
+}
+
+UtObject *ut_bit_list_le_new_from_bin_string(const char *bin) {
+  return bit_list_new_from_bin_string(true, bin);
+}
+
+UtObject *ut_bit_list_new_be_from_bin_string(const char *bin) {
+  return bit_list_new_from_bin_string(false, bin);
 }
 
 bool ut_bit_list_get_element(UtObject *object, size_t index) {

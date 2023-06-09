@@ -5,9 +5,13 @@
 
 #pragma once
 
-UtObject *ut_bit_list_new();
+UtObject *ut_bit_list_new_le();
 
-UtObject *ut_bit_list_new_from_data(UtObject *data, size_t bit_count);
+UtObject *ut_bit_list_new_be();
+
+UtObject *ut_bit_list_new_le_from_data(UtObject *data, size_t bit_count);
+
+UtObject *ut_bit_list_new_be_from_data(UtObject *data, size_t bit_count);
 
 UtObject *ut_bit_list_new_from_bin_string(const char *bin);
 
