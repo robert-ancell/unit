@@ -11,21 +11,21 @@ static void test_lsb() {
   UtObjectRef empty_encoder = ut_lzw_encoder_new_lsb(empty_data_stream);
   UtObjectRef empty_result = ut_input_stream_read_sync(empty_encoder);
   ut_assert_is_not_error(empty_result);
-  ut_assert_uint8_list_equal_hex(empty_result, "800202");
+  ut_assert_uint8_list_equal_hex(empty_result, "000302");
 
   UtObjectRef single_data = ut_uint8_list_new_from_hex_string("00");
   UtObjectRef single_data_stream = ut_list_input_stream_new(single_data);
   UtObjectRef single_encoder = ut_lzw_encoder_new_lsb(single_data_stream);
   UtObjectRef single_result = ut_input_stream_read_sync(single_encoder);
   ut_assert_is_not_error(single_result);
-  ut_assert_uint8_list_equal_hex(single_result, "80000404");
+  ut_assert_uint8_list_equal_hex(single_result, "00010404");
 
   UtObjectRef hello_data = get_utf8_data("hello");
   UtObjectRef hello_data_stream = ut_list_input_stream_new(hello_data);
   UtObjectRef hello_encoder = ut_lzw_encoder_new_lsb(hello_data_stream);
   UtObjectRef hello_result = ut_input_stream_read_sync(hello_encoder);
   ut_assert_is_not_error(hello_result);
-  ut_assert_uint8_list_equal_hex(hello_result, "80d09461c3e64d40");
+  ut_assert_uint8_list_equal_hex(hello_result, "00d19461c3e64d40");
 
   UtObjectRef hello3_data = get_utf8_data("hello hello hello");
   UtObjectRef hello3_data_stream = ut_list_input_stream_new(hello3_data);
@@ -33,7 +33,7 @@ static void test_lsb() {
   UtObjectRef hello3_result = ut_input_stream_read_sync(hello3_encoder);
   ut_assert_is_not_error(hello3_result);
   ut_assert_uint8_list_equal_hex(hello3_result,
-                                 "80d09461c3e60d0881040d222c1810");
+                                 "00d19461c3e60d0881040d222c1810");
 }
 
 static void test_msb() {

@@ -197,9 +197,6 @@ static void ut_lzw_encoder_init(UtObject *object) {
 
   // We start with 9 bits to fit all 258 codes.
   self->bit_length = 9;
-
-  // Always starts with a clear code.
-  write_code(self, CLEAR_CODE);
 }
 
 static void ut_lzw_encoder_cleanup(UtObject *object) {
@@ -216,11 +213,17 @@ static void ut_lzw_encoder_read(UtObject *object,
                                 UtInputStreamCallback callback, void *user_data,
                                 UtObject *cancel) {
   UtLzwEncoder *self = (UtLzwEncoder *)object;
+
   assert(callback != NULL);
   assert(self->callback == NULL);
+
   self->callback = callback;
   self->user_data = user_data;
   self->cancel = ut_object_ref(cancel);
+
+  // Always starts with a clear code.
+  write_code(self, CLEAR_CODE);
+
   ut_input_stream_read(self->input_stream, read_cb, self, self->read_cancel);
 }
 
