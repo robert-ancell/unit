@@ -95,6 +95,17 @@ static void test_lsb() {
   UtObjectRef no_eoi_decoder = ut_lzw_decoder_new_lsb(no_eoi_data_stream);
   UtObjectRef no_eoi_result = ut_input_stream_read_sync(no_eoi_decoder);
   ut_assert_is_error(no_eoi_result);
+
+  // Invalid code (encoded "hello" with code for o set to 511).
+  UtObjectRef invalid_code_data =
+      ut_uint8_list_new_from_hex_string("00d19461c3e67f40");
+  UtObjectRef invalid_code_data_stream =
+      ut_list_input_stream_new(invalid_code_data);
+  UtObjectRef invalid_code_decoder =
+      ut_lzw_decoder_new_lsb(invalid_code_data_stream);
+  UtObjectRef invalid_code_result =
+      ut_input_stream_read_sync(invalid_code_decoder);
+  ut_assert_is_error(invalid_code_result);
 }
 
 static void test_msb() {
@@ -192,6 +203,17 @@ static void test_msb() {
   UtObjectRef no_eoi_decoder = ut_lzw_decoder_new_msb(no_eoi_data_stream);
   UtObjectRef no_eoi_result = ut_input_stream_read_sync(no_eoi_decoder);
   ut_assert_is_error(no_eoi_result);
+
+  // Invalid code (encoded "hello" with code for o set to 511).
+  UtObjectRef invalid_code_data =
+      ut_uint8_list_new_from_hex_string("801a0ca6c367fe02");
+  UtObjectRef invalid_code_data_stream =
+      ut_list_input_stream_new(invalid_code_data);
+  UtObjectRef invalid_code_decoder =
+      ut_lzw_decoder_new_lsb(invalid_code_data_stream);
+  UtObjectRef invalid_code_result =
+      ut_input_stream_read_sync(invalid_code_decoder);
+  ut_assert_is_error(invalid_code_result);
 }
 
 int main(int argc, char **argv) {
