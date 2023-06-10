@@ -59,6 +59,21 @@ static void test_lsb() {
   ut_assert_cstring_equal(ut_string_get_text(double_clear_result_string),
                           "hello");
 
+  // Clear codes inside data (before spaces).
+  UtObjectRef clear_during_data = ut_uint8_list_new_from_hex_string(
+      "00d19461c3e60d401068cab061f3462041830101");
+  UtObjectRef clear_during_data_stream =
+      ut_list_input_stream_new(clear_during_data);
+  UtObjectRef clear_during_decoder =
+      ut_lzw_decoder_new_lsb(clear_during_data_stream);
+  UtObjectRef clear_during_result =
+      ut_input_stream_read_sync(clear_during_decoder);
+  ut_assert_is_not_error(clear_during_result);
+  UtObjectRef clear_during_result_string =
+      ut_string_new_from_utf8(clear_during_result);
+  ut_assert_cstring_equal(ut_string_get_text(clear_during_result_string),
+                          "hello hello hello");
+
   // Data after end of information.
   UtObjectRef data_after_eoi_data =
       ut_uint8_list_new_from_hex_string("00d19461c3e64dc0ffff");
@@ -140,6 +155,21 @@ static void test_msb() {
       ut_string_new_from_utf8(double_clear_result);
   ut_assert_cstring_equal(ut_string_get_text(double_clear_result_string),
                           "hello");
+
+  // Clear codes inside data (before spaces).
+  UtObjectRef clear_during_data = ut_uint8_list_new_from_hex_string(
+      "801a0ca6c361be002034194d86c37c0a09068080");
+  UtObjectRef clear_during_data_stream =
+      ut_list_input_stream_new(clear_during_data);
+  UtObjectRef clear_during_decoder =
+      ut_lzw_decoder_new_msb(clear_during_data_stream);
+  UtObjectRef clear_during_result =
+      ut_input_stream_read_sync(clear_during_decoder);
+  ut_assert_is_not_error(clear_during_result);
+  UtObjectRef clear_during_result_string =
+      ut_string_new_from_utf8(clear_during_result);
+  ut_assert_cstring_equal(ut_string_get_text(clear_during_result_string),
+                          "hello hello hello");
 
   // Data after end of information.
   UtObjectRef data_after_eoi_data =

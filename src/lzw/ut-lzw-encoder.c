@@ -82,7 +82,7 @@ static uint16_t bit_mask(size_t length) { return 0xffff >> (16 - length); }
 
 // Write an LZW code to the output buffer.
 static void write_code(UtLzwEncoder *self, uint16_t code) {
-  // If exceeded maximum code lenth then reset dictionary.
+  // If exceeded maximum code length then reset dictionary.
   if (ut_lzw_dictionary_get_code_length(self->dictionary) >= 13) {
     ut_lzw_dictionary_clear(self->dictionary);
     write_code(self, LZW_CLEAR_CODE);
