@@ -1,12 +1,7 @@
 #include <assert.h>
 
+#include "ut-lzw-dictionary.h"
 #include "ut.h"
-
-// Predefined clear code.
-#define CLEAR_CODE 256
-
-// Predefined end of information code.
-#define END_OF_INFORMATION_CODE 257
 
 typedef struct {
   UtObject object;
@@ -19,9 +14,9 @@ typedef struct {
 
   // Bytes that each code represents.
   UtObject *dictionary;
-  size_t bit_length;
 
-  // True if bits are packed least significant bit first, otherwise most significant bit first.
+  // True if bits are packed least significant bit first, otherwise most
+  // significant bit first.
   bool lsb_packing;
 
   // Current unprocessed bits being read from stream.
@@ -44,25 +39,6 @@ static void error(UtLzwDecoder *self, const char *description) {
 // Create a mask for the last [length] bits in a 16 bit word.
 static uint16_t bit_mask(size_t length) { return 0xffff >> (16 - length); }
 
-// Clear the dictionary to its initial state.
-static void clear_dictionary(UtLzwDecoder *self) {
-  ut_list_resize(self->dictionary, 258);
-  self->bit_length = 9;
-  self->last_code = CLEAR_CODE;
-}
-
-static void add_dictionary_entry(UtLzwDecoder *self, uint16_t code, uint8_t b) {
-  UtObject *entry = ut_object_list_get_element(self->dictionary, code);
-  UtObjectRef new_entry = ut_list_copy(entry);
-  ut_uint8_list_append(new_entry, b);
-  ut_list_append(self->dictionary, new_entry);
-
-  // Need to use more bits as the dictionary gets bigger.
-  if (ut_list_get_length(self->dictionary) == 1 << self->bit_length) {
-    self->bit_length++;
-  }
-}
-
 static size_t read_cb(void *user_data, UtObject *data, bool complete) {
   UtLzwDecoder *self = user_data;
 
@@ -77,7 +53,8 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
   bool have_eoi = false;
   while (true) {
     // Read bytes from input so we have sufficient bits for a code word.
-    while (self->read_buffer_bits < self->bit_length && offset < data_length) {
+    size_t bit_length = ut_lzw_dictionary_get_code_length(self->dictionary);
+    while (self->read_buffer_bits < bit_length && offset < data_length) {
       if (self->lsb_packing) {
         self->read_buffer |= ut_uint8_list_get_element(data, offset)
                              << self->read_buffer_bits;
@@ -88,38 +65,40 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
       self->read_buffer_bits += 8;
       offset++;
     }
-    if (self->read_buffer_bits < self->bit_length) {
+    if (self->read_buffer_bits < bit_length) {
       break;
     }
 
     // Extract next code.
     uint16_t code;
     if (self->lsb_packing) {
-      code = self->read_buffer & bit_mask(self->bit_length);
-      self->read_buffer >>= self->bit_length;
+      code = self->read_buffer & bit_mask(bit_length);
+      self->read_buffer >>= bit_length;
     } else {
-      size_t unused_bits = self->read_buffer_bits - self->bit_length;
+      size_t unused_bits = self->read_buffer_bits - bit_length;
       code = self->read_buffer >> unused_bits;
       self->read_buffer &= bit_mask(unused_bits);
     }
-    self->read_buffer_bits -= self->bit_length;
+    self->read_buffer_bits -= bit_length;
 
     // Process code.
-    if (code == CLEAR_CODE) {
-      clear_dictionary(self);
-    } else if (code == END_OF_INFORMATION_CODE) {
+    if (code == LZW_CLEAR_CODE) {
+      ut_lzw_dictionary_clear(self->dictionary);
+      self->last_code = LZW_CLEAR_CODE;
+    } else if (code == LZW_END_OF_INFORMATION_CODE) {
       have_eoi = true;
       break;
     } else {
-      size_t dictionary_length = ut_list_get_length(self->dictionary);
+      size_t dictionary_length = ut_lzw_dictionary_get_length(self->dictionary);
       uint8_t first_symbol;
       if (code < dictionary_length) {
-        UtObject *entry = ut_object_list_get_element(self->dictionary, code);
+        UtObject *entry = ut_lzw_dictionary_lookup(self->dictionary, code);
         ut_list_append_list(self->buffer, entry);
         first_symbol = ut_uint8_list_get_element(entry, 0);
-      } else if (code == dictionary_length && self->last_code != CLEAR_CODE) {
+      } else if (code == dictionary_length &&
+                 self->last_code != LZW_CLEAR_CODE) {
         UtObject *entry =
-            ut_object_list_get_element(self->dictionary, self->last_code);
+            ut_lzw_dictionary_lookup(self->dictionary, self->last_code);
         first_symbol = ut_uint8_list_get_element(entry, 0);
         ut_list_append_list(self->buffer, entry);
         ut_uint8_list_append(self->buffer, first_symbol);
@@ -128,8 +107,9 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
         return offset;
       }
 
-      if (self->last_code != CLEAR_CODE) {
-        add_dictionary_entry(self, self->last_code, first_symbol);
+      if (self->last_code != LZW_CLEAR_CODE) {
+        ut_lzw_dictionary_append(self->dictionary, self->last_code,
+                                 first_symbol);
       }
       self->last_code = code;
     }
@@ -151,26 +131,10 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
 
 static void ut_lzw_decoder_init(UtObject *object) {
   UtLzwDecoder *self = (UtLzwDecoder *)object;
-
   self->read_cancel = ut_cancel_new();
   self->buffer = ut_uint8_array_new();
-
-  // Initalize dictionary with 0-255
-  self->dictionary = ut_object_list_new();
-  for (size_t i = 0; i < 256; i++) {
-    UtObjectRef entry = ut_uint8_list_new_from_elements(1, i);
-    ut_list_append(self->dictionary, entry);
-  }
-  // Clear
-  UtObjectRef clear_entry = ut_uint8_list_new();
-  ut_list_append(self->dictionary, clear_entry);
-  // End of Information
-  UtObjectRef eoi_entry = ut_uint8_list_new();
-  ut_list_append(self->dictionary, eoi_entry);
-
-  // We start with 9 bits to fit all 258 codes.
-  self->bit_length = 9;
-  self->last_code = CLEAR_CODE;
+  self->dictionary = ut_lzw_dictionary_new();
+  self->last_code = LZW_CLEAR_CODE;
 }
 
 static void ut_lzw_decoder_cleanup(UtObject *object) {

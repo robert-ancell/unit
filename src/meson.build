@@ -39,6 +39,7 @@ ut_sources = [
   'json/ut-json.c',
   'json/ut-json-encoder.c',
   'lzw/ut-lzw-decoder.c',
+  'lzw/ut-lzw-dictionary.c',
   'lzw/ut-lzw-encoder.c',
   'lzw/ut-lzw-error.c',
   'tiff/ut-tiff-error.c',
