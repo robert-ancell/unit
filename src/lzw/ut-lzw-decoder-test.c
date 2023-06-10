@@ -1,5 +1,9 @@
 #include "ut.h"
 
+// FIXME: Add test for when codes change from 9 to 10 bits.
+// FIXME: Add test for when codes go to 13 bits and reset.
+// FIXME: Add test for get code for next entry not yet in dictionary.
+
 static void test_lsb() {
   UtObjectRef empty_data = ut_uint8_list_new_from_hex_string("000302");
   UtObjectRef empty_data_stream = ut_list_input_stream_new(empty_data);
