@@ -99,6 +99,19 @@ static bool decode_pack_bits(UtObject *input, UtObject *output) {
   return true;
 }
 
+static bool decode_lzw(UtObject *input, UtObject *output) {
+  UtObjectRef input_stream = ut_list_input_stream_new(input);
+  UtObjectRef lzw_decoder = ut_lzw_decoder_new_msb(input_stream);
+  UtObjectRef decoded_data = ut_input_stream_read_sync(lzw_decoder);
+  if (ut_object_implements_error(decoded_data)) {
+    return false;
+  }
+
+  ut_list_append_list(output, decoded_data);
+
+  return true;
+}
+
 static bool decode_deflate(UtObject *input, UtObject *output) {
   UtObjectRef input_stream = ut_list_input_stream_new(input);
   UtObjectRef zlib_decoder = ut_zlib_decoder_new(input_stream);
@@ -315,6 +328,7 @@ UtObject *ut_tiff_image_new_from_data(UtObject *data) {
     }
     if (compression != UT_TIFF_COMPRESSION_UNCOMPRESSED &&
         compression != UT_TIFF_COMPRESSION_PACK_BITS &&
+        compression != UT_TIFF_COMPRESSION_LZW &&
         compression != UT_TIFF_COMPRESSION_DEFLATE) {
       return ut_tiff_error_new("Unsupported TIFF compression");
     }
@@ -331,6 +345,7 @@ UtObject *ut_tiff_image_new_from_data(UtObject *data) {
     bits_per_sample = 8;
     if (compression != UT_TIFF_COMPRESSION_UNCOMPRESSED &&
         compression != UT_TIFF_COMPRESSION_PACK_BITS &&
+        compression != UT_TIFF_COMPRESSION_LZW &&
         compression != UT_TIFF_COMPRESSION_DEFLATE) {
       return ut_tiff_error_new("Unsupported TIFF compression");
     }
@@ -388,6 +403,11 @@ UtObject *ut_tiff_image_new_from_data(UtObject *data) {
     case UT_TIFF_COMPRESSION_PACK_BITS:
       if (!decode_pack_bits(strip, image_data)) {
         return ut_tiff_error_new("Invalid TIFF PackBits data");
+      }
+      break;
+    case UT_TIFF_COMPRESSION_LZW:
+      if (!decode_lzw(strip, image_data)) {
+        return ut_tiff_error_new("Invalid TIFF LZW data");
       }
       break;
     case UT_TIFF_COMPRESSION_DEFLATE:
