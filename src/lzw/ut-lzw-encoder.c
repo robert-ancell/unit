@@ -24,10 +24,14 @@ typedef struct {
   UtObject *dictionary;
   size_t bit_length;
 
-  // Encoded data buffer.
+  // True if bits are packed least significant bit first, otherwise most significant bit first.
   bool lsb_packing;
-  size_t unused_bits;
+
+  // Encoded data buffer.
   UtObject *buffer;
+
+  // Number of unused bits on the end of [buffer].
+  size_t unused_bits;
 } UtLzwEncoder;
 
 // Returns true if [data] matches [entry].
