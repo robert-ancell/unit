@@ -86,6 +86,7 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
       ut_lzw_dictionary_clear(self->dictionary);
       self->last_code = LZW_CLEAR_CODE;
     } else if (code == LZW_END_OF_INFORMATION_CODE) {
+      ut_cancel_activate(self->read_cancel);
       have_eoi = true;
       break;
     } else {

@@ -33,6 +33,53 @@ static void test_lsb() {
   UtObjectRef hello3_result_string = ut_string_new_from_utf8(hello3_result);
   ut_assert_cstring_equal(ut_string_get_text(hello3_result_string),
                           "hello hello hello");
+
+  // No clear code at start.
+  UtObjectRef no_clear_data =
+      ut_uint8_list_new_from_hex_string("68cab061f32620");
+  UtObjectRef no_clear_data_stream = ut_list_input_stream_new(no_clear_data);
+  UtObjectRef no_clear_decoder = ut_lzw_decoder_new_lsb(no_clear_data_stream);
+  UtObjectRef no_clear_result = ut_input_stream_read_sync(no_clear_decoder);
+  ut_assert_is_not_error(no_clear_result);
+  UtObjectRef no_clear_result_string = ut_string_new_from_utf8(no_clear_result);
+  ut_assert_cstring_equal(ut_string_get_text(no_clear_result_string), "hello");
+
+  // Two clear codes at start.
+  UtObjectRef double_clear_data =
+      ut_uint8_list_new_from_hex_string("0001a229c386cd9b80");
+  UtObjectRef double_clear_data_stream =
+      ut_list_input_stream_new(double_clear_data);
+  UtObjectRef double_clear_decoder =
+      ut_lzw_decoder_new_lsb(double_clear_data_stream);
+  UtObjectRef double_clear_result =
+      ut_input_stream_read_sync(double_clear_decoder);
+  ut_assert_is_not_error(double_clear_result);
+  UtObjectRef double_clear_result_string =
+      ut_string_new_from_utf8(double_clear_result);
+  ut_assert_cstring_equal(ut_string_get_text(double_clear_result_string),
+                          "hello");
+
+  // Data after end of information.
+  UtObjectRef data_after_eoi_data =
+      ut_uint8_list_new_from_hex_string("00d19461c3e64dc0ffff");
+  UtObjectRef data_after_eoi_data_stream =
+      ut_list_input_stream_new(data_after_eoi_data);
+  UtObjectRef data_after_eoi_decoder =
+      ut_lzw_decoder_new_lsb(data_after_eoi_data_stream);
+  UtObjectRef data_after_eoi_result =
+      ut_input_stream_read_sync(data_after_eoi_decoder);
+  ut_assert_is_not_error(data_after_eoi_result);
+  UtObjectRef data_after_eoi_result_string =
+      ut_string_new_from_utf8(data_after_eoi_result);
+  ut_assert_cstring_equal(ut_string_get_text(data_after_eoi_result_string),
+                          "hello");
+
+  // No end of information.
+  UtObjectRef no_eoi_data = ut_uint8_list_new_from_hex_string("00d19461c3e60d");
+  UtObjectRef no_eoi_data_stream = ut_list_input_stream_new(no_eoi_data);
+  UtObjectRef no_eoi_decoder = ut_lzw_decoder_new_lsb(no_eoi_data_stream);
+  UtObjectRef no_eoi_result = ut_input_stream_read_sync(no_eoi_decoder);
+  ut_assert_is_error(no_eoi_result);
 }
 
 static void test_msb() {
@@ -68,6 +115,53 @@ static void test_msb() {
   UtObjectRef hello3_result_string = ut_string_new_from_utf8(hello3_result);
   ut_assert_cstring_equal(ut_string_get_text(hello3_result_string),
                           "hello hello hello");
+
+  // No clear code at start.
+  UtObjectRef no_clear_data =
+      ut_uint8_list_new_from_hex_string("801a0ca6c361be02");
+  UtObjectRef no_clear_data_stream = ut_list_input_stream_new(no_clear_data);
+  UtObjectRef no_clear_decoder = ut_lzw_decoder_new_msb(no_clear_data_stream);
+  UtObjectRef no_clear_result = ut_input_stream_read_sync(no_clear_decoder);
+  ut_assert_is_not_error(no_clear_result);
+  UtObjectRef no_clear_result_string = ut_string_new_from_utf8(no_clear_result);
+  ut_assert_cstring_equal(ut_string_get_text(no_clear_result_string), "hello");
+
+  // Two clear codes at start.
+  UtObjectRef double_clear_data =
+      ut_uint8_list_new_from_hex_string("80400d065361b0df01");
+  UtObjectRef double_clear_data_stream =
+      ut_list_input_stream_new(double_clear_data);
+  UtObjectRef double_clear_decoder =
+      ut_lzw_decoder_new_msb(double_clear_data_stream);
+  UtObjectRef double_clear_result =
+      ut_input_stream_read_sync(double_clear_decoder);
+  ut_assert_is_not_error(double_clear_result);
+  UtObjectRef double_clear_result_string =
+      ut_string_new_from_utf8(double_clear_result);
+  ut_assert_cstring_equal(ut_string_get_text(double_clear_result_string),
+                          "hello");
+
+  // Data after end of information.
+  UtObjectRef data_after_eoi_data =
+      ut_uint8_list_new_from_hex_string("801a0ca6c361be02ffff");
+  UtObjectRef data_after_eoi_data_stream =
+      ut_list_input_stream_new(data_after_eoi_data);
+  UtObjectRef data_after_eoi_decoder =
+      ut_lzw_decoder_new_msb(data_after_eoi_data_stream);
+  UtObjectRef data_after_eoi_result =
+      ut_input_stream_read_sync(data_after_eoi_decoder);
+  ut_assert_is_not_error(data_after_eoi_result);
+  UtObjectRef data_after_eoi_result_string =
+      ut_string_new_from_utf8(data_after_eoi_result);
+  ut_assert_cstring_equal(ut_string_get_text(data_after_eoi_result_string),
+                          "hello");
+
+  // No end of information.
+  UtObjectRef no_eoi_data = ut_uint8_list_new_from_hex_string("801a0ca6c361bc");
+  UtObjectRef no_eoi_data_stream = ut_list_input_stream_new(no_eoi_data);
+  UtObjectRef no_eoi_decoder = ut_lzw_decoder_new_msb(no_eoi_data_stream);
+  UtObjectRef no_eoi_result = ut_input_stream_read_sync(no_eoi_decoder);
+  ut_assert_is_error(no_eoi_result);
 }
 
 int main(int argc, char **argv) {
