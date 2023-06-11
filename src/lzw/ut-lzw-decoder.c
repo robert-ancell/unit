@@ -82,10 +82,12 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
     self->read_buffer_bits -= bit_length;
 
     // Process code.
-    if (code == LZW_CLEAR_CODE) {
+    uint16_t clear_code = ut_lzw_dictionary_get_clear_code(self->dictionary);
+    if (code == clear_code) {
       ut_lzw_dictionary_clear(self->dictionary);
-      self->last_code = LZW_CLEAR_CODE;
-    } else if (code == LZW_END_OF_INFORMATION_CODE) {
+      self->last_code = clear_code;
+    } else if (code == ut_lzw_dictionary_get_end_of_information_code(
+                           self->dictionary)) {
       ut_cancel_activate(self->read_cancel);
       have_eoi = true;
       break;
@@ -96,8 +98,7 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
         UtObject *entry = ut_lzw_dictionary_lookup(self->dictionary, code);
         ut_list_append_list(self->buffer, entry);
         first_symbol = ut_uint8_list_get_element(entry, 0);
-      } else if (code == dictionary_length &&
-                 self->last_code != LZW_CLEAR_CODE) {
+      } else if (code == dictionary_length && self->last_code != clear_code) {
         UtObject *entry =
             ut_lzw_dictionary_lookup(self->dictionary, self->last_code);
         first_symbol = ut_uint8_list_get_element(entry, 0);
@@ -108,7 +109,7 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
         return offset;
       }
 
-      if (self->last_code != LZW_CLEAR_CODE) {
+      if (self->last_code != clear_code) {
         ut_lzw_dictionary_append(self->dictionary, self->last_code,
                                  first_symbol);
       }
@@ -134,8 +135,6 @@ static void ut_lzw_decoder_init(UtObject *object) {
   UtLzwDecoder *self = (UtLzwDecoder *)object;
   self->read_cancel = ut_cancel_new();
   self->buffer = ut_uint8_array_new();
-  self->dictionary = ut_lzw_dictionary_new();
-  self->last_code = LZW_CLEAR_CODE;
 }
 
 static void ut_lzw_decoder_cleanup(UtObject *object) {
@@ -170,21 +169,24 @@ static UtObjectInterface object_interface = {
     .interfaces = {{&ut_input_stream_id, &input_stream_interface},
                    {NULL, NULL}}};
 
-static UtObject *ut_lzw_decoder_new(bool lsb_packing, UtObject *input_stream) {
+static UtObject *ut_lzw_decoder_new(size_t n_symbols, bool lsb_packing,
+                                    UtObject *input_stream) {
   assert(input_stream != NULL);
   UtObject *object = ut_object_new(sizeof(UtLzwDecoder), &object_interface);
   UtLzwDecoder *self = (UtLzwDecoder *)object;
+  self->dictionary = ut_lzw_dictionary_new(n_symbols);
+  self->last_code = ut_lzw_dictionary_get_clear_code(self->dictionary);
   self->input_stream = ut_object_ref(input_stream);
   self->lsb_packing = lsb_packing;
   return object;
 }
 
-UtObject *ut_lzw_decoder_new_lsb(UtObject *input_stream) {
-  return ut_lzw_decoder_new(true, input_stream);
+UtObject *ut_lzw_decoder_new_lsb(size_t n_symbols, UtObject *input_stream) {
+  return ut_lzw_decoder_new(n_symbols, true, input_stream);
 }
 
-UtObject *ut_lzw_decoder_new_msb(UtObject *input_stream) {
-  return ut_lzw_decoder_new(false, input_stream);
+UtObject *ut_lzw_decoder_new_msb(size_t n_symbols, UtObject *input_stream) {
+  return ut_lzw_decoder_new(n_symbols, false, input_stream);
 }
 
 bool ut_object_is_lzw_decoder(UtObject *object) {

@@ -85,7 +85,7 @@ static void write_code(UtLzwEncoder *self, uint16_t code) {
   // If exceeded maximum code length then reset dictionary.
   if (ut_lzw_dictionary_get_code_length(self->dictionary) >= 13) {
     ut_lzw_dictionary_clear(self->dictionary);
-    write_code(self, LZW_CLEAR_CODE);
+    write_code(self, ut_lzw_dictionary_get_clear_code(self->dictionary));
   }
 
   // Write this code as fragments into an 8 bit buffer.
@@ -147,7 +147,8 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
   }
 
   if (complete) {
-    write_code(self, LZW_END_OF_INFORMATION_CODE);
+    write_code(self,
+               ut_lzw_dictionary_get_end_of_information_code(self->dictionary));
   }
 
   size_t buffer_length = ut_list_get_length(self->buffer);
@@ -168,7 +169,6 @@ static void ut_lzw_encoder_init(UtObject *object) {
   UtLzwEncoder *self = (UtLzwEncoder *)object;
   self->read_cancel = ut_cancel_new();
   self->buffer = ut_uint8_list_new();
-  self->dictionary = ut_lzw_dictionary_new();
 }
 
 static void ut_lzw_encoder_cleanup(UtObject *object) {
@@ -194,7 +194,7 @@ static void ut_lzw_encoder_read(UtObject *object,
   self->cancel = ut_object_ref(cancel);
 
   // Always starts with a clear code.
-  write_code(self, LZW_CLEAR_CODE);
+  write_code(self, ut_lzw_dictionary_get_clear_code(self->dictionary));
 
   ut_input_stream_read(self->input_stream, read_cb, self, self->read_cancel);
 }
@@ -209,21 +209,23 @@ static UtObjectInterface object_interface = {
     .interfaces = {{&ut_input_stream_id, &input_stream_interface},
                    {NULL, NULL}}};
 
-static UtObject *ut_lzw_encoder_new(bool lsb_packing, UtObject *input_stream) {
+static UtObject *ut_lzw_encoder_new(size_t n_symbols, bool lsb_packing,
+                                    UtObject *input_stream) {
   assert(input_stream != NULL);
   UtObject *object = ut_object_new(sizeof(UtLzwEncoder), &object_interface);
   UtLzwEncoder *self = (UtLzwEncoder *)object;
+  self->dictionary = ut_lzw_dictionary_new(n_symbols);
   self->input_stream = ut_object_ref(input_stream);
   self->lsb_packing = lsb_packing;
   return object;
 }
 
-UtObject *ut_lzw_encoder_new_lsb(UtObject *input_stream) {
-  return ut_lzw_encoder_new(true, input_stream);
+UtObject *ut_lzw_encoder_new_lsb(size_t n_symbols, UtObject *input_stream) {
+  return ut_lzw_encoder_new(n_symbols, true, input_stream);
 }
 
-UtObject *ut_lzw_encoder_new_msb(UtObject *input_stream) {
-  return ut_lzw_encoder_new(false, input_stream);
+UtObject *ut_lzw_encoder_new_msb(size_t n_symbols, UtObject *input_stream) {
+  return ut_lzw_encoder_new(n_symbols, false, input_stream);
 }
 
 bool ut_object_is_lzw_encoder(UtObject *object) {

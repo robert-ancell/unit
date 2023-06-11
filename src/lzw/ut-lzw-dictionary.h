@@ -5,16 +5,14 @@
 
 #pragma once
 
-// Codes 0-255 are literal bytes.
-
-// Predefined clear code.
-#define LZW_CLEAR_CODE 256
-
-// Predefined end of information code.
-#define LZW_END_OF_INFORMATION_CODE 257
-
 // Create an LZW dictionary.
-UtObject *ut_lzw_dictionary_new();
+UtObject *ut_lzw_dictionary_new(size_t n_symbols);
+
+// Get the code used to clear the dictionary.
+uint16_t ut_lzw_dictionary_get_clear_code(UtObject *object);
+
+// Get the code used to mark the end of the data.
+uint16_t ut_lzw_dictionary_get_end_of_information_code(UtObject *object);
 
 // Get the number of codes in this dictionary.
 size_t ut_lzw_dictionary_get_length(UtObject *object);
