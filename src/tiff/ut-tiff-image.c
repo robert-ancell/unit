@@ -327,11 +327,16 @@ UtObject *ut_tiff_image_new_from_data(UtObject *data) {
           "Unsupported bits per sample in bilevel/grayscale TIFF image");
     }
     if (compression != UT_TIFF_COMPRESSION_UNCOMPRESSED &&
+        compression != UT_TIFF_COMPRESSION_CCIT_1D &&
         compression != UT_TIFF_COMPRESSION_PACK_BITS &&
         compression != UT_TIFF_COMPRESSION_LZW &&
         compression != UT_TIFF_COMPRESSION_DEFLATE) {
       return ut_tiff_error_new("Unsupported TIFF compression");
     }
+    if (compression == UT_TIFF_COMPRESSION_CCIT_1D && bits_per_sample != 1)
+       {
+	  return ut_tiff_error_new("Unsupported TIFF compression");
+       }
     break;
   case UT_TIFF_PHOTOMETRIC_INTERPRETATION_RGB:
     if (samples_per_pixel < 3) {
