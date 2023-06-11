@@ -17,6 +17,11 @@ ut_sources = [
   'deflate/ut-deflate-encoder.c',
   'deflate/ut-deflate-error.c',
   'dns/ut-dns-client.c',
+  'gif/ut-gif-decoder.c',
+  'gif/ut-gif-encoder.c',
+  'gif/ut-gif-error.c',
+  'gif/ut-gif-image.c',
+  'gif/ut-gif-renderer.c',
   'gzip/ut-gzip-decoder.c',
   'gzip/ut-gzip-encoder.c',
   'gzip/ut-gzip-error.c',
@@ -402,6 +407,16 @@ jpeg_encoder_test = executable('ut-jpeg-encoder-test',
                               'jpeg/ut-jpeg-encoder-test.c',
                               link_with: ut_lib)
 test('JPEG Encoder', jpeg_encoder_test)
+
+gif_decoder_test = executable('ut-gif-decoder-test',
+                              'gif/ut-gif-decoder-test.c',
+                              link_with: ut_lib)
+test('GIF Decoder', gif_decoder_test)
+
+gif_encoder_test = executable('ut-gif-encoder-test',
+                              'gif/ut-gif-encoder-test.c',
+                              link_with: ut_lib)
+test('GIF Encoder', gif_encoder_test)
 
 event_loop_test = executable('ut-event-loop-test',
                              'ut-event-loop-test.c',
