@@ -15,6 +15,9 @@ typedef struct {
   void *user_data;
   UtObject *cancel;
 
+  // Number of symbols.
+  size_t n_symbols;
+
   // Bytes that each code represents.
   UtObject *dictionary;
 
@@ -148,6 +151,8 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
   size_t data_length = ut_list_get_length(data);
   size_t offset = 0;
   while (offset < data_length) {
+    assert(ut_uint8_list_get_element(data, 0) < self->n_symbols);
+
     // Find the longest match in our dictionary.
     UtObjectRef d = ut_list_get_sublist(data, offset, data_length - offset);
     size_t match_length;
@@ -233,6 +238,7 @@ static UtObject *ut_lzw_encoder_new(size_t n_symbols, bool lsb_packing,
   assert(input_stream != NULL);
   UtObject *object = ut_object_new(sizeof(UtLzwEncoder), &object_interface);
   UtLzwEncoder *self = (UtLzwEncoder *)object;
+  self->n_symbols = n_symbols;
   self->dictionary = ut_lzw_dictionary_new(n_symbols);
   self->input_stream = ut_object_ref(input_stream);
   self->lsb_packing = lsb_packing;
