@@ -20,9 +20,6 @@ size_t ut_lzw_dictionary_get_length(UtObject *object);
 // Get the symbols for a given code.
 UtObject *ut_lzw_dictionary_lookup(UtObject *object, uint16_t code);
 
-// Get the number of bits required to send a code in the dictionary.
-size_t ut_lzw_dictionary_get_code_length(UtObject *object);
-
 // Reset the dictionary to the initial state.
 void ut_lzw_dictionary_clear(UtObject *object);
 

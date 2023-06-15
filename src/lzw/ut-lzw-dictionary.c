@@ -11,20 +11,7 @@ typedef struct {
 
   // Mapping from codes to symbols.
   UtObject *codes;
-
-  // Number of bits required to represent number of codes in dictionary.
-  size_t code_length;
 } UtLzwDictionary;
-
-// Get number of bits required to send all code words.
-static size_t get_code_length(UtLzwDictionary *self) {
-  size_t code_length = 1;
-  size_t max_code = ut_list_get_length(self->codes) - 1;
-  while (max_code >= (1 << code_length)) {
-    code_length++;
-  }
-  return code_length;
-}
 
 static void ut_lzw_dictionary_init(UtObject *object) {
   UtLzwDictionary *self = (UtLzwDictionary *)object;
@@ -58,7 +45,6 @@ UtObject *ut_lzw_dictionary_new(size_t n_symbols) {
   // End of Information.
   UtObjectRef eoi_entry = ut_uint8_list_new();
   ut_list_append(self->codes, eoi_entry);
-  self->code_length = get_code_length(self);
 
   return object;
 }
@@ -87,18 +73,11 @@ UtObject *ut_lzw_dictionary_lookup(UtObject *object, uint16_t code) {
   return ut_object_list_get_element(self->codes, code);
 }
 
-size_t ut_lzw_dictionary_get_code_length(UtObject *object) {
-  assert(ut_object_is_lzw_dictionary(object));
-  UtLzwDictionary *self = (UtLzwDictionary *)object;
-  return self->code_length;
-}
-
 void ut_lzw_dictionary_clear(UtObject *object) {
   assert(ut_object_is_lzw_dictionary(object));
   UtLzwDictionary *self = (UtLzwDictionary *)object;
   // Return to the original symobls, clear, end of information.
   ut_list_resize(self->codes, self->n_symbols + 2);
-  self->code_length = get_code_length(self);
 }
 
 void ut_lzw_dictionary_append(UtObject *object, uint16_t code, uint8_t b) {
@@ -108,11 +87,6 @@ void ut_lzw_dictionary_append(UtObject *object, uint16_t code, uint8_t b) {
   UtObjectRef new_entry = ut_list_copy(entry);
   ut_uint8_list_append(new_entry, b);
   ut_list_append(self->codes, new_entry);
-
-  // Need to use more bits as the dictionary gets bigger.
-  if (ut_list_get_length(self->codes) == 1 << self->code_length) {
-    self->code_length++;
-  }
 }
 
 bool ut_object_is_lzw_dictionary(UtObject *object) {

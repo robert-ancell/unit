@@ -18,6 +18,9 @@ typedef struct {
   // Bytes that each code represents.
   UtObject *dictionary;
 
+  // Length of next code to write.
+  size_t code_length;
+
   // True if bits are packed least significant bit first, otherwise most
   // significant bit first.
   bool lsb_packing;
@@ -61,6 +64,11 @@ static bool find_match(UtLzwEncoder *self, UtObject *data, bool complete,
       continue;
     }
 
+    // Not enough data remaining for this entry.
+    if (entry_length > data_length && complete) {
+      continue;
+    }
+
     if (matches(entry, data)) {
       match = entry;
       match_index = i;
@@ -77,20 +85,31 @@ static bool find_match(UtLzwEncoder *self, UtObject *data, bool complete,
   return true;
 }
 
+// Update length of next code to read.
+static void update_code_length(UtLzwEncoder *self) {
+  size_t dictionary_length = ut_lzw_dictionary_get_length(self->dictionary);
+  while (1 << self->code_length <= dictionary_length) {
+    self->code_length++;
+  }
+}
+
 // Create a mask for the last [length] bits in a 16 bit word.
 static uint16_t bit_mask(size_t length) { return 0xffff >> (16 - length); }
 
 // Write an LZW code to the output buffer.
 static void write_code(UtLzwEncoder *self, uint16_t code) {
+  update_code_length(self);
+
   // If exceeded maximum code length then reset dictionary.
-  if (ut_lzw_dictionary_get_code_length(self->dictionary) >= 13) {
+  if (self->code_length >= 13) {
     ut_lzw_dictionary_clear(self->dictionary);
+    self->code_length = 0;
     write_code(self, ut_lzw_dictionary_get_clear_code(self->dictionary));
   }
 
   // Write this code as fragments into an 8 bit buffer.
-  size_t code_bits = ut_lzw_dictionary_get_code_length(self->dictionary);
-  while (code_bits > 0) {
+  size_t code_length = self->code_length;
+  while (code_length > 0) {
     // Make more space.
     if (self->unused_bits == 0) {
       ut_uint8_list_append(self->buffer, 0x00);
@@ -102,17 +121,17 @@ static void write_code(UtLzwEncoder *self, uint16_t code) {
 
     // Write as many bits as can fit into the available space.
     size_t fragment_bits =
-        code_bits > self->unused_bits ? self->unused_bits : code_bits;
+        code_length > self->unused_bits ? self->unused_bits : code_length;
     if (self->lsb_packing) {
       uint16_t fragment = code & bit_mask(fragment_bits);
       value |= fragment << (8 - self->unused_bits);
       code >>= fragment_bits;
     } else {
-      uint16_t fragment = code >> (code_bits - fragment_bits);
+      uint16_t fragment = code >> (code_length - fragment_bits);
       value |= fragment << (self->unused_bits - fragment_bits);
-      code &= bit_mask(code_bits - fragment_bits);
+      code &= bit_mask(code_length - fragment_bits);
     }
-    code_bits -= fragment_bits;
+    code_length -= fragment_bits;
     buffer_data[buffer_length - 1] = value;
     self->unused_bits -= fragment_bits;
   }

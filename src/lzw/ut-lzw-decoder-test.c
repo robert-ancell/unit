@@ -1,6 +1,5 @@
 #include "ut.h"
 
-// FIXME: Add test for when codes change from 9 to 10 bits.
 // FIXME: Add test for when codes go to 13 bits and reset.
 // FIXME: Add test for get code for next entry not yet in dictionary.
 
@@ -37,6 +36,20 @@ static void test_lsb() {
   UtObjectRef hello3_result_string = ut_string_new_from_utf8(hello3_result);
   ut_assert_cstring_equal(ut_string_get_text(hello3_result_string),
                           "hello hello hello");
+
+  // Decode message that has code words from 3 bits to 5 bits.
+  UtObjectRef code_length_data =
+      ut_uint8_list_new_from_hex_string("8d0cd1489030");
+  UtObjectRef code_length_data_stream =
+      ut_list_input_stream_new(code_length_data);
+  UtObjectRef code_length_decoder =
+      ut_lzw_decoder_new_lsb(5, code_length_data_stream);
+  UtObjectRef code_length_result =
+      ut_input_stream_read_sync(code_length_decoder);
+  ut_assert_is_not_error(code_length_result);
+  UtObjectRef code_length_result_string =
+      ut_string_new_from_utf8(code_length_result);
+  ut_assert_uint8_list_equal_hex(code_length_result, "01020304040302010402");
 
   // No clear code at start.
   UtObjectRef no_clear_data =
@@ -146,6 +159,20 @@ static void test_msb() {
   UtObjectRef hello3_result_string = ut_string_new_from_utf8(hello3_result);
   ut_assert_cstring_equal(ut_string_get_text(hello3_result_string),
                           "hello hello hello");
+
+  // Decode message that has code words from 3 bits to 5 bits.
+  UtObjectRef code_length_data =
+      ut_uint8_list_new_from_hex_string("a48d10c85046");
+  UtObjectRef code_length_data_stream =
+      ut_list_input_stream_new(code_length_data);
+  UtObjectRef code_length_decoder =
+      ut_lzw_decoder_new_msb(5, code_length_data_stream);
+  UtObjectRef code_length_result =
+      ut_input_stream_read_sync(code_length_decoder);
+  ut_assert_is_not_error(code_length_result);
+  UtObjectRef code_length_result_string =
+      ut_string_new_from_utf8(code_length_result);
+  ut_assert_uint8_list_equal_hex(code_length_result, "01020304040302010402");
 
   // No clear code at start.
   UtObjectRef no_clear_data =
