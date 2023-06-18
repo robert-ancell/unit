@@ -23,7 +23,7 @@ typedef struct {
   bool lsb_packing;
 
   // Current unprocessed bits being read from stream.
-  uint16_t read_buffer;
+  uint32_t read_buffer;
   size_t read_buffer_bits;
 
   // Last code word received.
@@ -73,12 +73,11 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
     // Read bytes from input so we have sufficient bits for a code word.
     update_code_length(self);
     while (self->read_buffer_bits < self->code_length && offset < data_length) {
+      uint32_t b = ut_uint8_list_get_element(data, offset);
       if (self->lsb_packing) {
-        self->read_buffer |= ut_uint8_list_get_element(data, offset)
-                             << self->read_buffer_bits;
+        self->read_buffer |= b << self->read_buffer_bits;
       } else {
-        self->read_buffer =
-            self->read_buffer << 8 | ut_uint8_list_get_element(data, offset);
+        self->read_buffer = self->read_buffer << 8 | b;
       }
       self->read_buffer_bits += 8;
       offset++;
