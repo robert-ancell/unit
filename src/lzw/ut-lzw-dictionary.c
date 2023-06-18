@@ -9,6 +9,9 @@ typedef struct {
   // Number of symbols being encoded.
   size_t n_symbols;
 
+  // Maximum length of dictionary.
+  size_t max_length;
+
   // Mapping from codes to symbols.
   UtObject *codes;
 } UtLzwDictionary;
@@ -29,11 +32,12 @@ static UtObjectInterface object_interface = {.type_name = "UtLzwDictionary",
                                                  ut_lzw_dictionary_cleanup,
                                              .interfaces = {{NULL, NULL}}};
 
-UtObject *ut_lzw_dictionary_new(size_t n_symbols) {
+UtObject *ut_lzw_dictionary_new(size_t n_symbols, size_t max_length) {
   UtObject *object = ut_object_new(sizeof(UtLzwDictionary), &object_interface);
   UtLzwDictionary *self = (UtLzwDictionary *)object;
 
   self->n_symbols = n_symbols;
+  self->max_length = max_length;
   // Symbols.
   for (size_t i = 0; i < self->n_symbols; i++) {
     UtObjectRef entry = ut_uint8_list_new_from_elements(1, i);
@@ -67,6 +71,12 @@ size_t ut_lzw_dictionary_get_length(UtObject *object) {
   return ut_list_get_length(self->codes);
 }
 
+bool ut_lzw_dictionary_get_is_full(UtObject *object) {
+  assert(ut_object_is_lzw_dictionary(object));
+  UtLzwDictionary *self = (UtLzwDictionary *)object;
+  return ut_list_get_length(self->codes) >= self->max_length;
+}
+
 UtObject *ut_lzw_dictionary_lookup(UtObject *object, uint16_t code) {
   assert(ut_object_is_lzw_dictionary(object));
   UtLzwDictionary *self = (UtLzwDictionary *)object;
@@ -83,6 +93,11 @@ void ut_lzw_dictionary_clear(UtObject *object) {
 void ut_lzw_dictionary_append(UtObject *object, uint16_t code, uint8_t b) {
   assert(ut_object_is_lzw_dictionary(object));
   UtLzwDictionary *self = (UtLzwDictionary *)object;
+
+  if (ut_list_get_length(self->codes) >= self->max_length) {
+    return;
+  }
+
   UtObject *entry = ut_object_list_get_element(self->codes, code);
   UtObjectRef new_entry = ut_list_copy(entry);
   ut_uint8_list_append(new_entry, b);

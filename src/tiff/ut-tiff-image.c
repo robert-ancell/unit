@@ -101,7 +101,7 @@ static bool decode_pack_bits(UtObject *input, UtObject *output) {
 
 static bool decode_lzw(UtObject *input, UtObject *output) {
   UtObjectRef input_stream = ut_list_input_stream_new(input);
-  UtObjectRef lzw_decoder = ut_lzw_decoder_new_msb(256, input_stream);
+  UtObjectRef lzw_decoder = ut_lzw_decoder_new_msb(256, 4096, input_stream);
   UtObjectRef decoded_data = ut_input_stream_read_sync(lzw_decoder);
   if (ut_object_implements_error(decoded_data)) {
     return false;

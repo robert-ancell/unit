@@ -44,11 +44,12 @@ static void update_code_length(UtLzwDecoder *self) {
   size_t dictionary_length = ut_lzw_dictionary_get_length(self->dictionary);
 
   // We are one dictionary entry behind.
-  if (self->last_code != ut_lzw_dictionary_get_clear_code(self->dictionary)) {
+  if (self->last_code != ut_lzw_dictionary_get_clear_code(self->dictionary) &&
+      !ut_lzw_dictionary_get_is_full(self->dictionary)) {
     dictionary_length++;
   }
 
-  while (1 << self->code_length <= dictionary_length) {
+  while (dictionary_length > (1 << self->code_length)) {
     self->code_length++;
   }
 }
@@ -187,24 +188,29 @@ static UtObjectInterface object_interface = {
     .interfaces = {{&ut_input_stream_id, &input_stream_interface},
                    {NULL, NULL}}};
 
-static UtObject *ut_lzw_decoder_new(size_t n_symbols, bool lsb_packing,
-                                    UtObject *input_stream) {
+static UtObject *ut_lzw_decoder_new(size_t n_symbols,
+                                    size_t max_dictionary_length,
+                                    bool lsb_packing, UtObject *input_stream) {
   assert(input_stream != NULL);
   UtObject *object = ut_object_new(sizeof(UtLzwDecoder), &object_interface);
   UtLzwDecoder *self = (UtLzwDecoder *)object;
-  self->dictionary = ut_lzw_dictionary_new(n_symbols);
+  self->dictionary = ut_lzw_dictionary_new(n_symbols, max_dictionary_length);
   self->last_code = ut_lzw_dictionary_get_clear_code(self->dictionary);
   self->input_stream = ut_object_ref(input_stream);
   self->lsb_packing = lsb_packing;
   return object;
 }
 
-UtObject *ut_lzw_decoder_new_lsb(size_t n_symbols, UtObject *input_stream) {
-  return ut_lzw_decoder_new(n_symbols, true, input_stream);
+UtObject *ut_lzw_decoder_new_lsb(size_t n_symbols, size_t max_dictionary_length,
+                                 UtObject *input_stream) {
+  return ut_lzw_decoder_new(n_symbols, max_dictionary_length, true,
+                            input_stream);
 }
 
-UtObject *ut_lzw_decoder_new_msb(size_t n_symbols, UtObject *input_stream) {
-  return ut_lzw_decoder_new(n_symbols, false, input_stream);
+UtObject *ut_lzw_decoder_new_msb(size_t n_symbols, size_t max_dictionary_length,
+                                 UtObject *input_stream) {
+  return ut_lzw_decoder_new(n_symbols, max_dictionary_length, false,
+                            input_stream);
 }
 
 bool ut_object_is_lzw_decoder(UtObject *object) {
