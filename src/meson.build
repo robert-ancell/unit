@@ -105,6 +105,7 @@ ut_sources = [
   'ut-object.c',
   'ut-object-array.c',
   'ut-object-list.c',
+  'ut-object-subarray.c',
   'ut-output-stream.c',
   'ut-rgba8888-buffer.c',
   'ut-shared-memory-array.c',

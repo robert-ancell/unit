@@ -3,6 +3,7 @@
 #include <stdlib.h>
 
 #include "ut-list-private.h"
+#include "ut-object-subarray.h"
 #include "ut.h"
 
 typedef struct {
@@ -66,6 +67,11 @@ static UtObject *ut_object_array_get_element_ref(UtObject *object,
   return ut_object_ref(self->data[index]);
 }
 
+static UtObject *ut_object_array_get_sublist(UtObject *object, size_t start,
+                                             size_t count) {
+  return ut_object_subarray_new(object, start, count);
+}
+
 static UtObject *ut_object_array_copy(UtObject *object) {
   UtObjectArray *self = (UtObjectArray *)object;
   UtObjectArray *copy = (UtObjectArray *)ut_object_array_new();
@@ -93,6 +99,7 @@ static UtListInterface list_interface = {
     .is_mutable = true,
     .get_length = ut_object_array_get_length,
     .get_element = ut_object_array_get_element_ref,
+    .get_sublist = ut_object_array_get_sublist,
     .copy = ut_object_array_copy,
     .insert = ut_object_array_insert,
     .remove = ut_object_array_remove,
