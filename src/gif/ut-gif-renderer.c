@@ -54,16 +54,17 @@ UtObject *ut_gif_renderer_render(UtObject *object) {
   UtObject *last_image = NULL;
   for (size_t i = 0; i < images_length; i++) {
     if (last_image != NULL) {
+      size_t image_top, image_left, image_width, image_height;
       switch (ut_gif_image_get_disposal_method(last_image)) {
       case UT_GIF_DISPOSAL_METHOD_NONE:
       case UT_GIF_DISPOSAL_METHOD_DO_NOT_DISPOSE:
         // No action required.
         break;
       case UT_GIF_DISPOSAL_METHOD_RESTORE_TO_BACKGROUND:
-        size_t image_top = ut_gif_image_get_top(last_image);
-        size_t image_left = ut_gif_image_get_left(last_image);
-        size_t image_width = ut_gif_image_get_width(last_image);
-        size_t image_height = ut_gif_image_get_height(last_image);
+        image_top = ut_gif_image_get_top(last_image);
+        image_left = ut_gif_image_get_left(last_image);
+        image_width = ut_gif_image_get_width(last_image);
+        image_height = ut_gif_image_get_height(last_image);
         // FIXME: crop
         for (size_t y = 0; y < image_height; y++) {
           size_t iy = image_top + y;
