@@ -16,7 +16,7 @@ static void decode_cb(void *user_data) {
 
   size_t width = ut_png_image_get_width(image);
   size_t height = ut_png_image_get_height(image);
-  UtPngColourType colour_type = ut_png_image_get_colour_type(image);
+  UtPngColorType color_type = ut_png_image_get_color_type(image);
   size_t n_channels = ut_png_image_get_n_channels(image);
   size_t bit_depth = ut_png_image_get_bit_depth(image);
   size_t row_stride = ut_png_image_get_row_stride(image);
@@ -28,31 +28,31 @@ static void decode_cb(void *user_data) {
 
   // Drop alpha channel.
   size_t n_used_channels = n_channels;
-  if (colour_type == UT_PNG_COLOUR_TYPE_GREYSCALE_WITH_ALPHA ||
-      colour_type == UT_PNG_COLOUR_TYPE_TRUECOLOUR_WITH_ALPHA) {
+  if (color_type == UT_PNG_COLOR_TYPE_GREYSCALE_WITH_ALPHA ||
+      color_type == UT_PNG_COLOR_TYPE_TRUECOLOR_WITH_ALPHA) {
     n_used_channels--;
   }
 
-  switch (colour_type) {
-  case UT_PNG_COLOUR_TYPE_GREYSCALE:
-  case UT_PNG_COLOUR_TYPE_GREYSCALE_WITH_ALPHA:
+  switch (color_type) {
+  case UT_PNG_COLOR_TYPE_GREYSCALE:
+  case UT_PNG_COLOR_TYPE_GREYSCALE_WITH_ALPHA:
     printf("P2\n");
     break;
-  case UT_PNG_COLOUR_TYPE_INDEXED_COLOUR:
-  case UT_PNG_COLOUR_TYPE_TRUECOLOUR:
-  case UT_PNG_COLOUR_TYPE_TRUECOLOUR_WITH_ALPHA:
+  case UT_PNG_COLOR_TYPE_INDEXED_COLOR:
+  case UT_PNG_COLOR_TYPE_TRUECOLOR:
+  case UT_PNG_COLOR_TYPE_TRUECOLOR_WITH_ALPHA:
     printf("P3\n");
     break;
   }
   printf("%zi %zi\n", width, height);
-  switch (colour_type) {
-  case UT_PNG_COLOUR_TYPE_GREYSCALE:
-  case UT_PNG_COLOUR_TYPE_GREYSCALE_WITH_ALPHA:
-  case UT_PNG_COLOUR_TYPE_TRUECOLOUR:
-  case UT_PNG_COLOUR_TYPE_TRUECOLOUR_WITH_ALPHA:
+  switch (color_type) {
+  case UT_PNG_COLOR_TYPE_GREYSCALE:
+  case UT_PNG_COLOR_TYPE_GREYSCALE_WITH_ALPHA:
+  case UT_PNG_COLOR_TYPE_TRUECOLOR:
+  case UT_PNG_COLOR_TYPE_TRUECOLOR_WITH_ALPHA:
     printf("%d\n", (1 << bit_depth) - 1);
     break;
-  case UT_PNG_COLOUR_TYPE_INDEXED_COLOUR:
+  case UT_PNG_COLOR_TYPE_INDEXED_COLOR:
     printf("255\n");
     break;
   }
@@ -87,7 +87,7 @@ static void decode_cb(void *user_data) {
         if (c != 0) {
           printf(" ");
         }
-        if (colour_type == UT_PNG_COLOUR_TYPE_INDEXED_COLOUR) {
+        if (color_type == UT_PNG_COLOR_TYPE_INDEXED_COLOR) {
           uint8_t r = palette_data[(sample * 3) + 0];
           uint8_t g = palette_data[(sample * 3) + 1];
           uint8_t b = palette_data[(sample * 3) + 2];

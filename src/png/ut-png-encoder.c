@@ -73,17 +73,17 @@ static uint32_t crc32(UtObject *data, size_t offset, size_t length) {
   return c ^ 0xffffffff;
 }
 
-static uint8_t encode_colour_type(UtPngColourType type) {
+static uint8_t encode_color_type(UtPngColorType type) {
   switch (type) {
-  case UT_PNG_COLOUR_TYPE_GREYSCALE:
+  case UT_PNG_COLOR_TYPE_GREYSCALE:
     return 0;
-  case UT_PNG_COLOUR_TYPE_TRUECOLOUR:
+  case UT_PNG_COLOR_TYPE_TRUECOLOR:
     return 2;
-  case UT_PNG_COLOUR_TYPE_INDEXED_COLOUR:
+  case UT_PNG_COLOR_TYPE_INDEXED_COLOR:
     return 3;
-  case UT_PNG_COLOUR_TYPE_GREYSCALE_WITH_ALPHA:
+  case UT_PNG_COLOR_TYPE_GREYSCALE_WITH_ALPHA:
     return 4;
-  case UT_PNG_COLOUR_TYPE_TRUECOLOUR_WITH_ALPHA:
+  case UT_PNG_COLOR_TYPE_TRUECOLOR_WITH_ALPHA:
     return 6;
   default:
     return 0;
@@ -135,14 +135,14 @@ static UtObject *start_chunk(uint32_t type) {
 
 static void write_image_header(UtPngEncoder *self, uint32_t width,
                                uint32_t height, uint8_t bit_depth,
-                               uint8_t colour_type, uint8_t compression_method,
+                               uint8_t color_type, uint8_t compression_method,
                                uint8_t filter_method,
                                uint8_t interlace_method) {
   UtObjectRef chunk = start_chunk(UT_PNG_CHUNK_TYPE_IMAGE_HEADER);
   ut_uint8_list_append_uint32_be(chunk, width);
   ut_uint8_list_append_uint32_be(chunk, height);
   ut_uint8_list_append(chunk, bit_depth);
-  ut_uint8_list_append(chunk, colour_type);
+  ut_uint8_list_append(chunk, color_type);
   ut_uint8_list_append(chunk, compression_method);
   ut_uint8_list_append(chunk, filter_method);
   ut_uint8_list_append(chunk, interlace_method);
@@ -155,9 +155,9 @@ static void write_palette(UtPngEncoder *self, UtObject *palette) {
   write_chunk(self, chunk);
 }
 
-static void write_background(UtPngEncoder *self, UtObject *background_colour) {
+static void write_background(UtPngEncoder *self, UtObject *background_color) {
   UtObjectRef chunk = start_chunk(UT_PNG_CHUNK_TYPE_BACKGROUND);
-  ut_list_append_list(chunk, background_colour);
+  ut_list_append_list(chunk, background_color);
   write_chunk(self, chunk);
 }
 
@@ -234,16 +234,16 @@ void ut_png_encoder_encode(UtObject *object) {
       self, ut_png_image_get_width(self->image),
       ut_png_image_get_height(self->image),
       ut_png_image_get_bit_depth(self->image),
-      encode_colour_type(ut_png_image_get_colour_type(self->image)),
+      encode_color_type(ut_png_image_get_color_type(self->image)),
       COMPRESS_DEFLATE, 0,
       encode_interlace_method(UT_PNG_INTERLACE_METHOD_NONE));
   UtObject *palette = ut_png_image_get_palette(self->image);
   if (palette != NULL) {
     write_palette(self, palette);
   }
-  UtObject *background_colour = ut_png_image_get_background_colour(self->image);
-  if (background_colour != NULL) {
-    write_background(self, background_colour);
+  UtObject *background_color = ut_png_image_get_background_color(self->image);
+  if (background_color != NULL) {
+    write_background(self, background_color);
   }
   write_image_data(self);
   write_image_end(self);

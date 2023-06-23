@@ -154,22 +154,22 @@ static size_t decode_signature(UtPngDecoder *self, UtObject *data) {
   return 8;
 }
 
-static bool decode_colour_type(uint8_t value, UtPngColourType *type) {
+static bool decode_color_type(uint8_t value, UtPngColorType *type) {
   switch (value) {
   case 0:
-    *type = UT_PNG_COLOUR_TYPE_GREYSCALE;
+    *type = UT_PNG_COLOR_TYPE_GREYSCALE;
     return true;
   case 2:
-    *type = UT_PNG_COLOUR_TYPE_TRUECOLOUR;
+    *type = UT_PNG_COLOR_TYPE_TRUECOLOR;
     return true;
   case 3:
-    *type = UT_PNG_COLOUR_TYPE_INDEXED_COLOUR;
+    *type = UT_PNG_COLOR_TYPE_INDEXED_COLOR;
     return true;
   case 4:
-    *type = UT_PNG_COLOUR_TYPE_GREYSCALE_WITH_ALPHA;
+    *type = UT_PNG_COLOR_TYPE_GREYSCALE_WITH_ALPHA;
     return true;
   case 6:
-    *type = UT_PNG_COLOUR_TYPE_TRUECOLOUR_WITH_ALPHA;
+    *type = UT_PNG_COLOR_TYPE_TRUECOLOR_WITH_ALPHA;
     return true;
   default:
     return false;
@@ -178,15 +178,15 @@ static bool decode_colour_type(uint8_t value, UtPngColourType *type) {
 
 static bool is_valid_bit_depth(uint8_t type, uint8_t depth) {
   switch (type) {
-  case UT_PNG_COLOUR_TYPE_GREYSCALE:
+  case UT_PNG_COLOR_TYPE_GREYSCALE:
     return depth == 1 || depth == 2 || depth == 4 || depth == 8 || depth == 16;
-  case UT_PNG_COLOUR_TYPE_TRUECOLOUR:
+  case UT_PNG_COLOR_TYPE_TRUECOLOR:
     return depth == 8 || depth == 16;
-  case UT_PNG_COLOUR_TYPE_INDEXED_COLOUR:
+  case UT_PNG_COLOR_TYPE_INDEXED_COLOR:
     return depth == 1 || depth == 2 || depth == 4 || depth == 8;
-  case UT_PNG_COLOUR_TYPE_GREYSCALE_WITH_ALPHA:
+  case UT_PNG_COLOR_TYPE_GREYSCALE_WITH_ALPHA:
     return depth == 8 || depth == 16;
-  case UT_PNG_COLOUR_TYPE_TRUECOLOUR_WITH_ALPHA:
+  case UT_PNG_COLOR_TYPE_TRUECOLOR_WITH_ALPHA:
     return depth == 8 || depth == 16;
   default:
     return false;
@@ -646,7 +646,7 @@ static void decode_image_header(UtPngDecoder *self, UtObject *data) {
   uint32_t width = ut_uint8_list_get_uint32_be(data, 0);
   uint32_t height = ut_uint8_list_get_uint32_be(data, 4);
   uint8_t bit_depth = ut_uint8_list_get_element(data, 8);
-  uint8_t colour_type_value = ut_uint8_list_get_element(data, 9);
+  uint8_t color_type_value = ut_uint8_list_get_element(data, 9);
   uint8_t compression_method = ut_uint8_list_get_element(data, 10);
   uint8_t filter_method = ut_uint8_list_get_element(data, 11);
 
@@ -655,14 +655,14 @@ static void decode_image_header(UtPngDecoder *self, UtObject *data) {
     return;
   }
 
-  UtPngColourType colour_type;
-  bool valid_colour_type = decode_colour_type(colour_type_value, &colour_type);
-  if (!valid_colour_type) {
-    set_error(self, "Invalid PNG colour type");
+  UtPngColorType color_type;
+  bool valid_color_type = decode_color_type(color_type_value, &color_type);
+  if (!valid_color_type) {
+    set_error(self, "Invalid PNG color type");
     return;
   }
 
-  if (!is_valid_bit_depth(colour_type, bit_depth)) {
+  if (!is_valid_bit_depth(color_type, bit_depth)) {
     set_error(self, "Invalid PNG bit depth");
     return;
   }
@@ -685,18 +685,18 @@ static void decode_image_header(UtPngDecoder *self, UtObject *data) {
   }
 
   size_t n_channels;
-  switch (colour_type) {
-  case UT_PNG_COLOUR_TYPE_GREYSCALE:
-  case UT_PNG_COLOUR_TYPE_INDEXED_COLOUR:
+  switch (color_type) {
+  case UT_PNG_COLOR_TYPE_GREYSCALE:
+  case UT_PNG_COLOR_TYPE_INDEXED_COLOR:
     n_channels = 1;
     break;
-  case UT_PNG_COLOUR_TYPE_GREYSCALE_WITH_ALPHA:
+  case UT_PNG_COLOR_TYPE_GREYSCALE_WITH_ALPHA:
     n_channels = 2;
     break;
-  case UT_PNG_COLOUR_TYPE_TRUECOLOUR:
+  case UT_PNG_COLOR_TYPE_TRUECOLOR:
     n_channels = 3;
     break;
-  case UT_PNG_COLOUR_TYPE_TRUECOLOUR_WITH_ALPHA:
+  case UT_PNG_COLOR_TYPE_TRUECOLOR_WITH_ALPHA:
     n_channels = 4;
     break;
   default:
@@ -707,7 +707,7 @@ static void decode_image_header(UtPngDecoder *self, UtObject *data) {
   UtObjectRef image_data = ut_uint8_array_new_sized(height * row_stride);
   UtObjectRef palette = NULL;
   self->image =
-      ut_png_image_new(width, height, bit_depth, colour_type, image_data);
+      ut_png_image_new(width, height, bit_depth, color_type, image_data);
 }
 
 static void decode_palette(UtPngDecoder *self, UtObject *data) {
@@ -756,9 +756,9 @@ static void decode_standard_rgb(UtPngDecoder *self, UtObject *data) {}
 
 static void decode_background(UtPngDecoder *self, UtObject *data) {
   UtObjectRef background = NULL;
-  switch (ut_png_image_get_colour_type(self->image)) {
-  case UT_PNG_COLOUR_TYPE_GREYSCALE:
-  case UT_PNG_COLOUR_TYPE_GREYSCALE_WITH_ALPHA:
+  switch (ut_png_image_get_color_type(self->image)) {
+  case UT_PNG_COLOR_TYPE_GREYSCALE:
+  case UT_PNG_COLOR_TYPE_GREYSCALE_WITH_ALPHA:
     if (ut_list_get_length(data) != 2) {
       set_error(self, "Insufficient space for PNG greyscale background");
       return;
@@ -770,10 +770,10 @@ static void decode_background(UtPngDecoder *self, UtObject *data) {
           1, ut_uint8_list_get_uint16_be(data, 0) & 0xff);
     }
     break;
-  case UT_PNG_COLOUR_TYPE_TRUECOLOUR:
-  case UT_PNG_COLOUR_TYPE_TRUECOLOUR_WITH_ALPHA:
+  case UT_PNG_COLOR_TYPE_TRUECOLOR:
+  case UT_PNG_COLOR_TYPE_TRUECOLOR_WITH_ALPHA:
     if (ut_list_get_length(data) != 6) {
-      set_error(self, "Insufficient space for PNG truecolour background");
+      set_error(self, "Insufficient space for PNG truecolor background");
       return;
     }
     if (ut_png_image_get_bit_depth(self->image) == 16) {
@@ -786,9 +786,9 @@ static void decode_background(UtPngDecoder *self, UtObject *data) {
           ut_uint8_list_new_from_elements(3, r & 0xff, g & 0xff, b & 0xff);
     }
     break;
-  case UT_PNG_COLOUR_TYPE_INDEXED_COLOUR:
+  case UT_PNG_COLOR_TYPE_INDEXED_COLOR:
     if (ut_list_get_length(data) != 1) {
-      set_error(self, "Insufficient space for PNG indexed colour background");
+      set_error(self, "Insufficient space for PNG indexed color background");
       return;
     }
     background = ut_list_copy(data);
@@ -796,7 +796,7 @@ static void decode_background(UtPngDecoder *self, UtObject *data) {
   default:
     assert(false);
   }
-  ut_png_image_set_background_colour(self->image, background);
+  ut_png_image_set_background_color(self->image, background);
 }
 
 static void decode_histogram(UtPngDecoder *self, UtObject *data) {}

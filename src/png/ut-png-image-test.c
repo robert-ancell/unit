@@ -7,7 +7,7 @@ int main(int argc, char **argv) {
   UtObjectRef g1_image_data = ut_uint8_list_new_from_hex_string("40"
                                                                 "80");
   UtObjectRef g1_image =
-      ut_png_image_new(2, 2, 1, UT_PNG_COLOUR_TYPE_GREYSCALE, g1_image_data);
+      ut_png_image_new(2, 2, 1, UT_PNG_COLOR_TYPE_GREYSCALE, g1_image_data);
   UtObjectRef g1_rgba = ut_png_image_to_rgba(g1_image);
   ut_assert_uint8_list_equal_hex(g1_rgba, "000000ffffffffff"
                                           "ffffffff000000ff");
@@ -18,7 +18,7 @@ int main(int argc, char **argv) {
   UtObjectRef g2_image_data = ut_uint8_list_new_from_hex_string("10"
                                                                 "b0");
   UtObjectRef g2_image =
-      ut_png_image_new(2, 2, 2, UT_PNG_COLOUR_TYPE_GREYSCALE, g2_image_data);
+      ut_png_image_new(2, 2, 2, UT_PNG_COLOR_TYPE_GREYSCALE, g2_image_data);
   UtObjectRef g2_rgba = ut_png_image_to_rgba(g2_image);
   ut_assert_uint8_list_equal_hex(g2_rgba, "000000ff555555ff"
                                           "aaaaaaffffffffff");
@@ -28,7 +28,7 @@ int main(int argc, char **argv) {
                                                                 "89ab"
                                                                 "cdef");
   UtObjectRef g4_image =
-      ut_png_image_new(4, 4, 4, UT_PNG_COLOUR_TYPE_GREYSCALE, g4_image_data);
+      ut_png_image_new(4, 4, 4, UT_PNG_COLOR_TYPE_GREYSCALE, g4_image_data);
   UtObjectRef g4_rgba = ut_png_image_to_rgba(g4_image);
   ut_assert_uint8_list_equal_hex(g4_rgba, "000000ff111111ff222222ff333333ff"
                                           "444444ff555555ff666666ff777777ff"
@@ -40,7 +40,7 @@ int main(int argc, char **argv) {
                                                                 "8899aabb"
                                                                 "ccddeeff");
   UtObjectRef g8_image =
-      ut_png_image_new(4, 4, 8, UT_PNG_COLOUR_TYPE_GREYSCALE, g8_image_data);
+      ut_png_image_new(4, 4, 8, UT_PNG_COLOR_TYPE_GREYSCALE, g8_image_data);
   UtObjectRef g8_rgba = ut_png_image_to_rgba(g8_image);
   ut_assert_uint8_list_equal_hex(g8_rgba, "000000ff111111ff222222ff333333ff"
                                           "444444ff555555ff666666ff777777ff"
@@ -53,7 +53,7 @@ int main(int argc, char **argv) {
                                         "88889999aaaabbbb"
                                         "ccccddddeeeeffff");
   UtObjectRef g16_image =
-      ut_png_image_new(4, 4, 16, UT_PNG_COLOUR_TYPE_GREYSCALE, g16_image_data);
+      ut_png_image_new(4, 4, 16, UT_PNG_COLOR_TYPE_GREYSCALE, g16_image_data);
   UtObjectRef g16_rgba = ut_png_image_to_rgba(g16_image);
   ut_assert_uint8_list_equal_hex(g16_rgba, "000000ff111111ff222222ff333333ff"
                                            "444444ff555555ff666666ff777777ff"
@@ -63,7 +63,7 @@ int main(int argc, char **argv) {
   UtObjectRef t8_image_data = ut_uint8_list_new_from_hex_string("112233ddeeff"
                                                                 "aabbcc445566");
   UtObjectRef t8_image =
-      ut_png_image_new(2, 2, 8, UT_PNG_COLOUR_TYPE_TRUECOLOUR, t8_image_data);
+      ut_png_image_new(2, 2, 8, UT_PNG_COLOR_TYPE_TRUECOLOR, t8_image_data);
   UtObjectRef t8_rgba = ut_png_image_to_rgba(t8_image);
   ut_assert_uint8_list_equal_hex(t8_rgba, "112233ffddeeffff"
                                           "aabbccff445566ff");
@@ -72,7 +72,7 @@ int main(int argc, char **argv) {
       ut_uint8_list_new_from_hex_string("111122223333ddddeeeeffff"
                                         "aaaabbbbcccc444455556666");
   UtObjectRef t16_image =
-      ut_png_image_new(2, 2, 16, UT_PNG_COLOUR_TYPE_TRUECOLOUR, t16_image_data);
+      ut_png_image_new(2, 2, 16, UT_PNG_COLOR_TYPE_TRUECOLOR, t16_image_data);
   UtObjectRef t16_rgba = ut_png_image_to_rgba(t16_image);
   ut_assert_uint8_list_equal_hex(t16_rgba, "112233ffddeeffff"
                                            "aabbccff445566ff");
@@ -84,8 +84,8 @@ int main(int argc, char **argv) {
                                                                 "80");
   UtObjectRef i1_image_palette = ut_uint8_list_new_from_hex_string("112233"
                                                                    "ddeeff");
-  UtObjectRef i1_image = ut_png_image_new(
-      2, 2, 1, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR, i1_image_data);
+  UtObjectRef i1_image =
+      ut_png_image_new(2, 2, 1, UT_PNG_COLOR_TYPE_INDEXED_COLOR, i1_image_data);
   ut_png_image_set_palette(i1_image, i1_image_palette);
   UtObjectRef i1_rgba = ut_png_image_to_rgba(i1_image);
   ut_assert_uint8_list_equal_hex(i1_rgba, "112233ffddeeffff"
@@ -100,8 +100,8 @@ int main(int argc, char **argv) {
                                                                    "445566"
                                                                    "aabbcc"
                                                                    "ddeeff");
-  UtObjectRef i2_image = ut_png_image_new(
-      2, 2, 2, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR, i2_image_data);
+  UtObjectRef i2_image =
+      ut_png_image_new(2, 2, 2, UT_PNG_COLOR_TYPE_INDEXED_COLOR, i2_image_data);
   ut_png_image_set_palette(i2_image, i2_image_palette);
   UtObjectRef i2_rgba = ut_png_image_to_rgba(i2_image);
   ut_assert_uint8_list_equal_hex(i2_rgba, "112233ff445566ff"
@@ -127,8 +127,8 @@ int main(int argc, char **argv) {
                                                                    "7f7f00"
                                                                    "7f007f"
                                                                    "007f7f");
-  UtObjectRef i4_image = ut_png_image_new(
-      4, 4, 4, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR, i4_image_data);
+  UtObjectRef i4_image =
+      ut_png_image_new(4, 4, 4, UT_PNG_COLOR_TYPE_INDEXED_COLOR, i4_image_data);
   ut_png_image_set_palette(i4_image, i4_image_palette);
   UtObjectRef i4_rgba = ut_png_image_to_rgba(i4_image);
   ut_assert_uint8_list_equal_hex(i4_rgba, "000000ffff0000ff00ff00ff0000ffff"
@@ -173,8 +173,8 @@ int main(int argc, char **argv) {
       "e80000e90000ea0000eb0000ec0000ed0000ee0000ef0000"
       "f00000f10000f20000f30000f40000f50000f60000f70000"
       "f80000f90000fa0000fb0000fc0000fd0000fe0000ff0000");
-  UtObjectRef i8_image = ut_png_image_new(
-      4, 4, 8, UT_PNG_COLOUR_TYPE_INDEXED_COLOUR, i8_image_data);
+  UtObjectRef i8_image =
+      ut_png_image_new(4, 4, 8, UT_PNG_COLOR_TYPE_INDEXED_COLOR, i8_image_data);
   ut_png_image_set_palette(i8_image, i8_image_palette);
   UtObjectRef i8_rgba = ut_png_image_to_rgba(i8_image);
   ut_assert_uint8_list_equal_hex(i8_rgba, "000000ff110000ff220000ff330000ff"
@@ -185,7 +185,7 @@ int main(int argc, char **argv) {
   UtObjectRef ga8_image_data = ut_uint8_list_new_from_hex_string("01002355"
                                                                  "cdaaefff");
   UtObjectRef ga8_image = ut_png_image_new(
-      2, 2, 8, UT_PNG_COLOUR_TYPE_GREYSCALE_WITH_ALPHA, ga8_image_data);
+      2, 2, 8, UT_PNG_COLOR_TYPE_GREYSCALE_WITH_ALPHA, ga8_image_data);
   UtObjectRef ga8_rgba = ut_png_image_to_rgba(ga8_image);
   ut_assert_uint8_list_equal_hex(ga8_rgba, "0101010023232355"
                                            "cdcdcdaaefefefff");
@@ -194,7 +194,7 @@ int main(int argc, char **argv) {
       ut_uint8_list_new_from_hex_string("1111000022225555"
                                         "eeeeaaaaffffffff");
   UtObjectRef ga16_image = ut_png_image_new(
-      2, 2, 16, UT_PNG_COLOUR_TYPE_GREYSCALE_WITH_ALPHA, ga16_image_data);
+      2, 2, 16, UT_PNG_COLOR_TYPE_GREYSCALE_WITH_ALPHA, ga16_image_data);
   UtObjectRef ga16_rgba = ut_png_image_to_rgba(ga16_image);
   ut_assert_uint8_list_equal_hex(ga16_rgba, "1111110022222255"
                                             "eeeeeeaaffffffff");
@@ -203,7 +203,7 @@ int main(int argc, char **argv) {
       ut_uint8_list_new_from_hex_string("11223300ddeeff55"
                                         "aabbccaa445566ff");
   UtObjectRef ta8_image = ut_png_image_new(
-      2, 2, 8, UT_PNG_COLOUR_TYPE_TRUECOLOUR_WITH_ALPHA, ta8_image_data);
+      2, 2, 8, UT_PNG_COLOR_TYPE_TRUECOLOR_WITH_ALPHA, ta8_image_data);
   UtObjectRef ta8_rgba = ut_png_image_to_rgba(ta8_image);
   ut_assert_uint8_list_equal_hex(ta8_rgba, "11223300ddeeff55"
                                            "aabbccaa445566ff");
@@ -212,14 +212,14 @@ int main(int argc, char **argv) {
       ut_uint8_list_new_from_hex_string("1111222233330000ddddeeeeffff5555"
                                         "aaaabbbbccccaaaa444455556666ffff");
   UtObjectRef ta16_image = ut_png_image_new(
-      2, 2, 16, UT_PNG_COLOUR_TYPE_TRUECOLOUR_WITH_ALPHA, ta16_image_data);
+      2, 2, 16, UT_PNG_COLOR_TYPE_TRUECOLOR_WITH_ALPHA, ta16_image_data);
   UtObjectRef ta16_rgba = ut_png_image_to_rgba(ta16_image);
   ut_assert_uint8_list_equal_hex(ta16_rgba, "11223300ddeeff55"
                                             "aabbccaa445566ff");
 
   UtObjectRef text_image_data = ut_uint8_list_new_from_hex_string("00");
   UtObjectRef text_image =
-      ut_png_image_new(1, 1, 8, UT_PNG_COLOUR_TYPE_GREYSCALE, text_image_data);
+      ut_png_image_new(1, 1, 8, UT_PNG_COLOR_TYPE_GREYSCALE, text_image_data);
   ut_png_image_set_text(text_image, "Title", "Test Text");
   ut_png_image_set_text(text_image, "Author", "Foo <foo@example.com>");
   ut_png_image_set_text(text_image, "Description", "Lorem Ipsum.\nFoo Bar");
@@ -234,7 +234,7 @@ int main(int argc, char **argv) {
   UtObjectRef international_text_image_data =
       ut_uint8_list_new_from_hex_string("00");
   UtObjectRef international_text_image = ut_png_image_new(
-      1, 1, 8, UT_PNG_COLOUR_TYPE_GREYSCALE, international_text_image_data);
+      1, 1, 8, UT_PNG_COLOR_TYPE_GREYSCALE, international_text_image_data);
   ut_png_image_set_international_text(international_text_image, "Title", "de",
                                       "Titel", "Testtext");
   ut_png_image_set_international_text(international_text_image, "Author", "DE",

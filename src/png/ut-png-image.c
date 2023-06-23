@@ -8,42 +8,42 @@ typedef struct {
   uint32_t width;
   uint32_t height;
   uint8_t bit_depth;
-  UtPngColourType colour_type;
+  UtPngColorType color_type;
   UtObject *palette;
-  UtObject *background_colour;
+  UtObject *background_color;
   UtObject *text;
   UtObject *international_keywords;
   UtObject *international_text;
   UtObject *data;
 } UtPngImage;
 
-static const char *colour_type_to_string(UtPngColourType colour_type) {
-  switch (colour_type) {
-  case UT_PNG_COLOUR_TYPE_GREYSCALE:
+static const char *color_type_to_string(UtPngColorType color_type) {
+  switch (color_type) {
+  case UT_PNG_COLOR_TYPE_GREYSCALE:
     return "greyscale";
-  case UT_PNG_COLOUR_TYPE_TRUECOLOUR:
-    return "truecolour";
-  case UT_PNG_COLOUR_TYPE_INDEXED_COLOUR:
-    return "indexed-colour";
-  case UT_PNG_COLOUR_TYPE_GREYSCALE_WITH_ALPHA:
+  case UT_PNG_COLOR_TYPE_TRUECOLOR:
+    return "truecolor";
+  case UT_PNG_COLOR_TYPE_INDEXED_COLOR:
+    return "indexed-color";
+  case UT_PNG_COLOR_TYPE_GREYSCALE_WITH_ALPHA:
     return "greyscale-with-alpha";
-  case UT_PNG_COLOUR_TYPE_TRUECOLOUR_WITH_ALPHA:
-    return "truecolour-with-alpha";
+  case UT_PNG_COLOR_TYPE_TRUECOLOR_WITH_ALPHA:
+    return "truecolor-with-alpha";
   default:
     return "?";
   }
 }
 
-static size_t get_n_channels(UtPngColourType colour_type) {
-  switch (colour_type) {
-  case UT_PNG_COLOUR_TYPE_GREYSCALE:
-  case UT_PNG_COLOUR_TYPE_INDEXED_COLOUR:
+static size_t get_n_channels(UtPngColorType color_type) {
+  switch (color_type) {
+  case UT_PNG_COLOR_TYPE_GREYSCALE:
+  case UT_PNG_COLOR_TYPE_INDEXED_COLOR:
     return 1;
-  case UT_PNG_COLOUR_TYPE_GREYSCALE_WITH_ALPHA:
+  case UT_PNG_COLOR_TYPE_GREYSCALE_WITH_ALPHA:
     return 2;
-  case UT_PNG_COLOUR_TYPE_TRUECOLOUR:
+  case UT_PNG_COLOR_TYPE_TRUECOLOR:
     return 3;
-  case UT_PNG_COLOUR_TYPE_TRUECOLOUR_WITH_ALPHA:
+  case UT_PNG_COLOR_TYPE_TRUECOLOR_WITH_ALPHA:
     return 4;
   default:
     return 0;
@@ -114,9 +114,9 @@ static void convert_greyscale_to_rgba(size_t width, size_t height,
   }
 }
 
-static void convert_truecolour_to_rgba(size_t width, size_t height,
-                                       size_t bit_depth, const uint8_t *data,
-                                       uint8_t *rgba_data) {
+static void convert_truecolor_to_rgba(size_t width, size_t height,
+                                      size_t bit_depth, const uint8_t *data,
+                                      uint8_t *rgba_data) {
   if (bit_depth == 8) {
     size_t rgba_offset = 0;
     size_t data_length = width * height * 3;
@@ -224,10 +224,10 @@ static void convert_greyscale_with_alpha_to_rgba(size_t width, size_t height,
   }
 }
 
-static void convert_truecolour_with_alpha_to_rgba(size_t width, size_t height,
-                                                  size_t bit_depth,
-                                                  const uint8_t *data,
-                                                  uint8_t *rgba_data) {
+static void convert_truecolor_with_alpha_to_rgba(size_t width, size_t height,
+                                                 size_t bit_depth,
+                                                 const uint8_t *data,
+                                                 uint8_t *rgba_data) {
   if (bit_depth == 8) {
     size_t rgba_offset = 0;
     size_t data_length = width * height * 4;
@@ -262,7 +262,7 @@ static void convert_truecolour_with_alpha_to_rgba(size_t width, size_t height,
 static void ut_png_image_cleanup(UtObject *object) {
   UtPngImage *self = (UtPngImage *)object;
   ut_object_unref(self->palette);
-  ut_object_unref(self->background_colour);
+  ut_object_unref(self->background_color);
   ut_object_unref(self->text);
   ut_object_unref(self->international_keywords);
   ut_object_unref(self->international_text);
@@ -272,9 +272,9 @@ static void ut_png_image_cleanup(UtObject *object) {
 static char *ut_png_image_to_string(UtObject *object) {
   UtPngImage *self = (UtPngImage *)object;
   return ut_cstring_new_printf(
-      "<UtPngImage>(width: %d, height: %d, bit_depth: %d, colour_type: %s)",
+      "<UtPngImage>(width: %d, height: %d, bit_depth: %d, color_type: %s)",
       self->width, self->height, self->bit_depth,
-      colour_type_to_string(self->colour_type));
+      color_type_to_string(self->color_type));
 }
 
 static UtObjectInterface object_interface = {.type_name = "UtPngImage",
@@ -284,28 +284,28 @@ static UtObjectInterface object_interface = {.type_name = "UtPngImage",
                                              .interfaces = {{NULL, NULL}}};
 
 UtObject *ut_png_image_new(uint32_t width, uint32_t height, uint8_t bit_depth,
-                           UtPngColourType colour_type, UtObject *data) {
+                           UtPngColorType color_type, UtObject *data) {
   UtObject *object = ut_object_new(sizeof(UtPngImage), &object_interface);
   UtPngImage *self = (UtPngImage *)object;
 
   assert(width > 0);
   assert(height > 0);
-  switch (colour_type) {
-  case UT_PNG_COLOUR_TYPE_GREYSCALE:
+  switch (color_type) {
+  case UT_PNG_COLOR_TYPE_GREYSCALE:
     assert(bit_depth == 1 || bit_depth == 2 || bit_depth == 4 ||
            bit_depth == 8 || bit_depth == 16);
     break;
-  case UT_PNG_COLOUR_TYPE_TRUECOLOUR:
+  case UT_PNG_COLOR_TYPE_TRUECOLOR:
     assert(bit_depth == 8 || bit_depth == 16);
     break;
-  case UT_PNG_COLOUR_TYPE_INDEXED_COLOUR:
+  case UT_PNG_COLOR_TYPE_INDEXED_COLOR:
     assert(bit_depth == 1 || bit_depth == 2 || bit_depth == 4 ||
            bit_depth == 8);
     break;
-  case UT_PNG_COLOUR_TYPE_GREYSCALE_WITH_ALPHA:
+  case UT_PNG_COLOR_TYPE_GREYSCALE_WITH_ALPHA:
     assert(bit_depth == 8 || bit_depth == 16);
     break;
-  case UT_PNG_COLOUR_TYPE_TRUECOLOUR_WITH_ALPHA:
+  case UT_PNG_COLOR_TYPE_TRUECOLOR_WITH_ALPHA:
     assert(bit_depth == 8 || bit_depth == 16);
     break;
   default:
@@ -313,12 +313,12 @@ UtObject *ut_png_image_new(uint32_t width, uint32_t height, uint8_t bit_depth,
   }
   ut_assert_int_equal(
       ut_list_get_length(data),
-      height * get_row_stride(width, bit_depth, get_n_channels(colour_type)));
+      height * get_row_stride(width, bit_depth, get_n_channels(color_type)));
 
   self->width = width;
   self->height = height;
   self->bit_depth = bit_depth;
-  self->colour_type = colour_type;
+  self->color_type = color_type;
   self->data = ut_object_ref(data);
 
   return object;
@@ -342,23 +342,23 @@ uint8_t ut_png_image_get_bit_depth(UtObject *object) {
   return self->bit_depth;
 }
 
-UtPngColourType ut_png_image_get_colour_type(UtObject *object) {
+UtPngColorType ut_png_image_get_color_type(UtObject *object) {
   assert(ut_object_is_png_image(object));
   UtPngImage *self = (UtPngImage *)object;
-  return self->colour_type;
+  return self->color_type;
 }
 
 size_t ut_png_image_get_n_channels(UtObject *object) {
   assert(ut_object_is_png_image(object));
   UtPngImage *self = (UtPngImage *)object;
-  return get_n_channels(self->colour_type);
+  return get_n_channels(self->color_type);
 }
 
 size_t ut_png_image_get_row_stride(UtObject *object) {
   assert(ut_object_is_png_image(object));
   UtPngImage *self = (UtPngImage *)object;
   return get_row_stride(self->width, self->bit_depth,
-                        get_n_channels(self->colour_type));
+                        get_n_channels(self->color_type));
 }
 
 void ut_png_image_set_palette(UtObject *object, UtObject *palette) {
@@ -380,39 +380,39 @@ UtObject *ut_png_image_get_palette(UtObject *object) {
   return self->palette;
 }
 
-void ut_png_image_set_background_colour(UtObject *object,
-                                        UtObject *background_colour) {
+void ut_png_image_set_background_color(UtObject *object,
+                                       UtObject *background_color) {
   assert(ut_object_is_png_image(object));
   UtPngImage *self = (UtPngImage *)object;
 
-  size_t background_colour_length = ut_list_get_length(background_colour);
-  switch (self->colour_type) {
-  case UT_PNG_COLOUR_TYPE_GREYSCALE:
-  case UT_PNG_COLOUR_TYPE_GREYSCALE_WITH_ALPHA:
-    assert(self->bit_depth == 16 ? background_colour_length == 2
-                                 : background_colour_length == 1);
+  size_t background_color_length = ut_list_get_length(background_color);
+  switch (self->color_type) {
+  case UT_PNG_COLOR_TYPE_GREYSCALE:
+  case UT_PNG_COLOR_TYPE_GREYSCALE_WITH_ALPHA:
+    assert(self->bit_depth == 16 ? background_color_length == 2
+                                 : background_color_length == 1);
     break;
-  case UT_PNG_COLOUR_TYPE_TRUECOLOUR:
-  case UT_PNG_COLOUR_TYPE_TRUECOLOUR_WITH_ALPHA:
-    assert(self->bit_depth == 16 ? background_colour_length == 6
-                                 : background_colour_length == 3);
+  case UT_PNG_COLOR_TYPE_TRUECOLOR:
+  case UT_PNG_COLOR_TYPE_TRUECOLOR_WITH_ALPHA:
+    assert(self->bit_depth == 16 ? background_color_length == 6
+                                 : background_color_length == 3);
     break;
-  case UT_PNG_COLOUR_TYPE_INDEXED_COLOUR:
-    assert(background_colour_length == 1);
+  case UT_PNG_COLOR_TYPE_INDEXED_COLOR:
+    assert(background_color_length == 1);
     break;
   default:
     assert(false);
     break;
   }
 
-  ut_object_unref(self->background_colour);
-  self->background_colour = ut_object_ref(background_colour);
+  ut_object_unref(self->background_color);
+  self->background_color = ut_object_ref(background_color);
 }
 
-UtObject *ut_png_image_get_background_colour(UtObject *object) {
+UtObject *ut_png_image_get_background_color(UtObject *object) {
   assert(ut_object_is_png_image(object));
   UtPngImage *self = (UtPngImage *)object;
-  return self->background_colour;
+  return self->background_color;
 }
 
 void ut_png_image_set_text(UtObject *object, const char *keyword,
@@ -514,7 +514,7 @@ UtObject *ut_png_image_to_rgba(UtObject *object) {
   UtPngImage *self = (UtPngImage *)object;
 
   // Already in desired format.
-  if (self->colour_type == UT_PNG_COLOUR_TYPE_TRUECOLOUR_WITH_ALPHA &&
+  if (self->color_type == UT_PNG_COLOR_TYPE_TRUECOLOR_WITH_ALPHA &&
       self->bit_depth == 8) {
     return ut_object_ref(self->data);
   }
@@ -524,28 +524,28 @@ UtObject *ut_png_image_to_rgba(UtObject *object) {
   UtObjectRef rgba = ut_uint8_array_new_sized(self->width * self->height * 4);
   uint8_t *rgba_data = ut_uint8_list_get_writable_data(rgba);
 
-  switch (self->colour_type) {
-  case UT_PNG_COLOUR_TYPE_GREYSCALE:
+  switch (self->color_type) {
+  case UT_PNG_COLOR_TYPE_GREYSCALE:
     convert_greyscale_to_rgba(self->width, self->height, self->bit_depth, data,
                               rgba_data);
     break;
-  case UT_PNG_COLOUR_TYPE_TRUECOLOUR:
-    convert_truecolour_to_rgba(self->width, self->height, self->bit_depth, data,
-                               rgba_data);
+  case UT_PNG_COLOR_TYPE_TRUECOLOR:
+    convert_truecolor_to_rgba(self->width, self->height, self->bit_depth, data,
+                              rgba_data);
     break;
-  case UT_PNG_COLOUR_TYPE_INDEXED_COLOUR:
+  case UT_PNG_COLOR_TYPE_INDEXED_COLOR:
     // FIXME: Extend palette if < 256 to avoid any errors. Or validate indexes.
     convert_indexed_to_rgba(self->width, self->height, self->bit_depth, data,
                             ut_uint8_list_get_data(self->palette),
                             ut_list_get_length(self->palette) / 3, rgba_data);
     break;
-  case UT_PNG_COLOUR_TYPE_GREYSCALE_WITH_ALPHA:
+  case UT_PNG_COLOR_TYPE_GREYSCALE_WITH_ALPHA:
     convert_greyscale_with_alpha_to_rgba(self->width, self->height,
                                          self->bit_depth, data, rgba_data);
     break;
-  case UT_PNG_COLOUR_TYPE_TRUECOLOUR_WITH_ALPHA:
-    convert_truecolour_with_alpha_to_rgba(self->width, self->height,
-                                          self->bit_depth, data, rgba_data);
+  case UT_PNG_COLOR_TYPE_TRUECOLOR_WITH_ALPHA:
+    convert_truecolor_with_alpha_to_rgba(self->width, self->height,
+                                         self->bit_depth, data, rgba_data);
     break;
   }
 
