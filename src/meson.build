@@ -137,6 +137,7 @@ ut_sources = [
   'ut-uint64-list.c',
   'ut-uint64-subarray.c',
   'ut-unix-socket-address.c',
+  'ut-uri.c',
   'ut-utf16-decoder.c',
   'ut-utf16-encoder.c',
   'ut-utf8-decoder.c',
@@ -443,6 +444,11 @@ ipv6_address_test = executable('ut-ipv6-address-test',
                                'ut-ipv6-address-test.c',
                                link_with: ut_lib)
 test('IPv6 Address', ipv6_address_test)
+
+uri_test = executable('ut-uri-test',
+                      'ut-uri-test.c',
+                      link_with: ut_lib)
+test('URI', uri_test)
 
 ip_address_resolver_test = executable('ut-ip-address-resolver-test',
                                       'ut-ip-address-resolver-test.c',
