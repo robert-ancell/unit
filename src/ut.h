@@ -23,6 +23,7 @@
 #include "http/ut-http-client.h"
 #include "http/ut-http-error.h"
 #include "http/ut-http-header.h"
+#include "http/ut-http-request.h"
 #include "http/ut-http-response.h"
 #include "huffman/ut-huffman-decoder.h"
 #include "huffman/ut-huffman-encoder.h"

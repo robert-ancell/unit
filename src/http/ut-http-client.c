@@ -4,59 +4,8 @@
 
 #include "ut-http-message-decoder.h"
 #include "ut-http-message-encoder.h"
+#include "ut-http-request.h"
 #include "ut.h"
-
-// FIXME: Make a real object
-typedef struct {
-  UtObject *tcp_socket;
-  UtObject *cancel;
-  char *host;
-  uint16_t port;
-  char *method;
-  char *path;
-  UtObject *body;
-  UtHttpResponseCallback callback;
-  void *callback_user_data;
-  UtObject *callback_cancel;
-  UtObject *message_encoder;
-  UtObject *message_decoder_input_stream;
-  UtObject *message_decoder;
-} HttpRequest;
-
-HttpRequest *http_request_new(const char *host, uint16_t port,
-                              const char *method, const char *path,
-                              UtObject *body, UtHttpResponseCallback callback,
-                              void *callback_user_data,
-                              UtObject *callback_cancel) {
-  HttpRequest *request = malloc(sizeof(HttpRequest));
-  request->host = ut_cstring_new(host);
-  request->port = port;
-  request->method = ut_cstring_new(method);
-  request->path = ut_cstring_new(path);
-  request->body = ut_object_ref(body);
-  request->cancel = ut_cancel_new();
-  request->callback = callback;
-  request->callback_user_data = callback_user_data;
-  request->callback_cancel = ut_object_ref(callback_cancel);
-  request->message_decoder_input_stream = ut_writable_input_stream_new();
-  request->message_decoder = ut_http_message_decoder_new_response(
-      request->message_decoder_input_stream);
-  return request;
-}
-
-void http_request_free(HttpRequest *request) {
-  ut_object_unref(request->tcp_socket);
-  ut_object_unref(request->cancel);
-  free(request->host);
-  free(request->method);
-  free(request->path);
-  ut_object_unref(request->body);
-  ut_object_unref(request->callback_cancel);
-  ut_object_unref(request->message_encoder);
-  ut_object_unref(request->message_decoder_input_stream);
-  ut_object_unref(request->message_decoder);
-  free(request);
-}
 
 typedef struct {
   UtObject object;
@@ -74,7 +23,7 @@ static void ut_http_client_cleanup(UtObject *object) {
 }
 
 static size_t read_cb(void *user_data, UtObject *data, bool complete) {
-  HttpRequest *request = user_data;
+  UtHttpRequest *request = user_data;
 
   bool headers_done =
       ut_http_message_decoder_get_headers_done(request->message_decoder);
@@ -109,10 +58,11 @@ static void connect_cb(void *user_data) {
 }
 
 static void lookup_cb(void *user_data, UtObject *addresses) {
-  HttpRequest *request = user_data;
+  UtObjectRef request = user_data;
 
   UtObjectRef address = ut_list_get_first(addresses);
-  request->tcp_socket = ut_tcp_socket_new(address, request->port);
+  request->tcp_socket =
+      ut_tcp_socket_new(address, ut_http_request_get_port(request));
   ut_tcp_socket_connect(request->tcp_socket, connect_cb, request,
                         request->callback_cancel);
 }
@@ -146,8 +96,8 @@ void ut_http_client_send_request(UtObject *object, const char *method,
     port = 80;
   }
 
-  HttpRequest *request = http_request_new(host, port, method, path, body,
-                                          callback, user_data, cancel);
+  UtObjectRef request = ut_http_request_new(host, port, method, path, NULL,
+                                            body, callback, user_data, cancel);
   ut_ip_address_resolver_lookup(self->ip_address_resolver, host, lookup_cb,
                                 request, cancel);
 }

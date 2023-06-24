@@ -30,6 +30,7 @@ ut_sources = [
   'http/ut-http-header.c',
   'http/ut-http-message-decoder.c',
   'http/ut-http-message-encoder.c',
+  'http/ut-http-request.c',
   'http/ut-http-response.c',
   'huffman/ut-huffman-code.c',
   'huffman/ut-huffman-decoder.c',
