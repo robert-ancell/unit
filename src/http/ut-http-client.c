@@ -89,124 +89,6 @@ static void set_error(HttpRequest *request, const char *description) {
   request->state = DECODER_STATE_ERROR;
 }
 
-static bool parse_uri(const char *uri, char **scheme, char **user_info,
-                      char **host, uint16_t *port, char **path, char **query,
-                      char **fragment) {
-  const char *scheme_start = uri, *scheme_end = uri;
-  while (*scheme_end != '\0' && *scheme_end != ':') {
-    scheme_end++;
-  }
-  if (*scheme_end != ':') {
-    return false;
-  }
-  if (scheme != NULL) {
-    *scheme = ut_cstring_new_sized(scheme_start, scheme_end - scheme_start);
-  }
-
-  const char *hier_part_start = scheme_end + 1, *hier_part_end;
-  if (ut_cstring_starts_with(hier_part_start, "//")) {
-    const char *authority_start = hier_part_start + 2,
-               *authority_end = authority_start;
-    while (*authority_end != '\0' && *authority_end != '/' &&
-           *authority_end != '?' && *authority_end != '#') {
-      authority_end++;
-    }
-
-    const char *userinfo_start = authority_start,
-               *userinfo_end = userinfo_start;
-    while (userinfo_end != authority_end && *userinfo_end != '@') {
-      userinfo_end++;
-    }
-    const char *host_start = userinfo_end;
-    if (userinfo_end != authority_end) {
-      if (user_info != NULL) {
-        *user_info =
-            ut_cstring_new_sized(userinfo_start, userinfo_end - userinfo_start);
-      }
-      host_start = userinfo_end + 1;
-    } else {
-      if (user_info != NULL) {
-        *user_info = NULL;
-      }
-      host_start = authority_start;
-    }
-
-    const char *host_end = host_start;
-    while (host_end != authority_end && *host_end != ':') {
-      host_end++;
-    }
-    if (host != NULL) {
-      *host = ut_cstring_new_sized(userinfo_start, host_end - userinfo_start);
-    }
-
-    if (*host_end == ':') {
-      const char *port_start = host_end + 1, *port_end = authority_end;
-      if (port != NULL) {
-        ut_cstring_ref port_string =
-            ut_cstring_new_sized(port_start, port_end - port_start);
-        *port = atoi(port_string);
-      }
-    } else {
-      if (port != NULL) {
-        *port = 0;
-      }
-    }
-    hier_part_end = authority_end;
-  } else {
-    if (user_info != NULL) {
-      *user_info = NULL;
-    }
-    if (host != NULL) {
-      *host = NULL;
-    }
-    if (port != NULL) {
-      *port = 0;
-    }
-    hier_part_end = hier_part_start;
-  }
-
-  const char *path_start = hier_part_end, *path_end = path_start;
-  while (*path_end != '\0' && *path_end != '?' && *path_end != '#') {
-    path_end++;
-  }
-  if (path != NULL) {
-    *path = ut_cstring_new_sized(path_start, path_end - path_start);
-  }
-
-  if (*path_end == '?') {
-    const char *query_start = path_end + 1, *query_end;
-    while (*query_end != '\0' && *query_end != '#') {
-      query_end++;
-    }
-    if (query != NULL) {
-      *query = ut_cstring_new_sized(query_start, query_end - query_start);
-    }
-    path_start = query_end;
-  } else {
-    if (query != NULL) {
-      *query = NULL;
-    }
-  }
-
-  if (*path_end == '#') {
-    const char *fragment_start = path_end + 1, *fragment_end;
-    while (*fragment_end != '\0' && *fragment_end != '#') {
-      fragment_end++;
-    }
-    if (fragment != NULL) {
-      *fragment =
-          ut_cstring_new_sized(fragment_start, fragment_end - fragment_start);
-    }
-    path_start = fragment_end;
-  } else {
-    if (fragment != NULL) {
-      *fragment = NULL;
-    }
-  }
-
-  return true;
-}
-
 static ssize_t find_line_end(UtObject *data) {
   size_t data_length = ut_list_get_length(data);
   for (size_t i = 0; i < data_length - 1; i++) {
@@ -423,16 +305,16 @@ void ut_http_client_send_request(UtObject *object, const char *method,
   assert(ut_object_is_http_client(object));
   UtHttpClient *self = (UtHttpClient *)object;
 
-  ut_cstring_ref scheme = NULL;
-  ut_cstring_ref host = NULL;
-  ut_cstring_ref path = NULL;
-  uint16_t port;
-  assert(parse_uri(uri, &scheme, NULL, &host, &port, &path, NULL, NULL));
-  assert(ut_cstring_equal(scheme, "http"));
+  UtObjectRef uri_object = ut_uri_new_from_string(uri);
+  assert(!ut_object_implements_error(uri_object));
+  assert(ut_cstring_equal(ut_uri_get_scheme(uri_object), "http"));
+  const char *host = ut_uri_get_host(uri_object);
   assert(host != NULL);
-  if (ut_cstring_equal(path, "")) {
-    ut_cstring_set(&path, "/");
+  const char *path = ut_uri_get_path(uri_object);
+  if (path == NULL || ut_cstring_equal(path, "")) {
+    path = "/";
   }
+  uint16_t port = ut_uri_get_port(uri_object);
   if (port == 0) {
     port = 80;
   }
