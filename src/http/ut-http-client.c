@@ -85,7 +85,7 @@ static void set_error(HttpRequest *request, const char *description) {
     return;
   }
 
-  request->error = ut_png_error_new(description);
+  request->error = ut_http_error_new(description);
   request->state = DECODER_STATE_ERROR;
 }
 
