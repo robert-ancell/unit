@@ -28,6 +28,7 @@ ut_sources = [
   'http/ut-http-client.c',
   'http/ut-http-error.c',
   'http/ut-http-header.c',
+  'http/ut-http-message-decoder.c',
   'http/ut-http-response.c',
   'huffman/ut-huffman-code.c',
   'huffman/ut-huffman-decoder.c',
@@ -459,6 +460,11 @@ dns_client_test = executable('ut-dns-client-test',
                               'dns/ut-dns-client-test.c',
                               link_with: ut_lib)
 test('DNS Client', dns_client_test)
+
+http_message_decoder_test = executable('ut-http-message-decoder-test',
+                                       'http/ut-http-message-decoder-test.c',
+                                        link_with: ut_lib)
+test('HTTP Message Decoder', http_message_decoder_test)
 
 http_client_test = executable('ut-http-client-test',
                               'http/ut-http-client-test.c',
