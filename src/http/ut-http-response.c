@@ -34,6 +34,14 @@ static ssize_t get_content_length(UtHttpResponse *self) {
   return atoi(value);
 }
 
+static char *ut_http_response_to_string(UtObject *object) {
+  UtHttpResponse *self = (UtHttpResponse *)object;
+  ut_cstring_ref headers_string = ut_object_to_string(self->headers);
+  return ut_cstring_new_printf("<UtHttpResponse>(%d, \"%s\", %s)",
+                               self->status_code, self->reason_phrase,
+                               headers_string);
+}
+
 static void ut_http_response_cleanup(UtObject *object) {
   UtHttpResponse *self = (UtHttpResponse *)object;
   free(self->reason_phrase);
@@ -42,7 +50,9 @@ static void ut_http_response_cleanup(UtObject *object) {
 }
 
 static UtObjectInterface object_interface = {
-    .type_name = "UtHttpResponse", .cleanup = ut_http_response_cleanup};
+    .type_name = "UtHttpResponse",
+    .to_string = ut_http_response_to_string,
+    .cleanup = ut_http_response_cleanup};
 
 UtObject *ut_http_response_new(unsigned int status_code,
                                const char *reason_phrase, UtObject *headers,
