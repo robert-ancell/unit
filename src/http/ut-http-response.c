@@ -133,7 +133,7 @@ static UtInputStreamInterface input_stream_interface = {
     .read = ut_http_response_read};
 
 static UtObjectInterface object_interface = {
-    .type_name = "HttpResponse",
+    .type_name = "UtHttpResponse",
     .cleanup = ut_http_response_cleanup,
     .interfaces = {{&ut_input_stream_id, &input_stream_interface},
                    {NULL, NULL}}};

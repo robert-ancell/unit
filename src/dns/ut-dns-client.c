@@ -259,7 +259,7 @@ static void ut_dns_client_cleanup(UtObject *object) {
   ut_object_unref(self->cancel);
 }
 
-static UtObjectInterface object_interface = {.type_name = "DnsClient",
+static UtObjectInterface object_interface = {.type_name = "UtDnsClient",
                                              .init = ut_dns_client_init,
                                              .cleanup = ut_dns_client_cleanup};
 

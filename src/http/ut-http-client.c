@@ -290,7 +290,7 @@ static void lookup_cb(void *user_data, UtObject *addresses) {
                         request->callback_cancel);
 }
 
-static UtObjectInterface object_interface = {.type_name = "HttpClient",
+static UtObjectInterface object_interface = {.type_name = "UtHttpClient",
                                              .init = ut_http_client_init,
                                              .cleanup = ut_http_client_cleanup};
 

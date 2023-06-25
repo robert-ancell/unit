@@ -15,7 +15,7 @@ static void ut_http_header_cleanup(UtObject *object) {
   free(self->value);
 }
 
-static UtObjectInterface object_interface = {.type_name = "HttpHeader",
+static UtObjectInterface object_interface = {.type_name = "UtHttpHeader",
                                              .cleanup = ut_http_header_cleanup};
 
 UtObject *ut_http_header_new(const char *name, const char *value) {
