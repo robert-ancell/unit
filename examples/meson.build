@@ -3,6 +3,11 @@ executable('http',
            include_directories: ut_include,
            link_with: ut_lib)
 
+executable('http-server',
+           'http-server.c',
+           include_directories: ut_include,
+           link_with: ut_lib)
+
 executable('png2pnm',
            'png2pnm.c',
            include_directories: ut_include,

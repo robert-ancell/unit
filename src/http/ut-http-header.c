@@ -9,6 +9,12 @@ typedef struct {
   char *value;
 } UtHttpHeader;
 
+static char *ut_http_header_to_string(UtObject *object) {
+  UtHttpHeader *self = (UtHttpHeader *)object;
+  return ut_cstring_new_printf("<UtHttpHeader>(\"%s\", \"%s\")", self->name,
+                               self->value);
+}
+
 static void ut_http_header_cleanup(UtObject *object) {
   UtHttpHeader *self = (UtHttpHeader *)object;
   free(self->name);
@@ -16,6 +22,8 @@ static void ut_http_header_cleanup(UtObject *object) {
 }
 
 static UtObjectInterface object_interface = {.type_name = "UtHttpHeader",
+                                             .to_string =
+                                                 ut_http_header_to_string,
                                              .cleanup = ut_http_header_cleanup};
 
 UtObject *ut_http_header_new(const char *name, const char *value) {

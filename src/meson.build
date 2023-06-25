@@ -87,7 +87,10 @@ ut_sources = [
   'http/ut-http-header.c',
   'http/ut-http-message-decoder.c',
   'http/ut-http-message-encoder.c',
+  'http/ut-http-request.c',
   'http/ut-http-response.c',
+  'http/ut-http-server.c',
+  'http/ut-http-server-client.c',
   'huffman/ut-huffman-code.c',
   'huffman/ut-huffman-decoder.c',
   'huffman/ut-huffman-encoder.c',
@@ -596,6 +599,11 @@ http_client_test = executable('ut-http-client-test',
                               'http/ut-http-client-test.c',
                               link_with: ut_lib)
 test('HTTP Client', http_client_test)
+
+http_server_test = executable('ut-http-server-test',
+                              'http/ut-http-server-test.c',
+                              link_with: ut_lib)
+test('HTTP Server', http_server_test)
 
 tcp_socket_test = executable('ut-tcp-socket-test',
                              'ut-tcp-socket-test.c',
