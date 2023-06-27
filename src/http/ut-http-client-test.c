@@ -56,8 +56,8 @@ int main(int argc, char **argv) {
 
   UtObjectRef http_client = ut_http_client_new();
   ut_cstring_ref uri = ut_cstring_new_printf("http://127.0.0.1:%d", http_port);
-  ut_http_client_send_request(http_client, "GET", uri, http_response_cb, NULL,
-                              NULL);
+  ut_http_client_send_request(http_client, "GET", uri, NULL, http_response_cb,
+                              NULL, NULL);
 
   ut_event_loop_run();
 

@@ -33,7 +33,8 @@ int main(int argc, char **argv) {
 
   UtObjectRef client = ut_http_client_new();
 
-  ut_http_client_send_request(client, "GET", uri, response_cb, NULL, NULL);
+  ut_http_client_send_request(client, "GET", uri, NULL, response_cb, NULL,
+                              NULL);
 
   UtObjectRef return_code = ut_event_loop_run();
   return ut_int32_get_value(return_code);

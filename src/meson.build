@@ -29,6 +29,7 @@ ut_sources = [
   'http/ut-http-error.c',
   'http/ut-http-header.c',
   'http/ut-http-message-decoder.c',
+  'http/ut-http-message-encoder.c',
   'http/ut-http-response.c',
   'huffman/ut-huffman-code.c',
   'huffman/ut-huffman-decoder.c',
@@ -465,6 +466,11 @@ http_message_decoder_test = executable('ut-http-message-decoder-test',
                                        'http/ut-http-message-decoder-test.c',
                                         link_with: ut_lib)
 test('HTTP Message Decoder', http_message_decoder_test)
+
+http_message_encoder_test = executable('ut-http-message-encoder-test',
+                                       'http/ut-http-message-encoder-test.c',
+                                        link_with: ut_lib)
+test('HTTP Message Encoder', http_message_encoder_test)
 
 http_client_test = executable('ut-http-client-test',
                               'http/ut-http-client-test.c',
