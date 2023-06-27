@@ -3,6 +3,12 @@
 #include "ut-http-message-decoder.h"
 #include "ut.h"
 
+static void check_body(UtObject *body, const char *expected_body_text) {
+  UtObjectRef body_string = ut_string_new_from_utf8(body);
+  ut_assert_is_not_error(body_string);
+  ut_assert_cstring_equal(ut_string_get_text(body_string), expected_body_text);
+}
+
 static UtObject *decode_request(const char *data_text) {
   UtObjectRef data_string = ut_string_new(data_text);
   UtObjectRef data = ut_string_get_utf8(data_string);
@@ -26,9 +32,7 @@ static UtObject *test_decode_request(const char *data_text,
                           expected_path);
   UtObjectRef body =
       ut_input_stream_read_sync(ut_http_message_decoder_get_body(decoder));
-  UtObjectRef body_string = ut_string_new_from_utf8(body);
-  ut_assert_is_not_error(body_string);
-  ut_assert_cstring_equal(ut_string_get_text(body_string), expected_body_text);
+  check_body(body, expected_body_text);
 
   return ut_object_ref(ut_http_message_decoder_get_headers(decoder));
 }
@@ -56,9 +60,7 @@ static UtObject *test_decode_response(const char *data_text,
                           expected_reason_phrase);
   UtObjectRef body =
       ut_input_stream_read_sync(ut_http_message_decoder_get_body(decoder));
-  UtObjectRef body_string = ut_string_new_from_utf8(body);
-  ut_assert_is_not_error(body_string);
-  ut_assert_cstring_equal(ut_string_get_text(body_string), expected_body_text);
+  check_body(body, expected_body_text);
 
   return ut_object_ref(ut_http_message_decoder_get_headers(decoder));
 }
