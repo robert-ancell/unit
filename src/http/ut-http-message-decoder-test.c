@@ -181,10 +181,10 @@ static void test_headers() {
 }
 
 static void test_body() {
-  UtObjectRef eof_headers = test_decode_request("GET /bar HTTP/1.1\r\n"
+  UtObjectRef eof_headers = test_decode_request("GET / HTTP/1.1\r\n"
                                                 "\r\n"
                                                 "Hello World!",
-                                                "GET", "/bar", "Hello World!");
+                                                "GET", "/", "Hello World!");
   ut_assert_non_null(eof_headers);
 
   UtObjectRef content_length_headers =
@@ -240,7 +240,7 @@ static void test_body() {
   ut_assert_is_error(ut_http_message_decoder_get_error(missing_chunks_decoder));
 
   UtObjectRef missing_final_chunk_decoder =
-      decode_request("GET /bar HTTP/1.1\r\n"
+      decode_request("GET / HTTP/1.1\r\n"
                      "Transfer-Encoding: chunked\r\n"
                      "\r\n"
                      "3\r\n"
@@ -251,7 +251,7 @@ static void test_body() {
       ut_http_message_decoder_get_error(missing_final_chunk_decoder));
 
   UtObjectRef missing_final_chunk_data_decoder =
-      decode_request("GET /bar HTTP/1.1\r\n"
+      decode_request("GET / HTTP/1.1\r\n"
                      "Transfer-Encoding: chunked\r\n"
                      "\r\n"
                      "3\r\n"
@@ -263,7 +263,7 @@ static void test_body() {
       ut_http_message_decoder_get_error(missing_final_chunk_data_decoder));
 
   UtObjectRef invalid_chunk_header_newline_decoder =
-      decode_request("GET /bar HTTP/1.1\r\n"
+      decode_request("GET / HTTP/1.1\r\n"
                      "Transfer-Encoding: chunked\r\n"
                      "\r\n"
                      "3\r\n"
@@ -276,7 +276,7 @@ static void test_body() {
       ut_http_message_decoder_get_error(invalid_chunk_header_newline_decoder));
 
   UtObjectRef invalid_chunk_data_newline_decoder =
-      decode_request("GET /bar HTTP/1.1\r\n"
+      decode_request("GET / HTTP/1.1\r\n"
                      "Transfer-Encoding: chunked\r\n"
                      "\r\n"
                      "3\r\n"
