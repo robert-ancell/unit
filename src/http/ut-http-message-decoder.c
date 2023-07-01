@@ -338,8 +338,10 @@ static size_t decode_body_fixed(UtHttpMessageDecoder *self, UtObject *data,
     return 0;
   }
 
+  bool body_complete = complete || n_used == remaining_length;
+
   UtObjectRef d = ut_list_get_sublist(data, 0, n_used);
-  ut_buffered_input_stream_write(self->body, d, complete);
+  ut_buffered_input_stream_write(self->body, d, body_complete);
   self->body_length += n_used;
   if (self->body_length >= self->content_length) {
     self->state = DECODER_STATE_DONE;
