@@ -10,12 +10,7 @@ typedef struct {
   unsigned int status_code;
   char *reason_phrase;
   UtObject *headers;
-  UtObject *tcp_socket;
-  size_t n_read;
-  UtObject *read_cancel;
-  UtInputStreamCallback callback;
-  void *user_data;
-  UtObject *cancel;
+  UtObject *body;
 } UtHttpResponse;
 
 static const char *get_header(UtHttpResponse *self, const char *name) {
@@ -39,114 +34,27 @@ static ssize_t get_content_length(UtHttpResponse *self) {
   return atoi(value);
 }
 
-static size_t read_cb(void *user_data, UtObject *data, bool complete) {
-  UtHttpResponse *self = user_data;
-
-  // Stop listening for input when done.
-  if (ut_cancel_is_active(self->cancel)) {
-    ut_cancel_activate(self->read_cancel);
-    return 0;
-  }
-
-  if (ut_object_implements_error(data)) {
-    self->callback(self->user_data, data, true);
-    return 0;
-  }
-
-  size_t n_used = 0;
-  size_t data_length = ut_list_get_length(data);
-  ssize_t content_length = get_content_length(self);
-  if (content_length >= 0) {
-    bool have_all_data = self->n_read + data_length >= (size_t)content_length;
-
-    // Read no more data.
-    ut_cancel_activate(self->read_cancel);
-
-    UtObjectRef last_block =
-        ut_list_get_sublist(data, 0, content_length - self->n_read);
-    n_used = self->callback(self->user_data, last_block, have_all_data);
-
-    // All data consumed!
-    if (self->n_read + n_used >= content_length) {
-      ut_cancel_activate(self->read_cancel);
-    }
-
-    // Generate error if didn't receive enough data.
-    if (!have_all_data && complete && !ut_cancel_is_active(self->cancel)) {
-      UtObjectRef error =
-          ut_general_error_new("Connection closed before end of content");
-      self->callback(self->user_data, error, true);
-      ut_cancel_activate(self->read_cancel);
-    }
-  } else {
-    n_used = self->callback(self->user_data, data, complete);
-  }
-
-  self->n_read += n_used;
-
-  // Stop listening for input when done.
-  if (ut_cancel_is_active(self->cancel)) {
-    ut_cancel_activate(self->read_cancel);
-  }
-
-  return n_used;
-}
-
-static void start_read(UtHttpResponse *self, UtInputStreamCallback callback,
-                       void *user_data, UtObject *cancel) {
-  // Clean up after the previous read.
-  if (ut_cancel_is_active(self->cancel)) {
-    ut_object_clear(&self->read_cancel);
-    self->callback = NULL;
-    self->user_data = NULL;
-    ut_object_clear(&self->cancel);
-  }
-
-  assert(self->callback == NULL);
-
-  self->read_cancel = ut_cancel_new();
-  self->callback = callback;
-  self->user_data = user_data;
-  self->cancel = ut_object_ref(cancel);
-
-  ut_input_stream_read(self->tcp_socket, read_cb, self, self->read_cancel);
-}
-
 static void ut_http_response_cleanup(UtObject *object) {
   UtHttpResponse *self = (UtHttpResponse *)object;
   free(self->reason_phrase);
   ut_object_unref(self->headers);
-  ut_object_unref(self->tcp_socket);
-  ut_object_unref(self->cancel);
+  ut_object_unref(self->body);
 }
 
-static void ut_http_response_read(UtObject *object,
-                                  UtInputStreamCallback callback,
-                                  void *user_data, UtObject *cancel) {
-  UtHttpResponse *self = (UtHttpResponse *)object;
-  assert(callback != NULL);
-
-  start_read(self, callback, user_data, cancel);
-}
-
-static UtInputStreamInterface input_stream_interface = {
-    .read = ut_http_response_read};
-
-static UtObjectInterface object_interface = {
-    .type_name = "UtHttpResponse",
-    .cleanup = ut_http_response_cleanup,
-    .interfaces = {{&ut_input_stream_id, &input_stream_interface},
-                   {NULL, NULL}}};
+static UtObjectInterface object_interface = {.type_name = "UtHttpResponse",
+                                             .cleanup =
+                                                 ut_http_response_cleanup,
+                                             .interfaces = {{NULL, NULL}}};
 
 UtObject *ut_http_response_new(unsigned int status_code,
                                const char *reason_phrase, UtObject *headers,
-                               UtObject *tcp_socket) {
+                               UtObject *body) {
   UtObject *object = ut_object_new(sizeof(UtHttpResponse), &object_interface);
   UtHttpResponse *self = (UtHttpResponse *)object;
   self->status_code = status_code;
   self->reason_phrase = ut_cstring_new(reason_phrase);
   self->headers = ut_object_ref(headers);
-  self->tcp_socket = ut_object_ref(tcp_socket);
+  self->body = ut_object_ref(body);
   return object;
 }
 
@@ -178,6 +86,12 @@ ssize_t ut_http_response_get_content_length(UtObject *object) {
   assert(ut_object_is_http_response(object));
   UtHttpResponse *self = (UtHttpResponse *)object;
   return get_content_length(self);
+}
+
+UtObject *ut_http_response_get_body(UtObject *object) {
+  assert(ut_object_is_http_response(object));
+  UtHttpResponse *self = (UtHttpResponse *)object;
+  return self->body;
 }
 
 bool ut_object_is_http_response(UtObject *object) {

@@ -44,7 +44,8 @@ static void http_response_cb(void *user_data, UtObject *response) {
     }
   }
   ut_assert_cstring_equal(content_type, "application/json");
-  ut_input_stream_read_all(response, read_cb, NULL, NULL);
+  ut_input_stream_read_all(ut_http_response_get_body(response), read_cb, NULL,
+                           NULL);
 }
 
 int main(int argc, char **argv) {
