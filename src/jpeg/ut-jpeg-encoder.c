@@ -533,9 +533,8 @@ static void ut_jpeg_encoder_cleanup(UtObject *object) {
   }
 }
 
-static UtObjectInterface object_interface = {.type_name = "UtJpegEncoder",
-                                             .cleanup = ut_jpeg_encoder_cleanup,
-                                             .interfaces = {{NULL, NULL}}};
+static UtObjectInterface object_interface = {
+    .type_name = "UtJpegEncoder", .cleanup = ut_jpeg_encoder_cleanup};
 
 UtObject *ut_jpeg_encoder_new(UtObject *image, UtObject *output_stream) {
   UtObject *object = ut_object_new(sizeof(UtJpegEncoder), &object_interface);

@@ -27,10 +27,8 @@ static void ut_wayland_decoder_cleanup(UtObject *object) {
   ut_object_unref(self->data);
 }
 
-static UtObjectInterface object_interface = {.type_name = "UtWaylandDecoder",
-                                             .cleanup =
-                                                 ut_wayland_decoder_cleanup,
-                                             .interfaces = {{NULL, NULL}}};
+static UtObjectInterface object_interface = {
+    .type_name = "UtWaylandDecoder", .cleanup = ut_wayland_decoder_cleanup};
 
 UtObject *ut_wayland_decoder_new(UtObject *data) {
   UtObject *object = ut_object_new(sizeof(UtWaylandDecoder), &object_interface);

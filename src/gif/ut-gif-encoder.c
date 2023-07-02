@@ -240,8 +240,7 @@ static void ut_gif_encoder_cleanup(UtObject *object) {
 
 static UtObjectInterface object_interface = {.type_name = "UtGifEncoder",
                                              .init = ut_gif_encoder_init,
-                                             .cleanup = ut_gif_encoder_cleanup,
-                                             .interfaces = {{NULL, NULL}}};
+                                             .cleanup = ut_gif_encoder_cleanup};
 
 UtObject *ut_gif_encoder_new(uint16_t width, uint16_t height,
                              UtObject *global_color_table, UtObject *images,

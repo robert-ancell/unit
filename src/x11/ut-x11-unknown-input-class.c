@@ -7,8 +7,8 @@ typedef struct {
   uint16_t type;
 } UtX11UnknownInputClass;
 
-static UtObjectInterface object_interface = {
-    .type_name = "UtX11UnknownInputClass", .interfaces = {{NULL, NULL}}};
+static UtObjectInterface object_interface = {.type_name =
+                                                 "UtX11UnknownInputClass"};
 
 UtObject *ut_x11_unknown_input_class_new(uint16_t type) {
   UtObject *object =

@@ -36,8 +36,7 @@ static char *ut_udp_datagram_to_string(UtObject *object) {
 static UtObjectInterface object_interface = {.type_name = "UtUdpDatagram",
                                              .cleanup = ut_udp_datagram_cleanup,
                                              .to_string =
-                                                 ut_udp_datagram_to_string,
-                                             .interfaces = {{NULL, NULL}}};
+                                                 ut_udp_datagram_to_string};
 
 UtObject *ut_udp_datagram_new(UtObject *address, uint16_t port,
                               UtObject *data) {

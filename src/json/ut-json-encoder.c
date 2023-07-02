@@ -146,8 +146,7 @@ static bool encode_value(UtObject *buffer, UtObject *value) {
   }
 }
 
-static UtObjectInterface object_interface = {.type_name = "UtJsonEncoder",
-                                             .interfaces = {{NULL, NULL}}};
+static UtObjectInterface object_interface = {.type_name = "UtJsonEncoder"};
 
 UtObject *ut_json_encoder_new() {
   return ut_object_new(sizeof(UtJsonEncoder), &object_interface);

@@ -8,8 +8,8 @@ typedef struct {
   uint64_t value;
 } UtX11InputEventMask;
 
-static UtObjectInterface object_interface = {.type_name = "UtX11InputEventMask",
-                                             .interfaces = {{NULL, NULL}}};
+static UtObjectInterface object_interface = {.type_name =
+                                                 "UtX11InputEventMask"};
 
 UtObject *ut_x11_input_event_mask_new(uint16_t device_id, uint64_t value) {
   UtObject *object =

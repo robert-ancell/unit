@@ -280,8 +280,7 @@ static char *ut_png_image_to_string(UtObject *object) {
 static UtObjectInterface object_interface = {.type_name = "UtPngImage",
                                              .cleanup = ut_png_image_cleanup,
                                              .to_string =
-                                                 ut_png_image_to_string,
-                                             .interfaces = {{NULL, NULL}}};
+                                                 ut_png_image_to_string};
 
 UtObject *ut_png_image_new(uint32_t width, uint32_t height, uint8_t bit_depth,
                            UtPngColorType color_type, UtObject *data) {

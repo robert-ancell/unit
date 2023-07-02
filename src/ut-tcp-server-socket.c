@@ -51,10 +51,8 @@ static void listen_cb(void *user_data) {
   self->listen_callback(self->listen_user_data, child_socket);
 }
 
-static UtObjectInterface object_interface = {.type_name = "UtTcpServerSocket",
-                                             .cleanup =
-                                                 ut_tcp_server_socket_cleanup,
-                                             .interfaces = {{NULL, NULL}}};
+static UtObjectInterface object_interface = {
+    .type_name = "UtTcpServerSocket", .cleanup = ut_tcp_server_socket_cleanup};
 
 static UtObject *socket_new(sa_family_t family, const char *path,
                             uint16_t port) {

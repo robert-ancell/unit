@@ -64,8 +64,7 @@ static void ut_uri_cleanup(UtObject *object) {
 
 static UtObjectInterface object_interface = {.type_name = "UtUri",
                                              .to_string = ut_uri_to_string,
-                                             .cleanup = ut_uri_cleanup,
-                                             .interfaces = {{NULL, NULL}}};
+                                             .cleanup = ut_uri_cleanup};
 
 UtObject *ut_uri_new(const char *scheme, const char *user_info,
                      const char *host, uint16_t port, const char *path,

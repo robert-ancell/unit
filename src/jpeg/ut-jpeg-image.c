@@ -28,8 +28,7 @@ static char *ut_jpeg_image_to_string(UtObject *object) {
 static UtObjectInterface object_interface = {.type_name = "UtJpegImage",
                                              .cleanup = ut_jpeg_image_cleanup,
                                              .to_string =
-                                                 ut_jpeg_image_to_string,
-                                             .interfaces = {{NULL, NULL}}};
+                                                 ut_jpeg_image_to_string};
 
 UtObject *ut_jpeg_image_new(uint16_t width, uint16_t height,
                             UtJpegDensityUnits density_units,

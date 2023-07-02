@@ -27,8 +27,7 @@ static void ut_wayland_encoder_cleanup(UtObject *object) {
 static UtObjectInterface object_interface = {.type_name = "UtWaylandEncoder",
                                              .init = ut_wayland_encoder_init,
                                              .cleanup =
-                                                 ut_wayland_encoder_cleanup,
-                                             .interfaces = {{NULL, NULL}}};
+                                                 ut_wayland_encoder_cleanup};
 
 UtObject *ut_wayland_encoder_new() {
   return ut_object_new(sizeof(UtWaylandEncoder), &object_interface);

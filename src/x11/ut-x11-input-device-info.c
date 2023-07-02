@@ -20,8 +20,7 @@ static void ut_x11_input_device_info_cleanup(UtObject *object) {
 
 static UtObjectInterface object_interface = {
     .type_name = "UtX11InputDeviceInfo",
-    .cleanup = ut_x11_input_device_info_cleanup,
-    .interfaces = {{NULL, NULL}}};
+    .cleanup = ut_x11_input_device_info_cleanup};
 
 UtObject *ut_x11_input_device_info_new(uint32_t id, const char *name,
                                        uint16_t type, uint32_t attachment,

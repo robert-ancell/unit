@@ -27,9 +27,7 @@ static void queued_message_cleanup(UtObject *object) {
 }
 
 static UtObjectInterface queued_message_object_interface = {
-    .type_name = "QueuedMessage",
-    .cleanup = queued_message_cleanup,
-    .interfaces = {{NULL, NULL}}};
+    .type_name = "QueuedMessage", .cleanup = queued_message_cleanup};
 
 static UtObject *queued_message_new(UtObject *message,
                                     UtDBusMethodResponseCallback callback,
@@ -304,8 +302,7 @@ static void ut_dbus_client_cleanup(UtObject *object) {
 
 static UtObjectInterface object_interface = {.type_name = "UtDBusClient",
                                              .init = ut_dbus_client_init,
-                                             .cleanup = ut_dbus_client_cleanup,
-                                             .interfaces = {{NULL, NULL}}};
+                                             .cleanup = ut_dbus_client_cleanup};
 
 UtObject *ut_dbus_client_new(const char *address) {
   UtObject *object = ut_object_new(sizeof(UtDBusClient), &object_interface);

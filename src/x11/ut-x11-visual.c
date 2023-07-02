@@ -14,8 +14,7 @@ typedef struct {
   uint32_t blue_mask;
 } UtX11Visual;
 
-static UtObjectInterface object_interface = {.type_name = "UtX11Visual",
-                                             .interfaces = {{NULL, NULL}}};
+static UtObjectInterface object_interface = {.type_name = "UtX11Visual"};
 
 UtObject *ut_x11_visual_new(uint32_t id, uint8_t depth, uint8_t class,
                             uint8_t bits_per_rgb_value,

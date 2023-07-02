@@ -24,8 +24,7 @@ static void ut_x11_screen_cleanup(UtObject *object) {
 }
 
 static UtObjectInterface object_interface = {.type_name = "UtX11Screen",
-                                             .cleanup = ut_x11_screen_cleanup,
-                                             .interfaces = {{NULL, NULL}}};
+                                             .cleanup = ut_x11_screen_cleanup};
 
 UtObject *ut_x11_screen_new(uint32_t root, uint32_t default_colormap,
                             uint32_t white_pixel, uint32_t black_pixel,

@@ -40,8 +40,7 @@ static char *ut_color_to_string(UtObject *object) {
 }
 
 static UtObjectInterface object_interface = {.type_name = "UtColor",
-                                             .to_string = ut_color_to_string,
-                                             .interfaces = {{NULL, NULL}}};
+                                             .to_string = ut_color_to_string};
 
 UtObject *ut_color_new_rgba(double red, double green, double blue,
                             double alpha) {

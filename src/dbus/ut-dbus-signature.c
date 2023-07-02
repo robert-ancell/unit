@@ -21,8 +21,7 @@ static void ut_dbus_signature_cleanup(UtObject *object) {
 static UtObjectInterface object_interface = {
     .type_name = "UtDBusSignature",
     .to_string = ut_dbus_signature_to_string,
-    .cleanup = ut_dbus_signature_cleanup,
-    .interfaces = {{NULL, NULL}}};
+    .cleanup = ut_dbus_signature_cleanup};
 
 UtObject *ut_dbus_signature_new(const char *value) {
   UtObject *object = ut_object_new(sizeof(UtDBusSignature), &object_interface);

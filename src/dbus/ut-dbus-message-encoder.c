@@ -212,8 +212,8 @@ static void write_value(UtObject *buffer, UtObject *value) {
   }
 }
 
-static UtObjectInterface object_interface = {
-    .type_name = "UtDBusMessageEncoder", .interfaces = {{NULL, NULL}}};
+static UtObjectInterface object_interface = {.type_name =
+                                                 "UtDBusMessageEncoder"};
 
 UtObject *ut_dbus_message_encoder_new() {
   return ut_object_new(sizeof(UtDBusMessageEncoder), &object_interface);

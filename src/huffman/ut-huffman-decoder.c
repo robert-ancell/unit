@@ -33,10 +33,8 @@ static void ut_huffman_decoder_cleanup(UtObject *object) {
   free(self->code_tables);
 }
 
-static UtObjectInterface object_interface = {.type_name = "UtHuffmanDecoder",
-                                             .cleanup =
-                                                 ut_huffman_decoder_cleanup,
-                                             .interfaces = {{NULL, NULL}}};
+static UtObjectInterface object_interface = {
+    .type_name = "UtHuffmanDecoder", .cleanup = ut_huffman_decoder_cleanup};
 
 static UtObject *create_decoder(size_t symbols_length, uint16_t *codes,
                                 size_t *code_widths) {

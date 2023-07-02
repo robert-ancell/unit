@@ -29,8 +29,7 @@ static UtObjectInterface object_interface = {
     .type_name = "UtFileDescriptor",
     .init = ut_file_descriptor_init,
     .to_string = ut_file_descriptor_to_string,
-    .cleanup = ut_file_descriptor_cleanup,
-    .interfaces = {{NULL, NULL}}};
+    .cleanup = ut_file_descriptor_cleanup};
 
 UtObject *ut_file_descriptor_new(int fd) {
   UtObject *object = ut_object_new(sizeof(UtFileDescriptor), &object_interface);

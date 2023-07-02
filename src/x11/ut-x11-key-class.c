@@ -12,10 +12,8 @@ static void ut_x11_key_class_cleanup(UtObject *object) {
   ut_object_unref(self->keys);
 }
 
-static UtObjectInterface object_interface = {.type_name = "UtX11KeyClass",
-                                             .cleanup =
-                                                 ut_x11_key_class_cleanup,
-                                             .interfaces = {{NULL, NULL}}};
+static UtObjectInterface object_interface = {
+    .type_name = "UtX11KeyClass", .cleanup = ut_x11_key_class_cleanup};
 
 UtObject *ut_x11_key_class_new(UtObject *keys) {
   UtObject *object = ut_object_new(sizeof(UtX11KeyClass), &object_interface);

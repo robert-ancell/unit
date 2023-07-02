@@ -8,8 +8,7 @@ typedef struct {
   uint8_t num_touches;
 } UtX11TouchClass;
 
-static UtObjectInterface object_interface = {.type_name = "UtX11TouchClass",
-                                             .interfaces = {{NULL, NULL}}};
+static UtObjectInterface object_interface = {.type_name = "UtX11TouchClass"};
 
 UtObject *ut_x11_touch_class_new(uint8_t mode, uint8_t num_touches) {
   UtObject *object = ut_object_new(sizeof(UtX11TouchClass), &object_interface);

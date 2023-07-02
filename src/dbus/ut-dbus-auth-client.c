@@ -173,8 +173,7 @@ static void ut_dbus_auth_client_cleanup(UtObject *object) {
 static UtObjectInterface object_interface = {.type_name = "UtDBusAuthClient",
                                              .init = ut_dbus_auth_client_init,
                                              .cleanup =
-                                                 ut_dbus_auth_client_cleanup,
-                                             .interfaces = {{NULL, NULL}}};
+                                                 ut_dbus_auth_client_cleanup};
 
 UtObject *ut_dbus_auth_client_new(UtObject *input_stream,
                                   UtObject *output_stream) {

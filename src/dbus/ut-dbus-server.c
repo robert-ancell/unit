@@ -48,8 +48,7 @@ static void ut_dbus_server_client_cleanup(UtObject *object) {
 static UtObjectInterface client_object_interface = {
     .type_name = "UtDBusServerClient",
     .init = ut_dbus_server_client_init,
-    .cleanup = ut_dbus_server_client_cleanup,
-    .interfaces = {{NULL, NULL}}};
+    .cleanup = ut_dbus_server_client_cleanup};
 
 UtObject *ut_dbus_server_client_new(UtDBusServer *server, UtObject *socket,
                                     const char *unique_name) {
@@ -271,8 +270,7 @@ static void ut_dbus_server_cleanup(UtObject *object) {
 
 static UtObjectInterface object_interface = {.type_name = "UtDBusServer",
                                              .init = ut_dbus_server_init,
-                                             .cleanup = ut_dbus_server_cleanup,
-                                             .interfaces = {{NULL, NULL}}};
+                                             .cleanup = ut_dbus_server_cleanup};
 
 UtObject *ut_dbus_server_new() {
   return ut_object_new(sizeof(UtDBusServer), &object_interface);

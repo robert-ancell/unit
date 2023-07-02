@@ -14,10 +14,8 @@ static void ut_x11_button_class_cleanup(UtObject *object) {
   ut_object_unref(self->labels);
 }
 
-static UtObjectInterface object_interface = {.type_name = "UtX11ButtonClass",
-                                             .cleanup =
-                                                 ut_x11_button_class_cleanup,
-                                             .interfaces = {{NULL, NULL}}};
+static UtObjectInterface object_interface = {
+    .type_name = "UtX11ButtonClass", .cleanup = ut_x11_button_class_cleanup};
 
 UtObject *ut_x11_button_class_new(UtObject *state, UtObject *labels) {
   UtObject *object = ut_object_new(sizeof(UtX11ButtonClass), &object_interface);

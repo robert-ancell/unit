@@ -9,8 +9,7 @@ typedef struct {
   uint8_t scanline_pad;
 } UtX11PixmapFormat;
 
-static UtObjectInterface object_interface = {.type_name = "UtX11PixmapFormat",
-                                             .interfaces = {{NULL, NULL}}};
+static UtObjectInterface object_interface = {.type_name = "UtX11PixmapFormat"};
 
 UtObject *ut_x11_pixmap_format_new(uint8_t depth, uint8_t bits_per_pixel,
                                    uint8_t scanline_pad) {

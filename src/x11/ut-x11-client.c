@@ -35,9 +35,7 @@ static void request_cleanup(UtObject *object) {
 }
 
 static UtObjectInterface request_object_interface = {
-    .type_name = "X11ClientRequest",
-    .cleanup = request_cleanup,
-    .interfaces = {{NULL, NULL}}};
+    .type_name = "X11ClientRequest", .cleanup = request_cleanup};
 
 static UtObject *
 request_new(uint16_t sequence_number,
@@ -800,8 +798,7 @@ static void ut_x11_client_cleanup(UtObject *object) {
 
 static UtObjectInterface object_interface = {.type_name = "UtX11Client",
                                              .init = ut_x11_client_init,
-                                             .cleanup = ut_x11_client_cleanup,
-                                             .interfaces = {{NULL, NULL}}};
+                                             .cleanup = ut_x11_client_cleanup};
 
 UtObject *ut_x11_client_new(const UtX11EventCallbacks *event_callbacks,
                             UtX11ClientErrorCallback error_callback,

@@ -14,9 +14,8 @@ static void ut_gif_renderer_cleanup(UtObject *object) {
   ut_object_unref(self->decoder);
 }
 
-static UtObjectInterface object_interface = {.type_name = "UtGifRenderer",
-                                             .cleanup = ut_gif_renderer_cleanup,
-                                             .interfaces = {{NULL, NULL}}};
+static UtObjectInterface object_interface = {
+    .type_name = "UtGifRenderer", .cleanup = ut_gif_renderer_cleanup};
 
 UtObject *ut_gif_renderer_new(UtObject *decoder) {
   assert(ut_object_is_gif_decoder(decoder));

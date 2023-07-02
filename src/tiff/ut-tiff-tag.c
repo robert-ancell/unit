@@ -23,8 +23,7 @@ static void ut_tiff_tag_cleanup(UtObject *object) {
 
 static UtObjectInterface object_interface = {.type_name = "UtTiffTag",
                                              .to_string = ut_tiff_tag_to_string,
-                                             .cleanup = ut_tiff_tag_cleanup,
-                                             .interfaces = {{NULL, NULL}}};
+                                             .cleanup = ut_tiff_tag_cleanup};
 
 UtObject *ut_tiff_tag_new(uint16_t id, uint16_t type, UtObject *data) {
   UtObject *object = ut_object_new(sizeof(UtTiffTag), &object_interface);

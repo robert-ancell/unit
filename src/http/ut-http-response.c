@@ -41,10 +41,8 @@ static void ut_http_response_cleanup(UtObject *object) {
   ut_object_unref(self->body);
 }
 
-static UtObjectInterface object_interface = {.type_name = "UtHttpResponse",
-                                             .cleanup =
-                                                 ut_http_response_cleanup,
-                                             .interfaces = {{NULL, NULL}}};
+static UtObjectInterface object_interface = {
+    .type_name = "UtHttpResponse", .cleanup = ut_http_response_cleanup};
 
 UtObject *ut_http_response_new(unsigned int status_code,
                                const char *reason_phrase, UtObject *headers,

@@ -10,8 +10,7 @@ typedef struct {
   uint16_t minor_opcode;
 } UtX11Error;
 
-static UtObjectInterface object_interface = {.type_name = "UtX11Error",
-                                             .interfaces = {{NULL, NULL}}};
+static UtObjectInterface object_interface = {.type_name = "UtX11Error"};
 
 UtObject *ut_x11_error_new(UtX11ErrorCode code, uint32_t value,
                            uint8_t major_opcode, uint16_t minor_opcode) {

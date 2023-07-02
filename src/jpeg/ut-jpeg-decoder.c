@@ -1587,8 +1587,8 @@ static void ut_jpeg_decoder_cleanup(UtObject *object) {
 
 static UtObjectInterface object_interface = {.type_name = "UtJpegDecoder",
                                              .init = ut_jpeg_decoder_init,
-                                             .cleanup = ut_jpeg_decoder_cleanup,
-                                             .interfaces = {{NULL, NULL}}};
+                                             .cleanup =
+                                                 ut_jpeg_decoder_cleanup};
 
 UtObject *ut_jpeg_decoder_new(UtObject *input_stream) {
   UtObject *object = ut_object_new(sizeof(UtJpegDecoder), &object_interface);

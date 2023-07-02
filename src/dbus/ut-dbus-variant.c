@@ -19,11 +19,10 @@ static void ut_dbus_variant_cleanup(UtObject *object) {
   ut_object_unref(self->value);
 }
 
-static UtObjectInterface object_interface = {.type_name = "UtDBusVariant",
-                                             .to_string =
-                                                 ut_dbus_variant_to_string,
-                                             .cleanup = ut_dbus_variant_cleanup,
-                                             .interfaces = {{NULL, NULL}}};
+static UtObjectInterface object_interface = {
+    .type_name = "UtDBusVariant",
+    .to_string = ut_dbus_variant_to_string,
+    .cleanup = ut_dbus_variant_cleanup};
 
 UtObject *ut_dbus_variant_new(UtObject *value) {
   return ut_dbus_variant_new_take(ut_object_ref(value));

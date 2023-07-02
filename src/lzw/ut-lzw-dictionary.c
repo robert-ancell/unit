@@ -29,8 +29,7 @@ static void ut_lzw_dictionary_cleanup(UtObject *object) {
 static UtObjectInterface object_interface = {.type_name = "UtLzwDictionary",
                                              .init = ut_lzw_dictionary_init,
                                              .cleanup =
-                                                 ut_lzw_dictionary_cleanup,
-                                             .interfaces = {{NULL, NULL}}};
+                                                 ut_lzw_dictionary_cleanup};
 
 UtObject *ut_lzw_dictionary_new(size_t n_symbols, size_t max_length) {
   UtObject *object = ut_object_new(sizeof(UtLzwDictionary), &object_interface);

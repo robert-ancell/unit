@@ -64,11 +64,10 @@ static void ut_dbus_message_cleanup(UtObject *object) {
   ut_object_unref(self->args);
 }
 
-static UtObjectInterface object_interface = {.type_name = "UtDBusMessage",
-                                             .to_string =
-                                                 ut_dbus_message_to_string,
-                                             .cleanup = ut_dbus_message_cleanup,
-                                             .interfaces = {{NULL, NULL}}};
+static UtObjectInterface object_interface = {
+    .type_name = "UtDBusMessage",
+    .to_string = ut_dbus_message_to_string,
+    .cleanup = ut_dbus_message_cleanup};
 
 UtObject *ut_dbus_message_new(uint8_t type) {
   UtObject *object = ut_object_new(sizeof(UtDBusMessage), &object_interface);

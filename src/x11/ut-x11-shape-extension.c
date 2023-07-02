@@ -17,7 +17,7 @@ typedef struct {
 } CallbackData;
 
 static UtObjectInterface callback_data_object_interface = {
-    .type_name = "ShapeCallbackData", .interfaces = {{NULL, NULL}}};
+    .type_name = "ShapeCallbackData"};
 
 static UtObject *callback_data_new(UtX11ShapeExtension *self, void *callback,
                                    void *user_data) {

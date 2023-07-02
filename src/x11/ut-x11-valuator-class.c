@@ -13,8 +13,7 @@ typedef struct {
   uint8_t mode;
 } UtX11ValuatorClass;
 
-static UtObjectInterface object_interface = {.type_name = "UtX11ValuatorClass",
-                                             .interfaces = {{NULL, NULL}}};
+static UtObjectInterface object_interface = {.type_name = "UtX11ValuatorClass"};
 
 UtObject *ut_x11_valuator_class_new(uint16_t number, uint32_t label, double min,
                                     double max, double value,

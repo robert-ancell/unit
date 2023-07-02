@@ -176,8 +176,7 @@ static char *ut_tiff_image_to_string(UtObject *object) {
 static UtObjectInterface object_interface = {.type_name = "UtTiffImage",
                                              .cleanup = ut_tiff_image_cleanup,
                                              .to_string =
-                                                 ut_tiff_image_to_string,
-                                             .interfaces = {{NULL, NULL}}};
+                                                 ut_tiff_image_to_string};
 
 UtObject *
 ut_tiff_image_new(uint32_t width, uint32_t length,

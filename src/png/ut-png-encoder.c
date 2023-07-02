@@ -214,8 +214,7 @@ static void ut_png_encoder_cleanup(UtObject *object) {
 }
 
 static UtObjectInterface object_interface = {.type_name = "UtPngEncoder",
-                                             .cleanup = ut_png_encoder_cleanup,
-                                             .interfaces = {{NULL, NULL}}};
+                                             .cleanup = ut_png_encoder_cleanup};
 
 UtObject *ut_png_encoder_new(UtObject *image, UtObject *output_stream) {
   UtObject *object = ut_object_new(sizeof(UtPngEncoder), &object_interface);

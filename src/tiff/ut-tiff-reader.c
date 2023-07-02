@@ -490,8 +490,7 @@ static void ut_tiff_reader_cleanup(UtObject *object) {
 }
 
 static UtObjectInterface object_interface = {.type_name = "UtTiffReader",
-                                             .cleanup = ut_tiff_reader_cleanup,
-                                             .interfaces = {{NULL, NULL}}};
+                                             .cleanup = ut_tiff_reader_cleanup};
 
 UtObject *ut_tiff_reader_new(UtObject *data) {
   UtObject *object = ut_object_new(sizeof(UtTiffReader), &object_interface);

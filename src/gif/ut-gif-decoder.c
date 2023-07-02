@@ -609,8 +609,7 @@ static void ut_gif_decoder_cleanup(UtObject *object) {
 
 static UtObjectInterface object_interface = {.type_name = "UtGifDecoder",
                                              .init = ut_gif_decoder_init,
-                                             .cleanup = ut_gif_decoder_cleanup,
-                                             .interfaces = {{NULL, NULL}}};
+                                             .cleanup = ut_gif_decoder_cleanup};
 
 UtObject *ut_gif_decoder_new(UtObject *input_stream) {
   UtObject *object = ut_object_new(sizeof(UtGifDecoder), &object_interface);

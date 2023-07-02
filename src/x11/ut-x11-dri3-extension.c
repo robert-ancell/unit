@@ -13,7 +13,7 @@ typedef struct {
 } CallbackData;
 
 static UtObjectInterface callback_data_object_interface = {
-    .type_name = "Dri3CallbackData", .interfaces = {{NULL, NULL}}};
+    .type_name = "Dri3CallbackData"};
 
 static UtObject *callback_data_new(void *callback, void *user_data) {
   UtObject *object =

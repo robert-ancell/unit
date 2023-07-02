@@ -118,8 +118,7 @@ static void ut_wayland_client_cleanup(UtObject *object) {
 static UtObjectInterface object_interface = {.type_name = "UtWaylandClient",
                                              .init = ut_wayland_client_init,
                                              .cleanup =
-                                                 ut_wayland_client_cleanup,
-                                             .interfaces = {{NULL, NULL}}};
+                                                 ut_wayland_client_cleanup};
 
 UtObject *ut_wayland_client_new() {
   UtObject *object = ut_object_new(sizeof(UtWaylandClient), &object_interface);

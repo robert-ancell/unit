@@ -84,8 +84,7 @@ static void ut_ip_address_resolver_cleanup(UtObject *object) {
 static UtObjectInterface object_interface = {
     .type_name = "UtIPAddressResolver",
     .init = ut_ip_address_resolver_init,
-    .cleanup = ut_ip_address_resolver_cleanup,
-    .interfaces = {{NULL, NULL}}};
+    .cleanup = ut_ip_address_resolver_cleanup};
 
 UtObject *ut_ip_address_resolver_new() {
   return ut_object_new(sizeof(UtIPAddressResolver), &object_interface);

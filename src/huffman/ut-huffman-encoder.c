@@ -17,10 +17,8 @@ static void ut_huffman_encoder_cleanup(UtObject *object) {
   free(self->code_widths);
 }
 
-static UtObjectInterface object_interface = {.type_name = "UtHuffmanEncoder",
-                                             .cleanup =
-                                                 ut_huffman_encoder_cleanup,
-                                             .interfaces = {{NULL, NULL}}};
+static UtObjectInterface object_interface = {
+    .type_name = "UtHuffmanEncoder", .cleanup = ut_huffman_encoder_cleanup};
 
 static UtObject *create_encoder(size_t symbols_length) {
   UtObject *object = ut_object_new(sizeof(UtHuffmanEncoder), &object_interface);

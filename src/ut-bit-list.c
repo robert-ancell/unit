@@ -70,8 +70,7 @@ static void ut_bit_list_cleanup(UtObject *object) {
 
 static UtObjectInterface object_interface = {.type_name = "UtBitList",
                                              .to_string = ut_bit_list_to_string,
-                                             .cleanup = ut_bit_list_cleanup,
-                                             .interfaces = {{NULL, NULL}}};
+                                             .cleanup = ut_bit_list_cleanup};
 
 UtObject *ut_bit_list_new() {
   UtObjectRef data = ut_uint8_list_new();

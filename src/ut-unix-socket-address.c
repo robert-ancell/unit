@@ -20,8 +20,7 @@ static char *ut_unix_socket_address_to_string(UtObject *object) {
 static UtObjectInterface object_interface = {
     .type_name = "UtUnixSocketAddress",
     .cleanup = ut_unix_socket_address_cleanup,
-    .to_string = ut_unix_socket_address_to_string,
-    .interfaces = {{NULL, NULL}}};
+    .to_string = ut_unix_socket_address_to_string};
 
 UtObject *ut_unix_socket_address_new(const char *path) {
   UtObject *object =

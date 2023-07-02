@@ -10,8 +10,7 @@ typedef struct {
   uint16_t height;
 } UtX11Rectangle;
 
-static UtObjectInterface object_interface = {.type_name = "UtX11Rectangle",
-                                             .interfaces = {{NULL, NULL}}};
+static UtObjectInterface object_interface = {.type_name = "UtX11Rectangle"};
 
 UtObject *ut_x11_rectangle_new(int16_t x, int16_t y, uint16_t width,
                                uint16_t height) {

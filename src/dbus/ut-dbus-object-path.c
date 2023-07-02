@@ -21,8 +21,7 @@ static void ut_dbus_object_path_cleanup(UtObject *object) {
 static UtObjectInterface object_interface = {
     .type_name = "UtDBusObjectPath",
     .to_string = ut_dbus_object_path_to_string,
-    .cleanup = ut_dbus_object_path_cleanup,
-    .interfaces = {{NULL, NULL}}};
+    .cleanup = ut_dbus_object_path_cleanup};
 
 UtObject *ut_dbus_object_path_new(const char *value) {
   UtObject *object = ut_object_new(sizeof(UtDBusObjectPath), &object_interface);

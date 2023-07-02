@@ -34,8 +34,7 @@ static char *ut_gif_image_to_string(UtObject *object) {
 static UtObjectInterface object_interface = {.type_name = "UtGifImage",
                                              .cleanup = ut_gif_image_cleanup,
                                              .to_string =
-                                                 ut_gif_image_to_string,
-                                             .interfaces = {{NULL, NULL}}};
+                                                 ut_gif_image_to_string};
 
 UtObject *ut_gif_image_new(uint16_t left, uint16_t top, uint16_t width,
                            uint16_t height, UtObject *color_table,
