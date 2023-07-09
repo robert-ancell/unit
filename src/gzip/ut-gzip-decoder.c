@@ -17,8 +17,8 @@ typedef struct {
   UtObject object;
   UtObject *input_stream;
   UtObject *deflate_input_stream;
+  UtObject *callback_object;
   UtInputStreamCallback callback;
-  void *user_data;
 
   DecoderState state;
 
@@ -93,11 +93,13 @@ static void set_error(UtGzipDecoder *self, const char *description) {
   self->error = ut_png_error_new(description);
   self->state = DECODER_STATE_ERROR;
 
-  self->callback(self->user_data, self->error, true);
+  if (self->callback_object != NULL) {
+    self->callback(self->callback_object, self->error, true);
+  }
 }
 
-static size_t deflate_read_cb(void *user_data, UtObject *data, bool complete) {
-  UtGzipDecoder *self = user_data;
+static size_t deflate_read_cb(UtObject *object, UtObject *data, bool complete) {
+  UtGzipDecoder *self = (UtGzipDecoder *)object;
 
   if (ut_object_implements_error(data)) {
     ut_cstring_ref description = ut_cstring_new_printf(
@@ -107,7 +109,9 @@ static size_t deflate_read_cb(void *user_data, UtObject *data, bool complete) {
   }
 
   size_t data_length = ut_list_get_length(data);
-  size_t n_used = self->callback(self->user_data, data, complete);
+  size_t n_used = self->callback_object != NULL
+                      ? self->callback(self->callback_object, data, complete)
+                      : 0;
   assert(n_used <= data_length);
 
   // Use all remaining data if complete, even if it wasn't used by the stream
@@ -255,8 +259,8 @@ static size_t decode_member_trailer(UtGzipDecoder *self, UtObject *data) {
   return 8;
 }
 
-static size_t read_cb(void *user_data, UtObject *data, bool complete) {
-  UtGzipDecoder *self = user_data;
+static size_t read_cb(UtObject *object, UtObject *data, bool complete) {
+  UtGzipDecoder *self = (UtGzipDecoder *)object;
 
   size_t data_length = ut_list_get_length(data);
   size_t offset = 0;
@@ -303,19 +307,19 @@ static void ut_gzip_decoder_cleanup(UtObject *object) {
 
   ut_object_unref(self->input_stream);
   ut_object_unref(self->deflate_input_stream);
+  ut_object_weak_unref(&self->callback_object);
   ut_object_unref(self->deflate_decoder);
   ut_object_unref(self->error);
 }
 
-static void ut_gzip_decoder_read(UtObject *object,
-                                 UtInputStreamCallback callback,
-                                 void *user_data) {
+static void ut_gzip_decoder_read(UtObject *object, UtObject *callback_object,
+                                 UtInputStreamCallback callback) {
   UtGzipDecoder *self = (UtGzipDecoder *)object;
   assert(callback != NULL);
   assert(self->callback == NULL);
+  ut_object_weak_ref(callback_object, &self->callback_object);
   self->callback = callback;
-  self->user_data = user_data;
-  ut_input_stream_read(self->input_stream, read_cb, self);
+  ut_input_stream_read(self->input_stream, object, read_cb);
 }
 
 static void ut_gzip_decoder_close(UtObject *object) {
@@ -340,7 +344,7 @@ UtObject *ut_gzip_decoder_new(UtObject *input_stream) {
   self->input_stream = ut_object_ref(input_stream);
   self->deflate_input_stream = ut_writable_input_stream_new();
   self->deflate_decoder = ut_deflate_decoder_new(self->deflate_input_stream);
-  ut_input_stream_read(self->deflate_decoder, deflate_read_cb, self);
+  ut_input_stream_read(self->deflate_decoder, object, deflate_read_cb);
   return object;
 }
 

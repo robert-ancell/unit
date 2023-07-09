@@ -10,8 +10,8 @@ typedef struct {
 } UtListInputStream;
 
 static void ut_list_input_stream_read(UtObject *object,
-                                      UtInputStreamCallback callback,
-                                      void *user_data) {
+                                      UtObject *callback_object,
+                                      UtInputStreamCallback callback) {
   UtListInputStream *self = (UtListInputStream *)object;
 
   assert(!self->read);
@@ -19,7 +19,7 @@ static void ut_list_input_stream_read(UtObject *object,
   self->read = true;
 
   size_t data_length = ut_list_get_length(self->data);
-  size_t n_used = callback(user_data, self->data, true);
+  size_t n_used = callback(callback_object, self->data, true);
   assert(n_used <= data_length);
 }
 

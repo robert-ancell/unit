@@ -11,8 +11,8 @@
 typedef struct {
   UtObject object;
   UtObject *input_stream;
+  UtObject *callback_object;
   UtInputStreamCallback callback;
-  void *user_data;
 
   size_t window_size;
 
@@ -219,8 +219,8 @@ static void write_distance(UtDeflateEncoder *self, size_t distance) {
   }
 }
 
-static size_t read_cb(void *user_data, UtObject *data, bool complete) {
-  UtDeflateEncoder *self = user_data;
+static size_t read_cb(UtObject *object, UtObject *data, bool complete) {
+  UtDeflateEncoder *self = (UtDeflateEncoder *)object;
 
   if (!self->written_header) {
     write_block_header(self, true, BLOCK_STATIC_HUFFMAN);
@@ -265,7 +265,10 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
   }
 
   if (ut_list_get_length(self->buffer) > 0 || complete) {
-    size_t n = self->callback(self->user_data, self->buffer, complete);
+    size_t n =
+        self->callback_object != NULL
+            ? self->callback(self->callback_object, self->buffer, complete)
+            : 0;
     ut_list_remove(self->buffer, 0, n);
   }
 
@@ -308,21 +311,21 @@ static void ut_deflate_encoder_cleanup(UtObject *object) {
   ut_input_stream_close(self->input_stream);
 
   ut_object_unref(self->input_stream);
+  ut_object_weak_unref(&self->callback_object);
   ut_object_unref(self->literal_length_huffman_encoder);
   ut_object_unref(self->distance_huffman_encoder);
   ut_object_unref(self->dictionary);
   ut_object_unref(self->buffer);
 }
 
-static void ut_deflate_encoder_read(UtObject *object,
-                                    UtInputStreamCallback callback,
-                                    void *user_data) {
+static void ut_deflate_encoder_read(UtObject *object, UtObject *callback_object,
+                                    UtInputStreamCallback callback) {
   UtDeflateEncoder *self = (UtDeflateEncoder *)object;
   assert(callback != NULL);
   assert(self->callback == NULL);
+  ut_object_weak_ref(callback_object, &self->callback_object);
   self->callback = callback;
-  self->user_data = user_data;
-  ut_input_stream_read(self->input_stream, read_cb, self);
+  ut_input_stream_read(self->input_stream, object, read_cb);
 }
 
 static void ut_deflate_encoder_close(UtObject *object) {

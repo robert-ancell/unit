@@ -7,8 +7,8 @@ typedef struct {
   UtObject *input;
   UtObject *buffer;
 
+  UtObject *callback_object;
   UtInputStreamCallback callback;
-  void *user_data;
 } UtUtf8Decoder;
 
 static void ut_utf8_decoder_init(UtObject *object) {
@@ -20,10 +20,11 @@ static void ut_utf8_decoder_cleanup(UtObject *object) {
   UtUtf8Decoder *self = (UtUtf8Decoder *)object;
   ut_object_unref(self->input);
   ut_object_unref(self->buffer);
+  ut_object_weak_unref(&self->callback_object);
 }
 
-static size_t read_cb(void *user_data, UtObject *data, bool complete) {
-  UtUtf8Decoder *self = user_data;
+static size_t read_cb(UtObject *object, UtObject *data, bool complete) {
+  UtUtf8Decoder *self = (UtUtf8Decoder *)object;
 
   size_t utf8_data_length = ut_list_get_length(data);
   size_t offset = 0;
@@ -80,21 +81,20 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
     ut_uint32_list_append(self->buffer, code_point);
   }
 
-  size_t n_used = self->callback(self->user_data, self->buffer, complete);
+  size_t n_used = self->callback(self->callback_object, self->buffer, complete);
   ut_list_remove(self->buffer, 0, n_used);
 
   return offset;
 }
 
-static void ut_utf8_decoder_read(UtObject *object,
-                                 UtInputStreamCallback callback,
-                                 void *user_data) {
+static void ut_utf8_decoder_read(UtObject *object, UtObject *callback_object,
+                                 UtInputStreamCallback callback) {
   UtUtf8Decoder *self = (UtUtf8Decoder *)object;
   assert(callback != NULL);
   assert(self->callback == NULL);
+  ut_object_weak_ref(callback_object, &self->callback_object);
   self->callback = callback;
-  self->user_data = user_data;
-  ut_input_stream_read(self->input, read_cb, self);
+  ut_input_stream_read(self->input, object, read_cb);
 }
 
 static void ut_utf8_decoder_close(UtObject *object) {

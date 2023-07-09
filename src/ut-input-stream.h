@@ -5,22 +5,22 @@
 
 #pragma once
 
-typedef size_t (*UtInputStreamCallback)(void *user_data, UtObject *data,
+typedef size_t (*UtInputStreamCallback)(UtObject *object, UtObject *data,
                                         bool complete);
 
 typedef struct {
-  void (*read)(UtObject *object, UtInputStreamCallback callback,
-               void *user_data);
+  void (*read)(UtObject *object, UtObject *callback_object,
+               UtInputStreamCallback callback);
   void (*close)(UtObject *object);
 } UtInputStreamInterface;
 
 extern int ut_input_stream_id;
 
-void ut_input_stream_read(UtObject *object, UtInputStreamCallback callback,
-                          void *user_data);
+void ut_input_stream_read(UtObject *object, UtObject *callback_object,
+                          UtInputStreamCallback callback);
 
-void ut_input_stream_read_all(UtObject *object, UtInputStreamCallback callback,
-                              void *user_data);
+void ut_input_stream_read_all(UtObject *object, UtObject *callback_object,
+                              UtInputStreamCallback callback);
 
 UtObject *ut_input_stream_read_sync(UtObject *object);
 

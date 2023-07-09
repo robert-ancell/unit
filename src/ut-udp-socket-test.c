@@ -3,9 +3,9 @@
 #include "ut.h"
 
 // Handle echo requests and send back.
-static size_t echo_read_cb(void *user_data, UtObject *datagrams,
+static size_t echo_read_cb(UtObject *object, UtObject *datagrams,
                            bool complete) {
-  UtObject *socket = user_data;
+  UtObject *socket = object;
 
   size_t datagrams_length = ut_list_get_length(datagrams);
   for (size_t i = 0; i < datagrams_length; i++) {
@@ -17,7 +17,7 @@ static size_t echo_read_cb(void *user_data, UtObject *datagrams,
 }
 
 // Get the response from the echo server
-static size_t read_cb(void *user_data, UtObject *datagrams, bool complete) {
+static size_t read_cb(UtObject *object, UtObject *datagrams, bool complete) {
   ut_assert_int_equal(ut_list_get_length(datagrams), 1);
   UtObjectRef datagram = ut_list_get_element(datagrams, 0);
   UtObject *data = ut_udp_datagram_get_data(datagram);
@@ -32,13 +32,14 @@ static size_t read_cb(void *user_data, UtObject *datagrams, bool complete) {
 int main(int argc, char **argv) {
   // Set up a socket that echos back requests.
   UtObjectRef echo_socket = ut_udp_socket_new_ipv4();
-  ut_input_stream_read(echo_socket, echo_read_cb, echo_socket);
+  ut_input_stream_read(echo_socket, echo_socket, echo_read_cb);
   ut_udp_socket_bind(echo_socket, 0);
   uint16_t echo_port = ut_udp_socket_get_port(echo_socket);
 
   // Create a socket to send to the echo port.
   UtObjectRef udp_socket = ut_udp_socket_new_ipv4();
-  ut_input_stream_read(udp_socket, read_cb, NULL);
+  UtObjectRef dummy_object = ut_null_new();
+  ut_input_stream_read(udp_socket, dummy_object, read_cb);
 
   // Send a message.
   UtObjectRef address = ut_ipv4_address_new_loopback();

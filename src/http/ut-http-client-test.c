@@ -2,8 +2,10 @@
 
 #include "ut.h"
 
-static size_t http_read_cb(void *user_data, UtObject *data, bool complete) {
-  UtObject *socket = user_data;
+static UtObject *listen_sockets = NULL;
+
+static size_t http_read_cb(UtObject *object, UtObject *data, bool complete) {
+  UtObject *socket = object;
   UtObjectRef text = ut_string_new_from_utf8(data);
 
   UtObjectRef reply = ut_string_new("");
@@ -19,10 +21,11 @@ static size_t http_read_cb(void *user_data, UtObject *data, bool complete) {
 }
 
 static void http_listen_cb(UtObject *object, UtObject *socket) {
-  ut_input_stream_read(socket, http_read_cb, ut_object_ref(socket));
+  ut_list_append(listen_sockets, socket);
+  ut_input_stream_read(socket, socket, http_read_cb);
 }
 
-static size_t read_cb(void *user_data, UtObject *data, bool complete) {
+static size_t read_cb(UtObject *object, UtObject *data, bool complete) {
   UtObjectRef text = ut_string_new_from_utf8(data);
 
   ut_assert_cstring_equal(ut_string_get_text(text),
@@ -44,13 +47,15 @@ static void http_response_cb(UtObject *object, UtObject *response) {
     }
   }
   ut_assert_cstring_equal(content_type, "application/json");
-  ut_input_stream_read_all(ut_http_response_get_body(response), read_cb, NULL);
+  ut_input_stream_read_all(ut_http_response_get_body(response), object,
+                           read_cb);
 }
 
 int main(int argc, char **argv) {
   // Set up a test HTTP server
   UtObjectRef http_socket = ut_tcp_server_socket_new_ipv4(0);
   UtObjectRef dummy_object = ut_null_new();
+  listen_sockets = ut_list_new();
   ut_assert_true(ut_tcp_server_socket_listen(http_socket, dummy_object,
                                              http_listen_cb, NULL));
   uint16_t http_port = ut_tcp_server_socket_get_port(http_socket);
@@ -61,6 +66,8 @@ int main(int argc, char **argv) {
                               http_response_cb);
 
   ut_event_loop_run();
+
+  ut_object_unref(listen_sockets);
 
   return 0;
 }

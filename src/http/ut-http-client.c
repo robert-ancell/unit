@@ -89,8 +89,8 @@ static void ut_http_client_cleanup(UtObject *object) {
   ut_object_unref(self->cancel);
 }
 
-static size_t read_cb(void *user_data, UtObject *data, bool complete) {
-  HttpRequest *request = user_data;
+static size_t read_cb(UtObject *object, UtObject *data, bool complete) {
+  HttpRequest *request = (HttpRequest *)object;
 
   bool headers_done =
       ut_http_message_decoder_get_headers_done(request->message_decoder);
@@ -128,7 +128,7 @@ static void connect_cb(UtObject *object, UtObject *error) {
       request->body);
   ut_http_message_encoder_encode(request->message_encoder);
   ut_http_message_decoder_read(request->message_decoder);
-  ut_input_stream_read(request->tcp_socket, read_cb, request);
+  ut_input_stream_read(request->tcp_socket, object, read_cb);
 }
 
 static void lookup_cb(void *user_data, UtObject *addresses) {

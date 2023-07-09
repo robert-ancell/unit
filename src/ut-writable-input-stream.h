@@ -5,7 +5,7 @@
 
 #pragma once
 
-typedef void (*UtWritableInputStreamReadingCallback)(void *user_data,
+typedef void (*UtWritableInputStreamReadingCallback)(UtObject *object,
                                                      UtObject *stream);
 
 UtObject *ut_writable_input_stream_new();

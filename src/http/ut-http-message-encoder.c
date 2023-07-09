@@ -103,8 +103,8 @@ static size_t write_body_chunked(UtHttpMessageEncoder *self, UtObject *data,
   return data_length;
 }
 
-static size_t body_read_cb(void *user_data, UtObject *data, bool complete) {
-  UtHttpMessageEncoder *self = user_data;
+static size_t body_read_cb(UtObject *object, UtObject *data, bool complete) {
+  UtHttpMessageEncoder *self = (UtHttpMessageEncoder *)object;
 
   switch (self->body_length_format) {
   case BODY_LENGTH_FORMAT_EOF:
@@ -218,10 +218,10 @@ void ut_http_message_encoder_encode(UtObject *object) {
   }
 
   if (self->body != NULL) {
-    ut_input_stream_read(self->body, body_read_cb, self);
+    ut_input_stream_read(self->body, object, body_read_cb);
   } else {
     UtObjectRef d = ut_uint8_list_new();
-    body_read_cb(self, d, true);
+    body_read_cb((UtObject *)self, d, true);
   }
 }
 

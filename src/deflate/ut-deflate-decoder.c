@@ -23,8 +23,8 @@ typedef enum {
 typedef struct {
   UtObject object;
   UtObject *input_stream;
+  UtObject *callback_object;
   UtInputStreamCallback callback;
-  void *user_data;
 
   uint8_t bit_buffer;
   uint8_t bit_count;
@@ -503,8 +503,8 @@ static bool read_distance_extension(UtDeflateDecoder *self, UtObject *data,
   return true;
 }
 
-static size_t read_cb(void *user_data, UtObject *data, bool complete) {
-  UtDeflateDecoder *self = user_data;
+static size_t read_cb(UtObject *object, UtObject *data, bool complete) {
+  UtDeflateDecoder *self = (UtDeflateDecoder *)object;
 
   size_t offset = 0;
   bool decoding = true;
@@ -557,7 +557,9 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
       break;
     case DECODER_STATE_ERROR:
       ut_input_stream_close(self->input_stream);
-      self->callback(self->user_data, self->error, true);
+      if (self->callback_object != NULL) {
+        self->callback(self->callback_object, self->error, true);
+      }
       return offset;
     }
   }
@@ -566,8 +568,10 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
   UtObjectRef unread_buffer =
       ut_list_get_sublist(self->buffer, self->buffer_read_offset,
                           buffer_length - self->buffer_read_offset);
-  size_t n_used = self->callback(self->user_data, unread_buffer,
-                                 self->state == DECODER_STATE_DONE);
+  size_t n_used = self->callback_object != NULL
+                      ? self->callback(self->callback_object, unread_buffer,
+                                       self->state == DECODER_STATE_DONE)
+                      : 0;
   self->buffer_read_offset += n_used;
 
   return offset;
@@ -585,6 +589,7 @@ static void ut_deflate_decoder_cleanup(UtObject *object) {
   ut_input_stream_close(self->input_stream);
 
   ut_object_unref(self->input_stream);
+  ut_object_weak_unref(&self->callback_object);
   ut_object_unref(self->error);
   ut_object_unref(self->code_width_huffman_decoder);
   ut_object_unref(self->code_widths);
@@ -593,15 +598,14 @@ static void ut_deflate_decoder_cleanup(UtObject *object) {
   ut_object_unref(self->buffer);
 }
 
-static void ut_deflate_decoder_read(UtObject *object,
-                                    UtInputStreamCallback callback,
-                                    void *user_data) {
+static void ut_deflate_decoder_read(UtObject *object, UtObject *callback_object,
+                                    UtInputStreamCallback callback) {
   UtDeflateDecoder *self = (UtDeflateDecoder *)object;
   assert(callback != NULL);
   assert(self->callback == NULL);
+  ut_object_weak_ref(callback_object, &self->callback_object);
   self->callback = callback;
-  self->user_data = user_data;
-  ut_input_stream_read(self->input_stream, read_cb, self);
+  ut_input_stream_read(self->input_stream, object, read_cb);
 }
 
 static void ut_deflate_decoder_close(UtObject *object) {

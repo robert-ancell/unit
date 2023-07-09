@@ -63,18 +63,18 @@ static void ut_local_file_close(UtObject *object) {
   }
 }
 
-static void ut_local_file_read(UtObject *object, UtInputStreamCallback callback,
-                               void *user_data) {
+static void ut_local_file_read(UtObject *object, UtObject *callback_object,
+                               UtInputStreamCallback callback) {
   UtLocalFile *self = (UtLocalFile *)object;
 
   if (self->error != NULL) {
-    callback(user_data, self->error, true);
+    callback(callback_object, self->error, true);
     return;
   }
 
   assert(self->input_stream != NULL);
 
-  ut_input_stream_read(self->input_stream, callback, user_data);
+  ut_input_stream_read(self->input_stream, callback_object, callback);
 }
 
 static void ut_local_file_close_stream(UtObject *object) {

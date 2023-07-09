@@ -173,8 +173,8 @@ static void process_message(UtDBusServerClient *self, UtObject *message) {
   }
 }
 
-static size_t messages_cb(void *user_data, UtObject *messages, bool complete) {
-  UtDBusServerClient *self = user_data;
+static size_t messages_cb(UtObject *object, UtObject *messages, bool complete) {
+  UtDBusServerClient *self = (UtDBusServerClient *)object;
 
   size_t messages_length = ut_list_get_length(messages);
   for (size_t i = 0; i < messages_length; i++) {
@@ -193,11 +193,11 @@ static void auth_complete_cb(UtObject *object, UtObject *error) {
   self->message_input_stream = ut_writable_input_stream_new();
   self->message_decoder =
       ut_dbus_message_decoder_new(self->message_input_stream);
-  ut_input_stream_read(self->message_decoder, messages_cb, self);
+  ut_input_stream_read(self->message_decoder, object, messages_cb);
 }
 
-static size_t read_cb(void *user_data, UtObject *data, bool complete) {
-  UtDBusServerClient *self = user_data;
+static size_t read_cb(UtObject *object, UtObject *data, bool complete) {
+  UtDBusServerClient *self = (UtDBusServerClient *)object;
 
   size_t data_length = ut_list_get_length(data);
   size_t offset = 0;
@@ -241,7 +241,7 @@ static void listen_cb(UtObject *object, UtObject *socket) {
   ut_list_append(self->clients, client_object);
 
   client->state = DECODER_STATE_AUTHENTICATION;
-  ut_input_stream_read(socket, read_cb, client);
+  ut_input_stream_read(socket, client_object, read_cb);
 
   client->auth_input_stream = ut_writable_input_stream_new();
   client->auth_server =

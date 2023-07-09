@@ -10,8 +10,8 @@ typedef struct {
   UtObject *input_stream;
 
   // Encoded data reader.
+  UtObject *callback_object;
   UtInputStreamCallback callback;
-  void *user_data;
 
   // Number of symbols.
   size_t n_symbols;
@@ -131,8 +131,8 @@ static void write_code(UtLzwEncoder *self, uint16_t code) {
   }
 }
 
-static size_t read_cb(void *user_data, UtObject *data, bool complete) {
-  UtLzwEncoder *self = user_data;
+static size_t read_cb(UtObject *object, UtObject *data, bool complete) {
+  UtLzwEncoder *self = (UtLzwEncoder *)object;
 
   size_t data_length = ut_list_get_length(data);
   size_t offset = 0;
@@ -176,7 +176,9 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
         self->unused_bits == 0 || complete
             ? ut_object_ref(self->buffer)
             : ut_list_get_sublist(self->buffer, 0, buffer_length - 1);
-    size_t n = self->callback(self->user_data, b, complete);
+    size_t n = self->callback_object != NULL
+                   ? self->callback(self->callback_object, b, complete)
+                   : 0;
     ut_list_remove(self->buffer, 0, n);
   }
 
@@ -194,25 +196,25 @@ static void ut_lzw_encoder_cleanup(UtObject *object) {
   ut_input_stream_close(self->input_stream);
 
   ut_object_unref(self->input_stream);
+  ut_object_weak_unref(&self->callback_object);
   ut_object_unref(self->dictionary);
   ut_object_unref(self->buffer);
 }
 
-static void ut_lzw_encoder_read(UtObject *object,
-                                UtInputStreamCallback callback,
-                                void *user_data) {
+static void ut_lzw_encoder_read(UtObject *object, UtObject *callback_object,
+                                UtInputStreamCallback callback) {
   UtLzwEncoder *self = (UtLzwEncoder *)object;
 
   assert(callback != NULL);
   assert(self->callback == NULL);
 
+  ut_object_weak_ref(callback_object, &self->callback_object);
   self->callback = callback;
-  self->user_data = user_data;
 
   // Always starts with a clear code.
   write_code(self, ut_lzw_dictionary_get_clear_code(self->dictionary));
 
-  ut_input_stream_read(self->input_stream, read_cb, self);
+  ut_input_stream_read(self->input_stream, object, read_cb);
 }
 
 static void ut_lzw_encoder_close(UtObject *object) {

@@ -2,7 +2,7 @@
 
 #include "ut.h"
 
-static size_t read_cb(void *user_data, UtObject *data, bool complete) {
+static size_t read_cb(UtObject *object, UtObject *data, bool complete) {
   UtObjectRef text = ut_string_new_from_utf8(data);
   printf("read - '%s'\n", ut_string_get_text(text));
   ut_event_loop_return(NULL);
@@ -12,7 +12,8 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
 int main(int argc, char **argv) {
   UtObjectRef readme = ut_local_file_new("README.md");
   ut_file_open_read(readme);
-  ut_input_stream_read_all(readme, read_cb, NULL);
+  UtObjectRef dummy_object = ut_null_new();
+  ut_input_stream_read_all(readme, dummy_object, read_cb);
 
   UtObjectRef test_file = ut_local_file_new("TEST");
   ut_file_open_write(test_file, true);

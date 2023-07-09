@@ -137,8 +137,8 @@ static char *read_line(UtObject *data, size_t *offset) {
   return NULL;
 }
 
-static size_t read_cb(void *user_data, UtObject *data, bool complete) {
-  UtDBusAuthClient *self = user_data;
+static size_t read_cb(UtObject *object, UtObject *data, bool complete) {
+  UtDBusAuthClient *self = (UtDBusAuthClient *)object;
 
   size_t offset = 0;
   while (self->state != AUTH_STATE_DONE) {
@@ -203,7 +203,7 @@ void ut_dbus_auth_client_run(UtObject *object, UtObject *callback_object,
   ut_object_weak_ref(callback_object, &self->complete_callback_object);
   self->complete_callback = callback;
 
-  ut_input_stream_read(self->input_stream, read_cb, self);
+  ut_input_stream_read(self->input_stream, object, read_cb);
 
   // Send empty byte, which was used for sending credentials (no longer
   // required).

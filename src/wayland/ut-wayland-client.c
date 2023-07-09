@@ -41,8 +41,8 @@ static void decode_event(UtWaylandClient *self, uint32_t id, uint16_t code,
   }
 }
 
-static size_t read_cb(void *user_data, UtObject *data, bool complete) {
-  UtWaylandClient *self = user_data;
+static size_t read_cb(UtObject *object, UtObject *data, bool complete) {
+  UtWaylandClient *self = (UtWaylandClient *)object;
 
   size_t data_length = ut_list_get_length(data);
   size_t offset = 0;
@@ -132,7 +132,7 @@ void ut_wayland_client_connect(UtObject *object) {
   UtWaylandClient *self = (UtWaylandClient *)object;
 
   ut_tcp_socket_connect(self->socket, NULL, NULL);
-  ut_input_stream_read(self->socket, read_cb, self);
+  ut_input_stream_read(self->socket, object, read_cb);
 
   self->display = ut_wayland_display_new(object, &display_callbacks, self);
 }

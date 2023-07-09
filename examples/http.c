@@ -2,7 +2,7 @@
 
 #include "ut.h"
 
-static size_t body_cb(void *user_data, UtObject *data, bool complete) {
+static size_t body_cb(UtObject *object, UtObject *data, bool complete) {
   UtObjectRef data_string = ut_string_new_from_utf8(data);
   printf("%s", ut_string_get_text(data_string));
 
@@ -20,7 +20,8 @@ static void response_cb(UtObject *object, UtObject *response) {
     return;
   }
 
-  ut_input_stream_read_all(ut_http_response_get_body(response), body_cb, NULL);
+  ut_input_stream_read_all(ut_http_response_get_body(response), object,
+                           body_cb);
 }
 
 int main(int argc, char **argv) {

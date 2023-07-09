@@ -23,8 +23,8 @@ typedef struct {
   UtObject *read_buffer;
   size_t n_read;
   bool is_complete;
+  UtObject *read_callback_object;
   UtInputStreamCallback read_callback;
-  void *read_user_data;
 } UtTcpSocket;
 
 static void ut_tcp_socket_cleanup(UtObject *object) {
@@ -111,23 +111,26 @@ static void read_cb(UtObject *object) {
   if (fds != NULL) {
     data_with_fds = ut_uint8_array_with_fds_new(data, fds);
   }
-  size_t n_used = self->read_callback(
-      self->read_user_data, data_with_fds != NULL ? data_with_fds : data,
-      self->is_complete);
+  size_t n_used =
+      self->read_callback_object != NULL
+          ? self->read_callback(self->read_callback_object,
+                                data_with_fds != NULL ? data_with_fds : data,
+                                self->is_complete)
+          : 0;
   assert(n_used <= self->n_read);
   ut_list_remove(self->read_buffer, 0, n_used);
   self->n_read -= n_used;
 }
 
-static void ut_tcp_socket_read(UtObject *object, UtInputStreamCallback callback,
-                               void *user_data) {
+static void ut_tcp_socket_read(UtObject *object, UtObject *callback_object,
+                               UtInputStreamCallback callback) {
   UtTcpSocket *self = (UtTcpSocket *)object;
 
   assert(self->read_callback == NULL);
   assert(callback != NULL);
 
+  ut_object_weak_ref(callback_object, &self->read_callback_object);
   self->read_callback = callback;
-  self->read_user_data = user_data;
 
   self->read_buffer = ut_uint8_array_new();
   self->read_watch = ut_event_loop_add_read_watch(self->fd, object, read_cb);

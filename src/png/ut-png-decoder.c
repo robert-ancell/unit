@@ -538,9 +538,9 @@ static bool is_complete(UtPngDecoder *self) {
 }
 
 // Process zlib decoded image data.
-static size_t data_decoder_read_cb(void *user_data, UtObject *data,
+static size_t data_decoder_read_cb(UtObject *object, UtObject *data,
                                    bool complete) {
-  UtPngDecoder *self = user_data;
+  UtPngDecoder *self = (UtPngDecoder *)object;
 
   if (ut_object_implements_error(data)) {
     ut_cstring_ref description = ut_cstring_new_printf(
@@ -1155,8 +1155,8 @@ static size_t decode_chunk(UtPngDecoder *self, UtObject *data) {
   return total_chunk_length;
 }
 
-static size_t read_cb(void *user_data, UtObject *data, bool complete) {
-  UtPngDecoder *self = user_data;
+static size_t read_cb(UtObject *object, UtObject *data, bool complete) {
+  UtPngDecoder *self = (UtPngDecoder *)object;
 
   if (ut_object_implements_error(data)) {
     ut_cstring_ref description = ut_cstring_new_printf(
@@ -1243,9 +1243,9 @@ void ut_png_decoder_decode(UtObject *object, UtObject *callback_object,
   self->image_data_decoder_input_stream = ut_buffered_input_stream_new();
   self->image_data_decoder =
       ut_zlib_decoder_new(self->image_data_decoder_input_stream);
-  ut_input_stream_read(self->image_data_decoder, data_decoder_read_cb, self);
+  ut_input_stream_read(self->image_data_decoder, object, data_decoder_read_cb);
 
-  ut_input_stream_read(self->input_stream, read_cb, self);
+  ut_input_stream_read(self->input_stream, object, read_cb);
 }
 
 UtObject *ut_png_decoder_decode_sync(UtObject *object) {

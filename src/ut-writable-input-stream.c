@@ -6,26 +6,27 @@ typedef struct {
   UtObject object;
   UtObject *reading_callback_object;
   UtWritableInputStreamReadingCallback reading_callback;
+  UtObject *callback_object;
   UtInputStreamCallback callback;
-  void *user_data;
   bool closed;
 } UtWritableInputStream;
 
 static void ut_writable_input_stream_cleanup(UtObject *object) {
   UtWritableInputStream *self = (UtWritableInputStream *)object;
   ut_object_weak_unref(&self->reading_callback_object);
+  ut_object_weak_unref(&self->callback_object);
 }
 
 static void ut_writable_input_stream_read(UtObject *object,
-                                          UtInputStreamCallback callback,
-                                          void *user_data) {
+                                          UtObject *callback_object,
+                                          UtInputStreamCallback callback) {
   UtWritableInputStream *self = (UtWritableInputStream *)object;
   assert(callback != NULL);
   assert(self->callback == NULL);
   assert(!self->closed);
 
+  ut_object_weak_ref(callback_object, &self->callback_object);
   self->callback = callback;
-  self->user_data = user_data;
 
   if (self->reading_callback_object != NULL && self->reading_callback != NULL) {
     self->reading_callback(self->reading_callback_object, object);
@@ -76,7 +77,9 @@ size_t ut_writable_input_stream_write(UtObject *object, UtObject *data,
 
   assert(self->callback != NULL);
 
-  return self->callback(self->user_data, data, complete);
+  return self->callback_object != NULL
+             ? self->callback(self->callback_object, data, complete)
+             : 0;
 }
 
 bool ut_object_is_writable_input_stream(UtObject *object) {

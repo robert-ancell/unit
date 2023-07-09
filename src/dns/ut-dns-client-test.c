@@ -3,8 +3,9 @@
 #include "ut.h"
 
 // Handle DNS requests and send back.
-static size_t dns_read_cb(void *user_data, UtObject *datagrams, bool complete) {
-  UtObject *socket = user_data;
+static size_t dns_read_cb(UtObject *object, UtObject *datagrams,
+                          bool complete) {
+  UtObject *socket = object;
 
   UtObjectRef datagram = ut_list_get_element(datagrams, 0);
   UtObject *request = ut_udp_datagram_get_data(datagram);
@@ -56,7 +57,7 @@ static void lookup_cb(UtObject *object, UtObject *address) {
 int main(int argc, char **argv) {
   // Make a mock DNS server
   UtObjectRef dns_socket = ut_udp_socket_new_ipv4();
-  ut_input_stream_read(dns_socket, dns_read_cb, dns_socket);
+  ut_input_stream_read(dns_socket, dns_socket, dns_read_cb);
   ut_udp_socket_bind(dns_socket, 0);
   uint16_t dns_port = ut_udp_socket_get_port(dns_socket);
 

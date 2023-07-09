@@ -1483,8 +1483,8 @@ static size_t decode_marker(UtJpegDecoder *self, UtObject *data) {
   return 2;
 }
 
-static size_t read_cb(void *user_data, UtObject *data, bool complete) {
-  UtJpegDecoder *self = user_data;
+static size_t read_cb(UtObject *object, UtObject *data, bool complete) {
+  UtJpegDecoder *self = (UtJpegDecoder *)object;
 
   if (ut_object_implements_error(data)) {
     set_error(self, "Failed to read JPEG data: %s",
@@ -1603,7 +1603,7 @@ void ut_jpeg_decoder_decode(UtObject *object, UtObject *callback_object,
   ut_object_weak_ref(callback_object, &self->callback_object);
   self->callback = callback;
 
-  ut_input_stream_read(self->input_stream, read_cb, self);
+  ut_input_stream_read(self->input_stream, object, read_cb);
 }
 
 UtObject *ut_jpeg_decoder_decode_sync(UtObject *object) {

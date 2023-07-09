@@ -5,9 +5,8 @@ static UtObject *get_utf8_data(const char *value) {
   return ut_string_get_utf8(string);
 }
 
-static size_t read_cb(void *user_data, UtObject *data, bool complete) {
-  UtObject *result = user_data;
-  ut_list_append_list(result, data);
+static size_t read_cb(UtObject *object, UtObject *data, bool complete) {
+  ut_list_append_list(object, data);
   return ut_list_get_length(data);
 }
 
@@ -93,7 +92,7 @@ int main(int argc, char **argv) {
   UtObjectRef short_write_encoder =
       ut_deflate_encoder_new(short_write_data_stream);
   UtObjectRef short_write_result = ut_uint8_array_new();
-  ut_input_stream_read(short_write_encoder, read_cb, short_write_result);
+  ut_input_stream_read(short_write_encoder, short_write_result, read_cb);
   UtObjectRef short_write_data = get_utf8_data("hello");
   size_t short_write_data_length = ut_list_get_length(short_write_data);
   for (size_t i = 0; i < short_write_data_length; i++) {

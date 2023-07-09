@@ -4,8 +4,8 @@
 
 typedef struct {
   UtObject object;
+  UtObject *callback_object;
   UtInputStreamCallback callback;
-  void *user_data;
   UtObject *buffer;
   bool closed;
   bool complete;
@@ -13,7 +13,10 @@ typedef struct {
 
 static void send_buffer(UtBufferedInputStream *self) {
   size_t buffer_length = ut_list_get_length(self->buffer);
-  size_t n_used = self->callback(self->user_data, self->buffer, self->complete);
+  size_t n_used =
+      self->callback_object != NULL
+          ? self->callback(self->callback_object, self->buffer, self->complete)
+          : 0;
   if (n_used < buffer_length) {
     ut_list_remove(self->buffer, 0, n_used);
   } else {
@@ -24,19 +27,20 @@ static void send_buffer(UtBufferedInputStream *self) {
 
 static void ut_buffered_input_stream_cleanup(UtObject *object) {
   UtBufferedInputStream *self = (UtBufferedInputStream *)object;
+  ut_object_weak_unref(&self->callback_object);
   ut_object_unref(self->buffer);
 }
 
 static void ut_buffered_input_stream_read(UtObject *object,
-                                          UtInputStreamCallback callback,
-                                          void *user_data) {
+                                          UtObject *callback_object,
+                                          UtInputStreamCallback callback) {
   UtBufferedInputStream *self = (UtBufferedInputStream *)object;
   assert(callback != NULL);
   assert(self->callback == NULL);
   assert(!self->closed);
 
+  ut_object_weak_ref(callback_object, &self->callback_object);
   self->callback = callback;
-  self->user_data = user_data;
 
   if (self->buffer != NULL) {
     send_buffer(self);
@@ -86,7 +90,9 @@ void ut_buffered_input_stream_write(UtObject *object, UtObject *data,
     send_buffer(self);
   } else {
     size_t data_length = ut_list_get_length(data);
-    size_t n_used = self->callback(self->user_data, data, complete);
+    size_t n_used = self->callback_object != NULL
+                        ? self->callback(self->callback_object, data, complete)
+                        : 0;
     if (n_used < data_length) {
       UtObjectRef unused =
           ut_list_get_sublist(data, n_used, data_length - n_used);

@@ -228,8 +228,8 @@ static void process_message(UtDnsClient *self, UtObject *message) {
   }
 }
 
-static size_t read_cb(void *user_data, UtObject *datagrams, bool complete) {
-  UtDnsClient *self = user_data;
+static size_t read_cb(UtObject *object, UtObject *datagrams, bool complete) {
+  UtDnsClient *self = (UtDnsClient *)object;
 
   size_t datagrams_length = ut_list_get_length(datagrams);
   for (size_t i = 0; i < datagrams_length; i++) {
@@ -266,7 +266,7 @@ UtObject *ut_dns_client_new(UtObject *server_address, uint16_t port) {
   self->server_address = ut_object_ref(server_address);
   self->port = port;
   self->socket = ut_udp_socket_new_ipv4();
-  ut_input_stream_read(self->socket, read_cb, self);
+  ut_input_stream_read(self->socket, object, read_cb);
   return object;
 }
 

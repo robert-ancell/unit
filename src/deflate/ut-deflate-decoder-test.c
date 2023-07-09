@@ -1,8 +1,7 @@
 #include "ut.h"
 
-static size_t read_cb(void *user_data, UtObject *data, bool complete) {
-  UtObject *result = user_data;
-  ut_list_append_list(result, data);
+static size_t read_cb(UtObject *object, UtObject *data, bool complete) {
+  ut_list_append_list(object, data);
   return ut_list_get_length(data);
 }
 
@@ -114,7 +113,7 @@ int main(int argc, char **argv) {
   UtObjectRef short_write_decoder =
       ut_deflate_decoder_new(short_write_data_stream);
   UtObjectRef short_write_result = ut_uint8_array_new();
-  ut_input_stream_read(short_write_decoder, read_cb, short_write_result);
+  ut_input_stream_read(short_write_decoder, short_write_result, read_cb);
   UtObjectRef short_write_data =
       ut_uint8_list_new_from_hex_string("cb48cdc9c90700");
   size_t short_write_data_length = ut_list_get_length(short_write_data);

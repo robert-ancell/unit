@@ -14,8 +14,8 @@ typedef struct {
   bool complete;
   size_t block_size;
   UtObject *read_watch;
+  UtObject *callback_object;
   UtInputStreamCallback callback;
-  void *user_data;
 } UtFdInputStream;
 
 static void read_cb(UtObject *object) {
@@ -39,8 +39,10 @@ static void read_cb(UtObject *object) {
     self->complete = true;
   }
 
-  size_t n_used =
-      self->callback(self->user_data, self->read_buffer, self->complete);
+  size_t n_used = self->callback_object != NULL
+                      ? self->callback(self->callback_object, self->read_buffer,
+                                       self->complete)
+                      : 0;
   assert(n_used <= buffer_length);
   ut_list_remove(self->read_buffer, 0, n_used);
 }
@@ -57,18 +59,18 @@ static void ut_fd_input_stream_cleanup(UtObject *object) {
   ut_object_unref(self->fd);
   ut_object_unref(self->read_buffer);
   ut_object_unref(self->read_watch);
+  ut_object_weak_unref(&self->callback_object);
 }
 
-static void ut_fd_input_stream_read(UtObject *object,
-                                    UtInputStreamCallback callback,
-                                    void *user_data) {
+static void ut_fd_input_stream_read(UtObject *object, UtObject *callback_object,
+                                    UtInputStreamCallback callback) {
   UtFdInputStream *self = (UtFdInputStream *)object;
   assert(callback != NULL);
 
   assert(self->callback == NULL);
 
+  ut_object_weak_ref(callback_object, &self->callback_object);
   self->callback = callback;
-  self->user_data = user_data;
 
   self->read_watch = ut_event_loop_add_read_watch(self->fd, object, read_cb);
 }

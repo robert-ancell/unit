@@ -7,7 +7,7 @@ static void done(int return_code) {
   ut_event_loop_return(return_value);
 }
 
-static size_t decode_cb(void *user_data, UtObject *data, bool complete) {
+static size_t decode_cb(UtObject *object, UtObject *data, bool complete) {
   size_t data_length = ut_list_get_length(data);
 
   UtObjectRef image = ut_tiff_image_new_from_data(data);
@@ -94,7 +94,8 @@ int main(int argc, char **argv) {
 
   UtObjectRef file = ut_local_file_new(argv[1]);
   ut_file_open_read(file);
-  ut_input_stream_read_all(file, decode_cb, NULL);
+  UtObjectRef dummy_object = ut_null_new();
+  ut_input_stream_read_all(file, dummy_object, decode_cb);
 
   UtObjectRef return_code = ut_event_loop_run();
   return ut_int32_get_value(return_code);

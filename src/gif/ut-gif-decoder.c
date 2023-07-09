@@ -411,8 +411,8 @@ static size_t decode_image_color_table(UtGifDecoder *self, UtObject *data) {
   return self->color_table_length * 3;
 }
 
-static size_t lzw_read_cb(void *user_data, UtObject *data, bool complete) {
-  UtGifDecoder *self = user_data;
+static size_t lzw_read_cb(UtObject *object, UtObject *data, bool complete) {
+  UtGifDecoder *self = (UtGifDecoder *)object;
 
   if (ut_object_implements_error(data)) {
     ut_cstring_ref description = ut_cstring_new_printf(
@@ -481,7 +481,7 @@ static size_t decode_image_data(UtGifDecoder *self, UtObject *data) {
   self->lzw_input_stream = ut_writable_input_stream_new();
   self->lzw_decoder = ut_lzw_decoder_new_lsb(1 << lzw_min_code_size, 4096,
                                              self->lzw_input_stream);
-  ut_input_stream_read(self->lzw_decoder, lzw_read_cb, self);
+  ut_input_stream_read(self->lzw_decoder, (UtObject *)self, lzw_read_cb);
 
   self->state = DECODER_STATE_IMAGE_DATA_BLOCK;
 
@@ -512,8 +512,8 @@ static size_t decode_image_data_block(UtGifDecoder *self, UtObject *data) {
   return 1 + sub_block_length;
 }
 
-static size_t read_cb(void *user_data, UtObject *data, bool complete) {
-  UtGifDecoder *self = user_data;
+static size_t read_cb(UtObject *object, UtObject *data, bool complete) {
+  UtGifDecoder *self = (UtGifDecoder *)object;
 
   if (ut_object_implements_error(data)) {
     ut_cstring_ref description = ut_cstring_new_printf(
@@ -624,7 +624,7 @@ void ut_gif_decoder_decode(UtObject *object, UtObject *callback_object,
   ut_object_weak_ref(callback_object, &self->callback_object);
   self->callback = callback;
 
-  ut_input_stream_read(self->input_stream, read_cb, self);
+  ut_input_stream_read(self->input_stream, object, read_cb);
 }
 
 UtObject *ut_gif_decoder_decode_sync(UtObject *object) {

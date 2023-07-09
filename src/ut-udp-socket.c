@@ -17,14 +17,15 @@ typedef struct {
   UtObject *fd;
   UtObject *watch;
   UtObject *read_buffer;
+  UtObject *read_callback_object;
   UtInputStreamCallback read_callback;
-  void *read_user_data;
 } UtUdpSocket;
 
 static void ut_udp_socket_cleanup(UtObject *object) {
   UtUdpSocket *self = (UtUdpSocket *)object;
   ut_object_unref(self->fd);
   ut_object_unref(self->watch);
+  ut_object_weak_unref(&self->read_callback_object);
 }
 
 static void read_cb(UtObject *object) {
@@ -63,22 +64,24 @@ static void read_cb(UtObject *object) {
 
   UtObjectRef datagram = ut_udp_datagram_new(address, port, data);
   ut_list_append(self->read_buffer, datagram);
-  size_t n_used =
-      self->read_callback(self->read_user_data, self->read_buffer, false);
+  size_t n_used = self->read_callback_object != NULL
+                      ? self->read_callback(self->read_callback_object,
+                                            self->read_buffer, false)
+                      : 0;
   assert(n_used <= ut_list_get_length(self->read_buffer));
   ut_list_remove(self->read_buffer, 0, n_used);
 }
 
-static void ut_udp_socket_read(UtObject *object, UtInputStreamCallback callback,
-                               void *user_data) {
+static void ut_udp_socket_read(UtObject *object, UtObject *callback_object,
+                               UtInputStreamCallback callback) {
   assert(ut_object_is_udp_socket(object));
   UtUdpSocket *self = (UtUdpSocket *)object;
 
   assert(self->read_callback == NULL);
   assert(callback != NULL);
 
+  ut_object_weak_ref(callback_object, &self->read_callback_object);
   self->read_callback = callback;
-  self->read_user_data = user_data;
 
   self->read_buffer = ut_list_new();
   self->watch = ut_event_loop_add_read_watch(self->fd, object, read_cb);

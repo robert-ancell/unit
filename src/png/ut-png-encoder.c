@@ -161,9 +161,8 @@ static void write_background(UtPngEncoder *self, UtObject *background_color) {
   write_chunk(self, chunk);
 }
 
-static size_t zlib_data_cb(void *user_data, UtObject *data, bool complete) {
-  UtObject *chunk = user_data;
-  ut_list_append_list(chunk, data);
+static size_t zlib_data_cb(UtObject *object, UtObject *data, bool complete) {
+  ut_list_append_list(object, data);
   return ut_list_get_length(data);
 }
 
@@ -186,7 +185,7 @@ static void write_image_data(UtPngEncoder *self) {
   UtObjectRef zlib_input_stream = ut_buffered_input_stream_new();
   UtObjectRef zlib_encoder = ut_zlib_encoder_new_full(
       UT_ZLIB_COMPRESSION_LEVEL_DEFAULT, window_size, zlib_input_stream);
-  ut_input_stream_read(zlib_encoder, zlib_data_cb, chunk);
+  ut_input_stream_read(zlib_encoder, chunk, zlib_data_cb);
 
   uint8_t filter_type = 0;
   UtObjectRef filter_data = ut_uint8_array_new_from_data(&filter_type, 1);

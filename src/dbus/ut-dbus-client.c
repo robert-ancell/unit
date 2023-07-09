@@ -122,8 +122,8 @@ static void process_message(UtDBusClient *self, UtObject *message) {
   }
 }
 
-static size_t messages_cb(void *user_data, UtObject *messages, bool complete) {
-  UtDBusClient *self = user_data;
+static size_t messages_cb(UtObject *object, UtObject *messages, bool complete) {
+  UtDBusClient *self = (UtDBusClient *)object;
 
   size_t messages_length = ut_list_get_length(messages);
   for (size_t i = 0; i < messages_length; i++) {
@@ -142,7 +142,7 @@ static void auth_complete_cb(UtObject *object, const char *guid,
   self->message_input_stream = ut_writable_input_stream_new();
   self->message_decoder =
       ut_dbus_message_decoder_new(self->message_input_stream);
-  ut_input_stream_read(self->message_decoder, messages_cb, self);
+  ut_input_stream_read(self->message_decoder, object, messages_cb);
 
   // Send any queued messages.
   size_t message_queue_length = ut_list_get_length(self->message_queue);
@@ -161,8 +161,8 @@ static void auth_complete_cb(UtObject *object, const char *guid,
   }
 }
 
-static size_t read_cb(void *user_data, UtObject *data, bool complete) {
-  UtDBusClient *self = user_data;
+static size_t read_cb(UtObject *object, UtObject *data, bool complete) {
+  UtDBusClient *self = (UtDBusClient *)object;
 
   size_t data_length = ut_list_get_length(data);
   size_t offset = 0;
@@ -209,7 +209,7 @@ static void connect_cb(UtObject *object, UtObject *error) {
   }
 
   self->state = DECODER_STATE_AUTHENTICATION;
-  ut_input_stream_read(self->socket, read_cb, self);
+  ut_input_stream_read(self->socket, object, read_cb);
   ut_dbus_auth_client_run(self->auth_client, object, auth_complete_cb);
 }
 

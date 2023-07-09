@@ -701,8 +701,8 @@ static size_t decode_message(UtX11Client *self, UtObject *data) {
   }
 }
 
-static size_t read_cb(void *user_data, UtObject *data, bool complete) {
-  UtX11Client *self = user_data;
+static size_t read_cb(UtObject *object, UtObject *data, bool complete) {
+  UtX11Client *self = (UtX11Client *)object;
 
   size_t offset = 0;
   if (!self->setup_complete) {
@@ -843,7 +843,7 @@ void ut_x11_client_connect(UtObject *object, UtObject *callback_object,
   UtObjectRef address = ut_unix_socket_address_new(socket_path);
   self->socket = ut_tcp_socket_new(address, 0);
   ut_tcp_socket_connect(self->socket, object, connect_cb);
-  ut_input_stream_read(self->socket, read_cb, self);
+  ut_input_stream_read(self->socket, object, read_cb);
 }
 
 const char *ut_x11_client_get_vendor(UtObject *object) {
