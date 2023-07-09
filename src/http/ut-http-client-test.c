@@ -51,7 +51,8 @@ static void http_response_cb(void *user_data, UtObject *response) {
 int main(int argc, char **argv) {
   // Set up a test HTTP server
   UtObjectRef http_socket = ut_tcp_server_socket_new_ipv4(0);
-  ut_tcp_server_socket_listen(http_socket, http_listen_cb, NULL, NULL);
+  ut_assert_true(ut_tcp_server_socket_listen(http_socket, http_listen_cb, NULL,
+                                             NULL, NULL));
   uint16_t http_port = ut_tcp_server_socket_get_port(http_socket);
 
   UtObjectRef http_client = ut_http_client_new();

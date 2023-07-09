@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -56,7 +57,7 @@ int main(int argc, char **argv) {
   ut_cstring_ref path = ut_cstring_new_printf("%s/bus", dir);
 
   UtObjectRef server = ut_dbus_server_new();
-  ut_dbus_server_listen_unix(server, path);
+  ut_assert_true(ut_dbus_server_listen_unix(server, path, NULL));
 
   ut_cstring_ref address = ut_cstring_new_printf("unix:path=%s", path);
   client1 = ut_dbus_client_new(address);

@@ -41,7 +41,8 @@ int main(int argc, char **argv) {
 
   // Set up a socket that echos back requests.
   UtObjectRef echo_socket = ut_tcp_server_socket_new_unix(path);
-  ut_tcp_server_socket_listen(echo_socket, echo_listen_cb, NULL, NULL);
+  ut_assert_true(ut_tcp_server_socket_listen(echo_socket, echo_listen_cb, NULL,
+                                             NULL, NULL));
   uint16_t echo_port = ut_tcp_server_socket_get_port(echo_socket);
 
   // Create a socket to send to the echo port.

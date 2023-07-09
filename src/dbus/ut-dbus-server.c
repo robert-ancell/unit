@@ -276,12 +276,14 @@ UtObject *ut_dbus_server_new() {
   return ut_object_new(sizeof(UtDBusServer), &object_interface);
 }
 
-void ut_dbus_server_listen_unix(UtObject *object, const char *path) {
+bool ut_dbus_server_listen_unix(UtObject *object, const char *path,
+                                UtObject **error) {
   assert(ut_object_is_dbus_server(object));
   UtDBusServer *self = (UtDBusServer *)object;
   UtObjectRef socket = ut_tcp_server_socket_new_unix(path);
   ut_list_append(self->sockets, socket);
-  ut_tcp_server_socket_listen(socket, listen_cb, self, self->cancel);
+  return ut_tcp_server_socket_listen(socket, listen_cb, self, self->cancel,
+                                     error);
 }
 
 bool ut_object_is_dbus_server(UtObject *object) {

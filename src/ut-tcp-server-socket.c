@@ -82,9 +82,10 @@ UtObject *ut_tcp_server_socket_new_unix(const char *path) {
   return socket_new(AF_UNIX, path, 0);
 }
 
-void ut_tcp_server_socket_listen(UtObject *object,
+bool ut_tcp_server_socket_listen(UtObject *object,
                                  UtTcpServerSocketListenCallback callback,
-                                 void *user_data, UtObject *cancel) {
+                                 void *user_data, UtObject *cancel,
+                                 UtObject **error) {
   assert(ut_object_is_tcp_server_socket(object));
   UtTcpServerSocket *self = (UtTcpServerSocket *)object;
 
@@ -122,13 +123,26 @@ void ut_tcp_server_socket_listen(UtObject *object,
   } else {
     assert(false);
   }
-  assert(bind(ut_file_descriptor_get_fd(self->fd), address, address_length) ==
-         0);
+  int ret = bind(ut_file_descriptor_get_fd(self->fd), address, address_length);
+  if (ret != 0) {
+    if (error != NULL) {
+      *error = ut_system_error_new(ret);
+    }
+    return false;
+  }
 
   self->watch_cancel = ut_cancel_new();
   ut_event_loop_add_read_watch(self->fd, listen_cb, self, self->watch_cancel);
 
-  assert(listen(ut_file_descriptor_get_fd(self->fd), 1024) == 0);
+  ret = listen(ut_file_descriptor_get_fd(self->fd), 1024);
+  if (ret != 0) {
+    if (error != NULL) {
+      *error = ut_system_error_new(ret);
+    }
+    return false;
+  }
+
+  return true;
 }
 
 uint16_t ut_tcp_server_socket_get_port(UtObject *object) {
