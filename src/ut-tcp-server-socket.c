@@ -123,10 +123,9 @@ bool ut_tcp_server_socket_listen(UtObject *object,
   } else {
     assert(false);
   }
-  int ret = bind(ut_file_descriptor_get_fd(self->fd), address, address_length);
-  if (ret != 0) {
+  if (bind(ut_file_descriptor_get_fd(self->fd), address, address_length) != 0) {
     if (error != NULL) {
-      *error = ut_system_error_new(ret);
+      *error = ut_system_error_new(errno);
     }
     return false;
   }
@@ -134,10 +133,9 @@ bool ut_tcp_server_socket_listen(UtObject *object,
   self->watch_cancel = ut_cancel_new();
   ut_event_loop_add_read_watch(self->fd, listen_cb, self, self->watch_cancel);
 
-  ret = listen(ut_file_descriptor_get_fd(self->fd), 1024);
-  if (ret != 0) {
+  if (listen(ut_file_descriptor_get_fd(self->fd), 1024) != 0) {
     if (error != NULL) {
-      *error = ut_system_error_new(ret);
+      *error = ut_system_error_new(errno);
     }
     return false;
   }
