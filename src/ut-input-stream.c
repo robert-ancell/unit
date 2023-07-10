@@ -6,26 +6,38 @@
 int ut_input_stream_id = 0;
 
 typedef struct {
+  UtObject object;
   UtObject *read_cancel;
   UtInputStreamCallback callback;
   void *user_data;
   UtObject *cancel;
 } ReadAllData;
 
-static ReadAllData *read_all_data_new(UtInputStreamCallback callback,
-                                      void *user_data, UtObject *cancel) {
-  ReadAllData *d = malloc(sizeof(ReadAllData));
-  d->read_cancel = ut_cancel_new();
-  d->callback = callback;
-  d->user_data = user_data;
-  d->cancel = ut_object_ref(cancel);
-  return d;
+static void read_all_data_init(UtObject *object) {
+  ReadAllData *self = (ReadAllData *)object;
+  self->read_cancel = ut_cancel_new();
 }
 
-static void read_all_data_free(ReadAllData *d) {
-  ut_object_unref(d->read_cancel);
-  ut_object_unref(d->cancel);
-  free(d);
+static void read_all_data_cleanup(UtObject *object) {
+  ReadAllData *self = (ReadAllData *)object;
+  ut_object_unref(self->read_cancel);
+  ut_object_unref(self->cancel);
+}
+
+static UtObjectInterface read_all_data_object_interface = {
+    .type_name = "ReadAllData",
+    .init = read_all_data_init,
+    .cleanup = read_all_data_cleanup};
+
+static UtObject *read_all_data_new(UtInputStreamCallback callback,
+                                   void *user_data, UtObject *cancel) {
+  UtObject *object =
+      ut_object_new(sizeof(ReadAllData), &read_all_data_object_interface);
+  ReadAllData *self = (ReadAllData *)object;
+  self->callback = callback;
+  self->user_data = user_data;
+  self->cancel = ut_object_ref(cancel);
+  return object;
 }
 
 static size_t read_all_cb(void *user_data, UtObject *data, bool complete) {
@@ -33,18 +45,18 @@ static size_t read_all_cb(void *user_data, UtObject *data, bool complete) {
 
   if (ut_cancel_is_active(d->cancel)) {
     ut_cancel_activate(d->read_cancel);
-    read_all_data_free(d);
+    ut_object_unref((UtObject *)d);
     return 0;
   }
 
   if (ut_object_implements_error(data)) {
     d->callback(d->user_data, data, true);
     ut_cancel_activate(d->read_cancel);
-    read_all_data_free(d);
+    ut_object_unref((UtObject *)d);
     return 0;
   } else if (complete) {
     d->callback(d->user_data, data, true);
-    read_all_data_free(d);
+    ut_object_unref((UtObject *)d);
     return ut_list_get_length(data);
   } else {
     // Wait for all data.
@@ -77,8 +89,9 @@ void ut_input_stream_read(UtObject *object, UtInputStreamCallback callback,
 
 void ut_input_stream_read_all(UtObject *object, UtInputStreamCallback callback,
                               void *user_data, UtObject *cancel) {
-  ReadAllData *d = read_all_data_new(callback, user_data, cancel);
-  ut_input_stream_read(object, read_all_cb, d, d->read_cancel);
+  UtObject *data = read_all_data_new(callback, user_data, cancel);
+  ReadAllData *d = (ReadAllData *)data;
+  ut_input_stream_read(object, read_all_cb, data, d->read_cancel);
 }
 
 UtObject *ut_input_stream_read_sync(UtObject *object) {
