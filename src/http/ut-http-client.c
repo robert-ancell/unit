@@ -6,8 +6,8 @@
 #include "ut-http-message-encoder.h"
 #include "ut.h"
 
-// FIXME: Make a real object
 typedef struct {
+  UtObject object;
   UtObject *tcp_socket;
   UtObject *cancel;
   char *host;
@@ -23,39 +23,50 @@ typedef struct {
   UtObject *message_decoder;
 } HttpRequest;
 
-HttpRequest *http_request_new(const char *host, uint16_t port,
-                              const char *method, const char *path,
-                              UtObject *body, UtHttpResponseCallback callback,
-                              void *callback_user_data,
-                              UtObject *callback_cancel) {
-  HttpRequest *request = malloc(sizeof(HttpRequest));
-  request->host = ut_cstring_new(host);
-  request->port = port;
-  request->method = ut_cstring_new(method);
-  request->path = ut_cstring_new(path);
-  request->body = ut_object_ref(body);
-  request->cancel = ut_cancel_new();
-  request->callback = callback;
-  request->callback_user_data = callback_user_data;
-  request->callback_cancel = ut_object_ref(callback_cancel);
-  request->message_decoder_input_stream = ut_writable_input_stream_new();
-  request->message_decoder = ut_http_message_decoder_new_response(
-      request->message_decoder_input_stream);
-  return request;
+static void http_request_init(UtObject *object) {
+  HttpRequest *self = (HttpRequest *)object;
+  self->cancel = ut_cancel_new();
+  self->message_decoder_input_stream = ut_writable_input_stream_new();
+  self->message_decoder =
+      ut_http_message_decoder_new_response(self->message_decoder_input_stream);
 }
 
-void http_request_free(HttpRequest *request) {
-  ut_object_unref(request->tcp_socket);
-  ut_object_unref(request->cancel);
-  free(request->host);
-  free(request->method);
-  free(request->path);
-  ut_object_unref(request->body);
-  ut_object_unref(request->callback_cancel);
-  ut_object_unref(request->message_encoder);
-  ut_object_unref(request->message_decoder_input_stream);
-  ut_object_unref(request->message_decoder);
-  free(request);
+static void http_request_cleanup(UtObject *object) {
+  HttpRequest *self = (HttpRequest *)object;
+  ut_object_unref(self->tcp_socket);
+  ut_object_unref(self->cancel);
+  free(self->host);
+  free(self->method);
+  free(self->path);
+  ut_object_unref(self->body);
+  ut_object_unref(self->callback_cancel);
+  ut_object_unref(self->message_encoder);
+  ut_object_unref(self->message_decoder_input_stream);
+  ut_object_unref(self->message_decoder);
+}
+
+static UtObjectInterface request_object_interface = {.type_name = "HttpRequest",
+                                                     .init = http_request_init,
+                                                     .cleanup =
+                                                         http_request_cleanup};
+
+UtObject *http_request_new(const char *host, uint16_t port, const char *method,
+                           const char *path, UtObject *body,
+                           UtHttpResponseCallback callback,
+                           void *callback_user_data,
+                           UtObject *callback_cancel) {
+  UtObject *object =
+      ut_object_new(sizeof(HttpRequest), &request_object_interface);
+  HttpRequest *self = (HttpRequest *)object;
+  self->host = ut_cstring_new(host);
+  self->port = port;
+  self->method = ut_cstring_new(method);
+  self->path = ut_cstring_new(path);
+  self->body = ut_object_ref(body);
+  self->callback = callback;
+  self->callback_user_data = callback_user_data;
+  self->callback_cancel = ut_object_ref(callback_cancel);
+  return object;
 }
 
 typedef struct {
@@ -146,8 +157,8 @@ void ut_http_client_send_request(UtObject *object, const char *method,
     port = 80;
   }
 
-  HttpRequest *request = http_request_new(host, port, method, path, body,
-                                          callback, user_data, cancel);
+  UtObject *request = http_request_new(host, port, method, path, body, callback,
+                                       user_data, cancel);
   ut_ip_address_resolver_lookup(self->ip_address_resolver, host, lookup_cb,
                                 request, cancel);
 }
