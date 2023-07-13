@@ -6,20 +6,20 @@
 
 #pragma once
 
-typedef void (*UtX11ClientXfixesQueryVersionCallback)(void *user_data,
+typedef void (*UtX11ClientXfixesQueryVersionCallback)(UtObject *object,
                                                       uint32_t major_version,
                                                       uint32_t minor_version,
                                                       UtObject *error);
 typedef void (*UtX11ClientXfixesGetCursorImageCallback)(
-    void *user_data, int16_t x, int16_t y, uint16_t width, uint16_t height,
+    UtObject *object, int16_t x, int16_t y, uint16_t width, uint16_t height,
     uint16_t xhot, uint16_t yhot, uint32_t cursor_serial,
     UtObject *cursor_image, UtObject *error);
-typedef void (*UtX11ClientXfixesGetCursorNameCallback)(void *user_data,
+typedef void (*UtX11ClientXfixesGetCursorNameCallback)(UtObject *object,
                                                        uint32_t atom,
                                                        const char *name,
                                                        UtObject *error);
 typedef void (*UtX11ClientXfixesGetCursorImageAndNameCallback)(
-    void *user_data, int16_t x, int16_t y, uint16_t width, uint16_t height,
+    UtObject *object, int16_t x, int16_t y, uint16_t width, uint16_t height,
     uint16_t xhot, uint16_t yhot, uint32_t cursor_serial,
     UtObject *cursor_image, uint32_t cursor_atom, const char *name,
     UtObject *error);
@@ -27,12 +27,12 @@ typedef void (*UtX11ClientXfixesGetCursorImageAndNameCallback)(
 UtObject *
 ut_x11_xfixes_extension_new(UtObject *client, uint8_t major_opcode,
                             uint8_t first_event, uint8_t first_error,
-                            const UtX11EventCallbacks *event_callbacks,
-                            void *user_data, UtObject *cancel);
+                            UtObject *callback_object,
+                            const UtX11EventCallbacks *event_callbacks);
 
 void ut_x11_xfixes_extension_query_version(
-    UtObject *object, UtX11ClientXfixesQueryVersionCallback callback,
-    void *user_data, UtObject *cancel);
+    UtObject *object, UtObject *callback_object,
+    UtX11ClientXfixesQueryVersionCallback callback);
 
 // ChangeSaveSet
 
@@ -44,8 +44,8 @@ void ut_x11_xfixes_select_cursor_input(UtObject *object, uint32_t window,
                                        uint32_t event_mask);
 
 void ut_x11_xfixes_extension_get_cursor_image(
-    UtObject *object, UtX11ClientXfixesGetCursorImageCallback callback,
-    void *user_data, UtObject *cancel);
+    UtObject *object, UtObject *callback_object,
+    UtX11ClientXfixesGetCursorImageCallback callback);
 
 uint32_t ut_x11_xfixes_create_region(UtObject *object, UtObject *rectangles);
 
@@ -104,13 +104,12 @@ void ut_x11_xfixes_set_cursor_name(UtObject *object, uint32_t cursor,
                                    const char *name);
 
 void ut_x11_xfixes_extension_get_cursor_name(
-    UtObject *object, uint32_t cursor,
-    UtX11ClientXfixesGetCursorNameCallback callback, void *user_data,
-    UtObject *cancel);
+    UtObject *object, uint32_t cursor, UtObject *callback_object,
+    UtX11ClientXfixesGetCursorNameCallback callback);
 
 void ut_x11_xfixes_extension_get_cursor_image_and_name(
-    UtObject *object, UtX11ClientXfixesGetCursorImageAndNameCallback callback,
-    void *user_data, UtObject *cancel);
+    UtObject *object, UtObject *callback_object,
+    UtX11ClientXfixesGetCursorImageAndNameCallback callback);
 
 void ut_x11_xfixes_change_cursor(UtObject *object, uint32_t source,
                                  uint32_t destination);

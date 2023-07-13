@@ -6,7 +6,7 @@
 
 #pragma once
 
-typedef void (*UtX11ClientDri3QueryVersionCallback)(void *user_data,
+typedef void (*UtX11ClientDri3QueryVersionCallback)(UtObject *object,
                                                     uint32_t major_version,
                                                     uint32_t minor_version,
                                                     UtObject *error);
@@ -14,7 +14,7 @@ typedef void (*UtX11ClientDri3QueryVersionCallback)(void *user_data,
 UtObject *ut_x11_dri3_extension_new(UtObject *client, uint8_t major_opcode);
 
 void ut_x11_dri3_extension_query_version(
-    UtObject *object, UtX11ClientDri3QueryVersionCallback callback,
-    void *user_data, UtObject *cancel);
+    UtObject *object, UtObject *callbac_object,
+    UtX11ClientDri3QueryVersionCallback callback);
 
 bool ut_object_is_x11_dri3_extension(UtObject *object);

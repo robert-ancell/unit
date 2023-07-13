@@ -12,19 +12,19 @@ typedef enum {
   UT_X11_PRESENT_IDLE_NOTIFY_MASK = 0x4
 } UtX11PresentMask;
 
-typedef void (*UtX11ClientPresentQueryVersionCallback)(void *user_data,
+typedef void (*UtX11ClientPresentQueryVersionCallback)(UtObject *object,
                                                        uint32_t major_version,
                                                        uint32_t minor_version,
                                                        UtObject *error);
 
 UtObject *
 ut_x11_present_extension_new(UtObject *client, uint8_t major_opcode,
-                             const UtX11EventCallbacks *event_callbacks,
-                             void *user_data, UtObject *cancel);
+                             UtObject *callback_object,
+                             const UtX11EventCallbacks *event_callbacks);
 
 void ut_x11_present_extension_query_version(
-    UtObject *object, UtX11ClientPresentQueryVersionCallback callback,
-    void *user_data, UtObject *cancel);
+    UtObject *object, UtObject *callback_object,
+    UtX11ClientPresentQueryVersionCallback callback);
 
 void ut_x11_present_extension_pixmap(UtObject *object, uint32_t window,
                                      uint32_t pixmap, uint32_t serial,

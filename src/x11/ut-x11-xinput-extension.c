@@ -8,19 +8,24 @@
 
 typedef struct {
   UtObject object;
+  UtObject *callback_object;
   void *callback;
-  void *user_data;
 } CallbackData;
 
-static UtObjectInterface callback_data_object_interface = {
-    .type_name = "XinputCallbackData"};
+static void callback_data_cleanup(UtObject *object) {
+  CallbackData *self = (CallbackData *)object;
+  ut_object_weak_unref(&self->callback_object);
+}
 
-static UtObject *callback_data_new(void *callback, void *user_data) {
+static UtObjectInterface callback_data_object_interface = {
+    .type_name = "XinputCallbackData", .cleanup = callback_data_cleanup};
+
+static UtObject *callback_data_new(UtObject *callback_object, void *callback) {
   UtObject *object =
       ut_object_new(sizeof(CallbackData), &callback_data_object_interface);
   CallbackData *self = (CallbackData *)object;
+  ut_object_weak_ref(callback_object, &self->callback_object);
   self->callback = callback;
-  self->user_data = user_data;
   return object;
 }
 
@@ -30,9 +35,8 @@ typedef struct {
   uint8_t major_opcode;
   uint8_t first_event;
   uint8_t first_error;
+  UtObject *callback_object;
   const UtX11EventCallbacks *event_callbacks;
-  void *user_data;
-  UtObject *cancel;
 } UtX11XinputExtension;
 
 static UtObject *decode_key_class(uint16_t source_id, UtObject *data) {
@@ -136,10 +140,10 @@ static void decode_device_changed(UtX11XinputExtension *self, UtObject *data) {
   ut_x11_buffer_get_padding(data, &offset, 11);
   UtObjectRef classes = decode_device_classes(data, &offset, classes_length);
 
-  if (self->event_callbacks->device_changed != NULL &&
-      !ut_cancel_is_active(self->cancel)) {
-    self->event_callbacks->device_changed(self->user_data, device_id, timestamp,
-                                          reason, classes);
+  if (self->callback_object != NULL &&
+      self->event_callbacks->device_changed != NULL) {
+    self->event_callbacks->device_changed(self->callback_object, device_id,
+                                          timestamp, reason, classes);
   }
 }
 
@@ -203,10 +207,11 @@ static void decode_key_press(UtX11XinputExtension *self, UtObject *data) {
   decode_key_event(data, &device_id, &timestamp, &detail, &event, &event_x,
                    &event_y, &flags, &button_mask, &valuator_mask);
 
-  if (self->event_callbacks->key_press != NULL &&
-      !ut_cancel_is_active(self->cancel)) {
-    self->event_callbacks->key_press(self->user_data, device_id, timestamp,
-                                     event, detail, event_x, event_y, flags);
+  if (self->callback_object != NULL &&
+      self->event_callbacks->key_press != NULL) {
+    self->event_callbacks->key_press(self->callback_object, device_id,
+                                     timestamp, event, detail, event_x, event_y,
+                                     flags);
   }
 }
 
@@ -220,10 +225,11 @@ static void decode_key_release(UtX11XinputExtension *self, UtObject *data) {
   decode_key_event(data, &device_id, &timestamp, &detail, &event, &event_x,
                    &event_y, &flags, &button_mask, &valuator_mask);
 
-  if (self->event_callbacks->key_release != NULL &&
-      !ut_cancel_is_active(self->cancel)) {
-    self->event_callbacks->key_release(self->user_data, device_id, timestamp,
-                                       event, detail, event_x, event_y, flags);
+  if (self->callback_object != NULL &&
+      self->event_callbacks->key_release != NULL) {
+    self->event_callbacks->key_release(self->callback_object, device_id,
+                                       timestamp, event, detail, event_x,
+                                       event_y, flags);
   }
 }
 
@@ -274,10 +280,11 @@ static void decode_button_press(UtX11XinputExtension *self, UtObject *data) {
   decode_pointer_event(data, &device_id, &timestamp, &detail, &event, &event_x,
                        &event_y, &flags, &button_mask, &valuator_mask);
 
-  if (self->event_callbacks->button_press != NULL &&
-      !ut_cancel_is_active(self->cancel)) {
-    self->event_callbacks->button_press(self->user_data, device_id, timestamp,
-                                        event, detail, event_x, event_y, flags);
+  if (self->callback_object != NULL &&
+      self->event_callbacks->button_press != NULL) {
+    self->event_callbacks->button_press(self->callback_object, device_id,
+                                        timestamp, event, detail, event_x,
+                                        event_y, flags);
   }
 }
 
@@ -291,11 +298,11 @@ static void decode_button_release(UtX11XinputExtension *self, UtObject *data) {
   decode_pointer_event(data, &device_id, &timestamp, &detail, &event, &event_x,
                        &event_y, &flags, &button_mask, &valuator_mask);
 
-  if (self->event_callbacks->button_release != NULL &&
-      !ut_cancel_is_active(self->cancel)) {
-    self->event_callbacks->button_release(self->user_data, device_id, timestamp,
-                                          event, detail, event_x, event_y,
-                                          flags);
+  if (self->callback_object != NULL &&
+      self->event_callbacks->button_release != NULL) {
+    self->event_callbacks->button_release(self->callback_object, device_id,
+                                          timestamp, event, detail, event_x,
+                                          event_y, flags);
   }
 }
 
@@ -309,10 +316,9 @@ static void decode_motion(UtX11XinputExtension *self, UtObject *data) {
   decode_pointer_event(data, &device_id, &timestamp, &detail, &event, &event_x,
                        &event_y, &flags, &button_mask, &valuator_mask);
 
-  if (self->event_callbacks->motion != NULL &&
-      !ut_cancel_is_active(self->cancel)) {
-    self->event_callbacks->motion(self->user_data, device_id, timestamp, event,
-                                  event_x, event_y, flags);
+  if (self->callback_object != NULL && self->event_callbacks->motion != NULL) {
+    self->event_callbacks->motion(self->callback_object, device_id, timestamp,
+                                  event, event_x, event_y, flags);
   }
 }
 
@@ -355,10 +361,9 @@ static void decode_enter(UtX11XinputExtension *self, UtObject *data) {
   decode_notify_event(data, &device_id, &timestamp, &mode, &detail, &event,
                       &event_x, &event_y, &buttons);
 
-  if (self->event_callbacks->enter != NULL &&
-      !ut_cancel_is_active(self->cancel)) {
-    self->event_callbacks->enter(self->user_data, device_id, timestamp, mode,
-                                 detail, event, event_x, event_y);
+  if (self->callback_object != NULL && self->event_callbacks->enter != NULL) {
+    self->event_callbacks->enter(self->callback_object, device_id, timestamp,
+                                 mode, detail, event, event_x, event_y);
   }
 }
 
@@ -372,10 +377,9 @@ static void decode_leave(UtX11XinputExtension *self, UtObject *data) {
   decode_notify_event(data, &device_id, &timestamp, &mode, &detail, &event,
                       &event_x, &event_y, &buttons);
 
-  if (self->event_callbacks->leave != NULL &&
-      !ut_cancel_is_active(self->cancel)) {
-    self->event_callbacks->leave(self->user_data, device_id, timestamp, mode,
-                                 detail, event, event_x, event_y);
+  if (self->callback_object != NULL && self->event_callbacks->leave != NULL) {
+    self->event_callbacks->leave(self->callback_object, device_id, timestamp,
+                                 mode, detail, event, event_x, event_y);
   }
 }
 
@@ -389,10 +393,10 @@ static void decode_focus_in(UtX11XinputExtension *self, UtObject *data) {
   decode_notify_event(data, &device_id, &timestamp, &mode, &detail, &event,
                       &event_x, &event_y, &buttons);
 
-  if (self->event_callbacks->focus_in != NULL &&
-      !ut_cancel_is_active(self->cancel)) {
-    self->event_callbacks->focus_in(self->user_data, event, timestamp, mode,
-                                    detail, device_id);
+  if (self->callback_object != NULL &&
+      self->event_callbacks->focus_in != NULL) {
+    self->event_callbacks->focus_in(self->callback_object, event, timestamp,
+                                    mode, detail, device_id);
   }
 }
 
@@ -406,10 +410,10 @@ static void decode_focus_out(UtX11XinputExtension *self, UtObject *data) {
   decode_notify_event(data, &device_id, &timestamp, &mode, &detail, &event,
                       &event_x, &event_y, &buttons);
 
-  if (self->event_callbacks->focus_out != NULL &&
-      !ut_cancel_is_active(self->cancel)) {
-    self->event_callbacks->focus_out(self->user_data, event, timestamp, mode,
-                                     detail, device_id);
+  if (self->callback_object != NULL &&
+      self->event_callbacks->focus_out != NULL) {
+    self->event_callbacks->focus_out(self->callback_object, event, timestamp,
+                                     mode, detail, device_id);
   }
 }
 
@@ -460,10 +464,11 @@ static void decode_touch_begin(UtX11XinputExtension *self, UtObject *data) {
   decode_touch_event(data, &device_id, &timestamp, &detail, &event, &event_x,
                      &event_y, &flags, &button_mask, &valuator_mask);
 
-  if (self->event_callbacks->touch_begin != NULL &&
-      !ut_cancel_is_active(self->cancel)) {
-    self->event_callbacks->touch_begin(self->user_data, device_id, timestamp,
-                                       event, detail, event_x, event_y);
+  if (self->callback_object != NULL &&
+      self->event_callbacks->touch_begin != NULL) {
+    self->event_callbacks->touch_begin(self->callback_object, device_id,
+                                       timestamp, event, detail, event_x,
+                                       event_y);
   }
 }
 
@@ -477,10 +482,11 @@ static void decode_touch_update(UtX11XinputExtension *self, UtObject *data) {
   decode_touch_event(data, &device_id, &timestamp, &detail, &event, &event_x,
                      &event_y, &flags, &button_mask, &valuator_mask);
 
-  if (self->event_callbacks->touch_update != NULL &&
-      !ut_cancel_is_active(self->cancel)) {
-    self->event_callbacks->touch_update(self->user_data, device_id, timestamp,
-                                        event, detail, event_x, event_y);
+  if (self->callback_object != NULL &&
+      self->event_callbacks->touch_update != NULL) {
+    self->event_callbacks->touch_update(self->callback_object, device_id,
+                                        timestamp, event, detail, event_x,
+                                        event_y);
   }
 }
 
@@ -494,10 +500,11 @@ static void decode_touch_end(UtX11XinputExtension *self, UtObject *data) {
   decode_touch_event(data, &device_id, &timestamp, &detail, &event, &event_x,
                      &event_y, &flags, &button_mask, &valuator_mask);
 
-  if (self->event_callbacks->touch_end != NULL &&
-      !ut_cancel_is_active(self->cancel)) {
-    self->event_callbacks->touch_end(self->user_data, device_id, timestamp,
-                                     event, detail, event_x, event_y);
+  if (self->callback_object != NULL &&
+      self->event_callbacks->touch_end != NULL) {
+    self->event_callbacks->touch_end(self->callback_object, device_id,
+                                     timestamp, event, detail, event_x,
+                                     event_y);
   }
 }
 
@@ -511,20 +518,23 @@ static void query_version_reply_cb(UtObject *object, uint8_t data0,
   uint16_t minor_version = ut_x11_buffer_get_card16(data, &offset);
   ut_x11_buffer_get_padding(data, &offset, 20);
 
-  if (callback_data->callback != NULL) {
+  if (callback_data->callback_object != NULL &&
+      callback_data->callback != NULL) {
     UtX11XinputQueryVersionCallback callback =
         (UtX11XinputQueryVersionCallback)callback_data->callback;
-    callback(callback_data->user_data, major_version, minor_version, NULL);
+    callback(callback_data->callback_object, major_version, minor_version,
+             NULL);
   }
 }
 
 static void query_version_error_cb(UtObject *object, UtObject *error) {
   CallbackData *callback_data = (CallbackData *)object;
 
-  if (callback_data->callback != NULL) {
+  if (callback_data->callback_object != NULL &&
+      callback_data->callback != NULL) {
     UtX11XinputQueryVersionCallback callback =
         (UtX11XinputQueryVersionCallback)callback_data->callback;
-    callback(callback_data->user_data, 0, 0, error);
+    callback(callback_data->callback_object, 0, 0, error);
   }
 }
 
@@ -553,20 +563,22 @@ static void query_device_reply_cb(UtObject *object, uint8_t data0,
     ut_list_append(infos, info);
   }
 
-  if (callback_data->callback != NULL) {
+  if (callback_data->callback_object != NULL &&
+      callback_data->callback != NULL) {
     UtX11QueryDeviceCallback callback =
         (UtX11QueryDeviceCallback)callback_data->callback;
-    callback(callback_data->user_data, infos, NULL);
+    callback(callback_data->callback_object, infos, NULL);
   }
 }
 
 static void query_device_error_cb(UtObject *object, UtObject *error) {
   CallbackData *callback_data = (CallbackData *)object;
 
-  if (callback_data->callback != NULL) {
+  if (callback_data->callback_object != NULL &&
+      callback_data->callback != NULL) {
     UtX11QueryDeviceCallback callback =
         (UtX11QueryDeviceCallback)callback_data->callback;
-    callback(callback_data->user_data, NULL, error);
+    callback(callback_data->callback_object, NULL, error);
   }
 }
 
@@ -578,20 +590,22 @@ static void get_focus_reply_cb(UtObject *object, uint8_t data0,
   uint32_t window = ut_x11_buffer_get_card32(data, &offset);
   ut_x11_buffer_get_padding(data, &offset, 20);
 
-  if (callback_data->callback != NULL) {
+  if (callback_data->callback_object != NULL &&
+      callback_data->callback != NULL) {
     UtX11GetFocusCallback callback =
         (UtX11GetFocusCallback)callback_data->callback;
-    callback(callback_data->user_data, window, NULL);
+    callback(callback_data->callback_object, window, NULL);
   }
 }
 
 static void get_focus_error_cb(UtObject *object, UtObject *error) {
   CallbackData *callback_data = (CallbackData *)object;
 
-  if (callback_data->callback != NULL) {
+  if (callback_data->callback_object != NULL &&
+      callback_data->callback != NULL) {
     UtX11GetFocusCallback callback =
         (UtX11GetFocusCallback)callback_data->callback;
-    callback(callback_data->user_data, 0, error);
+    callback(callback_data->callback_object, 0, error);
   }
 }
 
@@ -603,26 +617,28 @@ static void grab_device_reply_cb(UtObject *object, uint8_t data0,
   uint8_t status = ut_x11_buffer_get_card8(data, &offset);
   ut_x11_buffer_get_padding(data, &offset, 23);
 
-  if (callback_data->callback != NULL) {
+  if (callback_data->callback_object != NULL &&
+      callback_data->callback != NULL) {
     UtX11GrabDeviceCallback callback =
         (UtX11GrabDeviceCallback)callback_data->callback;
-    callback(callback_data->user_data, status, NULL);
+    callback(callback_data->callback_object, status, NULL);
   }
 }
 
 static void grab_device_error_cb(UtObject *object, UtObject *error) {
   CallbackData *callback_data = (CallbackData *)object;
 
-  if (callback_data->callback != NULL) {
+  if (callback_data->callback_object != NULL &&
+      callback_data->callback != NULL) {
     UtX11GrabDeviceCallback callback =
         (UtX11GrabDeviceCallback)callback_data->callback;
-    callback(callback_data->user_data, 0, error);
+    callback(callback_data->callback_object, 0, error);
   }
 }
 
 static void ut_x11_xinput_extension_cleanup(UtObject *object) {
   UtX11XinputExtension *self = (UtX11XinputExtension *)object;
-  ut_object_unref(self->cancel);
+  ut_object_weak_unref(&self->callback_object);
 }
 
 static uint8_t ut_x11_xinput_extension_get_major_opcode(UtObject *object) {
@@ -729,8 +745,8 @@ static UtObjectInterface object_interface = {
 UtObject *
 ut_x11_xinput_extension_new(UtObject *client, uint8_t major_opcode,
                             uint8_t first_event, uint8_t first_error,
-                            const UtX11EventCallbacks *event_callbacks,
-                            void *user_data, UtObject *cancel) {
+                            UtObject *callback_object,
+                            const UtX11EventCallbacks *event_callbacks) {
   UtObject *object =
       ut_object_new(sizeof(UtX11XinputExtension), &object_interface);
   UtX11XinputExtension *self = (UtX11XinputExtension *)object;
@@ -738,9 +754,8 @@ ut_x11_xinput_extension_new(UtObject *client, uint8_t major_opcode,
   self->major_opcode = major_opcode;
   self->first_event = first_event;
   self->first_error = first_error;
+  ut_object_weak_ref(callback_object, &self->callback_object);
   self->event_callbacks = event_callbacks;
-  self->user_data = user_data;
-  self->cancel = ut_object_ref(cancel);
   return object;
 }
 
@@ -769,8 +784,8 @@ void ut_x11_xinput_extension_select_events(UtObject *object, uint32_t window,
 }
 
 void ut_x11_xinput_extension_query_version(
-    UtObject *object, UtX11XinputQueryVersionCallback callback, void *user_data,
-    UtObject *cancel) {
+    UtObject *object, UtObject *callback_object,
+    UtX11XinputQueryVersionCallback callback) {
   assert(ut_object_is_x11_xinput_extension(object));
   UtX11XinputExtension *self = (UtX11XinputExtension *)object;
 
@@ -779,13 +794,14 @@ void ut_x11_xinput_extension_query_version(
   ut_x11_buffer_append_card16(request, 4);
 
   ut_x11_client_send_request_with_reply(
-      self->client, self->major_opcode, 47, request, query_version_reply_cb,
-      query_version_error_cb, callback_data_new(callback, user_data), cancel);
+      self->client, self->major_opcode, 47, request,
+      callback_data_new(callback_object, callback), query_version_reply_cb,
+      query_version_error_cb);
 }
 
 void ut_x11_xinput_extension_query_device(UtObject *object, uint16_t device_id,
-                                          UtX11QueryDeviceCallback callback,
-                                          void *user_data, UtObject *cancel) {
+                                          UtObject *callback_object,
+                                          UtX11QueryDeviceCallback callback) {
   assert(ut_object_is_x11_xinput_extension(object));
   UtX11XinputExtension *self = (UtX11XinputExtension *)object;
 
@@ -794,8 +810,9 @@ void ut_x11_xinput_extension_query_device(UtObject *object, uint16_t device_id,
   ut_x11_buffer_append_padding(request, 2);
 
   ut_x11_client_send_request_with_reply(
-      self->client, self->major_opcode, 48, request, query_device_reply_cb,
-      query_device_error_cb, callback_data_new(callback, user_data), cancel);
+      self->client, self->major_opcode, 48, request,
+      callback_data_new(callback_object, callback), query_device_reply_cb,
+      query_device_error_cb);
 }
 
 void ut_x11_xinput_extension_set_focus(UtObject *object, uint32_t window,
@@ -813,8 +830,8 @@ void ut_x11_xinput_extension_set_focus(UtObject *object, uint32_t window,
 }
 
 void ut_x11_xinput_extension_get_focus(UtObject *object, uint16_t device_id,
-                                       UtX11GetFocusCallback callback,
-                                       void *user_data, UtObject *cancel) {
+                                       UtObject *callback_object,
+                                       UtX11GetFocusCallback callback) {
   assert(ut_object_is_x11_xinput_extension(object));
   UtX11XinputExtension *self = (UtX11XinputExtension *)object;
 
@@ -823,8 +840,9 @@ void ut_x11_xinput_extension_get_focus(UtObject *object, uint16_t device_id,
   ut_x11_buffer_append_padding(request, 2);
 
   ut_x11_client_send_request_with_reply(
-      self->client, self->major_opcode, 50, request, get_focus_reply_cb,
-      get_focus_error_cb, callback_data_new(callback, user_data), cancel);
+      self->client, self->major_opcode, 50, request,
+      callback_data_new(callback_object, callback), get_focus_reply_cb,
+      get_focus_error_cb);
 }
 
 void ut_x11_xinput_extension_grab_device(UtObject *object, uint32_t window,
@@ -832,8 +850,8 @@ void ut_x11_xinput_extension_grab_device(UtObject *object, uint32_t window,
                                          uint16_t device_id, uint8_t model,
                                          uint8_t paired_device_mode,
                                          bool owner_events, UtObject *masks,
-                                         UtX11GrabDeviceCallback callback,
-                                         void *user_data, UtObject *cancel) {
+                                         UtObject *callback_object,
+                                         UtX11GrabDeviceCallback callback) {
   assert(ut_object_is_x11_xinput_extension(object));
   UtX11XinputExtension *self = (UtX11XinputExtension *)object;
 
@@ -853,8 +871,9 @@ void ut_x11_xinput_extension_grab_device(UtObject *object, uint32_t window,
   }
 
   ut_x11_client_send_request_with_reply(
-      self->client, self->major_opcode, 51, request, grab_device_reply_cb,
-      grab_device_error_cb, callback_data_new(callback, user_data), cancel);
+      self->client, self->major_opcode, 51, request,
+      callback_data_new(callback_object, callback), grab_device_reply_cb,
+      grab_device_error_cb);
 }
 
 void ut_x11_xinput_extension_ungrab_device(UtObject *object,

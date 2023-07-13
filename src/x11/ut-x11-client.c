@@ -22,33 +22,29 @@ typedef struct _UtX11Client UtX11Client;
 typedef struct {
   UtObject object;
   uint16_t sequence_number;
+  UtObject *callback_object;
   UtX11ClientDecodeReplyFunction decode_reply_function;
   UtX11ClientHandleErrorFunction handle_error_function;
-  UtObject *callback_object;
-  UtObject *cancel;
 } Request;
 
 static void request_cleanup(UtObject *object) {
   Request *self = (Request *)object;
   ut_object_unref(self->callback_object);
-  ut_object_unref(self->cancel);
 }
 
 static UtObjectInterface request_object_interface = {
     .type_name = "X11ClientRequest", .cleanup = request_cleanup};
 
 static UtObject *
-request_new(uint16_t sequence_number,
+request_new(uint16_t sequence_number, UtObject *callback_object,
             UtX11ClientDecodeReplyFunction decode_reply_function,
-            UtX11ClientHandleErrorFunction handle_error_function,
-            UtObject *callback_object, UtObject *cancel) {
+            UtX11ClientHandleErrorFunction handle_error_function) {
   UtObject *object = ut_object_new(sizeof(Request), &request_object_interface);
   Request *self = (Request *)object;
   self->sequence_number = sequence_number;
   self->decode_reply_function = decode_reply_function;
   self->handle_error_function = handle_error_function;
   self->callback_object = callback_object;
-  self->cancel = ut_object_ref(cancel);
   return object;
 }
 
@@ -93,14 +89,12 @@ struct _UtX11Client {
   UtObject *present_extension;
   UtObject *dri3_extension;
 
+  UtObject *callback_object;
   const UtX11EventCallbacks *event_callbacks;
   UtX11ClientErrorCallback error_callback;
-  void *callback_user_data;
-  UtObject *callback_cancel;
 
+  UtObject *connect_callback_object;
   UtX11ClientConnectCallback connect_callback;
-  void *connect_user_data;
-  UtObject *connect_cancel;
 
   bool setup_complete;
   char *vendor;
@@ -141,107 +135,107 @@ static Request *find_request(UtX11Client *self, uint16_t sequence_number) {
   return NULL;
 }
 
-static void generic_event_query_version_cb(void *user_data,
+static void generic_event_query_version_cb(UtObject *object,
                                            uint16_t major_version,
                                            uint16_t minor_version,
                                            UtObject *error) {}
 
-static void shape_query_version_cb(void *user_data, uint16_t major_version,
+static void shape_query_version_cb(UtObject *object, uint16_t major_version,
                                    uint16_t minor_version, UtObject *error) {}
 
-static void xinput_query_version_cb(void *user_data, uint16_t major_version,
+static void xinput_query_version_cb(UtObject *object, uint16_t major_version,
                                     uint16_t minor_version, UtObject *error) {}
 
-static void shm_query_version_cb(void *user_data, uint16_t major_version,
+static void shm_query_version_cb(UtObject *object, uint16_t major_version,
                                  uint16_t minor_version, uint16_t uid,
                                  uint16_t gid, uint8_t pixmap_format,
                                  bool shared_pixmaps, UtObject *error) {}
 
-static void big_requests_enable_cb(void *user_data,
+static void big_requests_enable_cb(UtObject *object,
                                    uint32_t maximum_request_length,
                                    UtObject *error) {
-  UtX11Client *self = user_data;
+  UtX11Client *self = (UtX11Client *)object;
   self->maximum_request_length = maximum_request_length;
 }
 
-static void sync_initialize_cb(void *user_data, uint8_t version_major,
+static void sync_initialize_cb(UtObject *object, uint8_t version_major,
                                uint8_t version_minor, UtObject *error) {}
 
-static void xfixes_query_version_cb(void *user_data, uint32_t version_major,
+static void xfixes_query_version_cb(UtObject *object, uint32_t version_major,
                                     uint32_t version_minor, UtObject *error) {}
 
-static void randr_query_version_cb(void *user_data, uint32_t version_major,
+static void randr_query_version_cb(UtObject *object, uint32_t version_major,
                                    uint32_t version_minor, UtObject *error) {}
 
-static void present_query_version_cb(void *user_data, uint32_t version_major,
+static void present_query_version_cb(UtObject *object, uint32_t version_major,
                                      uint32_t version_minor, UtObject *error) {}
 
-static void dri3_query_version_cb(void *user_data, uint32_t version_major,
+static void dri3_query_version_cb(UtObject *object, uint32_t version_major,
                                   uint32_t version_minor, UtObject *error) {}
 
-static void query_generic_event_cb(void *user_data, bool present,
+static void query_generic_event_cb(UtObject *object, bool present,
                                    uint8_t major_opcode, uint8_t first_event,
                                    uint8_t first_error, UtObject *error) {
-  UtX11Client *self = user_data;
+  UtX11Client *self = (UtX11Client *)object;
   if (present) {
     UtObjectRef generic_event_extension =
         ut_x11_generic_event_extension_new((UtObject *)self, major_opcode);
     ut_list_append(self->extensions, generic_event_extension);
 
-    ut_x11_generic_event_extension_query_version(generic_event_extension,
-                                                 generic_event_query_version_cb,
-                                                 self, self->cancel);
+    ut_x11_generic_event_extension_query_version(
+        generic_event_extension, (UtObject *)self,
+        generic_event_query_version_cb);
   }
 }
 
-static void query_shape_cb(void *user_data, bool present, uint8_t major_opcode,
+static void query_shape_cb(UtObject *object, bool present, uint8_t major_opcode,
                            uint8_t first_event, uint8_t first_error,
                            UtObject *error) {
-  UtX11Client *self = user_data;
+  UtX11Client *self = (UtX11Client *)object;
   if (present) {
     self->shape_extension =
         ut_x11_shape_extension_new((UtObject *)self, major_opcode, first_event,
-                                   NULL, NULL, self->callback_cancel);
+                                   self->callback_object, NULL);
     ut_list_append(self->extensions, self->shape_extension);
 
     ut_x11_shape_extension_query_version(
-        self->shape_extension, shape_query_version_cb, self, self->cancel);
+        self->shape_extension, (UtObject *)self, shape_query_version_cb);
   }
 }
 
-static void query_shm_cb(void *user_data, bool present, uint8_t major_opcode,
+static void query_shm_cb(UtObject *object, bool present, uint8_t major_opcode,
                          uint8_t first_event, uint8_t first_error,
                          UtObject *error) {
-  UtX11Client *self = user_data;
+  UtX11Client *self = (UtX11Client *)object;
   if (present) {
     self->shm_extension = ut_x11_shm_extension_new(
         (UtObject *)self, major_opcode, first_event, first_error);
     ut_list_append(self->extensions, self->shm_extension);
 
-    ut_x11_shm_extension_query_version(
-        self->shm_extension, shm_query_version_cb, self, self->cancel);
+    ut_x11_shm_extension_query_version(self->shm_extension, (UtObject *)self,
+                                       shm_query_version_cb);
   }
 }
 
-static void query_xinput_cb(void *user_data, bool present, uint8_t major_opcode,
-                            uint8_t first_event, uint8_t first_error,
-                            UtObject *error) {
-  UtX11Client *self = user_data;
+static void query_xinput_cb(UtObject *object, bool present,
+                            uint8_t major_opcode, uint8_t first_event,
+                            uint8_t first_error, UtObject *error) {
+  UtX11Client *self = (UtX11Client *)object;
   if (present) {
     self->xinput_extension = ut_x11_xinput_extension_new(
         (UtObject *)self, major_opcode, first_event, first_error,
-        self->event_callbacks, self->callback_user_data, self->callback_cancel);
+        (UtObject *)self, self->event_callbacks);
     ut_list_append(self->extensions, self->xinput_extension);
 
     ut_x11_xinput_extension_query_version(
-        self->xinput_extension, xinput_query_version_cb, self, self->cancel);
+        self->xinput_extension, (UtObject *)self, xinput_query_version_cb);
   }
 }
 
-static void query_big_requests_cb(void *user_data, bool present,
+static void query_big_requests_cb(UtObject *object, bool present,
                                   uint8_t major_opcode, uint8_t first_event,
                                   uint8_t first_error, UtObject *error) {
-  UtX11Client *self = user_data;
+  UtX11Client *self = (UtX11Client *)object;
 
   if (present) {
     UtObjectRef big_requests_extension =
@@ -249,97 +243,99 @@ static void query_big_requests_cb(void *user_data, bool present,
     ut_list_append(self->extensions, big_requests_extension);
 
     ut_x11_big_requests_extension_enable(
-        big_requests_extension, big_requests_enable_cb, self, self->cancel);
+        big_requests_extension, (UtObject *)self, big_requests_enable_cb);
   }
 }
 
-static void query_sync_cb(void *user_data, bool present, uint8_t major_opcode,
+static void query_sync_cb(UtObject *object, bool present, uint8_t major_opcode,
                           uint8_t first_event, uint8_t first_error,
                           UtObject *error) {
-  UtX11Client *self = user_data;
+  UtX11Client *self = (UtX11Client *)object;
 
   if (present) {
     self->sync_extension = ut_x11_sync_extension_new(
         (UtObject *)self, major_opcode, first_event, first_error,
-        self->event_callbacks, self->callback_user_data, self->callback_cancel);
+        self->callback_object, self->event_callbacks);
     ut_list_append(self->extensions, self->sync_extension);
 
-    ut_x11_sync_extension_initialize(self->sync_extension, sync_initialize_cb,
-                                     self, self->cancel);
+    ut_x11_sync_extension_initialize(self->sync_extension, (UtObject *)self,
+                                     sync_initialize_cb);
   }
 }
 
-static void query_xfixes_cb(void *user_data, bool present, uint8_t major_opcode,
-                            uint8_t first_event, uint8_t first_error,
-                            UtObject *error) {
-  UtX11Client *self = user_data;
+static void query_xfixes_cb(UtObject *object, bool present,
+                            uint8_t major_opcode, uint8_t first_event,
+                            uint8_t first_error, UtObject *error) {
+  UtX11Client *self = (UtX11Client *)object;
 
   if (present) {
     self->xfixes_extension = ut_x11_xfixes_extension_new(
         (UtObject *)self, major_opcode, first_event, first_error,
-        self->event_callbacks, self->callback_user_data, self->callback_cancel);
+        self->callback_object, self->event_callbacks);
     ut_list_append(self->extensions, self->xfixes_extension);
 
     ut_x11_xfixes_extension_query_version(
-        self->xfixes_extension, xfixes_query_version_cb, self, self->cancel);
+        self->xfixes_extension, (UtObject *)self, xfixes_query_version_cb);
   }
 }
 
-static void query_randr_cb(void *user_data, bool present, uint8_t major_opcode,
+static void query_randr_cb(UtObject *object, bool present, uint8_t major_opcode,
                            uint8_t first_event, uint8_t first_error,
                            UtObject *error) {
-  UtX11Client *self = user_data;
+  UtX11Client *self = (UtX11Client *)object;
 
   if (present) {
     self->randr_extension = ut_x11_randr_extension_new(
         (UtObject *)self, major_opcode, first_event, first_error,
-        self->event_callbacks, self->callback_user_data, self->callback_cancel);
+        self->callback_object, self->event_callbacks);
     ut_list_append(self->extensions, self->randr_extension);
 
     ut_x11_randr_extension_query_version(
-        self->randr_extension, randr_query_version_cb, self, self->cancel);
+        self->randr_extension, (UtObject *)self, randr_query_version_cb);
   }
 }
 
-static void query_present_cb(void *user_data, bool present,
+static void query_present_cb(UtObject *object, bool present,
                              uint8_t major_opcode, uint8_t first_event,
                              uint8_t first_error, UtObject *error) {
-  UtX11Client *self = user_data;
+  UtX11Client *self = (UtX11Client *)object;
 
   if (present) {
     self->present_extension = ut_x11_present_extension_new(
-        (UtObject *)self, major_opcode, self->event_callbacks,
-        self->callback_user_data, self->callback_cancel);
+        (UtObject *)self, major_opcode, self->callback_object,
+        self->event_callbacks);
     ut_list_append(self->extensions, self->present_extension);
 
     ut_x11_present_extension_query_version(
-        self->present_extension, present_query_version_cb, self, self->cancel);
+        self->present_extension, (UtObject *)self, present_query_version_cb);
   }
 }
 
-static void query_dri3_cb(void *user_data, bool present, uint8_t major_opcode,
+static void query_dri3_cb(UtObject *object, bool present, uint8_t major_opcode,
                           uint8_t first_event, uint8_t first_error,
                           UtObject *error) {
-  UtX11Client *self = user_data;
+  UtX11Client *self = (UtX11Client *)object;
 
   if (present) {
     self->dri3_extension =
         ut_x11_dri3_extension_new((UtObject *)self, major_opcode);
     ut_list_append(self->extensions, self->dri3_extension);
 
-    ut_x11_dri3_extension_query_version(
-        self->dri3_extension, dri3_query_version_cb, self, self->cancel);
+    ut_x11_dri3_extension_query_version(self->dri3_extension, (UtObject *)self,
+                                        dri3_query_version_cb);
 
     // FIXME: More reliably do this on the last setup request.
-    self->connect_callback(self->connect_user_data, NULL);
+    if (self->connect_callback_object != NULL &&
+        self->connect_callback != NULL) {
+      self->connect_callback(self->connect_callback_object, NULL);
+    }
   }
 }
 
 static void send_request(UtObject *object, uint8_t opcode, uint8_t data0,
-                         UtObject *data,
+                         UtObject *data, UtObject *callback_object,
                          UtX11ClientDecodeReplyFunction decode_reply_function,
-                         UtX11ClientHandleErrorFunction handle_error_function,
-                         UtObject *callback_object, UtObject *cancel) {
+                         UtX11ClientHandleErrorFunction handle_error_function) {
   assert(ut_object_is_x11_client(object));
   UtX11Client *self = (UtX11Client *)object;
 
@@ -361,8 +357,8 @@ static void send_request(UtObject *object, uint8_t opcode, uint8_t data0,
 
   if (decode_reply_function != NULL) {
     UtObjectRef request =
-        request_new(self->sequence_number, decode_reply_function,
-                    handle_error_function, callback_object, cancel);
+        request_new(self->sequence_number, callback_object,
+                    decode_reply_function, handle_error_function);
     ut_list_append(self->requests, request);
   }
 
@@ -392,7 +388,9 @@ static size_t decode_setup_failed(UtX11Client *self, UtObject *data) {
 
   UtObjectRef error =
       ut_general_error_new("Failed to connect to X server: %s", reason);
-  self->connect_callback(self->connect_user_data, error);
+  if (self->connect_callback_object != NULL && self->connect_callback != NULL) {
+    self->connect_callback(self->connect_callback_object, error);
+  }
 
   return offset;
 }
@@ -502,25 +500,25 @@ static size_t decode_setup_success(UtX11Client *self, UtObject *data) {
   self->setup_complete = true;
 
   ut_x11_core_query_extension(self->core, "Generic Event Extension",
-                              query_generic_event_cb, self, self->cancel);
-  ut_x11_core_query_extension(self->core, "SHAPE", query_shape_cb, self,
-                              self->cancel);
-  ut_x11_core_query_extension(self->core, "MIT-SHM", query_shm_cb, self,
-                              self->cancel);
-  ut_x11_core_query_extension(self->core, "XInputExtension", query_xinput_cb,
-                              self, self->cancel);
-  ut_x11_core_query_extension(self->core, "BIG-REQUESTS", query_big_requests_cb,
-                              self, self->cancel);
-  ut_x11_core_query_extension(self->core, "SYNC", query_sync_cb, self,
-                              self->cancel);
-  ut_x11_core_query_extension(self->core, "XFIXES", query_xfixes_cb, self,
-                              self->cancel);
-  ut_x11_core_query_extension(self->core, "RANDR", query_randr_cb, self,
-                              self->cancel);
-  ut_x11_core_query_extension(self->core, "Present", query_present_cb, self,
-                              self->cancel);
-  ut_x11_core_query_extension(self->core, "DRI3", query_dri3_cb, self,
-                              self->cancel);
+                              (UtObject *)self, query_generic_event_cb);
+  ut_x11_core_query_extension(self->core, "SHAPE", (UtObject *)self,
+                              query_shape_cb);
+  ut_x11_core_query_extension(self->core, "MIT-SHM", (UtObject *)self,
+                              query_shm_cb);
+  ut_x11_core_query_extension(self->core, "XInputExtension", (UtObject *)self,
+                              query_xinput_cb);
+  ut_x11_core_query_extension(self->core, "BIG-REQUESTS", (UtObject *)self,
+                              query_big_requests_cb);
+  ut_x11_core_query_extension(self->core, "SYNC", (UtObject *)self,
+                              query_sync_cb);
+  ut_x11_core_query_extension(self->core, "XFIXES", (UtObject *)self,
+                              query_xfixes_cb);
+  ut_x11_core_query_extension(self->core, "RANDR", (UtObject *)self,
+                              query_randr_cb);
+  ut_x11_core_query_extension(self->core, "Present", (UtObject *)self,
+                              query_present_cb);
+  ut_x11_core_query_extension(self->core, "DRI3", (UtObject *)self,
+                              query_dri3_cb);
 
   return offset;
 }
@@ -572,11 +570,11 @@ static size_t decode_error(UtX11Client *self, UtObject *data) {
 
   Request *request = find_request(self, sequence_number);
   if (request != NULL) {
-    if (!ut_cancel_is_active(request->cancel)) {
+    if (request->callback_object != NULL) {
       request->handle_error_function(request->callback_object, error);
     }
-  } else if (self->error_callback != NULL) {
-    self->error_callback(self->callback_user_data, error);
+  } else if (self->callback_object != NULL && self->error_callback != NULL) {
+    self->error_callback(self->callback_object, error);
   }
 
   return 32;
@@ -603,7 +601,7 @@ static size_t decode_reply(UtX11Client *self, UtObject *data) {
   if (request != NULL) {
     UtObjectRef payload =
         ut_list_get_sublist(data, offset, payload_length - offset);
-    if (!ut_cancel_is_active(request->cancel)) {
+    if (self->callback_object != NULL) {
       request->decode_reply_function(request->callback_object, data0, payload);
     }
   } else {
@@ -633,9 +631,9 @@ static size_t decode_generic_event(UtX11Client *self, uint8_t data0,
     return 32 + extra_length;
   }
 
-  if (self->event_callbacks->unknown_generic_event != NULL &&
-      !ut_cancel_is_active(self->callback_cancel)) {
-    self->event_callbacks->unknown_generic_event(self->callback_user_data,
+  if (self->callback_object != NULL &&
+      self->event_callbacks->unknown_generic_event != NULL) {
+    self->event_callbacks->unknown_generic_event(self->callback_object,
                                                  major_opcode, code);
   }
 
@@ -683,9 +681,9 @@ static size_t decode_event(UtX11Client *self, UtObject *data) {
     event_data = ut_list_get_sublist(data, offset, 28 - offset);
     if (!decode_extension_event(self, code, from_send_event, sequence_number,
                                 event_data0, event_data)) {
-      if (self->event_callbacks->unknown_event != NULL &&
-          !ut_cancel_is_active(self->callback_cancel)) {
-        self->event_callbacks->unknown_event(self->callback_user_data, code,
+      if (self->callback_object != NULL &&
+          self->event_callbacks->unknown_event != NULL) {
+        self->event_callbacks->unknown_event(self->callback_object, code,
                                              from_send_event, sequence_number,
                                              event_data0, event_data);
       }
@@ -788,8 +786,8 @@ static void ut_x11_client_cleanup(UtObject *object) {
   ut_object_unref(self->randr_extension);
   ut_object_unref(self->present_extension);
   ut_object_unref(self->dri3_extension);
-  ut_object_unref(self->callback_cancel);
-  ut_object_unref(self->connect_cancel);
+  ut_object_weak_unref(&self->callback_object);
+  ut_object_weak_unref(&self->connect_callback_object);
   free(self->vendor);
   ut_object_unref(self->pixmap_formats);
   ut_object_unref(self->screens);
@@ -800,21 +798,19 @@ static UtObjectInterface object_interface = {.type_name = "UtX11Client",
                                              .init = ut_x11_client_init,
                                              .cleanup = ut_x11_client_cleanup};
 
-UtObject *ut_x11_client_new(const UtX11EventCallbacks *event_callbacks,
-                            UtX11ClientErrorCallback error_callback,
-                            void *user_data, UtObject *cancel) {
+UtObject *ut_x11_client_new(UtObject *callback_object,
+                            const UtX11EventCallbacks *event_callbacks,
+                            UtX11ClientErrorCallback error_callback) {
   UtObject *object = ut_object_new(sizeof(UtX11Client), &object_interface);
   UtX11Client *self = (UtX11Client *)object;
+  ut_object_weak_ref(callback_object, &self->callback_object);
   self->event_callbacks = event_callbacks;
   self->error_callback = error_callback;
-  self->callback_user_data = user_data;
-  self->callback_cancel = ut_object_ref(cancel);
   return object;
 }
 
-void ut_x11_client_connect(UtObject *object,
-                           UtX11ClientConnectCallback callback, void *user_data,
-                           UtObject *cancel) {
+void ut_x11_client_connect(UtObject *object, UtObject *callback_object,
+                           UtX11ClientConnectCallback callback) {
   assert(ut_object_is_x11_client(object));
   UtX11Client *self = (UtX11Client *)object;
 
@@ -837,12 +833,11 @@ void ut_x11_client_connect(UtObject *object,
   assert(callback != NULL);
 
   assert(self->connect_callback == NULL);
+  ut_object_weak_ref(callback_object, &self->connect_callback_object);
   self->connect_callback = callback;
-  self->connect_user_data = user_data;
-  self->connect_cancel = ut_object_ref(cancel);
 
-  self->core = ut_x11_core_new(object, self->event_callbacks,
-                               self->callback_user_data, self->callback_cancel);
+  self->core =
+      ut_x11_core_new(object, self->callback_object, self->event_callbacks);
   ut_list_append(self->extensions, self->core);
 
   ut_cstring_ref socket_path =
@@ -880,16 +875,16 @@ uint32_t ut_x11_client_create_resource_id(UtObject *object) {
 
 void ut_x11_client_send_request(UtObject *object, uint8_t opcode, uint8_t data0,
                                 UtObject *data) {
-  send_request(object, opcode, data0, data, NULL, NULL, NULL, NULL);
+  send_request(object, opcode, data0, data, NULL, NULL, NULL);
 }
 
 void ut_x11_client_send_request_with_reply(
     UtObject *object, uint8_t opcode, uint8_t data0, UtObject *data,
+    UtObject *callback_object,
     UtX11ClientDecodeReplyFunction decode_reply_function,
-    UtX11ClientHandleErrorFunction handle_error_function,
-    UtObject *callback_object, UtObject *cancel) {
-  send_request(object, opcode, data0, data, decode_reply_function,
-               handle_error_function, callback_object, cancel);
+    UtX11ClientHandleErrorFunction handle_error_function) {
+  send_request(object, opcode, data0, data, callback_object,
+               decode_reply_function, handle_error_function);
 }
 
 uint32_t ut_x11_client_create_window(UtObject *object, int16_t x, int16_t y,
@@ -915,13 +910,12 @@ void ut_x11_client_change_window_attributes(UtObject *object, uint32_t window,
 }
 
 void ut_x11_client_get_window_attributes(
-    UtObject *object, uint32_t window,
-    UtX11GetWindowAttributesCallback callback, void *user_data,
-    UtObject *cancel) {
+    UtObject *object, uint32_t window, UtObject *callback_object,
+    UtX11GetWindowAttributesCallback callback) {
   assert(ut_object_is_x11_client(object));
   UtX11Client *self = (UtX11Client *)object;
-  ut_x11_core_get_window_attributes(self->core, window, callback, user_data,
-                                    cancel);
+  ut_x11_core_get_window_attributes(self->core, window, callback_object,
+                                    callback);
 }
 
 void ut_x11_client_destroy_window(UtObject *object, uint32_t window) {
@@ -976,21 +970,20 @@ void ut_x11_client_configure_window(UtObject *object, uint32_t window,
 }
 
 void ut_x11_client_intern_atom(UtObject *object, const char *name,
-                               bool only_if_exists,
-                               UtX11InternAtomCallback callback,
-                               void *user_data, UtObject *cancel) {
+                               bool only_if_exists, UtObject *callback_object,
+                               UtX11InternAtomCallback callback) {
   assert(ut_object_is_x11_client(object));
   UtX11Client *self = (UtX11Client *)object;
-  ut_x11_core_intern_atom(self->core, name, only_if_exists, callback, user_data,
-                          cancel);
+  ut_x11_core_intern_atom(self->core, name, only_if_exists, callback_object,
+                          callback);
 }
 
 void ut_x11_client_get_atom_name(UtObject *object, uint32_t atom,
-                                 UtX11GetAtomNameCallback callback,
-                                 void *user_data, UtObject *cancel) {
+                                 UtObject *callback_object,
+                                 UtX11GetAtomNameCallback callback) {
   assert(ut_object_is_x11_client(object));
   UtX11Client *self = (UtX11Client *)object;
-  ut_x11_core_get_atom_name(self->core, atom, callback, user_data, cancel);
+  ut_x11_core_get_atom_name(self->core, atom, callback_object, callback);
 }
 
 void ut_x11_client_change_property_uint8(UtObject *object, uint32_t window,
@@ -1041,32 +1034,31 @@ void ut_x11_client_delete_property(UtObject *object, uint32_t window,
 
 void ut_x11_client_get_property(UtObject *object, uint32_t window,
                                 uint32_t property, uint32_t type,
-                                UtX11GetPropertyCallback callback,
-                                void *user_data, UtObject *cancel) {
+                                UtObject *callback_object,
+                                UtX11GetPropertyCallback callback) {
   assert(ut_object_is_x11_client(object));
   UtX11Client *self = (UtX11Client *)object;
   ut_x11_core_get_property(self->core, window, property, type, 0, 0xffffffff,
-                           false, callback, user_data, cancel);
+                           false, callback_object, callback);
 }
 
 void ut_x11_client_get_property_full(UtObject *object, uint32_t window,
                                      uint32_t property, uint32_t type,
                                      uint32_t long_offset, uint32_t long_length,
-                                     bool delete,
-                                     UtX11GetPropertyCallback callback,
-                                     void *user_data, UtObject *cancel) {
+                                     bool delete, UtObject *callback_object,
+                                     UtX11GetPropertyCallback callback) {
   assert(ut_object_is_x11_client(object));
   UtX11Client *self = (UtX11Client *)object;
   ut_x11_core_get_property(self->core, window, property, type, long_offset,
-                           long_length, delete, callback, user_data, cancel);
+                           long_length, delete, callback_object, callback);
 }
 
 void ut_x11_client_list_properties(UtObject *object, uint32_t window,
-                                   UtX11ListPropertiesCallback callback,
-                                   void *user_data, UtObject *cancel) {
+                                   UtObject *callback_object,
+                                   UtX11ListPropertiesCallback callback) {
   assert(ut_object_is_x11_client(object));
   UtX11Client *self = (UtX11Client *)object;
-  ut_x11_core_list_properties(self->core, window, callback, user_data, cancel);
+  ut_x11_core_list_properties(self->core, window, callback_object, callback);
 }
 
 uint32_t ut_x11_client_create_pixmap(UtObject *object, uint32_t drawable,
@@ -1116,13 +1108,12 @@ void ut_x11_client_copy_area(UtObject *object, uint32_t src_drawable,
 void ut_x11_client_get_image(UtObject *object, uint32_t drawable,
                              UtX11ImageFormat format, int16_t x, int16_t y,
                              uint16_t width, uint16_t height,
-                             uint32_t plane_mask,
-                             UtX11GetImageCallback callback, void *user_data,
-                             UtObject *cancel) {
+                             uint32_t plane_mask, UtObject *callback_object,
+                             UtX11GetImageCallback callback) {
   assert(ut_object_is_x11_client(object));
   UtX11Client *self = (UtX11Client *)object;
   ut_x11_core_get_image(self->core, drawable, format, x, y, width, height,
-                        plane_mask, callback, user_data, cancel);
+                        plane_mask, callback_object, callback);
 }
 
 void ut_x11_client_put_image(UtObject *object, uint32_t drawable, uint32_t gc,
@@ -1136,19 +1127,18 @@ void ut_x11_client_put_image(UtObject *object, uint32_t drawable, uint32_t gc,
 }
 
 void ut_x11_client_query_extension(UtObject *object, const char *name,
-                                   UtX11QueryExtensionCallback callback,
-                                   void *user_data, UtObject *cancel) {
+                                   UtObject *callback_object,
+                                   UtX11QueryExtensionCallback callback) {
   assert(ut_object_is_x11_client(object));
   UtX11Client *self = (UtX11Client *)object;
-  ut_x11_core_query_extension(self->core, name, callback, user_data, cancel);
+  ut_x11_core_query_extension(self->core, name, callback_object, callback);
 }
 
-void ut_x11_client_list_extensions(UtObject *object,
-                                   UtX11ListExtensionsCallback callback,
-                                   void *user_data, UtObject *cancel) {
+void ut_x11_client_list_extensions(UtObject *object, UtObject *callback_object,
+                                   UtX11ListExtensionsCallback callback) {
   assert(ut_object_is_x11_client(object));
   UtX11Client *self = (UtX11Client *)object;
-  ut_x11_core_list_extensions(self->core, callback, user_data, cancel);
+  ut_x11_core_list_extensions(self->core, callback_object, callback);
 }
 
 void ut_x11_client_bell(UtObject *object) {
@@ -1193,13 +1183,14 @@ uint32_t ut_x11_client_shm_attach_fd(UtObject *object, UtObject *fd,
   return ut_x11_shm_extension_attach_fd(self->shm_extension, fd, read_only);
 }
 
-uint32_t ut_x11_client_shm_create_segment(
-    UtObject *object, uint32_t size, bool read_only,
-    UtX11ShmCreateSegmentCallback callback, void *user_data, UtObject *cancel) {
+uint32_t
+ut_x11_client_shm_create_segment(UtObject *object, uint32_t size,
+                                 bool read_only, UtObject *callback_object,
+                                 UtX11ShmCreateSegmentCallback callback) {
   assert(ut_object_is_x11_client(object));
   UtX11Client *self = (UtX11Client *)object;
   return ut_x11_shm_extension_create_segment(
-      self->shm_extension, size, read_only, callback, user_data, cancel);
+      self->shm_extension, size, read_only, callback_object, callback);
 }
 
 void ut_x11_client_select_input_events(UtObject *object, uint32_t window,
@@ -1210,12 +1201,12 @@ void ut_x11_client_select_input_events(UtObject *object, uint32_t window,
 }
 
 void ut_x11_client_query_device(UtObject *object, uint16_t device_id,
-                                UtX11QueryDeviceCallback callback,
-                                void *user_data, UtObject *cancel) {
+                                UtObject *callback_object,
+                                UtX11QueryDeviceCallback callback) {
   assert(ut_object_is_x11_client(object));
   UtX11Client *self = (UtX11Client *)object;
   ut_x11_xinput_extension_query_device(self->xinput_extension, device_id,
-                                       callback, user_data, cancel);
+                                       callback_object, callback);
 }
 
 void ut_x11_client_set_focus(UtObject *object, uint32_t window,
@@ -1227,21 +1218,21 @@ void ut_x11_client_set_focus(UtObject *object, uint32_t window,
 }
 
 void ut_x11_client_get_focus(UtObject *object, uint16_t device_id,
-                             UtX11GetFocusCallback callback, void *user_data,
-                             UtObject *cancel) {
+                             UtObject *callback_object,
+                             UtX11GetFocusCallback callback) {
   assert(ut_object_is_x11_client(object));
   UtX11Client *self = (UtX11Client *)object;
-  ut_x11_xinput_extension_get_focus(self->xinput_extension, device_id, callback,
-                                    user_data, cancel);
+  ut_x11_xinput_extension_get_focus(self->xinput_extension, device_id,
+                                    callback_object, callback);
 }
 
 void ut_x11_client_list_system_counters(
-    UtObject *object, UtX11ListSystemCountersCallback callback, void *user_data,
-    UtObject *cancel) {
+    UtObject *object, UtObject *callback_object,
+    UtX11ListSystemCountersCallback callback) {
   assert(ut_object_is_x11_client(object));
   UtX11Client *self = (UtX11Client *)object;
-  ut_x11_sync_extension_list_system_counters(self->sync_extension, callback,
-                                             user_data, cancel);
+  ut_x11_sync_extension_list_system_counters(self->sync_extension,
+                                             callback_object, callback);
 }
 
 uint32_t ut_x11_client_create_counter(UtObject *object, int64_t initial_value) {
@@ -1266,12 +1257,12 @@ void ut_x11_client_change_counter(UtObject *object, uint32_t counter,
 }
 
 void ut_x11_client_query_counter(UtObject *object, uint32_t counter,
-                                 UtX11QueryCounterCallback callback,
-                                 void *user_data, UtObject *cancel) {
+                                 UtObject *callback_object,
+                                 UtX11QueryCounterCallback callback) {
   assert(ut_object_is_x11_client(object));
   UtX11Client *self = (UtX11Client *)object;
-  ut_x11_sync_extension_query_counter(self->sync_extension, counter, callback,
-                                      user_data, cancel);
+  ut_x11_sync_extension_query_counter(self->sync_extension, counter,
+                                      callback_object, callback);
 }
 
 void ut_x11_client_destroy_counter(UtObject *object, uint32_t counter) {

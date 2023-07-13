@@ -8,19 +8,24 @@
 
 typedef struct {
   UtObject object;
+  UtObject *callback_object;
   void *callback;
-  void *user_data;
 } CallbackData;
 
-static UtObjectInterface callback_data_object_interface = {
-    .type_name = "SyncCallbackData"};
+static void callback_data_cleanup(UtObject *object) {
+  CallbackData *self = (CallbackData *)object;
+  ut_object_weak_unref(&self->callback_object);
+}
 
-static UtObject *callback_data_new(void *callback, void *user_data) {
+static UtObjectInterface callback_data_object_interface = {
+    .type_name = "SyncCallbackData", .cleanup = callback_data_cleanup};
+
+static UtObject *callback_data_new(UtObject *callback_object, void *callback) {
   UtObject *object =
       ut_object_new(sizeof(CallbackData), &callback_data_object_interface);
   CallbackData *self = (CallbackData *)object;
+  ut_object_weak_ref(callback_object, &self->callback_object);
   self->callback = callback;
-  self->user_data = user_data;
   return object;
 }
 
@@ -30,9 +35,8 @@ typedef struct {
   uint8_t major_opcode;
   uint8_t first_event;
   uint8_t first_error;
+  UtObject *callback_object;
   const UtX11EventCallbacks *event_callbacks;
-  void *user_data;
-  UtObject *cancel;
 } UtX11SyncExtension;
 
 static void initialize_reply_cb(UtObject *object, uint8_t data0,
@@ -45,20 +49,23 @@ static void initialize_reply_cb(UtObject *object, uint8_t data0,
   uint8_t minor_version = ut_x11_buffer_get_card8(data, &offset);
   ut_x11_buffer_get_padding(data, &offset, 22);
 
-  if (callback_data->callback != NULL) {
+  if (callback_data->callback_object != NULL &&
+      callback_data->callback != NULL) {
     UtX11ClientSyncInitializeCallback callback =
         (UtX11ClientSyncInitializeCallback)callback_data->callback;
-    callback(callback_data->user_data, major_version, minor_version, NULL);
+    callback(callback_data->callback_object, major_version, minor_version,
+             NULL);
   }
 }
 
 static void initialize_error_cb(UtObject *object, UtObject *error) {
   CallbackData *callback_data = (CallbackData *)object;
 
-  if (callback_data->callback != NULL) {
+  if (callback_data->callback_object != NULL &&
+      callback_data->callback != NULL) {
     UtX11ClientSyncInitializeCallback callback =
         (UtX11ClientSyncInitializeCallback)callback_data->callback;
-    callback(callback_data->user_data, 0, 0, error);
+    callback(callback_data->callback_object, 0, 0, error);
   }
 }
 
@@ -75,20 +82,22 @@ static void list_system_counters_reply_cb(UtObject *object, uint8_t data0,
     // FIXME
   }
 
-  if (callback_data->callback != NULL) {
+  if (callback_data->callback_object != NULL &&
+      callback_data->callback != NULL) {
     UtX11ListSystemCountersCallback callback =
         (UtX11ListSystemCountersCallback)callback_data->callback;
-    callback(callback_data->user_data, counters, NULL);
+    callback(callback_data->callback_object, counters, NULL);
   }
 }
 
 static void list_system_counters_error_cb(UtObject *object, UtObject *error) {
   CallbackData *callback_data = (CallbackData *)object;
 
-  if (callback_data->callback != NULL) {
+  if (callback_data->callback_object != NULL &&
+      callback_data->callback != NULL) {
     UtX11ListSystemCountersCallback callback =
         (UtX11ListSystemCountersCallback)callback_data->callback;
-    callback(callback_data->user_data, NULL, error);
+    callback(callback_data->callback_object, NULL, error);
   }
 }
 
@@ -100,20 +109,22 @@ static void query_counter_reply_cb(UtObject *object, uint8_t data0,
   ut_x11_buffer_get_padding(data, &offset, 1);
   int64_t counter_value = ut_x11_buffer_get_int64(data, &offset);
 
-  if (callback_data->callback != NULL) {
+  if (callback_data->callback_object != NULL &&
+      callback_data->callback != NULL) {
     UtX11QueryCounterCallback callback =
         (UtX11QueryCounterCallback)callback_data->callback;
-    callback(callback_data->user_data, counter_value, NULL);
+    callback(callback_data->callback_object, counter_value, NULL);
   }
 }
 
 static void query_counter_error_cb(UtObject *object, UtObject *error) {
   CallbackData *callback_data = (CallbackData *)object;
 
-  if (callback_data->callback != NULL) {
+  if (callback_data->callback_object != NULL &&
+      callback_data->callback != NULL) {
     UtX11QueryCounterCallback callback =
         (UtX11QueryCounterCallback)callback_data->callback;
-    callback(callback_data->user_data, 0, error);
+    callback(callback_data->callback_object, 0, error);
   }
 }
 
@@ -129,20 +140,23 @@ static void query_alarm_reply_cb(UtObject *object, uint8_t data0,
   uint8_t state = ut_x11_buffer_get_card8(data, &offset);
   ut_x11_buffer_get_padding(data, &offset, 2);
 
-  if (callback_data->callback != NULL) {
+  if (callback_data->callback_object != NULL &&
+      callback_data->callback != NULL) {
     UtX11ClientSyncQueryAlarmCallback callback =
         (UtX11ClientSyncQueryAlarmCallback)callback_data->callback;
-    callback(callback_data->user_data, trigger, delta, events, state, NULL);
+    callback(callback_data->callback_object, trigger, delta, events, state,
+             NULL);
   }
 }
 
 static void query_alarm_error_cb(UtObject *object, UtObject *error) {
   CallbackData *callback_data = (CallbackData *)object;
 
-  if (callback_data->callback != NULL) {
+  if (callback_data->callback_object != NULL &&
+      callback_data->callback != NULL) {
     UtX11ClientSyncQueryAlarmCallback callback =
         (UtX11ClientSyncQueryAlarmCallback)callback_data->callback;
-    callback(callback_data->user_data, 0, 0, 0, 0, error);
+    callback(callback_data->callback_object, 0, 0, 0, 0, error);
   }
 }
 
@@ -154,20 +168,22 @@ static void get_priority_reply_cb(UtObject *object, uint8_t data0,
   ut_x11_buffer_get_padding(data, &offset, 1);
   int32_t priority = ut_x11_buffer_get_int32(data, &offset);
 
-  if (callback_data->callback != NULL) {
+  if (callback_data->callback_object != NULL &&
+      callback_data->callback != NULL) {
     UtX11ClientSyncGetPriorityCallback callback =
         (UtX11ClientSyncGetPriorityCallback)callback_data->callback;
-    callback(callback_data->user_data, priority, NULL);
+    callback(callback_data->callback_object, priority, NULL);
   }
 }
 
 static void get_priority_error_cb(UtObject *object, UtObject *error) {
   CallbackData *callback_data = (CallbackData *)object;
 
-  if (callback_data->callback != NULL) {
+  if (callback_data->callback_object != NULL &&
+      callback_data->callback != NULL) {
     UtX11ClientSyncGetPriorityCallback callback =
         (UtX11ClientSyncGetPriorityCallback)callback_data->callback;
-    callback(callback_data->user_data, 0, error);
+    callback(callback_data->callback_object, 0, error);
   }
 }
 
@@ -180,26 +196,23 @@ static void query_fence_reply_cb(UtObject *object, uint8_t data0,
   bool triggered = ut_x11_buffer_get_bool(data, &offset);
   ut_x11_buffer_get_padding(data, &offset, 23);
 
-  if (callback_data->callback != NULL) {
+  if (callback_data->callback_object != NULL &&
+      callback_data->callback != NULL) {
     UtX11ClientSyncQueryFenceCallback callback =
         (UtX11ClientSyncQueryFenceCallback)callback_data->callback;
-    callback(callback_data->user_data, triggered, NULL);
+    callback(callback_data->callback_object, triggered, NULL);
   }
 }
 
 static void query_fence_error_cb(UtObject *object, UtObject *error) {
   CallbackData *callback_data = (CallbackData *)object;
 
-  if (callback_data->callback != NULL) {
+  if (callback_data->callback_object != NULL &&
+      callback_data->callback != NULL) {
     UtX11ClientSyncQueryFenceCallback callback =
         (UtX11ClientSyncQueryFenceCallback)callback_data->callback;
-    callback(callback_data->user_data, false, error);
+    callback(callback_data->callback_object, false, error);
   }
-}
-
-static void ut_x11_sync_extension_cleanup(UtObject *object) {
-  UtX11SyncExtension *self = (UtX11SyncExtension *)object;
-  ut_object_unref(self->cancel);
 }
 
 static uint8_t ut_x11_sync_extension_get_major_opcode(UtObject *object) {
@@ -244,6 +257,11 @@ static void ut_x11_sync_extension_close(UtObject *object) {
   self->client = NULL;
 }
 
+static void ut_x11_sync_extension_cleanup(UtObject *object) {
+  UtX11SyncExtension *self = (UtX11SyncExtension *)object;
+  ut_object_weak_unref(&self->callback_object);
+}
+
 static UtX11ExtensionInterface x11_extension_interface = {
     .get_major_opcode = ut_x11_sync_extension_get_major_opcode,
     .get_first_event = ut_x11_sync_extension_get_first_event,
@@ -258,10 +276,11 @@ static UtObjectInterface object_interface = {
     .interfaces = {{&ut_x11_extension_id, &x11_extension_interface},
                    {NULL, NULL}}};
 
-UtObject *ut_x11_sync_extension_new(UtObject *client, uint8_t major_opcode,
-                                    uint8_t first_event, uint8_t first_error,
-                                    const UtX11EventCallbacks *event_callbacks,
-                                    void *user_data, UtObject *cancel) {
+UtObject *
+ut_x11_sync_extension_new(UtObject *client, uint8_t major_opcode,
+                          uint8_t first_event, uint8_t first_error,
+                          UtObject *callback_object,
+                          const UtX11EventCallbacks *event_callbacks) {
   UtObject *object =
       ut_object_new(sizeof(UtX11SyncExtension), &object_interface);
   UtX11SyncExtension *self = (UtX11SyncExtension *)object;
@@ -269,15 +288,14 @@ UtObject *ut_x11_sync_extension_new(UtObject *client, uint8_t major_opcode,
   self->major_opcode = major_opcode;
   self->first_event = first_event;
   self->first_error = first_error;
+  ut_object_weak_ref(callback_object, &self->callback_object);
   self->event_callbacks = event_callbacks;
-  self->user_data = user_data;
-  self->cancel = ut_object_ref(cancel);
   return object;
 }
 
 void ut_x11_sync_extension_initialize(
-    UtObject *object, UtX11ClientSyncInitializeCallback callback,
-    void *user_data, UtObject *cancel) {
+    UtObject *object, UtObject *callback_object,
+    UtX11ClientSyncInitializeCallback callback) {
   assert(ut_object_is_x11_sync_extension(object));
   UtX11SyncExtension *self = (UtX11SyncExtension *)object;
 
@@ -287,20 +305,21 @@ void ut_x11_sync_extension_initialize(
   ut_x11_buffer_append_padding(request, 2);
 
   ut_x11_client_send_request_with_reply(
-      self->client, self->major_opcode, 0, request, initialize_reply_cb,
-      initialize_error_cb, callback_data_new(callback, user_data), cancel);
+      self->client, self->major_opcode, 0, request,
+      callback_data_new(callback_object, callback), initialize_reply_cb,
+      initialize_error_cb);
 }
 
 void ut_x11_sync_extension_list_system_counters(
-    UtObject *object, UtX11ListSystemCountersCallback callback, void *user_data,
-    UtObject *cancel) {
+    UtObject *object, UtObject *callback_object,
+    UtX11ListSystemCountersCallback callback) {
   assert(ut_object_is_x11_sync_extension(object));
   UtX11SyncExtension *self = (UtX11SyncExtension *)object;
 
   ut_x11_client_send_request_with_reply(
-      self->client, self->major_opcode, 1, NULL, list_system_counters_reply_cb,
-      list_system_counters_error_cb, callback_data_new(callback, user_data),
-      cancel);
+      self->client, self->major_opcode, 1, NULL,
+      callback_data_new(callback_object, callback),
+      list_system_counters_reply_cb, list_system_counters_error_cb);
 }
 
 uint32_t ut_x11_sync_extension_create_counter(UtObject *object,
@@ -344,8 +363,8 @@ void ut_x11_sync_extension_change_counter(UtObject *object, uint32_t counter,
 }
 
 void ut_x11_sync_extension_query_counter(UtObject *object, uint32_t counter,
-                                         UtX11QueryCounterCallback callback,
-                                         void *user_data, UtObject *cancel) {
+                                         UtObject *callback_object,
+                                         UtX11QueryCounterCallback callback) {
   assert(ut_object_is_x11_sync_extension(object));
   UtX11SyncExtension *self = (UtX11SyncExtension *)object;
 
@@ -353,8 +372,9 @@ void ut_x11_sync_extension_query_counter(UtObject *object, uint32_t counter,
   ut_x11_buffer_append_card32(request, counter);
 
   ut_x11_client_send_request_with_reply(
-      self->client, self->major_opcode, 5, request, query_counter_reply_cb,
-      query_counter_error_cb, callback_data_new(callback, user_data), cancel);
+      self->client, self->major_opcode, 5, request,
+      callback_data_new(callback_object, callback), query_counter_reply_cb,
+      query_counter_error_cb);
 }
 
 void ut_x11_sync_extension_destroy_counter(UtObject *object, uint32_t counter) {
@@ -411,9 +431,8 @@ void ut_x11_sync_extension_change_alarm(UtObject *object, uint32_t alarm) {
 }
 
 void ut_x11_sync_extension_query_alarm(
-    UtObject *object, uint32_t alarm,
-    UtX11ClientSyncQueryAlarmCallback callback, void *user_data,
-    UtObject *cancel) {
+    UtObject *object, uint32_t alarm, UtObject *callback_object,
+    UtX11ClientSyncQueryAlarmCallback callback) {
   assert(ut_object_is_x11_sync_extension(object));
   UtX11SyncExtension *self = (UtX11SyncExtension *)object;
 
@@ -421,8 +440,9 @@ void ut_x11_sync_extension_query_alarm(
   ut_x11_buffer_append_card32(request, alarm);
 
   ut_x11_client_send_request_with_reply(
-      self->client, self->major_opcode, 10, request, query_alarm_reply_cb,
-      query_alarm_error_cb, callback_data_new(callback, user_data), cancel);
+      self->client, self->major_opcode, 10, request,
+      callback_data_new(callback_object, callback), query_alarm_reply_cb,
+      query_alarm_error_cb);
 }
 
 void ut_x11_sync_extension_destroy_alarm(UtObject *object, uint32_t alarm) {
@@ -448,8 +468,8 @@ void ut_x11_sync_extension_set_priority(UtObject *object, uint32_t id,
 }
 
 void ut_x11_sync_extension_get_priority(
-    UtObject *object, uint32_t id, UtX11ClientSyncGetPriorityCallback callback,
-    void *user_data, UtObject *cancel) {
+    UtObject *object, uint32_t id, UtObject *callback_object,
+    UtX11ClientSyncGetPriorityCallback callback) {
   assert(ut_object_is_x11_sync_extension(object));
   UtX11SyncExtension *self = (UtX11SyncExtension *)object;
 
@@ -457,8 +477,9 @@ void ut_x11_sync_extension_get_priority(
   ut_x11_buffer_append_card32(request, id);
 
   ut_x11_client_send_request_with_reply(
-      self->client, self->major_opcode, 13, request, get_priority_reply_cb,
-      get_priority_error_cb, callback_data_new(callback, user_data), cancel);
+      self->client, self->major_opcode, 13, request,
+      callback_data_new(callback_object, callback), get_priority_reply_cb,
+      get_priority_error_cb);
 }
 
 uint32_t ut_x11_sync_extension_create_fence(UtObject *object, uint32_t drawable,
@@ -509,9 +530,8 @@ void ut_x11_sync_extension_destroy_fence(UtObject *object, uint32_t fence) {
 }
 
 void ut_x11_sync_extension_query_fence(
-    UtObject *object, uint32_t fence,
-    UtX11ClientSyncQueryFenceCallback callback, void *user_data,
-    UtObject *cancel) {
+    UtObject *object, uint32_t fence, UtObject *callback_object,
+    UtX11ClientSyncQueryFenceCallback callback) {
   assert(ut_object_is_x11_sync_extension(object));
   UtX11SyncExtension *self = (UtX11SyncExtension *)object;
 
@@ -519,8 +539,9 @@ void ut_x11_sync_extension_query_fence(
   ut_x11_buffer_append_card32(request, fence);
 
   ut_x11_client_send_request_with_reply(
-      self->client, self->major_opcode, 18, request, query_fence_reply_cb,
-      query_fence_error_cb, callback_data_new(callback, user_data), cancel);
+      self->client, self->major_opcode, 18, request,
+      callback_data_new(callback_object, callback), query_fence_reply_cb,
+      query_fence_error_cb);
 }
 
 void ut_x11_sync_extension_await_fence(UtObject *object, uint32_t fence) {

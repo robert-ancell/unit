@@ -6,18 +6,19 @@
 
 #pragma once
 
-typedef void (*UtX11ClientRandrQueryVersionCallback)(void *user_data,
+typedef void (*UtX11ClientRandrQueryVersionCallback)(UtObject *object,
                                                      uint32_t major_version,
                                                      uint32_t minor_version,
                                                      UtObject *error);
 
-UtObject *ut_x11_randr_extension_new(UtObject *client, uint8_t major_opcode,
-                                     uint8_t first_event, uint8_t first_error,
-                                     const UtX11EventCallbacks *event_callbacks,
-                                     void *user_data, UtObject *cancel);
+UtObject *
+ut_x11_randr_extension_new(UtObject *client, uint8_t major_opcode,
+                           uint8_t first_event, uint8_t first_error,
+                           UtObject *callback_object,
+                           const UtX11EventCallbacks *event_callbacks);
 
 void ut_x11_randr_extension_query_version(
-    UtObject *object, UtX11ClientRandrQueryVersionCallback callback,
-    void *user_data, UtObject *cancel);
+    UtObject *object, UtObject *callback_object,
+    UtX11ClientRandrQueryVersionCallback callback);
 
 bool ut_object_is_x11_randr_extension(UtObject *object);

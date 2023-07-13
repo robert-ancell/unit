@@ -8,19 +8,24 @@
 
 typedef struct {
   UtObject object;
+  UtObject *callback_object;
   void *callback;
-  void *user_data;
 } CallbackData;
 
-static UtObjectInterface callback_data_object_interface = {
-    .type_name = "RandrCallbackData"};
+static void callback_data_cleanup(UtObject *object) {
+  CallbackData *self = (CallbackData *)object;
+  ut_object_weak_unref(&self->callback_object);
+}
 
-static UtObject *callback_data_new(void *callback, void *user_data) {
+static UtObjectInterface callback_data_object_interface = {
+    .type_name = "RandrCallbackData", .cleanup = callback_data_cleanup};
+
+static UtObject *callback_data_new(UtObject *callback_object, void *callback) {
   UtObject *object =
       ut_object_new(sizeof(CallbackData), &callback_data_object_interface);
   CallbackData *self = (CallbackData *)object;
+  ut_object_weak_ref(callback_object, &self->callback_object);
   self->callback = callback;
-  self->user_data = user_data;
   return object;
 }
 
@@ -30,9 +35,8 @@ typedef struct {
   uint8_t major_opcode;
   uint8_t first_event;
   uint8_t first_error;
+  UtObject *callback_object;
   const UtX11EventCallbacks *event_callbacks;
-  void *user_data;
-  UtObject *cancel;
 } UtX11RandrExtension;
 
 static void query_version_reply_cb(UtObject *object, uint8_t data0,
@@ -43,26 +47,24 @@ static void query_version_reply_cb(UtObject *object, uint8_t data0,
   uint32_t major_version = ut_x11_buffer_get_card32(data, &offset);
   uint32_t minor_version = ut_x11_buffer_get_card32(data, &offset);
 
-  if (callback_data->callback != NULL) {
+  if (callback_data->callback_object != NULL &&
+      callback_data->callback != NULL) {
     UtX11ClientRandrQueryVersionCallback callback =
         (UtX11ClientRandrQueryVersionCallback)callback_data->callback;
-    callback(callback_data->user_data, major_version, minor_version, NULL);
+    callback(callback_data->callback_object, major_version, minor_version,
+             NULL);
   }
 }
 
 static void query_version_error_cb(UtObject *object, UtObject *error) {
   CallbackData *callback_data = (CallbackData *)object;
 
-  if (callback_data->callback != NULL) {
+  if (callback_data->callback_object != NULL &&
+      callback_data->callback != NULL) {
     UtX11ClientRandrQueryVersionCallback callback =
         (UtX11ClientRandrQueryVersionCallback)callback_data->callback;
-    callback(callback_data->user_data, 0, 0, error);
+    callback(callback_data->callback_object, 0, 0, error);
   }
-}
-
-static void ut_x11_randr_extension_cleanup(UtObject *object) {
-  UtX11RandrExtension *self = (UtX11RandrExtension *)object;
-  ut_object_unref(self->cancel);
 }
 
 static uint8_t ut_x11_randr_extension_get_major_opcode(UtObject *object) {
@@ -108,6 +110,11 @@ static void ut_x11_randr_extension_close(UtObject *object) {
   self->client = NULL;
 }
 
+static void ut_x11_randr_extension_cleanup(UtObject *object) {
+  UtX11RandrExtension *self = (UtX11RandrExtension *)object;
+  ut_object_weak_unref(&self->callback_object);
+}
+
 static UtX11ExtensionInterface x11_extension_interface = {
     .get_major_opcode = ut_x11_randr_extension_get_major_opcode,
     .get_first_event = ut_x11_randr_extension_get_first_event,
@@ -122,10 +129,11 @@ static UtObjectInterface object_interface = {
     .interfaces = {{&ut_x11_extension_id, &x11_extension_interface},
                    {NULL, NULL}}};
 
-UtObject *ut_x11_randr_extension_new(UtObject *client, uint8_t major_opcode,
-                                     uint8_t first_event, uint8_t first_error,
-                                     const UtX11EventCallbacks *event_callbacks,
-                                     void *user_data, UtObject *cancel) {
+UtObject *
+ut_x11_randr_extension_new(UtObject *client, uint8_t major_opcode,
+                           uint8_t first_event, uint8_t first_error,
+                           UtObject *callback_object,
+                           const UtX11EventCallbacks *event_callbacks) {
   UtObject *object =
       ut_object_new(sizeof(UtX11RandrExtension), &object_interface);
   UtX11RandrExtension *self = (UtX11RandrExtension *)object;
@@ -133,15 +141,14 @@ UtObject *ut_x11_randr_extension_new(UtObject *client, uint8_t major_opcode,
   self->major_opcode = major_opcode;
   self->first_event = first_event;
   self->first_error = first_error;
+  ut_object_weak_ref(callback_object, &self->callback_object);
   self->event_callbacks = event_callbacks;
-  self->user_data = user_data;
-  self->cancel = ut_object_ref(cancel);
   return object;
 }
 
 void ut_x11_randr_extension_query_version(
-    UtObject *object, UtX11ClientRandrQueryVersionCallback callback,
-    void *user_data, UtObject *cancel) {
+    UtObject *object, UtObject *callback_object,
+    UtX11ClientRandrQueryVersionCallback callback) {
   assert(ut_object_is_x11_randr_extension(object));
   UtX11RandrExtension *self = (UtX11RandrExtension *)object;
 
@@ -150,8 +157,9 @@ void ut_x11_randr_extension_query_version(
   ut_x11_buffer_append_card32(request, 5);
 
   ut_x11_client_send_request_with_reply(
-      self->client, self->major_opcode, 0, request, query_version_reply_cb,
-      query_version_error_cb, callback_data_new(callback, user_data), cancel);
+      self->client, self->major_opcode, 0, request,
+      callback_data_new(callback_object, callback), query_version_reply_cb,
+      query_version_error_cb);
 }
 
 bool ut_object_is_x11_randr_extension(UtObject *object) {

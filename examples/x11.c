@@ -23,62 +23,62 @@ static uint32_t get_atom(const char *name) {
   return ut_uint32_get_value(value);
 }
 
-static void enter_cb(void *user_data, uint16_t device_id, uint32_t timestamp,
+static void enter_cb(UtObject *object, uint16_t device_id, uint32_t timestamp,
                      UtX11InputNotifyMode mode, UtX11InputNotifyDetail detail,
                      uint32_t window, double x, double y) {
   printf("Enter\n");
 }
 
-static void leave_cb(void *user_data, uint16_t device_id, uint32_t timestamp,
+static void leave_cb(UtObject *object, uint16_t device_id, uint32_t timestamp,
                      UtX11InputNotifyMode mode, UtX11InputNotifyDetail detail,
                      uint32_t window, double x, double y) {
   printf("Leave\n");
 }
 
-static void motion_cb(void *user_data, uint16_t device_id, uint32_t timestamp,
+static void motion_cb(UtObject *object, uint16_t device_id, uint32_t timestamp,
                       uint32_t window, double x, double y,
                       UtX11PointerEventFlag flag) {
   printf("Motion (%f,%f)\n", x, y);
 }
 
-static void button_press_cb(void *user_data, uint16_t device_id,
+static void button_press_cb(UtObject *object, uint16_t device_id,
                             uint32_t timestamp, uint32_t window, uint8_t button,
                             double x, double y, UtX11PointerEventFlag flag) {
   printf("ButtonPress %d\n", button);
 }
 
-static void button_release_cb(void *user_data, uint16_t device_id,
+static void button_release_cb(UtObject *object, uint16_t device_id,
                               uint32_t timestamp, uint32_t window,
                               uint8_t button, double x, double y,
                               UtX11PointerEventFlag flag) {
   printf("ButtonRelease %d\n", button);
 }
 
-static void focus_in_cb(void *user_data, uint16_t device_id, uint32_t timestamp,
+static void focus_in_cb(UtObject *object, uint16_t device_id, uint32_t timestamp,
                         UtX11InputNotifyMode mode,
                         UtX11InputNotifyDetail detail, uint32_t window) {
   printf("FocusIn\n");
 }
 
-static void focus_out_cb(void *user_data, uint16_t device_id,
+static void focus_out_cb(UtObject *object, uint16_t device_id,
                          uint32_t timestamp, UtX11InputNotifyMode mode,
                          UtX11InputNotifyDetail detail, uint32_t window) {
   printf("FocusOut\n");
 }
 
-static void key_press_cb(void *user_data, uint16_t device_id,
+static void key_press_cb(UtObject *object, uint16_t device_id,
                          uint32_t timestamp, uint32_t window, uint8_t keycode,
                          double x, double y, UtX11KeyEventFlag flag) {
   printf("KeyPress %d\n", keycode);
 }
 
-static void key_release_cb(void *user_data, uint16_t device_id,
+static void key_release_cb(UtObject *object, uint16_t device_id,
                            uint32_t timestamp, uint32_t window, uint8_t keycode,
                            double x, double y, UtX11KeyEventFlag flag) {
   printf("KeyRelease %d\n", keycode);
 }
 
-static void client_message_cb(void *user_data, uint32_t window, uint32_t type,
+static void client_message_cb(UtObject *object, uint32_t window, uint32_t type,
                               UtObject *data) {
   printf("ClientMessage\n");
 
@@ -89,7 +89,7 @@ static void client_message_cb(void *user_data, uint32_t window, uint32_t type,
   }
 }
 
-static void configure_notify_cb(void *user_data, uint32_t window, int16_t x,
+static void configure_notify_cb(UtObject *object, uint32_t window, int16_t x,
                                 int16_t y, uint16_t width, uint16_t height) {
   printf("ConfigureNotify (%d,%d) %dx%d\n", x, y, width, height);
   if (width == pixmap_width && height == pixmap_height) {
@@ -125,14 +125,14 @@ static void configure_notify_cb(void *user_data, uint32_t window, int16_t x,
   gc = ut_x11_client_create_gc(client, pixmap);
 }
 
-static void expose_cb(void *user_data, uint32_t window, uint16_t x, uint16_t y,
+static void expose_cb(UtObject *object, uint32_t window, uint16_t x, uint16_t y,
                       uint16_t width, uint16_t height, uint16_t count) {
   printf("Expose (%d,%d) %dx%d\n", x, y, width, height);
   ut_x11_client_copy_area(client, pixmap, window, gc, x, y, x, y, width,
                           height);
 }
 
-static void get_wm_state_cb(void *user_data, uint32_t type, UtObject *value,
+static void get_wm_state_cb(UtObject *object, uint32_t type, UtObject *value,
                             uint32_t bytes_after, UtObject *error) {
   size_t atoms_length = ut_list_get_length(value);
   bool maximized_vert = false, maximized_horz = false, hidden = false;
@@ -151,12 +151,12 @@ static void get_wm_state_cb(void *user_data, uint32_t type, UtObject *value,
          hidden ? "yes" : "no");
 }
 
-static void property_notify_cb(void *user_data, uint32_t window, uint32_t atom,
+static void property_notify_cb(UtObject *object, uint32_t window, uint32_t atom,
                                uint32_t timestamp,
                                UtX11PropertyNotifyState state) {
   if (atom == get_atom("_NET_WM_STATE")) {
-    ut_x11_client_get_property(client, window, atom, UT_X11_ATOM,
-                               get_wm_state_cb, NULL, NULL);
+    ut_x11_client_get_property(client, window, atom, UT_X11_ATOM, object,
+                               get_wm_state_cb);
   }
 }
 
@@ -175,12 +175,12 @@ static UtX11EventCallbacks event_callbacks = {
     .expose = expose_cb,
     .property_notify = property_notify_cb};
 
-static void error_cb(void *user_data, UtObject *error) {
+static void error_cb(UtObject *object, UtObject *error) {
   ut_cstring_ref s = ut_object_to_string(error);
   printf("%s\n", s);
 }
 
-static void list_extensions_cb(void *user_data, UtObject *names,
+static void list_extensions_cb(UtObject *object, UtObject *names,
                                UtObject *error) {
   assert(error == NULL);
   size_t names_length = ut_list_get_length(names);
@@ -189,7 +189,7 @@ static void list_extensions_cb(void *user_data, UtObject *names,
   }
 }
 
-static void query_device_cb(void *user_data, UtObject *infos, UtObject *error) {
+static void query_device_cb(UtObject *object, UtObject *infos, UtObject *error) {
   size_t infos_length = ut_list_get_length(infos);
   for (size_t i = 0; i < infos_length; i++) {
     UtObjectRef info = ut_list_get_element(infos, i);
@@ -197,12 +197,13 @@ static void query_device_cb(void *user_data, UtObject *infos, UtObject *error) {
   }
 }
 
-static void intern_atom_cb(void *user_data, uint32_t atom, UtObject *error) {
-  ut_cstring_ref name = user_data;
-  assert(error == NULL);
-  ut_map_insert_string_take(atoms, name, ut_uint32_new(atom));
+static void intern_atom_cb(UtObject *object, uint32_t atom, UtObject *error) {
+  UtObjectRef name = object;
 
-  if (ut_cstring_equal(name, "WM_DELETE_WINDOW")) {
+  assert(error == NULL);
+  ut_map_insert_string_take(atoms, ut_string_get_text(name), ut_uint32_new(atom));
+
+  if (ut_cstring_equal(ut_string_get_text(name), "WM_DELETE_WINDOW")) {
     UtObjectRef protocols =
         ut_uint32_list_new_from_elements(1, get_atom("WM_DELETE_WINDOW"));
     ut_x11_client_change_property_uint32(
@@ -212,11 +213,10 @@ static void intern_atom_cb(void *user_data, uint32_t atom, UtObject *error) {
 }
 
 static void intern_atom(const char *name) {
-  ut_x11_client_intern_atom(client, name, false, intern_atom_cb,
-                            ut_cstring_new(name), NULL);
+  ut_x11_client_intern_atom(client, name, false, ut_string_new(name), intern_atom_cb);
 }
 
-static void connect_cb(void *user_data, UtObject *error) {
+static void connect_cb(UtObject *object, UtObject *error) {
   if (error != NULL) {
     ut_cstring_ref description = ut_error_get_description(error);
     printf("Error connecting: %s", description);
@@ -225,10 +225,9 @@ static void connect_cb(void *user_data, UtObject *error) {
 
   printf("Connected\n");
 
-  ut_x11_client_list_extensions(client, list_extensions_cb, NULL, NULL);
+  ut_x11_client_list_extensions(client, object, list_extensions_cb);
 
-  ut_x11_client_query_device(client, UT_X11_DEVICE_ALL_MASTER, query_device_cb,
-                             NULL, NULL);
+  ut_x11_client_query_device(client, UT_X11_DEVICE_ALL_MASTER, object, query_device_cb);
 
   intern_atom("WM_PROTOCOLS");
   intern_atom("WM_DELETE_WINDOW");
@@ -270,9 +269,10 @@ static void connect_cb(void *user_data, UtObject *error) {
 }
 
 int main(int argc, char **argv) {
-  client = ut_x11_client_new(&event_callbacks, error_cb, NULL, NULL);
+  UtObjectRef dummy_object = ut_null_new();
+  client = ut_x11_client_new(dummy_object, &event_callbacks, error_cb);
   atoms = ut_map_new();
-  ut_x11_client_connect(client, connect_cb, NULL, NULL);
+  ut_x11_client_connect(client, dummy_object, connect_cb);
 
   ut_event_loop_run();
 

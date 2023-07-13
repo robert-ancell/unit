@@ -6,9 +6,8 @@
 
 #pragma once
 
-UtObject *ut_x11_core_new(UtObject *client,
-                          const UtX11EventCallbacks *event_callbacks,
-                          void *user_data, UtObject *cancel);
+UtObject *ut_x11_core_new(UtObject *client, UtObject *callback_object,
+                          const UtX11EventCallbacks *event_callbacks);
 
 uint32_t ut_x11_core_create_window(UtObject *object, uint32_t parent, int16_t x,
                                    int16_t y, uint16_t width, uint16_t height,
@@ -19,9 +18,8 @@ void ut_x11_core_change_window_attributes(UtObject *object, uint32_t window,
                                           uint32_t event_mask);
 
 void ut_x11_core_get_window_attributes(
-    UtObject *object, uint32_t window,
-    UtX11GetWindowAttributesCallback callback, void *user_data,
-    UtObject *cancel);
+    UtObject *object, uint32_t window, UtObject *callback_object,
+    UtX11GetWindowAttributesCallback callback);
 
 void ut_x11_core_destroy_window(UtObject *object, uint32_t window);
 
@@ -50,13 +48,12 @@ void ut_x11_core_configure_window(UtObject *object, uint32_t window, int16_t x,
 // QueryTree
 
 void ut_x11_core_intern_atom(UtObject *object, const char *name,
-                             bool only_if_exists,
-                             UtX11InternAtomCallback callback, void *user_data,
-                             UtObject *cancel);
+                             bool only_if_exists, UtObject *callback_object,
+                             UtX11InternAtomCallback callback);
 
 void ut_x11_core_get_atom_name(UtObject *object, uint32_t atom,
-                               UtX11GetAtomNameCallback callback,
-                               void *user_data, UtObject *cancel);
+                               UtObject *callback_object,
+                               UtX11GetAtomNameCallback callback);
 
 void ut_x11_core_change_property_uint8(UtObject *object, uint32_t window,
                                        uint32_t property,
@@ -84,12 +81,12 @@ void ut_x11_core_delete_property(UtObject *object, uint32_t window,
 void ut_x11_core_get_property(UtObject *object, uint32_t window,
                               uint32_t property, uint32_t type,
                               uint32_t long_offset, uint32_t long_length,
-                              bool delete, UtX11GetPropertyCallback callback,
-                              void *user_data, UtObject *cancel);
+                              bool delete, UtObject *callback_object,
+                              UtX11GetPropertyCallback callback);
 
 void ut_x11_core_list_properties(UtObject *object, uint32_t window,
-                                 UtX11ListPropertiesCallback callback,
-                                 void *user_data, UtObject *cancel);
+                                 UtObject *callback_object,
+                                 UtX11ListPropertiesCallback callback);
 
 // SetSelectionOwner
 
@@ -173,16 +170,15 @@ void ut_x11_core_put_image(UtObject *object, uint32_t drawable, uint32_t gc,
 void ut_x11_core_get_image(UtObject *object, uint32_t drawable,
                            UtX11ImageFormat format, int16_t x, int16_t y,
                            uint16_t width, uint16_t height, uint32_t plane_mask,
-                           UtX11GetImageCallback callback, void *user_data,
-                           UtObject *cancel);
+                           UtObject *callback_object,
+                           UtX11GetImageCallback callback);
 
 void ut_x11_core_query_extension(UtObject *object, const char *name,
-                                 UtX11QueryExtensionCallback callback,
-                                 void *user_data, UtObject *cancel);
+                                 UtObject *callback_object,
+                                 UtX11QueryExtensionCallback callback);
 
-void ut_x11_core_list_extensions(UtObject *object,
-                                 UtX11ListExtensionsCallback callback,
-                                 void *user_data, UtObject *cancel);
+void ut_x11_core_list_extensions(UtObject *object, UtObject *callback_object,
+                                 UtX11ListExtensionsCallback callback);
 
 void ut_x11_core_bell(UtObject *object);
 

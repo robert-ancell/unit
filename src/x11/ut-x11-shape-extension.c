@@ -11,22 +11,24 @@ typedef struct _UtX11ShapeExtension UtX11ShapeExtension;
 
 typedef struct {
   UtObject object;
-  UtX11ShapeExtension *self;
+  UtObject *callback_object;
   void *callback;
-  void *user_data;
 } CallbackData;
 
-static UtObjectInterface callback_data_object_interface = {
-    .type_name = "ShapeCallbackData"};
+static void callback_data_cleanup(UtObject *object) {
+  CallbackData *self = (CallbackData *)object;
+  ut_object_weak_unref(&self->callback_object);
+}
 
-static UtObject *callback_data_new(UtX11ShapeExtension *self, void *callback,
-                                   void *user_data) {
+static UtObjectInterface callback_data_object_interface = {
+    .type_name = "ShapeCallbackData", .cleanup = callback_data_cleanup};
+
+static UtObject *callback_data_new(UtObject *callback_object, void *callback) {
   UtObject *object =
       ut_object_new(sizeof(CallbackData), &callback_data_object_interface);
-  CallbackData *data = (CallbackData *)object;
-  data->self = self;
-  data->callback = callback;
-  data->user_data = user_data;
+  CallbackData *self = (CallbackData *)object;
+  ut_object_weak_ref(callback_object, &self->callback_object);
+  self->callback = callback;
   return object;
 }
 
@@ -35,9 +37,8 @@ struct _UtX11ShapeExtension {
   UtObject *client;
   uint8_t major_opcode;
   uint8_t first_event;
+  UtObject *callback_object;
   const UtX11ShapeEventCallbacks *event_callbacks;
-  void *user_data;
-  UtObject *cancel;
 };
 
 static void decode_shape_notify(UtX11ShapeExtension *self, uint8_t data0,
@@ -53,16 +54,16 @@ static void decode_shape_notify(UtX11ShapeExtension *self, uint8_t data0,
   bool shaped = ut_x11_buffer_get_bool(data, &offset);
   ut_x11_buffer_get_padding(data, &offset, 11);
 
-  if (self->event_callbacks->shape_notify != NULL &&
-      !ut_cancel_is_active(self->cancel)) {
-    self->event_callbacks->shape_notify(self->user_data, window, kind, x, y,
-                                        width, height, timestamp, shaped);
+  if (self->callback_object != NULL &&
+      self->event_callbacks->shape_notify != NULL) {
+    self->event_callbacks->shape_notify(self->callback_object, window, kind, x,
+                                        y, width, height, timestamp, shaped);
   }
 }
 
-static void decode_shape_query_version_reply(UtObject *user_data, uint8_t data0,
+static void decode_shape_query_version_reply(UtObject *object, uint8_t data0,
                                              UtObject *data) {
-  CallbackData *callback_data = (CallbackData *)user_data;
+  CallbackData *callback_data = (CallbackData *)object;
 
   size_t offset = 0;
   ut_x11_buffer_get_padding(data, &offset, 1);
@@ -70,27 +71,30 @@ static void decode_shape_query_version_reply(UtObject *user_data, uint8_t data0,
   uint16_t minor_version = ut_x11_buffer_get_card16(data, &offset);
   ut_x11_buffer_get_padding(data, &offset, 20);
 
-  if (callback_data->callback != NULL) {
+  if (callback_data->callback_object != NULL &&
+      callback_data->callback != NULL) {
     UtX11ShapeQueryVersionCallback callback =
         (UtX11ShapeQueryVersionCallback)callback_data->callback;
-    callback(callback_data->user_data, major_version, minor_version, NULL);
+    callback(callback_data->callback_object, major_version, minor_version,
+             NULL);
   }
 }
 
-static void handle_shape_query_version_error(UtObject *user_data,
+static void handle_shape_query_version_error(UtObject *object,
                                              UtObject *error) {
-  CallbackData *callback_data = (CallbackData *)user_data;
+  CallbackData *callback_data = (CallbackData *)object;
 
-  if (callback_data->callback != NULL) {
+  if (callback_data->callback_object != NULL &&
+      callback_data->callback != NULL) {
     UtX11ShapeQueryVersionCallback callback =
         (UtX11ShapeQueryVersionCallback)callback_data->callback;
-    callback(callback_data->user_data, 0, 0, error);
+    callback(callback_data->callback_object, 0, 0, error);
   }
 }
 
 static void ut_x11_shape_extension_cleanup(UtObject *object) {
   UtX11ShapeExtension *self = (UtX11ShapeExtension *)object;
-  ut_object_unref(self->cancel);
+  ut_object_weak_unref(&self->callback_object);
 }
 
 static uint8_t ut_x11_shape_extension_get_major_opcode(UtObject *object) {
@@ -137,31 +141,29 @@ static UtObjectInterface object_interface = {
 
 UtObject *
 ut_x11_shape_extension_new(UtObject *client, uint8_t major_opcode,
-                           uint8_t first_event,
-                           const UtX11ShapeEventCallbacks *event_callbacks,
-                           void *user_data, UtObject *cancel) {
+                           uint8_t first_event, UtObject *callback_object,
+                           const UtX11ShapeEventCallbacks *event_callbacks) {
   UtObject *object =
       ut_object_new(sizeof(UtX11ShapeExtension), &object_interface);
   UtX11ShapeExtension *self = (UtX11ShapeExtension *)object;
   self->client = client;
   self->major_opcode = major_opcode;
   self->first_event = first_event;
+  ut_object_weak_ref(callback_object, &self->callback_object);
   self->event_callbacks = event_callbacks;
-  self->user_data = user_data;
-  self->cancel = ut_object_ref(cancel);
   return object;
 }
 
 void ut_x11_shape_extension_query_version(
-    UtObject *object, UtX11ShapeQueryVersionCallback callback, void *user_data,
-    UtObject *cancel) {
+    UtObject *object, UtObject *callback_object,
+    UtX11ShapeQueryVersionCallback callback) {
   assert(ut_object_is_x11_shape_extension(object));
   UtX11ShapeExtension *self = (UtX11ShapeExtension *)object;
 
   ut_x11_client_send_request_with_reply(
-      (UtObject *)self->client, self->major_opcode, 0, NULL,
-      decode_shape_query_version_reply, handle_shape_query_version_error,
-      callback_data_new(self, callback, user_data), cancel);
+      self->client, self->major_opcode, 0, NULL,
+      callback_data_new(callback_object, callback),
+      decode_shape_query_version_reply, handle_shape_query_version_error);
 }
 
 void ut_x11_shape_extension_select_input(UtObject *object, uint32_t window,
@@ -174,8 +176,7 @@ void ut_x11_shape_extension_select_input(UtObject *object, uint32_t window,
   ut_x11_buffer_append_card8(request, enabled ? 1 : 0);
   ut_x11_buffer_append_padding(request, 3);
 
-  ut_x11_client_send_request((UtObject *)self->client, self->major_opcode, 6,
-                             request);
+  ut_x11_client_send_request(self->client, self->major_opcode, 6, request);
 }
 
 bool ut_object_is_x11_shape_extension(UtObject *object) {

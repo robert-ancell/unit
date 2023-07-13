@@ -115,108 +115,108 @@ typedef enum {
   UT_X11_TOUCH_EVENT_FLAG_EMULATING_POINTER = 0x00020000
 } UtX11TouchEventFlag;
 
-typedef void (*UtX11ExposeCallback)(void *user_data, uint32_t window,
+typedef void (*UtX11ExposeCallback)(UtObject *object, uint32_t window,
                                     uint16_t x, uint16_t y, uint16_t width,
                                     uint16_t height, uint16_t count);
-typedef void (*UtX11NoExposeCallback)(void *user_data, uint32_t drawable);
-typedef void (*UtX11MapNotifyCallback)(void *user_data, uint32_t event,
+typedef void (*UtX11NoExposeCallback)(UtObject *object, uint32_t drawable);
+typedef void (*UtX11MapNotifyCallback)(UtObject *object, uint32_t event,
                                        uint32_t window, bool override_redirect);
-typedef void (*UtX11ReparentNotifyCallback)(void *user_data, int32_t event,
+typedef void (*UtX11ReparentNotifyCallback)(UtObject *object, int32_t event,
                                             uint32_t window, uint32_t parent,
                                             int16_t x, int16_t y,
                                             bool override_redirect);
-typedef void (*UtX11ConfigureNotifyCallback)(void *user_data, uint32_t window,
+typedef void (*UtX11ConfigureNotifyCallback)(UtObject *object, uint32_t window,
                                              int16_t x, int16_t y,
                                              uint16_t width, uint16_t height);
-typedef void (*UtX11PropertyNotifyCallback)(void *user_data, uint32_t window,
+typedef void (*UtX11PropertyNotifyCallback)(UtObject *object, uint32_t window,
                                             uint32_t atom, uint32_t timestamp,
                                             UtX11PropertyNotifyState state);
-typedef void (*UtX11ClientMessageCallback)(void *user_data, uint32_t window,
+typedef void (*UtX11ClientMessageCallback)(UtObject *object, uint32_t window,
                                            uint32_t type, UtObject *data);
 
 // From XInputExtension
-typedef void (*UtX11DeviceChangedCallback)(void *user_data, uint16_t device_id,
+typedef void (*UtX11DeviceChangedCallback)(UtObject *object, uint16_t device_id,
                                            uint32_t timestamp,
                                            UtX11DeviceChangeReason reason,
                                            UtObject *classes);
-typedef void (*UtX11KeyPressCallback)(void *user_data, uint16_t device_id,
+typedef void (*UtX11KeyPressCallback)(UtObject *object, uint16_t device_id,
                                       uint32_t timestamp, uint32_t window,
                                       uint8_t keycode, double x, double y,
                                       UtX11KeyEventFlag flags);
-typedef void (*UtX11KeyReleaseCallback)(void *user_data, uint16_t device_id,
+typedef void (*UtX11KeyReleaseCallback)(UtObject *object, uint16_t device_id,
                                         uint32_t timestamp, uint32_t window,
                                         uint8_t keycode, double x, double y,
                                         UtX11KeyEventFlag flags);
-typedef void (*UtX11ButtonPressCallback)(void *user_data, uint16_t device_id,
+typedef void (*UtX11ButtonPressCallback)(UtObject *object, uint16_t device_id,
                                          uint32_t timestamp, uint32_t window,
                                          uint8_t button, double x, double y,
                                          UtX11PointerEventFlag flags);
-typedef void (*UtX11ButtonReleaseCallback)(void *user_data, uint16_t device_id,
+typedef void (*UtX11ButtonReleaseCallback)(UtObject *object, uint16_t device_id,
                                            uint32_t timestamp, uint32_t window,
                                            uint8_t button, double x, double y,
                                            UtX11PointerEventFlag flags);
-typedef void (*UtX11MotionCallback)(void *user_data, uint16_t device_id,
+typedef void (*UtX11MotionCallback)(UtObject *object, uint16_t device_id,
                                     uint32_t timestamp, uint32_t window,
                                     double x, double y,
                                     UtX11PointerEventFlag flags);
-typedef void (*UtX11EnterCallback)(void *user_data, uint16_t device_id,
+typedef void (*UtX11EnterCallback)(UtObject *object, uint16_t device_id,
                                    uint32_t timestamp,
                                    UtX11InputNotifyMode mode,
                                    UtX11InputNotifyDetail detail,
                                    uint32_t window, double x, double y);
-typedef void (*UtX11LeaveCallback)(void *user_data, uint16_t device_id,
+typedef void (*UtX11LeaveCallback)(UtObject *object, uint16_t device_id,
                                    uint32_t timestamp,
                                    UtX11InputNotifyMode mode,
                                    UtX11InputNotifyDetail detail,
                                    uint32_t window, double x, double y);
-typedef void (*UtX11FocusInCallback)(void *user_data, uint16_t device_id,
+typedef void (*UtX11FocusInCallback)(UtObject *object, uint16_t device_id,
                                      uint32_t timestamp,
                                      UtX11InputNotifyMode mode,
                                      UtX11InputNotifyDetail detail,
                                      uint32_t window);
-typedef void (*UtX11FocusOutCallback)(void *user_data, uint16_t device_id,
+typedef void (*UtX11FocusOutCallback)(UtObject *object, uint16_t device_id,
                                       uint32_t timestamp,
                                       UtX11InputNotifyMode mode,
                                       UtX11InputNotifyDetail detail,
                                       uint32_t window);
-typedef void (*UtX11TouchBeginCallback)(void *user_data, uint16_t device_id,
+typedef void (*UtX11TouchBeginCallback)(UtObject *object, uint16_t device_id,
                                         uint32_t timestamp, uint32_t window,
                                         uint32_t touch_id, double x, double y);
-typedef void (*UtX11TouchUpdateCallback)(void *user_data, uint16_t device_id,
+typedef void (*UtX11TouchUpdateCallback)(UtObject *object, uint16_t device_id,
                                          uint32_t timestamp, uint32_t window,
                                          uint32_t touch_id, double x, double y);
-typedef void (*UtX11TouchEndCallback)(void *user_data, uint16_t device_id,
+typedef void (*UtX11TouchEndCallback)(UtObject *object, uint16_t device_id,
                                       uint32_t timestamp, uint32_t window,
                                       uint32_t touch_id, double x, double y);
 
 // From XFIXES
-typedef void (*UtX11SelectionNotifyCallback)(void *user_data, uint32_t window,
+typedef void (*UtX11SelectionNotifyCallback)(UtObject *object, uint32_t window,
                                              uint32_t owner, uint32_t selection,
                                              uint32_t timestamp,
                                              uint32_t selection_timestamp);
-typedef void (*UtX11CursorNotifyCallback)(void *user_data, uint32_t window,
+typedef void (*UtX11CursorNotifyCallback)(UtObject *object, uint32_t window,
                                           uint32_t cursor_serial,
                                           uint32_t timestamp, uint32_t name);
 
 // From Present
 typedef void (*UtX11PresentConfigureNotifyCallback)(
-    void *user_data, uint32_t event_id, uint32_t window, int16_t x, int16_t y,
+    UtObject *object, uint32_t event_id, uint32_t window, int16_t x, int16_t y,
     uint16_t width, uint16_t height, int16_t off_x, int16_t off_y,
     uint16_t pixmap_width, uint16_t pixmap_height, uint32_t pixmap_flags);
 typedef void (*UtX11PresentCompleteNotifyCallback)(
-    void *user_data, uint8_t kind, uint8_t mode, uint32_t event_id,
+    UtObject *object, uint8_t kind, uint8_t mode, uint32_t event_id,
     uint32_t window, uint32_t serial, uint64_t ust, uint64_t msc);
-typedef void (*UtX11PresentIdleNotifyCallback)(void *user_data,
+typedef void (*UtX11PresentIdleNotifyCallback)(UtObject *object,
                                                uint32_t event_id,
                                                uint32_t window, uint32_t serial,
                                                uint32_t pixmap,
                                                uint32_t idle_fence);
 
-typedef void (*UtX11UnknownEventCallback)(void *user_data, uint8_t code,
+typedef void (*UtX11UnknownEventCallback)(UtObject *object, uint8_t code,
                                           bool from_send_event,
                                           uint16_t sequence_number,
                                           uint8_t data0, UtObject *data);
-typedef void (*UtX11UnknownGenericEventCallback)(void *user_data,
+typedef void (*UtX11UnknownGenericEventCallback)(UtObject *object,
                                                  uint8_t major_opcode,
                                                  uint16_t code);
 
@@ -257,46 +257,46 @@ typedef struct {
   UtX11UnknownGenericEventCallback unknown_generic_event;
 } UtX11EventCallbacks;
 
-typedef void (*UtX11ClientErrorCallback)(void *user_data, UtObject *error);
-typedef void (*UtX11ClientConnectCallback)(void *user_data, UtObject *error);
+typedef void (*UtX11ClientErrorCallback)(UtObject *object, UtObject *error);
+typedef void (*UtX11ClientConnectCallback)(UtObject *object, UtObject *error);
 typedef void (*UtX11GetWindowAttributesCallback)(
-    void *user_data, uint32_t visual, uint16_t class, uint8_t bit_gravity,
+    UtObject *object, uint32_t visual, uint16_t class, uint8_t bit_gravity,
     uint8_t win_gravity, uint8_t backing_store, uint32_t backing_planes,
     uint32_t backing_pixel, bool save_under, bool map_is_installed,
     uint8_t map_state, bool override_redirect, uint32_t colormap,
     uint32_t all_event_masks, uint32_t your_event_mask,
     uint16_t do_not_propagate_mask, UtObject *error);
-typedef void (*UtX11InternAtomCallback)(void *user_data, uint32_t atom,
+typedef void (*UtX11InternAtomCallback)(UtObject *object, uint32_t atom,
                                         UtObject *error);
-typedef void (*UtX11GetAtomNameCallback)(void *user_data, const char *name,
+typedef void (*UtX11GetAtomNameCallback)(UtObject *object, const char *name,
                                          UtObject *error);
-typedef void (*UtX11GetPropertyCallback)(void *user_data, uint32_t type,
+typedef void (*UtX11GetPropertyCallback)(UtObject *object, uint32_t type,
                                          UtObject *value, uint32_t bytes_after,
                                          UtObject *error);
-typedef void (*UtX11ListPropertiesCallback)(void *user_data, UtObject *atoms,
+typedef void (*UtX11ListPropertiesCallback)(UtObject *object, UtObject *atoms,
                                             UtObject *error);
-typedef void (*UtX11GetImageCallback)(void *user_data, uint32_t visual,
+typedef void (*UtX11GetImageCallback)(UtObject *object, uint32_t visual,
                                       uint8_t depth, UtObject *data,
                                       UtObject *error);
-typedef void (*UtX11QueryExtensionCallback)(void *user_data, bool present,
+typedef void (*UtX11QueryExtensionCallback)(UtObject *object, bool present,
                                             uint8_t major_opcode,
                                             uint8_t first_event,
                                             uint8_t first_error,
                                             UtObject *error);
-typedef void (*UtX11ListExtensionsCallback)(void *user_data, UtObject *names,
+typedef void (*UtX11ListExtensionsCallback)(UtObject *object, UtObject *names,
                                             UtObject *error);
-typedef void (*UtX11ShmCreateSegmentCallback)(void *user_data, UtObject *fd,
+typedef void (*UtX11ShmCreateSegmentCallback)(UtObject *object, UtObject *fd,
                                               UtObject *error);
-typedef void (*UtX11GrabDeviceCallback)(void *user_data, uint8_t status,
+typedef void (*UtX11GrabDeviceCallback)(UtObject *object, uint8_t status,
                                         UtObject *error);
-typedef void (*UtX11QueryDeviceCallback)(void *user_data, UtObject *infos,
+typedef void (*UtX11QueryDeviceCallback)(UtObject *object, UtObject *infos,
                                          UtObject *error);
-typedef void (*UtX11GetFocusCallback)(void *user_data, uint32_t window,
+typedef void (*UtX11GetFocusCallback)(UtObject *object, uint32_t window,
                                       UtObject *error);
-typedef void (*UtX11ListSystemCountersCallback)(void *user_data,
+typedef void (*UtX11ListSystemCountersCallback)(UtObject *object,
                                                 UtObject *counters,
                                                 UtObject *error);
-typedef void (*UtX11QueryCounterCallback)(void *user_data,
+typedef void (*UtX11QueryCounterCallback)(UtObject *object,
                                           int64_t counter_value,
                                           UtObject *error);
 
@@ -370,15 +370,14 @@ typedef enum {
 /// server.
 ///
 /// !return-ref
-UtObject *ut_x11_client_new(const UtX11EventCallbacks *event_callbacks,
-                            UtX11ClientErrorCallback error_callback,
-                            void *user_data, UtObject *cancel);
+UtObject *ut_x11_client_new(UtObject *callback_object,
+                            const UtX11EventCallbacks *event_callbacks,
+                            UtX11ClientErrorCallback error_callback);
 
 /// Connect the [object] to the X server.
 /// [callback] is called when the connection is completed.
-void ut_x11_client_connect(UtObject *object,
-                           UtX11ClientConnectCallback callback, void *user_data,
-                           UtObject *cancel);
+void ut_x11_client_connect(UtObject *object, UtObject *callback_object,
+                           UtX11ClientConnectCallback callback);
 
 /// Returns the X11 server vendor.
 /// This value is set once [ut_x11_client_connect] has completed.
@@ -406,9 +405,8 @@ void ut_x11_client_change_window_attributes(UtObject *object, uint32_t window,
                                             uint32_t event_mask);
 
 void ut_x11_client_get_window_attributes(
-    UtObject *object, uint32_t window,
-    UtX11GetWindowAttributesCallback callback, void *user_data,
-    UtObject *cancel);
+    UtObject *object, uint32_t window, UtObject *callback_object,
+    UtX11GetWindowAttributesCallback callback);
 
 void ut_x11_client_destroy_window(UtObject *object, uint32_t window);
 
@@ -430,13 +428,12 @@ void ut_x11_client_configure_window(UtObject *object, uint32_t window,
                                     uint16_t height);
 
 void ut_x11_client_intern_atom(UtObject *object, const char *name,
-                               bool only_if_exists,
-                               UtX11InternAtomCallback callback,
-                               void *user_data, UtObject *cancel);
+                               bool only_if_exists, UtObject *callback_object,
+                               UtX11InternAtomCallback callback);
 
 void ut_x11_client_get_atom_name(UtObject *object, uint32_t atom,
-                                 UtX11GetAtomNameCallback callback,
-                                 void *user_data, UtObject *cancel);
+                                 UtObject *callback_object,
+                                 UtX11GetAtomNameCallback callback);
 
 void ut_x11_client_change_property_uint8(UtObject *object, uint32_t window,
                                          uint32_t property,
@@ -463,19 +460,18 @@ void ut_x11_client_delete_property(UtObject *object, uint32_t window,
 
 void ut_x11_client_get_property(UtObject *object, uint32_t window,
                                 uint32_t property, uint32_t type,
-                                UtX11GetPropertyCallback callback,
-                                void *user_data, UtObject *cancel);
+                                UtObject *callback_object,
+                                UtX11GetPropertyCallback callback);
 
 void ut_x11_client_get_property_full(UtObject *object, uint32_t window,
                                      uint32_t property, uint32_t type,
                                      uint32_t long_offset, uint32_t long_length,
-                                     bool delete,
-                                     UtX11GetPropertyCallback callback,
-                                     void *user_data, UtObject *cancel);
+                                     bool delete, UtObject *callback_object,
+                                     UtX11GetPropertyCallback callback);
 
 void ut_x11_client_list_properties(UtObject *object, uint32_t window,
-                                   UtX11ListPropertiesCallback callback,
-                                   void *user_data, UtObject *cancel);
+                                   UtObject *callback_object,
+                                   UtX11ListPropertiesCallback callback);
 
 uint32_t ut_x11_client_create_pixmap(UtObject *object, uint32_t drawable,
                                      uint16_t width, uint16_t height,
@@ -499,9 +495,8 @@ void ut_x11_client_copy_area(UtObject *object, uint32_t src_drawable,
 void ut_x11_client_get_image(UtObject *object, uint32_t drawable,
                              UtX11ImageFormat format, int16_t x, int16_t y,
                              uint16_t width, uint16_t height,
-                             uint32_t plane_mask,
-                             UtX11GetImageCallback callback, void *user_data,
-                             UtObject *cancel);
+                             uint32_t plane_mask, UtObject *callback_object,
+                             UtX11GetImageCallback callback);
 
 void ut_x11_client_put_image(UtObject *object, uint32_t drawable, uint32_t gc,
                              UtX11ImageFormat format, uint16_t width,
@@ -509,12 +504,11 @@ void ut_x11_client_put_image(UtObject *object, uint32_t drawable, uint32_t gc,
                              int16_t dst_y, UtObject *data);
 
 void ut_x11_client_query_extension(UtObject *object, const char *name,
-                                   UtX11QueryExtensionCallback callback,
-                                   void *user_data, UtObject *cancel);
+                                   UtObject *callback_object,
+                                   UtX11QueryExtensionCallback callback);
 
-void ut_x11_client_list_extensions(UtObject *object,
-                                   UtX11ListExtensionsCallback callback,
-                                   void *user_data, UtObject *cancel);
+void ut_x11_client_list_extensions(UtObject *object, UtObject *callback_object,
+                                   UtX11ListExtensionsCallback callback);
 
 void ut_x11_client_bell(UtObject *object);
 
@@ -533,27 +527,28 @@ uint32_t ut_x11_client_shm_create_pixmap(UtObject *object, uint32_t drawable,
 uint32_t ut_x11_client_shm_attach_fd(UtObject *object, UtObject *fd,
                                      bool read_only);
 
-uint32_t ut_x11_client_shm_create_segment(
-    UtObject *object, uint32_t size, bool read_only,
-    UtX11ShmCreateSegmentCallback callback, void *user_data, UtObject *cancel);
+uint32_t
+ut_x11_client_shm_create_segment(UtObject *object, uint32_t size,
+                                 bool read_only, UtObject *callback_object,
+                                 UtX11ShmCreateSegmentCallback callback);
 
 void ut_x11_client_select_input_events(UtObject *object, uint32_t window,
                                        UtObject *masks);
 
 void ut_x11_client_query_device(UtObject *object, uint16_t device_id,
-                                UtX11QueryDeviceCallback callback,
-                                void *user_data, UtObject *cancel);
+                                UtObject *callback_object,
+                                UtX11QueryDeviceCallback callback);
 
 void ut_x11_client_set_focus(UtObject *object, uint32_t window,
                              uint32_t timestamp, uint16_t device_id);
 
 void ut_x11_client_get_focus(UtObject *object, uint16_t device_id,
-                             UtX11GetFocusCallback callback, void *user_data,
-                             UtObject *cancel);
+                             UtObject *callback_object,
+                             UtX11GetFocusCallback callback);
 
 void ut_x11_client_list_system_counters(
-    UtObject *object, UtX11ListSystemCountersCallback callback, void *user_data,
-    UtObject *cancel);
+    UtObject *object, UtObject *callback_object,
+    UtX11ListSystemCountersCallback callback);
 
 uint32_t ut_x11_client_create_counter(UtObject *object, int64_t initial_value);
 
@@ -564,8 +559,8 @@ void ut_x11_client_change_counter(UtObject *object, uint32_t counter,
                                   int64_t amount);
 
 void ut_x11_client_query_counter(UtObject *object, uint32_t counter,
-                                 UtX11QueryCounterCallback callback,
-                                 void *user_data, UtObject *cancel);
+                                 UtObject *callback_object,
+                                 UtX11QueryCounterCallback callback);
 
 void ut_x11_client_destroy_counter(UtObject *object, uint32_t counter);
 

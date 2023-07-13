@@ -8,19 +8,24 @@
 
 typedef struct {
   UtObject object;
+  UtObject *callback_object;
   void *callback;
-  void *user_data;
 } CallbackData;
 
-static UtObjectInterface callback_data_object_interface = {
-    .type_name = "XfixesCallbackData"};
+static void callback_data_cleanup(UtObject *object) {
+  CallbackData *self = (CallbackData *)object;
+  ut_object_weak_unref(&self->callback_object);
+}
 
-static UtObject *callback_data_new(void *callback, void *user_data) {
+static UtObjectInterface callback_data_object_interface = {
+    .type_name = "XfixesCallbackData", .cleanup = callback_data_cleanup};
+
+static UtObject *callback_data_new(UtObject *callback_object, void *callback) {
   UtObject *object =
       ut_object_new(sizeof(CallbackData), &callback_data_object_interface);
   CallbackData *self = (CallbackData *)object;
+  ut_object_weak_ref(callback_object, &self->callback_object);
   self->callback = callback;
-  self->user_data = user_data;
   return object;
 }
 
@@ -30,9 +35,8 @@ typedef struct {
   uint8_t major_opcode;
   uint8_t first_event;
   uint8_t first_error;
+  UtObject *callback_object;
   const UtX11EventCallbacks *event_callbacks;
-  void *user_data;
-  UtObject *cancel;
 } UtX11XfixesExtension;
 
 static void query_version_reply_cb(UtObject *object, uint8_t data0,
@@ -44,20 +48,23 @@ static void query_version_reply_cb(UtObject *object, uint8_t data0,
   uint32_t major_version = ut_x11_buffer_get_card32(data, &offset);
   uint32_t minor_version = ut_x11_buffer_get_card32(data, &offset);
 
-  if (callback_data->callback != NULL) {
+  if (callback_data->callback_object != NULL &&
+      callback_data->callback != NULL) {
     UtX11ClientXfixesQueryVersionCallback callback =
         (UtX11ClientXfixesQueryVersionCallback)callback_data->callback;
-    callback(callback_data->user_data, major_version, minor_version, NULL);
+    callback(callback_data->callback_object, major_version, minor_version,
+             NULL);
   }
 }
 
 static void query_version_error_cb(UtObject *object, UtObject *error) {
   CallbackData *callback_data = (CallbackData *)object;
 
-  if (callback_data->callback != NULL) {
+  if (callback_data->callback_object != NULL &&
+      callback_data->callback != NULL) {
     UtX11ClientXfixesQueryVersionCallback callback =
         (UtX11ClientXfixesQueryVersionCallback)callback_data->callback;
-    callback(callback_data->user_data, 0, 0, error);
+    callback(callback_data->callback_object, 0, 0, error);
   }
 }
 
@@ -81,10 +88,11 @@ static void get_cursor_image_reply_cb(UtObject *object, uint8_t data0,
                           ut_x11_buffer_get_card32(data, &offset));
   }
 
-  if (callback_data->callback != NULL) {
+  if (callback_data->callback_object != NULL &&
+      callback_data->callback != NULL) {
     UtX11ClientXfixesGetCursorImageCallback callback =
         (UtX11ClientXfixesGetCursorImageCallback)callback_data->callback;
-    callback(callback_data->user_data, x, y, width, height, xhot, yhot,
+    callback(callback_data->callback_object, x, y, width, height, xhot, yhot,
              cursor_serial, cursor_image, NULL);
   }
 }
@@ -92,10 +100,11 @@ static void get_cursor_image_reply_cb(UtObject *object, uint8_t data0,
 static void get_cursor_image_error_cb(UtObject *object, UtObject *error) {
   CallbackData *callback_data = (CallbackData *)object;
 
-  if (callback_data->callback != NULL) {
+  if (callback_data->callback_object != NULL &&
+      callback_data->callback != NULL) {
     UtX11ClientXfixesGetCursorImageCallback callback =
         (UtX11ClientXfixesGetCursorImageCallback)callback_data->callback;
-    callback(callback_data->user_data, 0, 0, 0, 0, 0, 0, 0, NULL, error);
+    callback(callback_data->callback_object, 0, 0, 0, 0, 0, 0, 0, NULL, error);
   }
 }
 
@@ -110,20 +119,22 @@ static void get_cursor_name_reply_cb(UtObject *object, uint8_t data0,
   ut_x11_buffer_get_padding(data, &offset, 18);
   ut_cstring_ref name = ut_x11_buffer_get_string8(data, &offset, name_length);
 
-  if (callback_data->callback != NULL) {
+  if (callback_data->callback_object != NULL &&
+      callback_data->callback != NULL) {
     UtX11ClientXfixesGetCursorNameCallback callback =
         (UtX11ClientXfixesGetCursorNameCallback)callback_data->callback;
-    callback(callback_data->user_data, atom, name, NULL);
+    callback(callback_data->callback_object, atom, name, NULL);
   }
 }
 
 static void get_cursor_name_error_cb(UtObject *object, UtObject *error) {
   CallbackData *callback_data = (CallbackData *)object;
 
-  if (callback_data->callback != NULL) {
+  if (callback_data->callback_object != NULL &&
+      callback_data->callback != NULL) {
     UtX11ClientXfixesGetCursorNameCallback callback =
         (UtX11ClientXfixesGetCursorNameCallback)callback_data->callback;
-    callback(callback_data->user_data, 0, NULL, error);
+    callback(callback_data->callback_object, 0, NULL, error);
   }
 }
 
@@ -151,10 +162,11 @@ static void get_cursor_image_and_name_reply_cb(UtObject *object, uint8_t data0,
                           ut_x11_buffer_get_card32(data, &offset));
   }
 
-  if (callback_data->callback != NULL) {
+  if (callback_data->callback_object != NULL &&
+      callback_data->callback != NULL) {
     UtX11ClientXfixesGetCursorImageAndNameCallback callback =
         (UtX11ClientXfixesGetCursorImageAndNameCallback)callback_data->callback;
-    callback(callback_data->user_data, x, y, width, height, xhot, yhot,
+    callback(callback_data->callback_object, x, y, width, height, xhot, yhot,
              cursor_serial, cursor_image, cursor_atom, name, NULL);
   }
 }
@@ -163,10 +175,11 @@ static void get_cursor_image_and_name_error_cb(UtObject *object,
                                                UtObject *error) {
   CallbackData *callback_data = (CallbackData *)object;
 
-  if (callback_data->callback != NULL) {
+  if (callback_data->callback_object != NULL &&
+      callback_data->callback != NULL) {
     UtX11ClientXfixesGetCursorImageAndNameCallback callback =
         (UtX11ClientXfixesGetCursorImageAndNameCallback)callback_data->callback;
-    callback(callback_data->user_data, 0, 0, 0, 0, 0, 0, 0, NULL, 0, NULL,
+    callback(callback_data->callback_object, 0, 0, 0, 0, 0, 0, 0, NULL, 0, NULL,
              error);
   }
 }
@@ -181,10 +194,10 @@ static void decode_selection_notify(UtX11XfixesExtension *self, uint8_t data0,
   uint32_t selection_timestamp = ut_x11_buffer_get_card32(data, &offset);
   ut_x11_buffer_get_padding(data, &offset, 8);
 
-  if (self->event_callbacks->selection_notify != NULL &&
-      !ut_cancel_is_active(self->cancel)) {
-    self->event_callbacks->selection_notify(self->user_data, window, owner,
-                                            selection, timestamp,
+  if (self->callback_object != NULL &&
+      self->event_callbacks->selection_notify != NULL) {
+    self->event_callbacks->selection_notify(self->callback_object, window,
+                                            owner, selection, timestamp,
                                             selection_timestamp);
   }
 }
@@ -198,16 +211,16 @@ static void decode_cursor_notify(UtX11XfixesExtension *self, uint8_t data0,
   uint32_t name = ut_x11_buffer_get_card32(data, &offset);
   ut_x11_buffer_get_padding(data, &offset, 12);
 
-  if (self->event_callbacks->cursor_notify != NULL &&
-      !ut_cancel_is_active(self->cancel)) {
-    self->event_callbacks->cursor_notify(self->user_data, window, cursor_serial,
-                                         timestamp, name);
+  if (self->callback_object != NULL &&
+      self->event_callbacks->cursor_notify != NULL) {
+    self->event_callbacks->cursor_notify(self->callback_object, window,
+                                         cursor_serial, timestamp, name);
   }
 }
 
 static void ut_x11_xfixes_extension_cleanup(UtObject *object) {
   UtX11XfixesExtension *self = (UtX11XfixesExtension *)object;
-  ut_object_unref(self->cancel);
+  ut_object_weak_unref(&self->callback_object);
 }
 
 static uint8_t ut_x11_xfixes_extension_get_major_opcode(UtObject *object) {
@@ -276,8 +289,8 @@ static UtObjectInterface object_interface = {
 UtObject *
 ut_x11_xfixes_extension_new(UtObject *client, uint8_t major_opcode,
                             uint8_t first_event, uint8_t first_error,
-                            const UtX11EventCallbacks *event_callbacks,
-                            void *user_data, UtObject *cancel) {
+                            UtObject *callback_object,
+                            const UtX11EventCallbacks *event_callbacks) {
   UtObject *object =
       ut_object_new(sizeof(UtX11XfixesExtension), &object_interface);
   UtX11XfixesExtension *self = (UtX11XfixesExtension *)object;
@@ -285,15 +298,14 @@ ut_x11_xfixes_extension_new(UtObject *client, uint8_t major_opcode,
   self->major_opcode = major_opcode;
   self->first_event = first_event;
   self->first_error = first_error;
+  ut_object_weak_ref(callback_object, &self->callback_object);
   self->event_callbacks = event_callbacks;
-  self->user_data = user_data;
-  self->cancel = ut_object_ref(cancel);
   return object;
 }
 
 void ut_x11_xfixes_extension_query_version(
-    UtObject *object, UtX11ClientXfixesQueryVersionCallback callback,
-    void *user_data, UtObject *cancel) {
+    UtObject *object, UtObject *callback_object,
+    UtX11ClientXfixesQueryVersionCallback callback) {
   assert(ut_object_is_x11_xfixes_extension(object));
   UtX11XfixesExtension *self = (UtX11XfixesExtension *)object;
 
@@ -302,8 +314,9 @@ void ut_x11_xfixes_extension_query_version(
   ut_x11_buffer_append_card32(request, 0);
 
   ut_x11_client_send_request_with_reply(
-      self->client, self->major_opcode, 0, request, query_version_reply_cb,
-      query_version_error_cb, callback_data_new(callback, user_data), cancel);
+      self->client, self->major_opcode, 0, request,
+      callback_data_new(callback_object, callback), query_version_reply_cb,
+      query_version_error_cb);
 }
 
 // ChangeSaveSet
@@ -335,15 +348,15 @@ void ut_x11_xfixes_select_cursor_input(UtObject *object, uint32_t window,
 }
 
 void ut_x11_xfixes_extension_get_cursor_image(
-    UtObject *object, UtX11ClientXfixesGetCursorImageCallback callback,
-    void *user_data, UtObject *cancel) {
+    UtObject *object, UtObject *callback_object,
+    UtX11ClientXfixesGetCursorImageCallback callback) {
   assert(ut_object_is_x11_xfixes_extension(object));
   UtX11XfixesExtension *self = (UtX11XfixesExtension *)object;
 
   ut_x11_client_send_request_with_reply(
-      self->client, self->major_opcode, 4, NULL, get_cursor_image_reply_cb,
-      get_cursor_image_error_cb, callback_data_new(callback, user_data),
-      cancel);
+      self->client, self->major_opcode, 4, NULL,
+      callback_data_new(callback_object, callback), get_cursor_image_reply_cb,
+      get_cursor_image_error_cb);
 }
 
 uint32_t ut_x11_xfixes_create_region(UtObject *object, UtObject *rectangles) {
@@ -623,9 +636,8 @@ void ut_x11_xfixes_set_cursor_name(UtObject *object, uint32_t cursor,
 }
 
 void ut_x11_xfixes_extension_get_cursor_name(
-    UtObject *object, uint32_t cursor,
-    UtX11ClientXfixesGetCursorNameCallback callback, void *user_data,
-    UtObject *cancel) {
+    UtObject *object, uint32_t cursor, UtObject *callback_object,
+    UtX11ClientXfixesGetCursorNameCallback callback) {
   assert(ut_object_is_x11_xfixes_extension(object));
   UtX11XfixesExtension *self = (UtX11XfixesExtension *)object;
 
@@ -633,20 +645,21 @@ void ut_x11_xfixes_extension_get_cursor_name(
   ut_x11_buffer_append_card32(request, cursor);
 
   ut_x11_client_send_request_with_reply(
-      self->client, self->major_opcode, 24, request, get_cursor_name_reply_cb,
-      get_cursor_name_error_cb, callback_data_new(callback, user_data), cancel);
+      self->client, self->major_opcode, 24, request,
+      callback_data_new(callback_object, callback), get_cursor_name_reply_cb,
+      get_cursor_name_error_cb);
 }
 
 void ut_x11_xfixes_extension_get_cursor_image_and_name(
-    UtObject *object, UtX11ClientXfixesGetCursorImageAndNameCallback callback,
-    void *user_data, UtObject *cancel) {
+    UtObject *object, UtObject *callback_object,
+    UtX11ClientXfixesGetCursorImageAndNameCallback callback) {
   assert(ut_object_is_x11_xfixes_extension(object));
   UtX11XfixesExtension *self = (UtX11XfixesExtension *)object;
 
   ut_x11_client_send_request_with_reply(
       self->client, self->major_opcode, 25, NULL,
-      get_cursor_image_and_name_reply_cb, get_cursor_image_and_name_error_cb,
-      callback_data_new(callback, user_data), cancel);
+      callback_data_new(callback_object, callback),
+      get_cursor_image_and_name_reply_cb, get_cursor_image_and_name_error_cb);
 }
 
 void ut_x11_xfixes_change_cursor(UtObject *object, uint32_t source,

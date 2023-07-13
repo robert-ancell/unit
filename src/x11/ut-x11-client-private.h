@@ -17,6 +17,6 @@ void ut_x11_client_send_request(UtObject *object, uint8_t opcode, uint8_t data0,
 // Takes reference to callback_object
 void ut_x11_client_send_request_with_reply(
     UtObject *object, uint8_t opcode, uint8_t data0, UtObject *data,
+    UtObject *callback_object,
     UtX11ClientDecodeReplyFunction decode_reply_function,
-    UtX11ClientHandleErrorFunction handle_error_function,
-    UtObject *callback_object, UtObject *cancel);
+    UtX11ClientHandleErrorFunction handle_error_function);

@@ -8,19 +8,24 @@
 
 typedef struct {
   UtObject object;
+  UtObject *callback_object;
   void *callback;
-  void *user_data;
 } CallbackData;
 
-static UtObjectInterface callback_data_object_interface = {
-    .type_name = "GenericEventCallbackData"};
+static void callback_data_cleanup(UtObject *object) {
+  CallbackData *self = (CallbackData *)object;
+  ut_object_weak_unref(&self->callback_object);
+}
 
-static UtObject *callback_data_new(void *callback, void *user_data) {
+static UtObjectInterface callback_data_object_interface = {
+    .type_name = "GenericEventCallbackData", .cleanup = callback_data_cleanup};
+
+static UtObject *callback_data_new(UtObject *callback_object, void *callback) {
   UtObject *object =
       ut_object_new(sizeof(CallbackData), &callback_data_object_interface);
   CallbackData *self = (CallbackData *)object;
+  ut_object_weak_ref(callback_object, &self->callback_object);
   self->callback = callback;
-  self->user_data = user_data;
   return object;
 }
 
@@ -40,20 +45,23 @@ static void query_version_reply_cb(UtObject *object, uint8_t data0,
   uint16_t minor_version = ut_x11_buffer_get_card16(data, &offset);
   ut_x11_buffer_get_padding(data, &offset, 20);
 
-  if (callback_data->callback != NULL) {
+  if (callback_data->callback_object != NULL &&
+      callback_data->callback != NULL) {
     UtX11ClientGenericEventQueryVersionCallback callback =
         (UtX11ClientGenericEventQueryVersionCallback)callback_data->callback;
-    callback(callback_data->user_data, major_version, minor_version, NULL);
+    callback(callback_data->callback_object, major_version, minor_version,
+             NULL);
   }
 }
 
 static void query_version_error_cb(UtObject *object, UtObject *error) {
   CallbackData *callback_data = (CallbackData *)object;
 
-  if (callback_data->callback != NULL) {
+  if (callback_data->callback_object != NULL &&
+      callback_data->callback != NULL) {
     UtX11ClientGenericEventQueryVersionCallback callback =
         (UtX11ClientGenericEventQueryVersionCallback)callback_data->callback;
-    callback(callback_data->user_data, 0, 0, error);
+    callback(callback_data->callback_object, 0, 0, error);
   }
 }
 
@@ -88,8 +96,8 @@ UtObject *ut_x11_generic_event_extension_new(UtObject *client,
 }
 
 void ut_x11_generic_event_extension_query_version(
-    UtObject *object, UtX11ClientGenericEventQueryVersionCallback callback,
-    void *user_data, UtObject *cancel) {
+    UtObject *object, UtObject *callback_object,
+    UtX11ClientGenericEventQueryVersionCallback callback) {
   assert(ut_object_is_x11_generic_event_extension(object));
   UtX11GenericEventExtension *self = (UtX11GenericEventExtension *)object;
 
@@ -98,8 +106,9 @@ void ut_x11_generic_event_extension_query_version(
   ut_x11_buffer_append_card16(request, 0);
 
   ut_x11_client_send_request_with_reply(
-      self->client, self->major_opcode, 0, request, query_version_reply_cb,
-      query_version_error_cb, callback_data_new(callback, user_data), cancel);
+      self->client, self->major_opcode, 0, request,
+      callback_data_new(callback_object, callback), query_version_reply_cb,
+      query_version_error_cb);
 }
 
 bool ut_object_is_x11_generic_event_extension(UtObject *object) {

@@ -8,19 +8,24 @@
 
 typedef struct {
   UtObject object;
+  UtObject *callback_object;
   void *callback;
-  void *user_data;
 } CallbackData;
 
-static UtObjectInterface callback_data_object_interface = {
-    .type_name = "PresentCallbackData"};
+static void callback_data_cleanup(UtObject *object) {
+  CallbackData *self = (CallbackData *)object;
+  ut_object_weak_unref(&self->callback_object);
+}
 
-static UtObject *callback_data_new(void *callback, void *user_data) {
+static UtObjectInterface callback_data_object_interface = {
+    .type_name = "PresentCallbackData", .cleanup = callback_data_cleanup};
+
+static UtObject *callback_data_new(UtObject *callback_object, void *callback) {
   UtObject *object =
       ut_object_new(sizeof(CallbackData), &callback_data_object_interface);
   CallbackData *self = (CallbackData *)object;
+  ut_object_weak_ref(callback_object, &self->callback_object);
   self->callback = callback;
-  self->user_data = user_data;
   return object;
 }
 
@@ -28,9 +33,8 @@ typedef struct {
   UtObject object;
   UtObject *client;
   uint8_t major_opcode;
+  UtObject *callback_object;
   const UtX11EventCallbacks *event_callbacks;
-  void *user_data;
-  UtObject *cancel;
 } UtX11PresentExtension;
 
 static void query_version_reply_cb(UtObject *object, uint8_t data0,
@@ -41,20 +45,23 @@ static void query_version_reply_cb(UtObject *object, uint8_t data0,
   uint32_t major_version = ut_x11_buffer_get_card32(data, &offset);
   uint32_t minor_version = ut_x11_buffer_get_card32(data, &offset);
 
-  if (callback_data->callback != NULL) {
+  if (callback_data->callback_object != NULL &&
+      callback_data->callback != NULL) {
     UtX11ClientPresentQueryVersionCallback callback =
         (UtX11ClientPresentQueryVersionCallback)callback_data->callback;
-    callback(callback_data->user_data, major_version, minor_version, NULL);
+    callback(callback_data->callback_object, major_version, minor_version,
+             NULL);
   }
 }
 
 static void query_version_error_cb(UtObject *object, UtObject *error) {
   CallbackData *callback_data = (CallbackData *)object;
 
-  if (callback_data->callback != NULL) {
+  if (callback_data->callback_object != NULL &&
+      callback_data->callback != NULL) {
     UtX11ClientPresentQueryVersionCallback callback =
         (UtX11ClientPresentQueryVersionCallback)callback_data->callback;
-    callback(callback_data->user_data, 0, 0, error);
+    callback(callback_data->callback_object, 0, 0, error);
   }
 }
 
@@ -74,11 +81,11 @@ static void decode_configure_notify(UtX11PresentExtension *self,
   uint16_t pixmap_height = ut_x11_buffer_get_card16(data, &offset);
   uint32_t pixmap_flags = ut_x11_buffer_get_card16(data, &offset);
 
-  if (self->event_callbacks->present_configure_notify != NULL &&
-      !ut_cancel_is_active(self->cancel)) {
+  if (self->callback_object != NULL &&
+      self->event_callbacks->present_configure_notify != NULL) {
     self->event_callbacks->present_configure_notify(
-        self->user_data, event_id, window, x, y, width, height, off_x, off_y,
-        pixmap_width, pixmap_height, pixmap_flags);
+        self->callback_object, event_id, window, x, y, width, height, off_x,
+        off_y, pixmap_width, pixmap_height, pixmap_flags);
   }
 }
 
@@ -93,10 +100,10 @@ static void decode_complete_notify(UtX11PresentExtension *self,
   uint64_t ust = ut_x11_buffer_get_card64(data, &offset);
   uint64_t msc = ut_x11_buffer_get_card64(data, &offset);
 
-  if (self->event_callbacks->present_complete_notify != NULL &&
-      !ut_cancel_is_active(self->cancel)) {
+  if (self->callback_object != NULL &&
+      self->event_callbacks->present_complete_notify != NULL) {
     self->event_callbacks->present_complete_notify(
-        self->user_data, kind, mode, event_id, window, serial, ust, msc);
+        self->callback_object, kind, mode, event_id, window, serial, ust, msc);
   }
 }
 
@@ -109,16 +116,16 @@ static void decode_idle_notify(UtX11PresentExtension *self, UtObject *data) {
   uint32_t pixmap = ut_x11_buffer_get_card32(data, &offset);
   uint32_t idle_fence = ut_x11_buffer_get_card32(data, &offset);
 
-  if (self->event_callbacks->present_idle_notify != NULL &&
-      !ut_cancel_is_active(self->cancel)) {
+  if (self->callback_object != NULL &&
+      self->event_callbacks->present_idle_notify != NULL) {
     self->event_callbacks->present_idle_notify(
-        self->user_data, event_id, window, serial, pixmap, idle_fence);
+        self->callback_object, event_id, window, serial, pixmap, idle_fence);
   }
 }
 
 static void ut_x11_present_extension_cleanup(UtObject *object) {
   UtX11PresentExtension *self = (UtX11PresentExtension *)object;
-  ut_object_unref(self->cancel);
+  ut_object_weak_unref(&self->callback_object);
 }
 
 static uint8_t ut_x11_present_extension_get_major_opcode(UtObject *object) {
@@ -164,22 +171,21 @@ static UtObjectInterface object_interface = {
 
 UtObject *
 ut_x11_present_extension_new(UtObject *client, uint8_t major_opcode,
-                             const UtX11EventCallbacks *event_callbacks,
-                             void *user_data, UtObject *cancel) {
+                             UtObject *callback_object,
+                             const UtX11EventCallbacks *event_callbacks) {
   UtObject *object =
       ut_object_new(sizeof(UtX11PresentExtension), &object_interface);
   UtX11PresentExtension *self = (UtX11PresentExtension *)object;
   self->client = client;
   self->major_opcode = major_opcode;
+  ut_object_weak_ref(callback_object, &self->callback_object);
   self->event_callbacks = event_callbacks;
-  self->user_data = user_data;
-  self->cancel = ut_object_ref(cancel);
   return object;
 }
 
 void ut_x11_present_extension_query_version(
-    UtObject *object, UtX11ClientPresentQueryVersionCallback callback,
-    void *user_data, UtObject *cancel) {
+    UtObject *object, UtObject *callback_object,
+    UtX11ClientPresentQueryVersionCallback callback) {
   assert(ut_object_is_x11_present_extension(object));
   UtX11PresentExtension *self = (UtX11PresentExtension *)object;
 
@@ -188,8 +194,9 @@ void ut_x11_present_extension_query_version(
   ut_x11_buffer_append_card32(request, 0);
 
   ut_x11_client_send_request_with_reply(
-      self->client, self->major_opcode, 0, request, query_version_reply_cb,
-      query_version_error_cb, callback_data_new(callback, user_data), cancel);
+      self->client, self->major_opcode, 0, request,
+      callback_data_new(callback_object, callback), query_version_reply_cb,
+      query_version_error_cb);
 }
 
 void ut_x11_present_extension_pixmap(UtObject *object, uint32_t window,

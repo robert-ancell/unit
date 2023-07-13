@@ -11,22 +11,24 @@ typedef struct _UtX11ShmExtension UtX11ShmExtension;
 
 typedef struct {
   UtObject object;
-  UtX11ShmExtension *self;
+  UtObject *callback_object;
   void *callback;
-  void *user_data;
 } CallbackData;
 
-static UtObjectInterface callback_data_object_interface = {
-    .type_name = "ShmCallbackData"};
+static void callback_data_cleanup(UtObject *object) {
+  CallbackData *self = (CallbackData *)object;
+  ut_object_weak_unref(&self->callback_object);
+}
 
-static UtObject *callback_data_new(UtX11ShmExtension *self, void *callback,
-                                   void *user_data) {
+static UtObjectInterface callback_data_object_interface = {
+    .type_name = "ShmCallbackData", .cleanup = callback_data_cleanup};
+
+static UtObject *callback_data_new(UtObject *callback_object, void *callback) {
   UtObject *object =
       ut_object_new(sizeof(CallbackData), &callback_data_object_interface);
-  CallbackData *data = (CallbackData *)object;
-  data->self = self;
-  data->callback = callback;
-  data->user_data = user_data;
+  CallbackData *self = (CallbackData *)object;
+  ut_object_weak_ref(callback_object, &self->callback_object);
+  self->callback = callback;
   return object;
 }
 
@@ -38,9 +40,9 @@ struct _UtX11ShmExtension {
   uint8_t first_error;
 };
 
-static void decode_shm_enable_reply(UtObject *user_data, uint8_t data0,
+static void decode_shm_enable_reply(UtObject *object, uint8_t data0,
                                     UtObject *data) {
-  CallbackData *callback_data = (CallbackData *)user_data;
+  CallbackData *callback_data = (CallbackData *)object;
 
   size_t offset = 0;
   bool shared_pixmaps = data0 != 0;
@@ -51,47 +53,50 @@ static void decode_shm_enable_reply(UtObject *user_data, uint8_t data0,
   uint8_t pixmap_format = ut_x11_buffer_get_card8(data, &offset);
   ut_x11_buffer_get_padding(data, &offset, 15);
 
-  if (callback_data->callback != NULL) {
+  if (callback_data->callback_object != NULL &&
+      callback_data->callback != NULL) {
     UtX11ShmQueryVersionCallback callback =
         (UtX11ShmQueryVersionCallback)callback_data->callback;
-    callback(callback_data->user_data, major_version, minor_version, uid, gid,
-             pixmap_format, shared_pixmaps, NULL);
+    callback(callback_data->callback_object, major_version, minor_version, uid,
+             gid, pixmap_format, shared_pixmaps, NULL);
   }
 }
 
-static void handle_shm_enable_error(UtObject *user_data, UtObject *error) {
-  CallbackData *callback_data = (CallbackData *)user_data;
+static void handle_shm_enable_error(UtObject *object, UtObject *error) {
+  CallbackData *callback_data = (CallbackData *)object;
 
-  if (callback_data->callback != NULL) {
+  if (callback_data->callback_object != NULL &&
+      callback_data->callback != NULL) {
     UtX11ShmQueryVersionCallback callback =
         (UtX11ShmQueryVersionCallback)callback_data->callback;
-    callback(callback_data->user_data, 0, 0, 0, 0, 0, false, error);
+    callback(callback_data->callback_object, 0, 0, 0, 0, 0, false, error);
   }
 }
 
-static void decode_shm_create_segment_reply(UtObject *user_data, uint8_t data0,
+static void decode_shm_create_segment_reply(UtObject *object, uint8_t data0,
                                             UtObject *data) {
-  CallbackData *callback_data = (CallbackData *)user_data;
+  CallbackData *callback_data = (CallbackData *)object;
 
   size_t fds_length = data0;
   assert(ut_x11_buffer_get_fd_count(data) >= fds_length);
   UtObjectRef fd = ut_x11_buffer_take_fd(data);
 
-  if (callback_data->callback != NULL) {
+  if (callback_data->callback_object != NULL &&
+      callback_data->callback != NULL) {
     UtX11ShmCreateSegmentCallback callback =
         (UtX11ShmCreateSegmentCallback)callback_data->callback;
-    callback(callback_data->user_data, fd, NULL);
+    callback(callback_data->callback_object, fd, NULL);
   }
 }
 
-static void handle_shm_create_segment_error(UtObject *user_data,
-                                            UtObject *error) {
-  CallbackData *callback_data = (CallbackData *)user_data;
+static void handle_shm_create_segment_error(UtObject *object, UtObject *error) {
+  CallbackData *callback_data = (CallbackData *)object;
 
-  if (callback_data->callback != NULL) {
+  if (callback_data->callback_object != NULL &&
+      callback_data->callback != NULL) {
     UtX11ShmCreateSegmentCallback callback =
         (UtX11ShmCreateSegmentCallback)callback_data->callback;
-    callback(callback_data->user_data, NULL, error);
+    callback(callback_data->callback_object, NULL, error);
   }
 }
 
@@ -144,15 +149,15 @@ UtObject *ut_x11_shm_extension_new(UtObject *client, uint8_t major_opcode,
 }
 
 void ut_x11_shm_extension_query_version(UtObject *object,
-                                        UtX11ShmQueryVersionCallback callback,
-                                        void *user_data, UtObject *cancel) {
+                                        UtObject *callback_object,
+                                        UtX11ShmQueryVersionCallback callback) {
   assert(ut_object_is_x11_shm_extension(object));
   UtX11ShmExtension *self = (UtX11ShmExtension *)object;
 
   ut_x11_client_send_request_with_reply(
-      (UtObject *)self->client, self->major_opcode, 0, NULL,
-      decode_shm_enable_reply, handle_shm_enable_error,
-      callback_data_new(self, callback, user_data), cancel);
+      self->client, self->major_opcode, 0, NULL,
+      callback_data_new(callback_object, callback), decode_shm_enable_reply,
+      handle_shm_enable_error);
 }
 
 uint32_t ut_x11_shm_extension_attach(UtObject *object, uint32_t shmid,
@@ -168,8 +173,7 @@ uint32_t ut_x11_shm_extension_attach(UtObject *object, uint32_t shmid,
   ut_x11_buffer_append_bool(request, read_only);
   ut_x11_buffer_append_padding(request, 3);
 
-  ut_x11_client_send_request((UtObject *)self->client, self->major_opcode, 1,
-                             request);
+  ut_x11_client_send_request(self->client, self->major_opcode, 1, request);
 
   return id;
 }
@@ -181,8 +185,7 @@ void ut_x11_shm_extension_detach(UtObject *object, uint32_t segment) {
   UtObjectRef request = ut_x11_buffer_new();
   ut_x11_buffer_append_card32(request, segment);
 
-  ut_x11_client_send_request((UtObject *)self->client, self->major_opcode, 2,
-                             request);
+  ut_x11_client_send_request(self->client, self->major_opcode, 2, request);
 }
 
 uint32_t ut_x11_shm_extension_create_pixmap(UtObject *object, uint32_t drawable,
@@ -204,8 +207,7 @@ uint32_t ut_x11_shm_extension_create_pixmap(UtObject *object, uint32_t drawable,
   ut_x11_buffer_append_card32(request, segment);
   ut_x11_buffer_append_card32(request, offset);
 
-  ut_x11_client_send_request((UtObject *)self->client, self->major_opcode, 5,
-                             request);
+  ut_x11_client_send_request(self->client, self->major_opcode, 5, request);
 
   return id;
 }
@@ -224,15 +226,15 @@ uint32_t ut_x11_shm_extension_attach_fd(UtObject *object, UtObject *fd,
 
   ut_x11_buffer_append_fd(request, fd);
 
-  ut_x11_client_send_request((UtObject *)self->client, self->major_opcode, 6,
-                             request);
+  ut_x11_client_send_request(self->client, self->major_opcode, 6, request);
 
   return id;
 }
 
-uint32_t ut_x11_shm_extension_create_segment(
-    UtObject *object, uint32_t size, bool read_only,
-    UtX11ShmCreateSegmentCallback callback, void *user_data, UtObject *cancel) {
+uint32_t
+ut_x11_shm_extension_create_segment(UtObject *object, uint32_t size,
+                                    bool read_only, UtObject *callback_object,
+                                    UtX11ShmCreateSegmentCallback callback) {
   assert(ut_object_is_x11_shm_extension(object));
   UtX11ShmExtension *self = (UtX11ShmExtension *)object;
 
@@ -245,9 +247,9 @@ uint32_t ut_x11_shm_extension_create_segment(
   ut_x11_buffer_append_padding(request, 3);
 
   ut_x11_client_send_request_with_reply(
-      (UtObject *)self->client, self->major_opcode, 7, request,
-      decode_shm_create_segment_reply, handle_shm_create_segment_error,
-      callback_data_new(self, callback, user_data), cancel);
+      self->client, self->major_opcode, 7, request,
+      callback_data_new(callback_object, callback),
+      decode_shm_create_segment_reply, handle_shm_create_segment_error);
 
   return id;
 }
