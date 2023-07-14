@@ -75,7 +75,6 @@ typedef struct {
 
   // Input stream being read.
   UtObject *input_stream;
-  UtObject *read_cancel;
 
   // Callback to notify when complete.
   UtJpegDecodeCallback callback;
@@ -184,7 +183,7 @@ typedef struct {
 } UtJpegDecoder;
 
 static void notify_complete(UtJpegDecoder *self) {
-  ut_cancel_activate(self->read_cancel);
+  ut_input_stream_close(self->input_stream);
   self->callback(self->user_data);
 }
 
@@ -1487,7 +1486,7 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
   UtJpegDecoder *self = user_data;
 
   if (ut_cancel_is_active(self->cancel)) {
-    ut_cancel_activate(self->read_cancel);
+    ut_input_stream_close(self->input_stream);
     return 0;
   }
 
@@ -1561,16 +1560,16 @@ static void done_cb(void *user_data) {}
 
 static void ut_jpeg_decoder_init(UtObject *object) {
   UtJpegDecoder *self = (UtJpegDecoder *)object;
-  self->read_cancel = ut_cancel_new();
   jpeg_build_data_unit_order(self->data_unit_order);
   jpeg_build_dct_values(self->dct_alpha, self->dct_cos);
 }
 
 static void ut_jpeg_decoder_cleanup(UtObject *object) {
   UtJpegDecoder *self = (UtJpegDecoder *)object;
-  ut_cancel_activate(self->read_cancel);
+
+  ut_input_stream_close(self->input_stream);
+
   ut_object_unref(self->input_stream);
-  ut_object_unref(self->read_cancel);
   ut_object_unref(self->cancel);
   for (size_t i = 0; i < 4; i++) {
     ut_object_unref(self->quantization_tables[i]);
@@ -1609,7 +1608,7 @@ void ut_jpeg_decoder_decode(UtObject *object, UtJpegDecodeCallback callback,
   self->user_data = user_data;
   self->cancel = ut_object_ref(cancel);
 
-  ut_input_stream_read(self->input_stream, read_cb, self, self->read_cancel);
+  ut_input_stream_read(self->input_stream, read_cb, self);
 }
 
 UtObject *ut_jpeg_decoder_decode_sync(UtObject *object) {

@@ -18,7 +18,6 @@ typedef struct {
   UtObject *input_stream;
   UtObject *output_stream;
   bool negotiate_unix_fd;
-  UtObject *read_cancel;
   AuthState state;
   char *guid;
   bool unix_fd_supported;
@@ -59,7 +58,8 @@ static void send_auth_end(UtDBusAuthClient *self) {
 
 static void done(UtDBusAuthClient *self) {
   self->state = AUTH_STATE_DONE;
-  ut_cancel_activate(self->read_cancel);
+
+  ut_input_stream_close(self->input_stream);
 
   if (!ut_cancel_is_active(self->complete_cancel)) {
     self->complete_callback(self->complete_user_data, self->guid,
@@ -156,15 +156,16 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
 
 static void ut_dbus_auth_client_init(UtObject *object) {
   UtDBusAuthClient *self = (UtDBusAuthClient *)object;
-  self->read_cancel = ut_cancel_new();
   self->state = AUTH_STATE_IDLE;
 }
 
 static void ut_dbus_auth_client_cleanup(UtObject *object) {
   UtDBusAuthClient *self = (UtDBusAuthClient *)object;
+
+  ut_input_stream_close(self->input_stream);
+
   ut_object_unref(self->input_stream);
   ut_object_unref(self->output_stream);
-  ut_object_unref(self->read_cancel);
   free(self->guid);
   ut_object_unref(self->error);
   ut_object_unref(self->complete_cancel);
@@ -204,7 +205,7 @@ void ut_dbus_auth_client_run(UtObject *object, UtAuthCompleteCallback callback,
   self->complete_user_data = user_data;
   self->complete_cancel = ut_object_ref(cancel);
 
-  ut_input_stream_read(self->input_stream, read_cb, self, self->read_cancel);
+  ut_input_stream_read(self->input_stream, read_cb, self);
 
   // Send empty byte, which was used for sending credentials (no longer
   // required).

@@ -16,7 +16,6 @@ typedef struct {
   UtObject object;
   UtObject *input_stream;
   UtObject *output_stream;
-  UtObject *read_cancel;
   AuthState state;
   bool authenticated;
   UtObject *error;
@@ -34,7 +33,8 @@ static void send_auth_message(UtDBusAuthServer *self, const char *message) {
 
 static void done(UtDBusAuthServer *self) {
   self->state = AUTH_STATE_DONE;
-  ut_cancel_activate(self->read_cancel);
+
+  ut_input_stream_close(self->input_stream);
 
   if (!ut_cancel_is_active(self->complete_cancel)) {
     self->complete_callback(self->complete_user_data,
@@ -145,15 +145,16 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
 
 static void ut_dbus_auth_server_init(UtObject *object) {
   UtDBusAuthServer *self = (UtDBusAuthServer *)object;
-  self->read_cancel = ut_cancel_new();
   self->state = AUTH_STATE_IDLE;
 }
 
 static void ut_dbus_auth_server_cleanup(UtObject *object) {
   UtDBusAuthServer *self = (UtDBusAuthServer *)object;
+
+  ut_input_stream_close(self->input_stream);
+
   ut_object_unref(self->input_stream);
   ut_object_unref(self->output_stream);
-  ut_object_unref(self->read_cancel);
   ut_object_unref(self->error);
   ut_object_unref(self->complete_cancel);
 }
@@ -185,7 +186,7 @@ void ut_dbus_auth_server_run(UtObject *object, UtAuthCompleteCallback callback,
   self->complete_user_data = user_data;
   self->complete_cancel = ut_object_ref(cancel);
 
-  ut_input_stream_read(self->input_stream, read_cb, self, self->read_cancel);
+  ut_input_stream_read(self->input_stream, read_cb, self);
 }
 
 bool ut_object_is_dbus_auth_server(UtObject *object) {

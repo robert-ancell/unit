@@ -60,8 +60,6 @@ typedef struct {
 
   // Error that occurred during decoding.
   UtObject *error;
-
-  UtObject *cancel;
 } UtHttpMessageDecoder;
 
 static void set_error(UtHttpMessageDecoder *self, const char *description) {
@@ -440,12 +438,13 @@ static void ut_http_message_decoder_init(UtObject *object) {
   UtHttpMessageDecoder *self = (UtHttpMessageDecoder *)object;
   self->headers = ut_list_new();
   self->body = ut_buffered_input_stream_new();
-  self->cancel = ut_cancel_new();
 }
 
 static void ut_http_message_decoder_cleanup(UtObject *object) {
   UtHttpMessageDecoder *self = (UtHttpMessageDecoder *)object;
-  ut_cancel_activate(self->cancel);
+
+  ut_input_stream_close(self->input_stream);
+
   ut_object_unref(self->input_stream);
   free(self->method);
   free(self->path);
@@ -453,7 +452,6 @@ static void ut_http_message_decoder_cleanup(UtObject *object) {
   ut_object_unref(self->headers);
   ut_object_unref(self->body);
   ut_object_unref(self->error);
-  ut_object_unref(self->cancel);
 }
 
 static UtObjectInterface object_interface = {
@@ -482,7 +480,7 @@ UtObject *ut_http_message_decoder_new_response(UtObject *input_stream) {
 void ut_http_message_decoder_read(UtObject *object) {
   assert(ut_object_is_http_message_decoder(object));
   UtHttpMessageDecoder *self = (UtHttpMessageDecoder *)object;
-  ut_input_stream_read(self->input_stream, read_cb, self, self->cancel);
+  ut_input_stream_read(self->input_stream, read_cb, self);
 }
 
 const char *ut_http_message_decoder_get_method(UtObject *object) {

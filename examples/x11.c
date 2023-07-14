@@ -54,8 +54,8 @@ static void button_release_cb(UtObject *object, uint16_t device_id,
   printf("ButtonRelease %d\n", button);
 }
 
-static void focus_in_cb(UtObject *object, uint16_t device_id, uint32_t timestamp,
-                        UtX11InputNotifyMode mode,
+static void focus_in_cb(UtObject *object, uint16_t device_id,
+                        uint32_t timestamp, UtX11InputNotifyMode mode,
                         UtX11InputNotifyDetail detail, uint32_t window) {
   printf("FocusIn\n");
 }
@@ -189,7 +189,8 @@ static void list_extensions_cb(UtObject *object, UtObject *names,
   }
 }
 
-static void query_device_cb(UtObject *object, UtObject *infos, UtObject *error) {
+static void query_device_cb(UtObject *object, UtObject *infos,
+                            UtObject *error) {
   size_t infos_length = ut_list_get_length(infos);
   for (size_t i = 0; i < infos_length; i++) {
     UtObjectRef info = ut_list_get_element(infos, i);
@@ -201,7 +202,8 @@ static void intern_atom_cb(UtObject *object, uint32_t atom, UtObject *error) {
   UtObjectRef name = object;
 
   assert(error == NULL);
-  ut_map_insert_string_take(atoms, ut_string_get_text(name), ut_uint32_new(atom));
+  ut_map_insert_string_take(atoms, ut_string_get_text(name),
+                            ut_uint32_new(atom));
 
   if (ut_cstring_equal(ut_string_get_text(name), "WM_DELETE_WINDOW")) {
     UtObjectRef protocols =
@@ -213,7 +215,8 @@ static void intern_atom_cb(UtObject *object, uint32_t atom, UtObject *error) {
 }
 
 static void intern_atom(const char *name) {
-  ut_x11_client_intern_atom(client, name, false, ut_string_new(name), intern_atom_cb);
+  ut_x11_client_intern_atom(client, name, false, ut_string_new(name),
+                            intern_atom_cb);
 }
 
 static void connect_cb(UtObject *object, UtObject *error) {
@@ -227,7 +230,8 @@ static void connect_cb(UtObject *object, UtObject *error) {
 
   ut_x11_client_list_extensions(client, object, list_extensions_cb);
 
-  ut_x11_client_query_device(client, UT_X11_DEVICE_ALL_MASTER, object, query_device_cb);
+  ut_x11_client_query_device(client, UT_X11_DEVICE_ALL_MASTER, object,
+                             query_device_cb);
 
   intern_atom("WM_PROTOCOLS");
   intern_atom("WM_DELETE_WINDOW");

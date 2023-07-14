@@ -10,10 +10,8 @@
 typedef struct {
   UtObject object;
   UtObject *input_stream;
-  UtObject *read_cancel;
   UtInputStreamCallback callback;
   void *user_data;
-  UtObject *cancel;
 
   // CRC calculated of uncompressed data.
   uint32_t crc;
@@ -145,11 +143,6 @@ static size_t deflate_read_cb(void *user_data, UtObject *data, bool complete) {
 static size_t read_cb(void *user_data, UtObject *data, bool complete) {
   UtGzipEncoder *self = user_data;
 
-  if (ut_cancel_is_active(self->cancel)) {
-    ut_cancel_activate(self->read_cancel);
-    return 0;
-  }
-
   if (!self->written_header) {
     write_header(self, METHOD_DEFLATE, false, NULL, NULL, 0, OS_UNIX);
     self->written_header = true;
@@ -183,19 +176,19 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
 
 static void ut_gzip_encoder_init(UtObject *object) {
   UtGzipEncoder *self = (UtGzipEncoder *)object;
-  self->read_cancel = ut_cancel_new();
   self->deflate_input_stream = ut_writable_input_stream_new();
   self->deflate_encoder = ut_deflate_encoder_new(self->deflate_input_stream);
-  ut_input_stream_read(self->deflate_encoder, deflate_read_cb, self,
-                       self->read_cancel);
+  ut_input_stream_read(self->deflate_encoder, deflate_read_cb, self);
   self->buffer = ut_uint8_array_new();
 }
 
 static void ut_gzip_encoder_cleanup(UtObject *object) {
   UtGzipEncoder *self = (UtGzipEncoder *)object;
+
+  ut_input_stream_close(self->input_stream);
+  ut_input_stream_close(self->deflate_encoder);
+
   ut_object_unref(self->input_stream);
-  ut_cancel_activate(self->read_cancel);
-  ut_object_unref(self->cancel);
   ut_object_unref(self->deflate_input_stream);
   ut_object_unref(self->deflate_encoder);
   ut_object_unref(self->buffer);
@@ -203,18 +196,22 @@ static void ut_gzip_encoder_cleanup(UtObject *object) {
 
 static void ut_gzip_encoder_read(UtObject *object,
                                  UtInputStreamCallback callback,
-                                 void *user_data, UtObject *cancel) {
+                                 void *user_data) {
   UtGzipEncoder *self = (UtGzipEncoder *)object;
   assert(callback != NULL);
   assert(self->callback == NULL);
   self->callback = callback;
   self->user_data = user_data;
-  self->cancel = ut_object_ref(cancel);
-  ut_input_stream_read(self->input_stream, read_cb, self, self->read_cancel);
+  ut_input_stream_read(self->input_stream, read_cb, self);
+}
+
+static void ut_gzip_encoder_close(UtObject *object) {
+  UtGzipEncoder *self = (UtGzipEncoder *)object;
+  ut_input_stream_close(self->input_stream);
 }
 
 static UtInputStreamInterface input_stream_interface = {
-    .read = ut_gzip_encoder_read};
+    .read = ut_gzip_encoder_read, .close = ut_gzip_encoder_close};
 
 static UtObjectInterface object_interface = {
     .type_name = "UtGzipEncoder",

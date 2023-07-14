@@ -6,23 +6,26 @@ typedef struct {
   UtObject object;
   UtObject *data;
   bool read;
+  bool closed;
 } UtListInputStream;
 
 static void ut_list_input_stream_read(UtObject *object,
                                       UtInputStreamCallback callback,
-                                      void *user_data, UtObject *cancel) {
+                                      void *user_data) {
   UtListInputStream *self = (UtListInputStream *)object;
 
   assert(!self->read);
+  assert(!self->closed);
   self->read = true;
-
-  if (ut_cancel_is_active(cancel)) {
-    return;
-  }
 
   size_t data_length = ut_list_get_length(self->data);
   size_t n_used = callback(user_data, self->data, true);
   assert(n_used <= data_length);
+}
+
+static void ut_list_input_stream_close(UtObject *object) {
+  UtListInputStream *self = (UtListInputStream *)object;
+  self->closed = true;
 }
 
 static void ut_list_input_stream_cleanup(UtObject *object) {
@@ -31,7 +34,7 @@ static void ut_list_input_stream_cleanup(UtObject *object) {
 }
 
 static UtInputStreamInterface input_stream_interface = {
-    .read = ut_list_input_stream_read};
+    .read = ut_list_input_stream_read, .close = ut_list_input_stream_close};
 
 static UtObjectInterface object_interface = {
     .type_name = "UtListInputStream",

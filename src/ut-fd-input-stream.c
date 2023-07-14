@@ -22,12 +22,6 @@ typedef struct {
 static void read_cb(void *user_data) {
   UtFdInputStream *self = user_data;
 
-  // Stop listening for read events when consumer no longer wants them.
-  if (ut_cancel_is_active(self->cancel)) {
-    ut_cancel_activate(self->watch_cancel);
-    return;
-  }
-
   // Make space to read a new block.
   size_t buffer_length = ut_list_get_length(self->read_buffer);
   ut_list_resize(self->read_buffer, buffer_length + self->block_size);
@@ -51,11 +45,6 @@ static void read_cb(void *user_data) {
       self->callback(self->user_data, self->read_buffer, self->complete);
   assert(n_used <= buffer_length);
   ut_list_remove(self->read_buffer, 0, n_used);
-
-  // Stop listening for read events when consumer no longer wants them.
-  if (ut_cancel_is_active(self->cancel)) {
-    ut_cancel_activate(self->watch_cancel);
-  }
 }
 
 static void ut_fd_input_stream_init(UtObject *object) {
@@ -74,12 +63,11 @@ static void ut_fd_input_stream_cleanup(UtObject *object) {
     ut_cancel_activate(self->watch_cancel);
   }
   ut_object_unref(self->watch_cancel);
-  ut_object_unref(self->cancel);
 }
 
 static void ut_fd_input_stream_read(UtObject *object,
                                     UtInputStreamCallback callback,
-                                    void *user_data, UtObject *cancel) {
+                                    void *user_data) {
   UtFdInputStream *self = (UtFdInputStream *)object;
   assert(callback != NULL);
 
@@ -87,13 +75,17 @@ static void ut_fd_input_stream_read(UtObject *object,
 
   self->callback = callback;
   self->user_data = user_data;
-  self->cancel = ut_object_ref(cancel);
 
   ut_event_loop_add_read_watch(self->fd, read_cb, self, self->watch_cancel);
 }
 
+static void ut_fd_input_stream_close(UtObject *object) {
+  UtFdInputStream *self = (UtFdInputStream *)object;
+  ut_cancel_activate(self->watch_cancel);
+}
+
 static UtInputStreamInterface input_stream_interface = {
-    .read = ut_fd_input_stream_read};
+    .read = ut_fd_input_stream_read, .close = ut_fd_input_stream_close};
 
 static UtObjectInterface object_interface = {
     .type_name = "UtFdInputStream",

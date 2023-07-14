@@ -8,6 +8,7 @@ typedef struct {
   void *user_data;
   UtObject *cancel;
   UtObject *buffer;
+  bool closed;
   bool complete;
 } UtBufferedInputStream;
 
@@ -30,22 +31,28 @@ static void ut_buffered_input_stream_cleanup(UtObject *object) {
 
 static void ut_buffered_input_stream_read(UtObject *object,
                                           UtInputStreamCallback callback,
-                                          void *user_data, UtObject *cancel) {
+                                          void *user_data) {
   UtBufferedInputStream *self = (UtBufferedInputStream *)object;
   assert(callback != NULL);
   assert(self->callback == NULL);
+  assert(!self->closed);
 
   self->callback = callback;
   self->user_data = user_data;
-  self->cancel = ut_object_ref(cancel);
 
-  if (self->buffer != NULL && !ut_cancel_is_active(self->cancel)) {
+  if (self->buffer != NULL) {
     send_buffer(self);
   }
 }
 
+static void ut_buffered_input_stream_close(UtObject *object) {
+  UtBufferedInputStream *self = (UtBufferedInputStream *)object;
+  self->closed = true;
+}
+
 static UtInputStreamInterface input_stream_interface = {
-    .read = ut_buffered_input_stream_read};
+    .read = ut_buffered_input_stream_read,
+    .close = ut_buffered_input_stream_close};
 
 static UtObjectInterface object_interface = {
     .type_name = "UtBufferedInputStream",
@@ -62,6 +69,7 @@ void ut_buffered_input_stream_write(UtObject *object, UtObject *data,
   assert(ut_object_is_buffered_input_stream(object));
   UtBufferedInputStream *self = (UtBufferedInputStream *)object;
 
+  assert(!self->closed);
   assert(!self->complete);
   self->complete = complete;
 

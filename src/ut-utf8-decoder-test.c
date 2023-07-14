@@ -21,7 +21,7 @@ int main(int argc, char **argv) {
   UtObjectRef async_input = ut_uint8_list_new_from_hex_string("f09f9880");
   UtObjectRef async_input_stream = ut_list_input_stream_new(async_input);
   UtObjectRef async_decoder = ut_utf8_decoder_new(async_input_stream);
-  ut_input_stream_read_all(async_decoder, read_cb, NULL, NULL);
+  ut_input_stream_read_all(async_decoder, read_cb, NULL);
 
   ut_event_loop_run();
 

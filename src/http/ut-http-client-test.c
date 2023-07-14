@@ -19,7 +19,7 @@ static size_t http_read_cb(void *user_data, UtObject *data, bool complete) {
 }
 
 static void http_listen_cb(void *user_data, UtObject *socket) {
-  ut_input_stream_read(socket, http_read_cb, ut_object_ref(socket), NULL);
+  ut_input_stream_read(socket, http_read_cb, ut_object_ref(socket));
 }
 
 static size_t read_cb(void *user_data, UtObject *data, bool complete) {
@@ -44,8 +44,7 @@ static void http_response_cb(void *user_data, UtObject *response) {
     }
   }
   ut_assert_cstring_equal(content_type, "application/json");
-  ut_input_stream_read_all(ut_http_response_get_body(response), read_cb, NULL,
-                           NULL);
+  ut_input_stream_read_all(ut_http_response_get_body(response), read_cb, NULL);
 }
 
 int main(int argc, char **argv) {

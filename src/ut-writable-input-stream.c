@@ -9,25 +9,24 @@ typedef struct {
   UtObject *reading_cancel;
   UtInputStreamCallback callback;
   void *user_data;
-  UtObject *cancel;
+  bool closed;
 } UtWritableInputStream;
 
 static void ut_writable_input_stream_cleanup(UtObject *object) {
   UtWritableInputStream *self = (UtWritableInputStream *)object;
   ut_object_unref(self->reading_cancel);
-  ut_object_unref(self->cancel);
 }
 
 static void ut_writable_input_stream_read(UtObject *object,
                                           UtInputStreamCallback callback,
-                                          void *user_data, UtObject *cancel) {
+                                          void *user_data) {
   UtWritableInputStream *self = (UtWritableInputStream *)object;
   assert(callback != NULL);
   assert(self->callback == NULL);
+  assert(!self->closed);
 
   self->callback = callback;
   self->user_data = user_data;
-  self->cancel = ut_object_ref(cancel);
 
   if (self->reading_callback != NULL &&
       !ut_cancel_is_active(self->reading_cancel)) {
@@ -35,8 +34,15 @@ static void ut_writable_input_stream_read(UtObject *object,
   }
 }
 
+static void ut_writable_input_stream_close(UtObject *object) {
+  UtWritableInputStream *self = (UtWritableInputStream *)object;
+
+  self->closed = true;
+}
+
 static UtInputStreamInterface input_stream_interface = {
-    .read = ut_writable_input_stream_read};
+    .read = ut_writable_input_stream_read,
+    .close = ut_writable_input_stream_close};
 
 static UtObjectInterface object_interface = {
     .type_name = "UtWritableInputStream",
@@ -62,23 +68,16 @@ void ut_writable_input_stream_set_reading_callback(
   self->reading_cancel = ut_object_ref(cancel);
 }
 
-bool ut_writable_input_stream_get_reading(UtObject *object) {
-  assert(ut_object_is_writable_input_stream(object));
-  UtWritableInputStream *self = (UtWritableInputStream *)object;
-
-  return self->callback != NULL && !ut_cancel_is_active(self->cancel);
-}
-
 size_t ut_writable_input_stream_write(UtObject *object, UtObject *data,
                                       bool complete) {
   assert(ut_object_is_writable_input_stream(object));
   UtWritableInputStream *self = (UtWritableInputStream *)object;
 
-  assert(self->callback != NULL);
-
-  if (ut_cancel_is_active(self->cancel)) {
+  if (self->closed) {
     return 0;
   }
+
+  assert(self->callback != NULL);
 
   return self->callback(self->user_data, data, complete);
 }

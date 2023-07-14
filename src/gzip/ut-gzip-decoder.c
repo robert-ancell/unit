@@ -17,10 +17,8 @@ typedef struct {
   UtObject object;
   UtObject *input_stream;
   UtObject *deflate_input_stream;
-  UtObject *read_cancel;
   UtInputStreamCallback callback;
   void *user_data;
-  UtObject *cancel;
 
   DecoderState state;
 
@@ -95,18 +93,11 @@ static void set_error(UtGzipDecoder *self, const char *description) {
   self->error = ut_png_error_new(description);
   self->state = DECODER_STATE_ERROR;
 
-  if (!ut_cancel_is_active(self->cancel)) {
-    self->callback(self->user_data, self->error, true);
-  }
+  self->callback(self->user_data, self->error, true);
 }
 
 static size_t deflate_read_cb(void *user_data, UtObject *data, bool complete) {
   UtGzipDecoder *self = user_data;
-
-  if (ut_cancel_is_active(self->cancel)) {
-    ut_cancel_activate(self->read_cancel);
-    return 0;
-  }
 
   if (ut_object_implements_error(data)) {
     ut_cstring_ref description = ut_cstring_new_printf(
@@ -301,34 +292,39 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
 
 static void ut_gzip_decoder_init(UtObject *object) {
   UtGzipDecoder *self = (UtGzipDecoder *)object;
-  self->read_cancel = ut_cancel_new();
   self->state = DECODER_STATE_MEMBER_HEADER;
 }
 
 static void ut_gzip_decoder_cleanup(UtObject *object) {
   UtGzipDecoder *self = (UtGzipDecoder *)object;
-  ut_cancel_activate(self->read_cancel);
+
+  ut_input_stream_close(self->deflate_decoder);
+  ut_input_stream_close(self->input_stream);
+
+  ut_object_unref(self->input_stream);
   ut_object_unref(self->deflate_input_stream);
-  ut_object_unref(self->read_cancel);
-  ut_object_unref(self->cancel);
   ut_object_unref(self->deflate_decoder);
   ut_object_unref(self->error);
 }
 
 static void ut_gzip_decoder_read(UtObject *object,
                                  UtInputStreamCallback callback,
-                                 void *user_data, UtObject *cancel) {
+                                 void *user_data) {
   UtGzipDecoder *self = (UtGzipDecoder *)object;
   assert(callback != NULL);
   assert(self->callback == NULL);
   self->callback = callback;
   self->user_data = user_data;
-  self->cancel = ut_object_ref(cancel);
-  ut_input_stream_read(self->input_stream, read_cb, self, self->read_cancel);
+  ut_input_stream_read(self->input_stream, read_cb, self);
+}
+
+static void ut_gzip_decoder_close(UtObject *object) {
+  UtGzipDecoder *self = (UtGzipDecoder *)object;
+  ut_input_stream_close(self->input_stream);
 }
 
 static UtInputStreamInterface input_stream_interface = {
-    .read = ut_gzip_decoder_read};
+    .read = ut_gzip_decoder_read, .close = ut_gzip_decoder_close};
 
 static UtObjectInterface object_interface = {
     .type_name = "UtGzipDecoder",
@@ -344,8 +340,7 @@ UtObject *ut_gzip_decoder_new(UtObject *input_stream) {
   self->input_stream = ut_object_ref(input_stream);
   self->deflate_input_stream = ut_writable_input_stream_new();
   self->deflate_decoder = ut_deflate_decoder_new(self->deflate_input_stream);
-  ut_input_stream_read(self->deflate_decoder, deflate_read_cb, self,
-                       self->read_cancel);
+  ut_input_stream_read(self->deflate_decoder, deflate_read_cb, self);
   return object;
 }
 

@@ -10,7 +10,7 @@ static size_t echo_read_cb(void *user_data, UtObject *data, bool complete) {
 }
 
 static void echo_listen_cb(void *user_data, UtObject *socket) {
-  ut_input_stream_read(socket, echo_read_cb, ut_object_ref(socket), NULL);
+  ut_input_stream_read(socket, echo_read_cb, ut_object_ref(socket));
 }
 
 // Get the response from the echo server
@@ -25,7 +25,7 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
 static void connect_cb(void *user_data) {
   UtObject *socket = user_data;
 
-  ut_input_stream_read(socket, read_cb, NULL, NULL);
+  ut_input_stream_read(socket, read_cb, NULL);
 
   // Send a message.
   UtObjectRef data = ut_uint8_array_new_from_hex_string("0123456789abcdef");

@@ -26,7 +26,6 @@ typedef struct {
   bool is_complete;
   UtInputStreamCallback read_callback;
   void *read_user_data;
-  UtObject *read_cancel;
 } UtTcpSocket;
 
 static void ut_tcp_socket_cleanup(UtObject *object) {
@@ -43,7 +42,6 @@ static void ut_tcp_socket_cleanup(UtObject *object) {
   ut_object_unref(self->connect_cancel);
   ut_object_unref(self->read_buffer);
   ut_object_unref(self->read_watch_cancel);
-  ut_object_unref(self->read_cancel);
 }
 
 static void connect_cb(void *user_data) {}
@@ -68,12 +66,6 @@ static void write_cb(void *user_data) {
 
 static void read_cb(void *user_data) {
   UtTcpSocket *self = user_data;
-
-  // Stop listening for read events when consumer no longer wants them.
-  if (ut_cancel_is_active(self->read_cancel)) {
-    ut_cancel_activate(self->read_watch_cancel);
-    return;
-  }
 
   size_t block_size = 65535;
   if (ut_list_get_length(self->read_buffer) < self->n_read + block_size) {
@@ -133,7 +125,7 @@ static void read_cb(void *user_data) {
 }
 
 static void ut_tcp_socket_read(UtObject *object, UtInputStreamCallback callback,
-                               void *user_data, UtObject *cancel) {
+                               void *user_data) {
   UtTcpSocket *self = (UtTcpSocket *)object;
 
   assert(self->read_callback == NULL);
@@ -141,7 +133,6 @@ static void ut_tcp_socket_read(UtObject *object, UtInputStreamCallback callback,
 
   self->read_callback = callback;
   self->read_user_data = user_data;
-  self->read_cancel = ut_object_ref(cancel);
 
   self->read_buffer = ut_uint8_array_new();
   self->read_watch_cancel = ut_cancel_new();
@@ -149,8 +140,13 @@ static void ut_tcp_socket_read(UtObject *object, UtInputStreamCallback callback,
                                self->read_watch_cancel);
 }
 
-static UtInputStreamInterface input_stream_interface = {.read =
-                                                            ut_tcp_socket_read};
+static void ut_tcp_socket_close(UtObject *object) {
+  UtTcpSocket *self = (UtTcpSocket *)object;
+  ut_cancel_activate(self->read_watch_cancel);
+}
+
+static UtInputStreamInterface input_stream_interface = {
+    .read = ut_tcp_socket_read, .close = ut_tcp_socket_close};
 
 static void ut_tcp_socket_write(UtObject *object, UtObject *data,
                                 UtOutputStreamCallback callback,

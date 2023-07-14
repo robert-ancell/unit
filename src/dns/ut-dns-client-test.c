@@ -56,7 +56,7 @@ static void lookup_cb(void *user_data, UtObject *address) {
 int main(int argc, char **argv) {
   // Make a mock DNS server
   UtObjectRef dns_socket = ut_udp_socket_new_ipv4();
-  ut_input_stream_read(dns_socket, dns_read_cb, dns_socket, NULL);
+  ut_input_stream_read(dns_socket, dns_read_cb, dns_socket);
   ut_udp_socket_bind(dns_socket, 0);
   uint16_t dns_port = ut_udp_socket_get_port(dns_socket);
 

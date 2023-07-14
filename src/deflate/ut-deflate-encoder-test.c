@@ -93,7 +93,7 @@ int main(int argc, char **argv) {
   UtObjectRef short_write_encoder =
       ut_deflate_encoder_new(short_write_data_stream);
   UtObjectRef short_write_result = ut_uint8_array_new();
-  ut_input_stream_read(short_write_encoder, read_cb, short_write_result, NULL);
+  ut_input_stream_read(short_write_encoder, read_cb, short_write_result);
   UtObjectRef short_write_data = get_utf8_data("hello");
   size_t short_write_data_length = ut_list_get_length(short_write_data);
   for (size_t i = 0; i < short_write_data_length; i++) {

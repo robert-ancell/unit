@@ -32,13 +32,13 @@ static size_t read_cb(void *user_data, UtObject *datagrams, bool complete) {
 int main(int argc, char **argv) {
   // Set up a socket that echos back requests.
   UtObjectRef echo_socket = ut_udp_socket_new_ipv4();
-  ut_input_stream_read(echo_socket, echo_read_cb, echo_socket, NULL);
+  ut_input_stream_read(echo_socket, echo_read_cb, echo_socket);
   ut_udp_socket_bind(echo_socket, 0);
   uint16_t echo_port = ut_udp_socket_get_port(echo_socket);
 
   // Create a socket to send to the echo port.
   UtObjectRef udp_socket = ut_udp_socket_new_ipv4();
-  ut_input_stream_read(udp_socket, read_cb, NULL, NULL);
+  ut_input_stream_read(udp_socket, read_cb, NULL);
 
   // Send a message.
   UtObjectRef address = ut_ipv4_address_new_loopback();

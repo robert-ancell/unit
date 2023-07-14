@@ -186,7 +186,7 @@ static void write_image_data(UtPngEncoder *self) {
   UtObjectRef zlib_input_stream = ut_buffered_input_stream_new();
   UtObjectRef zlib_encoder = ut_zlib_encoder_new_full(
       UT_ZLIB_COMPRESSION_LEVEL_DEFAULT, window_size, zlib_input_stream);
-  ut_input_stream_read(zlib_encoder, zlib_data_cb, chunk, NULL);
+  ut_input_stream_read(zlib_encoder, zlib_data_cb, chunk);
 
   uint8_t filter_type = 0;
   UtObjectRef filter_data = ut_uint8_array_new_from_data(&filter_type, 1);

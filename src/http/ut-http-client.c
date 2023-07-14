@@ -9,7 +9,6 @@
 typedef struct {
   UtObject object;
   UtObject *tcp_socket;
-  UtObject *cancel;
   char *host;
   uint16_t port;
   char *method;
@@ -25,7 +24,6 @@ typedef struct {
 
 static void http_request_init(UtObject *object) {
   HttpRequest *self = (HttpRequest *)object;
-  self->cancel = ut_cancel_new();
   self->message_decoder_input_stream = ut_writable_input_stream_new();
   self->message_decoder =
       ut_http_message_decoder_new_response(self->message_decoder_input_stream);
@@ -33,8 +31,10 @@ static void http_request_init(UtObject *object) {
 
 static void http_request_cleanup(UtObject *object) {
   HttpRequest *self = (HttpRequest *)object;
+
+  ut_input_stream_close(self->tcp_socket);
+
   ut_object_unref(self->tcp_socket);
-  ut_object_unref(self->cancel);
   free(self->host);
   free(self->method);
   free(self->path);
@@ -116,7 +116,7 @@ static void connect_cb(void *user_data) {
       request->body);
   ut_http_message_encoder_encode(request->message_encoder);
   ut_http_message_decoder_read(request->message_decoder);
-  ut_input_stream_read(request->tcp_socket, read_cb, request, request->cancel);
+  ut_input_stream_read(request->tcp_socket, read_cb, request);
 }
 
 static void lookup_cb(void *user_data, UtObject *addresses) {

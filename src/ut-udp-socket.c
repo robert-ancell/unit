@@ -19,7 +19,6 @@ typedef struct {
   UtObject *read_buffer;
   UtInputStreamCallback read_callback;
   void *read_user_data;
-  UtObject *read_cancel;
 } UtUdpSocket;
 
 static void ut_udp_socket_cleanup(UtObject *object) {
@@ -33,12 +32,6 @@ static void ut_udp_socket_cleanup(UtObject *object) {
 
 static void read_cb(void *user_data) {
   UtUdpSocket *self = user_data;
-
-  // Stop listening for read events when consumer no longer wants them.
-  if (ut_cancel_is_active(self->read_cancel)) {
-    ut_cancel_activate(self->watch_cancel);
-    return;
-  }
 
   UtObjectRef data = ut_uint8_array_new();
   ut_list_resize(data, 65535);
@@ -80,7 +73,7 @@ static void read_cb(void *user_data) {
 }
 
 static void ut_udp_socket_read(UtObject *object, UtInputStreamCallback callback,
-                               void *user_data, UtObject *cancel) {
+                               void *user_data) {
   assert(ut_object_is_udp_socket(object));
   UtUdpSocket *self = (UtUdpSocket *)object;
 
@@ -89,15 +82,19 @@ static void ut_udp_socket_read(UtObject *object, UtInputStreamCallback callback,
 
   self->read_callback = callback;
   self->read_user_data = user_data;
-  self->read_cancel = ut_object_ref(cancel);
 
   self->read_buffer = ut_list_new();
   self->watch_cancel = ut_cancel_new();
   ut_event_loop_add_read_watch(self->fd, read_cb, self, self->watch_cancel);
 }
 
-static UtInputStreamInterface input_stream_interface = {.read =
-                                                            ut_udp_socket_read};
+static void ut_udp_socket_close(UtObject *object) {
+  UtUdpSocket *self = (UtUdpSocket *)object;
+  ut_cancel_activate(self->watch_cancel);
+}
+
+static UtInputStreamInterface input_stream_interface = {
+    .read = ut_udp_socket_read, .close = ut_udp_socket_close};
 
 static void ut_udp_socket_write(UtObject *object, UtObject *datagram,
                                 UtOutputStreamCallback callback,

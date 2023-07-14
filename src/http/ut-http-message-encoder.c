@@ -122,15 +122,10 @@ static size_t body_read_cb(void *user_data, UtObject *data, bool complete) {
   }
 }
 
-static void ut_http_message_encoder_init(UtObject *object) {
-  UtHttpMessageEncoder *self = (UtHttpMessageEncoder *)object;
-  self->cancel = ut_cancel_new();
-}
-
 static void ut_http_message_encoder_cleanup(UtObject *object) {
   UtHttpMessageEncoder *self = (UtHttpMessageEncoder *)object;
 
-  ut_cancel_activate(self->cancel);
+  ut_input_stream_close(self->body);
 
   ut_object_unref(self->output_stream);
   free(self->method);
@@ -138,12 +133,10 @@ static void ut_http_message_encoder_cleanup(UtObject *object) {
   free(self->reason_phrase);
   ut_object_unref(self->headers);
   ut_object_unref(self->body);
-  ut_object_unref(self->cancel);
 }
 
 static UtObjectInterface object_interface = {
     .type_name = "UtHttpMessageEncoder",
-    .init = ut_http_message_encoder_init,
     .cleanup = ut_http_message_encoder_cleanup};
 
 UtObject *ut_http_message_encoder_new_request(UtObject *output_stream,
@@ -227,7 +220,7 @@ void ut_http_message_encoder_encode(UtObject *object) {
   }
 
   if (self->body != NULL) {
-    ut_input_stream_read(self->body, body_read_cb, self, self->cancel);
+    ut_input_stream_read(self->body, body_read_cb, self);
   } else {
     UtObjectRef d = ut_uint8_list_new();
     body_read_cb(self, d, true);

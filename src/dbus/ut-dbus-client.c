@@ -53,7 +53,6 @@ typedef struct {
   UtObject *message_decoder;
   UtObject *message_encoder;
   DecoderState state;
-  UtObject *read_cancel;
   size_t last_serial;
   UtObject *message_queue;
   char *unique_name;
@@ -148,8 +147,7 @@ static void auth_complete_cb(void *user_data, const char *guid,
   self->message_input_stream = ut_writable_input_stream_new();
   self->message_decoder =
       ut_dbus_message_decoder_new(self->message_input_stream);
-  ut_input_stream_read(self->message_decoder, messages_cb, self,
-                       self->read_cancel);
+  ut_input_stream_read(self->message_decoder, messages_cb, self);
 
   // Send any queued messages.
   size_t message_queue_length = ut_list_get_length(self->message_queue);
@@ -211,7 +209,7 @@ static void connect_cb(void *user_data) {
   UtDBusClient *self = (UtDBusClient *)user_data;
 
   self->state = DECODER_STATE_AUTHENTICATION;
-  ut_input_stream_read(self->socket, read_cb, self, self->cancel);
+  ut_input_stream_read(self->socket, read_cb, self);
   ut_dbus_auth_client_run(self->auth_client, auth_complete_cb, self,
                           self->cancel);
 }
@@ -278,12 +276,15 @@ static void ut_dbus_client_init(UtObject *object) {
   UtDBusClient *self = (UtDBusClient *)object;
   self->cancel = ut_cancel_new();
   self->message_encoder = ut_dbus_message_encoder_new();
-  self->read_cancel = ut_cancel_new();
   self->message_queue = ut_object_list_new();
 }
 
 static void ut_dbus_client_cleanup(UtObject *object) {
   UtDBusClient *self = (UtDBusClient *)object;
+
+  ut_input_stream_close(self->socket);
+  ut_input_stream_close(self->message_decoder);
+
   ut_cancel_activate(self->cancel);
   ut_object_unref(self->cancel);
   free(self->address);
@@ -293,8 +294,6 @@ static void ut_dbus_client_cleanup(UtObject *object) {
   ut_object_unref(self->auth_client);
   ut_object_unref(self->message_decoder);
   ut_object_unref(self->message_encoder);
-  ut_cancel_activate(self->read_cancel);
-  ut_object_unref(self->read_cancel);
   ut_object_unref(self->message_queue);
   free(self->unique_name);
   ut_cancel_activate(self->method_cancel);

@@ -8,12 +8,10 @@ typedef struct {
 
   // Data to be encoded.
   UtObject *input_stream;
-  UtObject *read_cancel;
 
   // Encoded data reader.
   UtInputStreamCallback callback;
   void *user_data;
-  UtObject *cancel;
 
   // Number of symbols.
   size_t n_symbols;
@@ -136,11 +134,6 @@ static void write_code(UtLzwEncoder *self, uint16_t code) {
 static size_t read_cb(void *user_data, UtObject *data, bool complete) {
   UtLzwEncoder *self = user_data;
 
-  if (ut_cancel_is_active(self->cancel)) {
-    ut_cancel_activate(self->read_cancel);
-    return 0;
-  }
-
   size_t data_length = ut_list_get_length(data);
   size_t offset = 0;
   while (offset < data_length) {
@@ -192,23 +185,22 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
 
 static void ut_lzw_encoder_init(UtObject *object) {
   UtLzwEncoder *self = (UtLzwEncoder *)object;
-  self->read_cancel = ut_cancel_new();
   self->buffer = ut_uint8_list_new();
 }
 
 static void ut_lzw_encoder_cleanup(UtObject *object) {
   UtLzwEncoder *self = (UtLzwEncoder *)object;
-  ut_cancel_activate(self->read_cancel);
+
+  ut_input_stream_close(self->input_stream);
+
   ut_object_unref(self->input_stream);
-  ut_object_unref(self->read_cancel);
-  ut_object_unref(self->cancel);
   ut_object_unref(self->dictionary);
   ut_object_unref(self->buffer);
 }
 
 static void ut_lzw_encoder_read(UtObject *object,
-                                UtInputStreamCallback callback, void *user_data,
-                                UtObject *cancel) {
+                                UtInputStreamCallback callback,
+                                void *user_data) {
   UtLzwEncoder *self = (UtLzwEncoder *)object;
 
   assert(callback != NULL);
@@ -216,16 +208,20 @@ static void ut_lzw_encoder_read(UtObject *object,
 
   self->callback = callback;
   self->user_data = user_data;
-  self->cancel = ut_object_ref(cancel);
 
   // Always starts with a clear code.
   write_code(self, ut_lzw_dictionary_get_clear_code(self->dictionary));
 
-  ut_input_stream_read(self->input_stream, read_cb, self, self->read_cancel);
+  ut_input_stream_read(self->input_stream, read_cb, self);
+}
+
+static void ut_lzw_encoder_close(UtObject *object) {
+  UtLzwEncoder *self = (UtLzwEncoder *)object;
+  ut_input_stream_close(self->input_stream);
 }
 
 static UtInputStreamInterface input_stream_interface = {
-    .read = ut_lzw_encoder_read};
+    .read = ut_lzw_encoder_read, .close = ut_lzw_encoder_close};
 
 static UtObjectInterface object_interface = {
     .type_name = "UtLzwEncoder",

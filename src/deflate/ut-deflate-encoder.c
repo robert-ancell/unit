@@ -11,10 +11,8 @@
 typedef struct {
   UtObject object;
   UtObject *input_stream;
-  UtObject *read_cancel;
   UtInputStreamCallback callback;
   void *user_data;
-  UtObject *cancel;
 
   size_t window_size;
 
@@ -224,11 +222,6 @@ static void write_distance(UtDeflateEncoder *self, size_t distance) {
 static size_t read_cb(void *user_data, UtObject *data, bool complete) {
   UtDeflateEncoder *self = user_data;
 
-  if (ut_cancel_is_active(self->cancel)) {
-    ut_cancel_activate(self->read_cancel);
-    return 0;
-  }
-
   if (!self->written_header) {
     write_block_header(self, true, BLOCK_STATIC_HUFFMAN);
     self->written_header = true;
@@ -281,7 +274,6 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
 
 static void ut_deflate_encoder_init(UtObject *object) {
   UtDeflateEncoder *self = (UtDeflateEncoder *)object;
-  self->read_cancel = ut_cancel_new();
   self->dictionary = ut_uint8_array_new();
   self->buffer = ut_uint8_array_new();
 
@@ -312,10 +304,10 @@ static void ut_deflate_encoder_init(UtObject *object) {
 
 static void ut_deflate_encoder_cleanup(UtObject *object) {
   UtDeflateEncoder *self = (UtDeflateEncoder *)object;
-  ut_cancel_activate(self->read_cancel);
+
+  ut_input_stream_close(self->input_stream);
+
   ut_object_unref(self->input_stream);
-  ut_object_unref(self->read_cancel);
-  ut_object_unref(self->cancel);
   ut_object_unref(self->literal_length_huffman_encoder);
   ut_object_unref(self->distance_huffman_encoder);
   ut_object_unref(self->dictionary);
@@ -324,18 +316,22 @@ static void ut_deflate_encoder_cleanup(UtObject *object) {
 
 static void ut_deflate_encoder_read(UtObject *object,
                                     UtInputStreamCallback callback,
-                                    void *user_data, UtObject *cancel) {
+                                    void *user_data) {
   UtDeflateEncoder *self = (UtDeflateEncoder *)object;
   assert(callback != NULL);
   assert(self->callback == NULL);
   self->callback = callback;
   self->user_data = user_data;
-  self->cancel = ut_object_ref(cancel);
-  ut_input_stream_read(self->input_stream, read_cb, self, self->read_cancel);
+  ut_input_stream_read(self->input_stream, read_cb, self);
+}
+
+static void ut_deflate_encoder_close(UtObject *object) {
+  UtDeflateEncoder *self = (UtDeflateEncoder *)object;
+  ut_input_stream_close(self->input_stream);
 }
 
 static UtInputStreamInterface input_stream_interface = {
-    .read = ut_deflate_encoder_read};
+    .read = ut_deflate_encoder_read, .close = ut_deflate_encoder_close};
 
 static UtObjectInterface object_interface = {
     .type_name = "UtDeflateEncoder",

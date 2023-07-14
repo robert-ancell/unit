@@ -9,10 +9,8 @@
 typedef struct {
   UtObject object;
   UtObject *input_stream;
-  UtObject *read_cancel;
   UtInputStreamCallback callback;
   void *user_data;
-  UtObject *cancel;
 
   UtZlibCompressionLevel compression_level;
   size_t window_size;
@@ -84,11 +82,6 @@ static size_t deflate_read_cb(void *user_data, UtObject *data, bool complete) {
 static size_t read_cb(void *user_data, UtObject *data, bool complete) {
   UtZlibEncoder *self = user_data;
 
-  if (ut_cancel_is_active(self->cancel)) {
-    ut_cancel_activate(self->read_cancel);
-    return 0;
-  }
-
   if (!self->written_header) {
     write_header(self, METHOD_DEFLATE,
                  ut_deflate_encoder_get_window_size(self->deflate_encoder),
@@ -118,16 +111,17 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
 
 static void ut_zlib_encoder_init(UtObject *object) {
   UtZlibEncoder *self = (UtZlibEncoder *)object;
-  self->read_cancel = ut_cancel_new();
   self->deflate_input_stream = ut_writable_input_stream_new();
   self->buffer = ut_uint8_array_new();
 }
 
 static void ut_zlib_encoder_cleanup(UtObject *object) {
   UtZlibEncoder *self = (UtZlibEncoder *)object;
+
+  ut_input_stream_close(self->input_stream);
+  ut_input_stream_close(self->deflate_encoder);
+
   ut_object_unref(self->input_stream);
-  ut_cancel_activate(self->read_cancel);
-  ut_object_unref(self->cancel);
   ut_object_unref(self->deflate_input_stream);
   ut_object_unref(self->deflate_encoder);
   ut_object_unref(self->buffer);
@@ -135,19 +129,23 @@ static void ut_zlib_encoder_cleanup(UtObject *object) {
 
 static void ut_zlib_encoder_read(UtObject *object,
                                  UtInputStreamCallback callback,
-                                 void *user_data, UtObject *cancel) {
+                                 void *user_data) {
   UtZlibEncoder *self = (UtZlibEncoder *)object;
   assert(callback != NULL);
   assert(self->callback == NULL);
   self->callback = callback;
   self->user_data = user_data;
-  self->cancel = ut_object_ref(cancel);
   self->checksum = 1;
-  ut_input_stream_read(self->input_stream, read_cb, self, self->read_cancel);
+  ut_input_stream_read(self->input_stream, read_cb, self);
+}
+
+static void ut_zlib_encoder_close(UtObject *object) {
+  UtZlibEncoder *self = (UtZlibEncoder *)object;
+  ut_input_stream_close(self->input_stream);
 }
 
 static UtInputStreamInterface input_stream_interface = {
-    .read = ut_zlib_encoder_read};
+    .read = ut_zlib_encoder_read, .close = ut_zlib_encoder_close};
 
 static UtObjectInterface object_interface = {
     .type_name = "UtZlibEncoder",
@@ -180,8 +178,7 @@ UtObject *ut_zlib_encoder_new_full(UtZlibCompressionLevel compression_level,
 
   self->deflate_encoder = ut_deflate_encoder_new_with_window_size(
       window_size, self->deflate_input_stream);
-  ut_input_stream_read(self->deflate_encoder, deflate_read_cb, self,
-                       self->read_cancel);
+  ut_input_stream_read(self->deflate_encoder, deflate_read_cb, self);
 
   return object;
 }

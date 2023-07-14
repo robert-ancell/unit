@@ -23,7 +23,6 @@ typedef struct {
 
   // Input stream being read.
   UtObject *input_stream;
-  UtObject *read_cancel;
 
   // Callback to notify when complete.
   UtPngDecodeCallback callback;
@@ -114,7 +113,7 @@ static uint32_t crc32(UtObject *data, size_t offset, size_t length) {
 }
 
 static void notify_complete(UtPngDecoder *self) {
-  ut_cancel_activate(self->read_cancel);
+  ut_input_stream_close(self->input_stream);
   self->callback(self->user_data);
 }
 
@@ -1159,7 +1158,7 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
   UtPngDecoder *self = user_data;
 
   if (ut_cancel_is_active(self->cancel)) {
-    ut_cancel_activate(self->read_cancel);
+    ut_input_stream_close(self->input_stream);
     return 0;
   }
 
@@ -1205,15 +1204,16 @@ static void done_cb(void *user_data) {}
 
 static void ut_png_decoder_init(UtObject *object) {
   UtPngDecoder *self = (UtPngDecoder *)object;
-  self->read_cancel = ut_cancel_new();
   self->state = DECODER_STATE_SIGNATURE;
 }
 
 static void ut_png_decoder_cleanup(UtObject *object) {
   UtPngDecoder *self = (UtPngDecoder *)object;
-  ut_cancel_activate(self->read_cancel);
+
+  ut_input_stream_close(self->input_stream);
+  ut_input_stream_close(self->image_data_decoder);
+
   ut_object_unref(self->input_stream);
-  ut_object_unref(self->read_cancel);
   ut_object_unref(self->cancel);
   ut_object_unref(self->image_data_decoder_input_stream);
   ut_object_unref(self->image_data_decoder);
@@ -1248,10 +1248,9 @@ void ut_png_decoder_decode(UtObject *object, UtPngDecodeCallback callback,
   self->image_data_decoder_input_stream = ut_buffered_input_stream_new();
   self->image_data_decoder =
       ut_zlib_decoder_new(self->image_data_decoder_input_stream);
-  ut_input_stream_read(self->image_data_decoder, data_decoder_read_cb, self,
-                       self->read_cancel);
+  ut_input_stream_read(self->image_data_decoder, data_decoder_read_cb, self);
 
-  ut_input_stream_read(self->input_stream, read_cb, self, self->read_cancel);
+  ut_input_stream_read(self->input_stream, read_cb, self);
 }
 
 UtObject *ut_png_decoder_decode_sync(UtObject *object) {

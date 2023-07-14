@@ -23,7 +23,6 @@ typedef struct {
 
   // Input stream being read.
   UtObject *input_stream;
-  UtObject *read_cancel;
 
   // Callback to notify when complete.
   UtGifDecodeCallback callback;
@@ -92,7 +91,7 @@ typedef struct {
 } UtGifDecoder;
 
 static void notify_complete(UtGifDecoder *self) {
-  ut_cancel_activate(self->read_cancel);
+  ut_input_stream_close(self->input_stream);
   self->callback(self->user_data);
 }
 
@@ -481,7 +480,7 @@ static size_t decode_image_data(UtGifDecoder *self, UtObject *data) {
   self->lzw_input_stream = ut_writable_input_stream_new();
   self->lzw_decoder = ut_lzw_decoder_new_lsb(1 << lzw_min_code_size, 4096,
                                              self->lzw_input_stream);
-  ut_input_stream_read(self->lzw_decoder, lzw_read_cb, self, self->read_cancel);
+  ut_input_stream_read(self->lzw_decoder, lzw_read_cb, self);
 
   self->state = DECODER_STATE_IMAGE_DATA_BLOCK;
 
@@ -516,7 +515,7 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
   UtGifDecoder *self = user_data;
 
   if (ut_cancel_is_active(self->cancel)) {
-    ut_cancel_activate(self->read_cancel);
+    ut_input_stream_close(self->input_stream);
     return 0;
   }
 
@@ -583,7 +582,6 @@ static void done_cb(void *user_data) {}
 
 static void ut_gif_decoder_init(UtObject *object) {
   UtGifDecoder *self = (UtGifDecoder *)object;
-  self->read_cancel = ut_cancel_new();
   self->state = DECODER_STATE_HEADER;
   self->loop_count = 1;
   self->comments = ut_string_list_new();
@@ -592,9 +590,10 @@ static void ut_gif_decoder_init(UtObject *object) {
 
 static void ut_gif_decoder_cleanup(UtObject *object) {
   UtGifDecoder *self = (UtGifDecoder *)object;
-  ut_cancel_activate(self->read_cancel);
+
+  ut_input_stream_close(self->input_stream);
+
   ut_object_unref(self->input_stream);
-  ut_object_unref(self->read_cancel);
   ut_object_unref(self->cancel);
   ut_object_unref(self->global_color_table);
   ut_object_unref(self->image_color_table);
@@ -630,7 +629,7 @@ void ut_gif_decoder_decode(UtObject *object, UtGifDecodeCallback callback,
   self->user_data = user_data;
   self->cancel = ut_object_ref(cancel);
 
-  ut_input_stream_read(self->input_stream, read_cb, self, self->read_cancel);
+  ut_input_stream_read(self->input_stream, read_cb, self);
 }
 
 UtObject *ut_gif_decoder_decode_sync(UtObject *object) {

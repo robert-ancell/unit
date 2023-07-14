@@ -35,7 +35,11 @@ static void ut_dbus_server_client_init(UtObject *object) {
 
 static void ut_dbus_server_client_cleanup(UtObject *object) {
   UtDBusServerClient *self = (UtDBusServerClient *)object;
+
+  ut_input_stream_close(self->socket);
+  ut_input_stream_close(self->message_decoder);
   ut_cancel_activate(self->cancel);
+
   ut_object_unref(self->socket);
   ut_object_unref(self->auth_input_stream);
   ut_object_unref(self->message_input_stream);
@@ -194,7 +198,7 @@ static void auth_complete_cb(void *user_data, UtObject *error) {
   self->message_input_stream = ut_writable_input_stream_new();
   self->message_decoder =
       ut_dbus_message_decoder_new(self->message_input_stream);
-  ut_input_stream_read(self->message_decoder, messages_cb, self, self->cancel);
+  ut_input_stream_read(self->message_decoder, messages_cb, self);
 }
 
 static size_t read_cb(void *user_data, UtObject *data, bool complete) {
@@ -242,7 +246,7 @@ static void listen_cb(void *user_data, UtObject *socket) {
   ut_list_append(self->clients, client_object);
 
   client->state = DECODER_STATE_AUTHENTICATION;
-  ut_input_stream_read(socket, read_cb, client, self->cancel);
+  ut_input_stream_read(socket, read_cb, client);
 
   client->auth_input_stream = ut_writable_input_stream_new();
   client->auth_server =

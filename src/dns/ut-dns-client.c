@@ -247,16 +247,16 @@ static size_t read_cb(void *user_data, UtObject *datagrams, bool complete) {
 static void ut_dns_client_init(UtObject *object) {
   UtDnsClient *self = (UtDnsClient *)object;
   self->queries = ut_list_new();
-  self->cancel = ut_cancel_new();
 }
 
 static void ut_dns_client_cleanup(UtObject *object) {
   UtDnsClient *self = (UtDnsClient *)object;
-  ut_cancel_activate(self->cancel);
+
+  ut_input_stream_close(self->socket);
+
   ut_object_unref(self->server_address);
   ut_object_unref(self->socket);
   ut_object_unref(self->queries);
-  ut_object_unref(self->cancel);
 }
 
 static UtObjectInterface object_interface = {.type_name = "UtDnsClient",
@@ -269,7 +269,7 @@ UtObject *ut_dns_client_new(UtObject *server_address, uint16_t port) {
   self->server_address = ut_object_ref(server_address);
   self->port = port;
   self->socket = ut_udp_socket_new_ipv4();
-  ut_input_stream_read(self->socket, read_cb, self, self->cancel);
+  ut_input_stream_read(self->socket, read_cb, self);
   return object;
 }
 

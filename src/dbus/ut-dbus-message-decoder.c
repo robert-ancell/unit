@@ -503,21 +503,26 @@ static void ut_dbus_message_decoder_cleanup(UtObject *object) {
   ut_object_unref(self->messages);
 }
 
-static void
-ut_dbus_message_decoder_input_stream_read(UtObject *object,
-                                          UtInputStreamCallback callback,
-                                          void *user_data, UtObject *cancel) {
+static void ut_dbus_message_decoder_input_stream_read(
+    UtObject *object, UtInputStreamCallback callback, void *user_data) {
   UtDBusMessageDecoder *self = (UtDBusMessageDecoder *)object;
   assert(callback != NULL);
 
   assert(self->callback == NULL);
   self->callback = callback;
   self->user_data = user_data;
-  ut_input_stream_read(self->input_stream, read_cb, self, cancel);
+  ut_input_stream_read(self->input_stream, read_cb, self);
+}
+
+static void ut_dbus_message_decoder_input_stream_close(UtObject *object) {
+  UtDBusMessageDecoder *self = (UtDBusMessageDecoder *)object;
+
+  ut_input_stream_close(self->input_stream);
 }
 
 static UtInputStreamInterface input_stream_interface = {
-    .read = ut_dbus_message_decoder_input_stream_read};
+    .read = ut_dbus_message_decoder_input_stream_read,
+    .close = ut_dbus_message_decoder_input_stream_close};
 
 static UtObjectInterface object_interface = {
     .type_name = "UtDBusMessageDecoder",

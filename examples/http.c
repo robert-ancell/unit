@@ -20,8 +20,7 @@ static void response_cb(void *user_data, UtObject *response) {
     return;
   }
 
-  ut_input_stream_read_all(ut_http_response_get_body(response), body_cb, NULL,
-                           NULL);
+  ut_input_stream_read_all(ut_http_response_get_body(response), body_cb, NULL);
 }
 
 int main(int argc, char **argv) {

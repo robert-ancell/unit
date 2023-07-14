@@ -61,17 +61,22 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
 
 static void ut_utf16_decoder_read(UtObject *object,
                                   UtInputStreamCallback callback,
-                                  void *user_data, UtObject *cancel) {
+                                  void *user_data) {
   UtUtf16Decoder *self = (UtUtf16Decoder *)object;
   assert(callback != NULL);
   assert(self->callback == NULL);
   self->callback = callback;
   self->user_data = user_data;
-  ut_input_stream_read(self->input, read_cb, self, cancel);
+  ut_input_stream_read(self->input, read_cb, self);
+}
+
+static void ut_utf16_decoder_close(UtObject *object) {
+  UtUtf16Decoder *self = (UtUtf16Decoder *)object;
+  ut_input_stream_close(self->input);
 }
 
 static UtInputStreamInterface input_stream_interface = {
-    .read = ut_utf16_decoder_read};
+    .read = ut_utf16_decoder_read, .close = ut_utf16_decoder_close};
 
 static UtObjectInterface object_interface = {
     .type_name = "UtUtf16Decoder",

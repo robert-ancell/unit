@@ -94,7 +94,7 @@ int main(int argc, char **argv) {
 
   UtObjectRef file = ut_local_file_new(argv[1]);
   ut_file_open_read(file);
-  ut_input_stream_read_all(file, decode_cb, NULL, NULL);
+  ut_input_stream_read_all(file, decode_cb, NULL);
 
   UtObjectRef return_code = ut_event_loop_run();
   return ut_int32_get_value(return_code);

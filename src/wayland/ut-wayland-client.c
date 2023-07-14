@@ -9,7 +9,6 @@
 typedef struct {
   UtObject object;
   UtObject *socket;
-  UtObject *read_cancel;
 
   uint32_t next_id;
 
@@ -51,7 +50,7 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
     if (data_length < offset + 8) {
       if (complete) {
         // FIXME: Unused data is length > 0
-        ut_cancel_activate(self->read_cancel);
+        ut_input_stream_close(self->socket);
       }
       return offset;
     }
@@ -66,7 +65,7 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
     if (ut_list_get_length(data) < offset + payload_length) {
       if (complete) {
         // FIXME: Missing data
-        ut_cancel_activate(self->read_cancel);
+        ut_input_stream_close(self->socket);
       }
       return offset;
     }
@@ -101,16 +100,16 @@ static UtWaylandDisplayCallbacks display_callbacks = {
 
 static void ut_wayland_client_init(UtObject *object) {
   UtWaylandClient *self = (UtWaylandClient *)object;
-  self->read_cancel = ut_cancel_new();
   self->next_id = 2;
   self->objects = ut_object_list_new();
 }
 
 static void ut_wayland_client_cleanup(UtObject *object) {
   UtWaylandClient *self = (UtWaylandClient *)object;
-  ut_cancel_activate(self->read_cancel);
+
+  ut_input_stream_close(self->socket);
+
   ut_object_unref(self->socket);
-  ut_object_unref(self->read_cancel);
   ut_object_unref(self->objects);
   ut_object_unref(self->display);
 }
@@ -133,7 +132,7 @@ void ut_wayland_client_connect(UtObject *object) {
   UtWaylandClient *self = (UtWaylandClient *)object;
 
   ut_tcp_socket_connect(self->socket, NULL, NULL, NULL);
-  ut_input_stream_read(self->socket, read_cb, self, self->read_cancel);
+  ut_input_stream_read(self->socket, read_cb, self);
 
   self->display = ut_wayland_display_new(object, &display_callbacks, self);
 }

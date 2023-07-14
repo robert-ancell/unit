@@ -19,7 +19,7 @@ int main(int argc, char **argv) {
       ut_uint32_array_new_from_elements(3, 'H', 'i', 0x1f600);
   UtObjectRef code_points_stream = ut_list_input_stream_new(code_points);
   UtObjectRef utf8_encoder = ut_utf8_encoder_new(code_points_stream);
-  ut_input_stream_read_all(utf8_encoder, read_cb, NULL, NULL);
+  ut_input_stream_read_all(utf8_encoder, read_cb, NULL);
 
   ut_event_loop_run();
 
