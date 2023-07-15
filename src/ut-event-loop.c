@@ -35,9 +35,8 @@ struct _WorkerThread {
   int complete_read_fd;
   UtThreadCallback thread_callback;
   UtObject *thread_data;
+  UtObject *callback_object;
   UtThreadResultCallback result_callback;
-  void *user_data;
-  UtObject *cancel;
   WorkerThread *next;
 };
 
@@ -153,8 +152,8 @@ static FdWatch *remove_cancelled_watches(FdWatch *watches) {
 
 static WorkerThread *worker_thread_new(UtThreadCallback thread_callback,
                                        void *thread_data,
-                                       UtThreadResultCallback result_callback,
-                                       void *user_data, UtObject *cancel) {
+                                       UtObject *callback_object,
+                                       UtThreadResultCallback result_callback) {
   WorkerThread *thread = malloc(sizeof(WorkerThread));
   thread->thread_id = 0;
   int fds[2];
@@ -163,9 +162,8 @@ static WorkerThread *worker_thread_new(UtThreadCallback thread_callback,
   thread->complete_read_fd = fds[0];
   thread->thread_callback = thread_callback;
   thread->thread_data = thread_data;
+  ut_object_weak_ref(callback_object, &thread->callback_object);
   thread->result_callback = result_callback;
-  thread->user_data = user_data;
-  thread->cancel = ut_object_ref(cancel);
   thread->next = NULL;
   return thread;
 }
@@ -174,7 +172,7 @@ static void free_worker_thread(WorkerThread *thread) {
   close(thread->complete_write_fd);
   close(thread->complete_read_fd);
   ut_object_unref(thread->thread_data);
-  ut_object_unref(thread->cancel);
+  ut_object_weak_unref(&thread->callback_object);
   free(thread);
 }
 
@@ -234,11 +232,11 @@ static void *thread_cb(void *data) {
 
 void ut_event_loop_add_worker_thread(UtThreadCallback thread_callback,
                                      UtObject *thread_data,
-                                     UtThreadResultCallback result_callback,
-                                     void *user_data, UtObject *cancel) {
+                                     UtObject *callback_object,
+                                     UtThreadResultCallback result_callback) {
   EventLoop *loop = get_loop();
   WorkerThread *thread = worker_thread_new(thread_callback, thread_data,
-                                           result_callback, user_data, cancel);
+                                           callback_object, result_callback);
   thread->next = loop->worker_threads;
   loop->worker_threads = thread;
 
@@ -337,8 +335,9 @@ UtObject *ut_event_loop_run() {
       if (FD_ISSET(thread->complete_read_fd, &read_fds)) {
         void *result;
         assert(pthread_join(thread->thread_id, &result) == 0);
-        if (thread->result_callback && !ut_cancel_is_active(thread->cancel)) {
-          thread->result_callback(thread->user_data, result);
+        if (thread->callback_object != NULL &&
+            thread->result_callback != NULL) {
+          thread->result_callback(thread->callback_object, result);
         }
         if (prev_thread != NULL) {
           prev_thread->next = thread->next;

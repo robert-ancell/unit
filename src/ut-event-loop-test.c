@@ -21,7 +21,7 @@ static void *thread_cb(UtObject *object) {
   return ut_cstring_new("Hello World");
 }
 
-static void thread_result_cb(void *user_data, void *result) {
+static void thread_result_cb(UtObject *object, void *result) {
   char *result_ = result;
   printf("Thread result: '%s'\n", result_);
   free(result_);
@@ -40,8 +40,9 @@ int main(int argc, char **argv) {
   ut_event_loop_add_delay(3, delay3_cb, NULL, NULL);
   ut_event_loop_add_timer(1, timer_cb, NULL, timer_cancel);
 
-  ut_event_loop_add_worker_thread(thread_cb, NULL, thread_result_cb, NULL,
-                                  NULL);
+  UtObjectRef dummy_object = ut_null_new();
+  ut_event_loop_add_worker_thread(thread_cb, NULL, dummy_object,
+                                  thread_result_cb);
 
   ut_event_loop_add_read_watch(0, stdin_cb, NULL, NULL);
 

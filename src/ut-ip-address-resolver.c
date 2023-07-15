@@ -49,8 +49,8 @@ static void *lookup_thread_cb(UtObject *data_) {
   return addresses;
 }
 
-static void lookup_result_cb(void *user_data, void *result) {
-  LookupData *data = user_data;
+static void lookup_result_cb(UtObject *object, void *result) {
+  LookupData *data = (LookupData *)object;
   struct addrinfo *addresses = result;
 
   assert(addresses != NULL);
@@ -75,21 +75,8 @@ static void lookup_result_cb(void *user_data, void *result) {
   freeaddrinfo(addresses);
 }
 
-static void ut_ip_address_resolver_init(UtObject *object) {
-  UtIPAddressResolver *self = (UtIPAddressResolver *)object;
-  self->cancel = ut_cancel_new();
-}
-
-static void ut_ip_address_resolver_cleanup(UtObject *object) {
-  UtIPAddressResolver *self = (UtIPAddressResolver *)object;
-  ut_cancel_activate(self->cancel);
-  ut_object_unref(self->cancel);
-}
-
-static UtObjectInterface object_interface = {
-    .type_name = "UtIPAddressResolver",
-    .init = ut_ip_address_resolver_init,
-    .cleanup = ut_ip_address_resolver_cleanup};
+static UtObjectInterface object_interface = {.type_name =
+                                                 "UtIPAddressResolver"};
 
 UtObject *ut_ip_address_resolver_new() {
   return ut_object_new(sizeof(UtIPAddressResolver), &object_interface);
@@ -99,12 +86,11 @@ void ut_ip_address_resolver_lookup(UtObject *object, const char *name,
                                    UtIPAddressResolverLookupCallback callback,
                                    void *user_data, UtObject *cancel) {
   assert(ut_object_is_ip_address_resolver(object));
-  UtIPAddressResolver *self = (UtIPAddressResolver *)object;
 
   // FIXME: Cancel thread if this UtIPAddressResolver is deleted.
   UtObject *data = lookup_data_new(name, callback, user_data, cancel);
-  ut_event_loop_add_worker_thread(lookup_thread_cb, data, lookup_result_cb,
-                                  data, self->cancel);
+  ut_event_loop_add_worker_thread(lookup_thread_cb, data, data,
+                                  lookup_result_cb);
 }
 
 bool ut_object_is_ip_address_resolver(UtObject *object) {
