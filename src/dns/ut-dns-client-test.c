@@ -45,7 +45,7 @@ static size_t dns_read_cb(void *user_data, UtObject *datagrams, bool complete) {
   return ut_list_get_length(datagrams);
 }
 
-static void lookup_cb(void *user_data, UtObject *address) {
+static void lookup_cb(UtObject *object, UtObject *address) {
   ut_cstring_ref address_string = ut_ip_address_to_string(address);
 
   ut_assert_cstring_equal(address_string, "93.184.216.34");
@@ -63,7 +63,8 @@ int main(int argc, char **argv) {
   UtObjectRef address = ut_ipv4_address_new_loopback();
   UtObjectRef client = ut_dns_client_new(address, dns_port);
 
-  ut_dns_client_lookup_ipv4(client, "example.com", lookup_cb, NULL, NULL);
+  UtObjectRef dummy_object = ut_null_new();
+  ut_dns_client_lookup_ipv4(client, "example.com", dummy_object, lookup_cb);
 
   ut_event_loop_run();
 

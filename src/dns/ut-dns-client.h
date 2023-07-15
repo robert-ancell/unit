@@ -11,7 +11,7 @@
 /// Function called when a DNS lookup is completed and [address] is resolved.
 ///
 /// !arg-type address UtIpAddress
-typedef void (*UtDnsLookupCallback)(void *user_data, UtObject *address);
+typedef void (*UtDnsLookupCallback)(UtObject *object, UtObject *address);
 
 /// Creates a new [UtDnsClient] to access the DNS server on [server_address] and
 /// [port].
@@ -23,13 +23,13 @@ UtObject *ut_dns_client_new(UtObject *server_address, uint16_t port);
 
 /// Perform an IPv4 address lookup for the host with [name] using [object].
 void ut_dns_client_lookup_ipv4(UtObject *object, const char *name,
-                               UtDnsLookupCallback callback, void *user_data,
-                               UtObject *cancel);
+                               UtObject *callback_object,
+                               UtDnsLookupCallback callback);
 
 /// Perform an IPv6 address lookup for the host with [name] using [object].
 void ut_dns_client_lookup_ipv6(UtObject *object, const char *name,
-                               UtDnsLookupCallback callback, void *user_data,
-                               UtObject *cancel);
+                               UtObject *callback_object,
+                               UtDnsLookupCallback callback);
 
 /// Returns [true] if [object] is a [UtDnsClient].
 bool ut_object_is_dns_client(UtObject *object);

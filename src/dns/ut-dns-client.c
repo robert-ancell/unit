@@ -5,14 +5,13 @@
 typedef struct {
   UtObject object;
   uint16_t id;
+  UtObject *callback_object;
   UtDnsLookupCallback callback;
-  void *user_data;
-  UtObject *cancel;
 } UtDnsQuery;
 
 static void ut_dns_query_cleanup(UtObject *object) {
   UtDnsQuery *self = (UtDnsQuery *)object;
-  ut_object_unref(self->cancel);
+  ut_object_weak_unref(&self->callback_object);
 }
 
 static UtObjectInterface query_object_interface = {
@@ -25,7 +24,6 @@ typedef struct {
   UtObject *socket;
   uint16_t next_id;
   UtObject *queries;
-  UtObject *cancel;
 } UtDnsClient;
 
 static UtDnsQuery *get_query(UtDnsClient *self, uint16_t id) {
@@ -41,8 +39,8 @@ static UtDnsQuery *get_query(UtDnsClient *self, uint16_t id) {
   return NULL;
 }
 
-static uint16_t add_query(UtDnsClient *self, UtDnsLookupCallback callback,
-                          void *user_data, UtObject *cancel) {
+static uint16_t add_query(UtDnsClient *self, UtObject *callback_object,
+                          UtDnsLookupCallback callback) {
   UtObjectRef query_object =
       ut_object_new(sizeof(UtDnsQuery), &query_object_interface);
   UtDnsQuery *query = (UtDnsQuery *)query_object;
@@ -55,9 +53,8 @@ static uint16_t add_query(UtDnsClient *self, UtDnsLookupCallback callback,
     }
   }
 
+  ut_object_weak_ref(callback_object, &query->callback_object);
   query->callback = callback;
-  query->user_data = user_data;
-  query->cancel = ut_object_ref(cancel);
   ut_list_append(self->queries, query_object);
 
   return query->id;
@@ -194,8 +191,8 @@ static void read_resource_record(UtDnsQuery *query, UtObject *message,
   }
 
   // FIXME: Check correct result
-  if (address != NULL && !ut_cancel_is_active(query->cancel)) {
-    query->callback(query->user_data, address);
+  if (address != NULL && query->callback_object != NULL) {
+    query->callback(query->callback_object, address);
   }
 }
 
@@ -274,14 +271,14 @@ UtObject *ut_dns_client_new(UtObject *server_address, uint16_t port) {
 }
 
 void ut_dns_client_lookup_ipv4(UtObject *object, const char *name,
-                               UtDnsLookupCallback callback, void *user_data,
-                               UtObject *cancel) {
+                               UtObject *callback_object,
+                               UtDnsLookupCallback callback) {
   assert(ut_object_is_dns_client(object));
   UtDnsClient *self = (UtDnsClient *)object;
 
   assert(callback != NULL);
 
-  uint16_t id = add_query(self, callback, user_data, cancel);
+  uint16_t id = add_query(self, callback_object, callback);
 
   UtObjectRef message = ut_uint8_array_new();
   write_ipv4_lookup(message, id, 0, name);
@@ -289,14 +286,14 @@ void ut_dns_client_lookup_ipv4(UtObject *object, const char *name,
 }
 
 void ut_dns_client_lookup_ipv6(UtObject *object, const char *name,
-                               UtDnsLookupCallback callback, void *user_data,
-                               UtObject *cancel) {
+                               UtObject *callback_object,
+                               UtDnsLookupCallback callback) {
   assert(ut_object_is_dns_client(object));
   UtDnsClient *self = (UtDnsClient *)object;
 
   assert(callback != NULL);
 
-  uint16_t id = add_query(self, callback, user_data, cancel);
+  uint16_t id = add_query(self, callback_object, callback);
 
   UtObjectRef message = ut_uint8_array_new();
   write_ipv6_lookup(message, id, 0, name);
