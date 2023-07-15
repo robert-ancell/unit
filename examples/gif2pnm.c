@@ -2,8 +2,8 @@
 
 #include "ut.h"
 
-static void decode_cb(void *user_data) {
-  UtObject *decoder = user_data;
+static void decode_cb(UtObject *object) {
+  UtObject *decoder = object;
 
   if (ut_gif_decoder_get_error(decoder) != NULL) {
     printf("Failed to decode: %s\n",
@@ -49,7 +49,7 @@ int main(int argc, char **argv) {
   UtObjectRef file = ut_local_file_new(argv[1]);
   ut_file_open_read(file);
   UtObjectRef decoder = ut_gif_decoder_new(file);
-  ut_gif_decoder_decode(decoder, decode_cb, decoder, NULL);
+  ut_gif_decoder_decode(decoder, decoder, decode_cb);
 
   UtObjectRef return_code = ut_event_loop_run();
   return ut_int32_get_value(return_code);

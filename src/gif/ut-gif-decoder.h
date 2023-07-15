@@ -4,12 +4,12 @@
 
 #pragma once
 
-typedef void (*UtGifDecodeCallback)(void *user_data);
+typedef void (*UtGifDecodeCallback)(UtObject *object);
 
 UtObject *ut_gif_decoder_new(UtObject *input_stream);
 
-void ut_gif_decoder_decode(UtObject *object, UtGifDecodeCallback callback,
-                           void *user_data, UtObject *cancel);
+void ut_gif_decoder_decode(UtObject *object, UtObject *callback_object,
+                           UtGifDecodeCallback callback);
 
 UtObject *ut_gif_decoder_decode_sync(UtObject *object);
 

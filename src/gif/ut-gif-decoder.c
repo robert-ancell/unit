@@ -25,9 +25,8 @@ typedef struct {
   UtObject *input_stream;
 
   // Callback to notify when complete.
+  UtObject *callback_object;
   UtGifDecodeCallback callback;
-  void *user_data;
-  UtObject *cancel;
 
   // Current state of the decoder.
   DecoderState state;
@@ -92,7 +91,9 @@ typedef struct {
 
 static void notify_complete(UtGifDecoder *self) {
   ut_input_stream_close(self->input_stream);
-  self->callback(self->user_data);
+  if (self->callback_object != NULL) {
+    self->callback(self->callback_object);
+  }
 }
 
 static void set_error(UtGifDecoder *self, const char *description) {
@@ -514,11 +515,6 @@ static size_t decode_image_data_block(UtGifDecoder *self, UtObject *data) {
 static size_t read_cb(void *user_data, UtObject *data, bool complete) {
   UtGifDecoder *self = user_data;
 
-  if (ut_cancel_is_active(self->cancel)) {
-    ut_input_stream_close(self->input_stream);
-    return 0;
-  }
-
   if (ut_object_implements_error(data)) {
     ut_cstring_ref description = ut_cstring_new_printf(
         "Failed to read GIF data: %s", ut_error_get_description(data));
@@ -578,7 +574,7 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
   }
 }
 
-static void done_cb(void *user_data) {}
+static void done_cb(UtObject *object) {}
 
 static void ut_gif_decoder_init(UtObject *object) {
   UtGifDecoder *self = (UtGifDecoder *)object;
@@ -594,7 +590,7 @@ static void ut_gif_decoder_cleanup(UtObject *object) {
   ut_input_stream_close(self->input_stream);
 
   ut_object_unref(self->input_stream);
-  ut_object_unref(self->cancel);
+  ut_object_weak_unref(&self->callback_object);
   ut_object_unref(self->global_color_table);
   ut_object_unref(self->image_color_table);
   ut_object_unref(self->image_data);
@@ -617,17 +613,16 @@ UtObject *ut_gif_decoder_new(UtObject *input_stream) {
   return object;
 }
 
-void ut_gif_decoder_decode(UtObject *object, UtGifDecodeCallback callback,
-                           void *user_data, UtObject *cancel) {
+void ut_gif_decoder_decode(UtObject *object, UtObject *callback_object,
+                           UtGifDecodeCallback callback) {
   assert(ut_object_is_gif_decoder(object));
   UtGifDecoder *self = (UtGifDecoder *)object;
 
   assert(self->callback == NULL);
   assert(callback != NULL);
 
+  ut_object_weak_ref(callback_object, &self->callback_object);
   self->callback = callback;
-  self->user_data = user_data;
-  self->cancel = ut_object_ref(cancel);
 
   ut_input_stream_read(self->input_stream, read_cb, self);
 }
@@ -636,7 +631,8 @@ UtObject *ut_gif_decoder_decode_sync(UtObject *object) {
   assert(ut_object_is_gif_decoder(object));
   UtGifDecoder *self = (UtGifDecoder *)object;
 
-  ut_gif_decoder_decode(object, done_cb, NULL, NULL);
+  UtObjectRef dummy_object = ut_null_new();
+  ut_gif_decoder_decode(object, dummy_object, done_cb);
   if (self->error != NULL) {
     return ut_object_ref(self->error);
   }
