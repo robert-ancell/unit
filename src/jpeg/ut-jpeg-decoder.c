@@ -77,9 +77,8 @@ typedef struct {
   UtObject *input_stream;
 
   // Callback to notify when complete.
+  UtObject *callback_object;
   UtJpegDecodeCallback callback;
-  void *user_data;
-  UtObject *cancel;
 
   // Current bits being written.
   uint8_t bit_buffer;
@@ -184,7 +183,9 @@ typedef struct {
 
 static void notify_complete(UtJpegDecoder *self) {
   ut_input_stream_close(self->input_stream);
-  self->callback(self->user_data);
+  if (self->callback_object != NULL) {
+    self->callback(self->callback_object);
+  }
 }
 
 __attribute__((format(printf, 2, 3))) static void
@@ -1485,11 +1486,6 @@ static size_t decode_marker(UtJpegDecoder *self, UtObject *data) {
 static size_t read_cb(void *user_data, UtObject *data, bool complete) {
   UtJpegDecoder *self = user_data;
 
-  if (ut_cancel_is_active(self->cancel)) {
-    ut_input_stream_close(self->input_stream);
-    return 0;
-  }
-
   if (ut_object_implements_error(data)) {
     set_error(self, "Failed to read JPEG data: %s",
               ut_error_get_description(data));
@@ -1556,7 +1552,7 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
   }
 }
 
-static void done_cb(void *user_data) {}
+static void done_cb(UtObject *object) {}
 
 static void ut_jpeg_decoder_init(UtObject *object) {
   UtJpegDecoder *self = (UtJpegDecoder *)object;
@@ -1570,7 +1566,7 @@ static void ut_jpeg_decoder_cleanup(UtObject *object) {
   ut_input_stream_close(self->input_stream);
 
   ut_object_unref(self->input_stream);
-  ut_object_unref(self->cancel);
+  ut_object_weak_unref(&self->callback_object);
   for (size_t i = 0; i < 4; i++) {
     ut_object_unref(self->quantization_tables[i]);
     ut_object_unref(self->dc_decoders[i]);
@@ -1596,17 +1592,16 @@ UtObject *ut_jpeg_decoder_new(UtObject *input_stream) {
   return object;
 }
 
-void ut_jpeg_decoder_decode(UtObject *object, UtJpegDecodeCallback callback,
-                            void *user_data, UtObject *cancel) {
+void ut_jpeg_decoder_decode(UtObject *object, UtObject *callback_object,
+                            UtJpegDecodeCallback callback) {
   assert(ut_object_is_jpeg_decoder(object));
   UtJpegDecoder *self = (UtJpegDecoder *)object;
 
   assert(self->callback == NULL);
   assert(callback != NULL);
 
+  ut_object_weak_ref(callback_object, &self->callback_object);
   self->callback = callback;
-  self->user_data = user_data;
-  self->cancel = ut_object_ref(cancel);
 
   ut_input_stream_read(self->input_stream, read_cb, self);
 }
@@ -1615,7 +1610,8 @@ UtObject *ut_jpeg_decoder_decode_sync(UtObject *object) {
   assert(ut_object_is_jpeg_decoder(object));
   UtJpegDecoder *self = (UtJpegDecoder *)object;
 
-  ut_jpeg_decoder_decode(object, done_cb, NULL, NULL);
+  UtObjectRef dummy_object = ut_null_new();
+  ut_jpeg_decoder_decode(object, (UtObject *)dummy_object, done_cb);
   if (self->error != NULL) {
     return ut_object_ref(self->error);
   }

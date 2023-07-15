@@ -4,12 +4,12 @@
 
 #pragma once
 
-typedef void (*UtJpegDecodeCallback)(void *user_data);
+typedef void (*UtJpegDecodeCallback)(UtObject *object);
 
 UtObject *ut_jpeg_decoder_new(UtObject *input_stream);
 
-void ut_jpeg_decoder_decode(UtObject *object, UtJpegDecodeCallback callback,
-                            void *user_data, UtObject *cancel);
+void ut_jpeg_decoder_decode(UtObject *object, UtObject *callback_object,
+                            UtJpegDecodeCallback callback);
 
 UtObject *ut_jpeg_decoder_decode_sync(UtObject *object);
 
