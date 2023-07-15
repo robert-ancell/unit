@@ -15,36 +15,33 @@ typedef enum {
 typedef struct {
   UtObject object;
   UtObject *message;
+  UtObject *callback_object;
   UtDBusMethodResponseCallback callback;
-  void *user_data;
-  UtObject *cancel;
 } QueuedMessage;
 
 static void queued_message_cleanup(UtObject *object) {
   QueuedMessage *self = (QueuedMessage *)object;
   ut_object_unref(self->message);
-  ut_object_unref(self->cancel);
+  ut_object_weak_unref(&self->callback_object);
 }
 
 static UtObjectInterface queued_message_object_interface = {
     .type_name = "QueuedMessage", .cleanup = queued_message_cleanup};
 
 static UtObject *queued_message_new(UtObject *message,
-                                    UtDBusMethodResponseCallback callback,
-                                    void *user_data, UtObject *cancel) {
+                                    UtObject *callback_object,
+                                    UtDBusMethodResponseCallback callback) {
   UtObject *object =
       ut_object_new(sizeof(QueuedMessage), &queued_message_object_interface);
   QueuedMessage *self = (QueuedMessage *)object;
   self->message = ut_object_ref(message);
+  ut_object_weak_ref(callback_object, &self->callback_object);
   self->callback = callback;
-  self->user_data = user_data;
-  self->cancel = ut_object_ref(cancel);
   return object;
 }
 
 typedef struct {
   UtObject object;
-  UtObject *cancel;
   char *address;
   UtObject *socket;
   UtObject *auth_input_stream;
@@ -56,16 +53,15 @@ typedef struct {
   size_t last_serial;
   UtObject *message_queue;
   char *unique_name;
+  UtObject *method_callback_object;
   UtDBusMethodRequestCallback method_callback;
-  void *method_user_data;
-  UtObject *method_cancel;
 } UtDBusClient;
 
 static void call_method(UtDBusClient *self, const char *destination,
                         const char *path, const char *interface,
                         const char *name, UtObject *args,
-                        UtDBusMethodResponseCallback callback, void *user_data,
-                        UtObject *cancel);
+                        UtObject *callback_object,
+                        UtDBusMethodResponseCallback callback);
 
 static ssize_t find_queued_message(UtDBusClient *self, uint32_t serial) {
   size_t message_queue_length = ut_list_get_length(self->message_queue);
@@ -82,9 +78,8 @@ static ssize_t find_queued_message(UtDBusClient *self, uint32_t serial) {
 }
 
 static void process_method_call(UtDBusClient *self, UtObject *message) {
-  if (self->method_callback != NULL &&
-      !ut_cancel_is_active(self->method_cancel)) {
-    self->method_callback(self->method_user_data, message);
+  if (self->method_callback != NULL && self->method_callback_object != NULL) {
+    self->method_callback(self->method_callback_object, message);
   }
 }
 
@@ -94,8 +89,8 @@ static void process_method_return(UtDBusClient *self, UtObject *message) {
   if (i >= 0) {
     QueuedMessage *m =
         (QueuedMessage *)ut_object_list_get_element(self->message_queue, i);
-    if (m->callback != NULL) {
-      m->callback(m->user_data, ut_dbus_message_get_args(message));
+    if (m->callback_object != NULL && m->callback != NULL) {
+      m->callback(m->callback_object, ut_dbus_message_get_args(message));
     }
     ut_list_remove(self->message_queue, i, 1);
   }
@@ -107,8 +102,8 @@ static void process_error(UtDBusClient *self, UtObject *message) {
   if (i >= 0) {
     QueuedMessage *m =
         (QueuedMessage *)ut_object_list_get_element(self->message_queue, i);
-    if (m->callback != NULL) {
-      m->callback(m->user_data,
+    if (m->callback_object != NULL && m->callback != NULL) {
+      m->callback(m->callback_object,
                   ut_dbus_error_new(ut_dbus_message_get_error_name(message),
                                     ut_dbus_message_get_args(message)));
     }
@@ -198,8 +193,8 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
   return offset;
 }
 
-static void hello_cb(void *user_data, UtObject *out_args) {
-  UtDBusClient *self = user_data;
+static void hello_cb(UtObject *object, UtObject *out_args) {
+  UtDBusClient *self = (UtDBusClient *)object;
 
   self->unique_name = ut_cstring_new(
       ut_string_get_text(ut_object_list_get_element(out_args, 0)));
@@ -230,15 +225,15 @@ static void connect(UtDBusClient *self) {
       ut_dbus_auth_client_new(self->auth_input_stream, self->socket);
 
   call_method(self, "org.freedesktop.DBus", "/org/freedesktop/DBus",
-              "org.freedesktop.DBus", "Hello", NULL, hello_cb, self,
-              self->cancel);
+              "org.freedesktop.DBus", "Hello", NULL, (UtObject *)self,
+              hello_cb);
 
   ut_tcp_socket_connect(self->socket, (UtObject *)self, connect_cb);
 }
 
 static void send_message(UtDBusClient *self, UtObject *message,
-                         UtDBusMethodResponseCallback callback, void *user_data,
-                         UtObject *cancel) {
+                         UtObject *callback_object,
+                         UtDBusMethodResponseCallback callback) {
   // Connect if not done yet.
   connect(self);
 
@@ -249,7 +244,7 @@ static void send_message(UtDBusClient *self, UtObject *message,
   // Queue if expecting response or not yet authenticated.
   if (self->state != DECODER_STATE_MESSAGES || callback != NULL) {
     UtObjectRef queued_message =
-        queued_message_new(message, callback, user_data, cancel);
+        queued_message_new(message, callback_object, callback);
     ut_list_append(self->message_queue, queued_message);
   }
 
@@ -264,16 +259,15 @@ static void send_message(UtDBusClient *self, UtObject *message,
 static void call_method(UtDBusClient *self, const char *destination,
                         const char *path, const char *interface,
                         const char *name, UtObject *args,
-                        UtDBusMethodResponseCallback callback, void *user_data,
-                        UtObject *cancel) {
+                        UtObject *callback_object,
+                        UtDBusMethodResponseCallback callback) {
   UtObjectRef message =
       ut_dbus_message_new_method_call(destination, path, interface, name, args);
-  send_message(self, message, callback, user_data, cancel);
+  send_message(self, message, callback_object, callback);
 }
 
 static void ut_dbus_client_init(UtObject *object) {
   UtDBusClient *self = (UtDBusClient *)object;
-  self->cancel = ut_cancel_new();
   self->message_encoder = ut_dbus_message_encoder_new();
   self->message_queue = ut_object_list_new();
 }
@@ -284,8 +278,6 @@ static void ut_dbus_client_cleanup(UtObject *object) {
   ut_input_stream_close(self->socket);
   ut_input_stream_close(self->message_decoder);
 
-  ut_cancel_activate(self->cancel);
-  ut_object_unref(self->cancel);
   free(self->address);
   ut_object_unref(self->socket);
   ut_object_unref(self->auth_input_stream);
@@ -295,7 +287,6 @@ static void ut_dbus_client_cleanup(UtObject *object) {
   ut_object_unref(self->message_encoder);
   ut_object_unref(self->message_queue);
   free(self->unique_name);
-  ut_cancel_activate(self->method_cancel);
 }
 
 static UtObjectInterface object_interface = {.type_name = "UtDBusClient",
@@ -324,15 +315,14 @@ UtObject *ut_dbus_client_new_session() {
 }
 
 void ut_dbus_client_set_method_call_handler(
-    UtObject *object, UtDBusMethodRequestCallback callback, void *user_data,
-    UtObject *cancel) {
+    UtObject *object, UtObject *callback_object,
+    UtDBusMethodRequestCallback callback) {
   assert(ut_object_is_dbus_client(object));
   UtDBusClient *self = (UtDBusClient *)object;
   assert(self->method_callback == NULL);
 
+  ut_object_weak_ref(callback_object, &self->method_callback_object);
   self->method_callback = callback;
-  self->method_user_data = user_data;
-  self->method_cancel = ut_object_ref(cancel);
 }
 
 const char *ut_dbus_client_get_unique_name(UtObject *object) {
@@ -344,12 +334,12 @@ const char *ut_dbus_client_get_unique_name(UtObject *object) {
 void ut_dbus_client_call_method(UtObject *object, const char *destination,
                                 const char *path, const char *interface,
                                 const char *name, UtObject *args,
-                                UtDBusMethodResponseCallback callback,
-                                void *user_data, UtObject *cancel) {
+                                UtObject *callback_object,
+                                UtDBusMethodResponseCallback callback) {
   assert(ut_object_is_dbus_client(object));
   UtDBusClient *self = (UtDBusClient *)object;
-  call_method(self, destination, path, interface, name, args, callback,
-              user_data, cancel);
+  call_method(self, destination, path, interface, name, args, callback_object,
+              callback);
 }
 
 void ut_dbus_client_send_reply(UtObject *object, UtObject *method_call,
@@ -362,7 +352,7 @@ void ut_dbus_client_send_reply(UtObject *object, UtObject *method_call,
                              ut_dbus_message_get_destination(method_call));
   ut_dbus_message_set_destination(message,
                                   ut_dbus_message_get_sender(method_call));
-  send_message(self, message, NULL, NULL, NULL);
+  send_message(self, message, NULL, NULL);
 }
 
 bool ut_object_is_dbus_client(UtObject *object) {
