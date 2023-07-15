@@ -4,7 +4,7 @@
 
 #pragma once
 
-typedef void (*UtAuthCompleteCallback)(void *user_data, const char *guid,
+typedef void (*UtAuthCompleteCallback)(UtObject *object, const char *guid,
                                        bool unix_fd_supported, UtObject *error);
 
 UtObject *ut_dbus_auth_client_new(UtObject *input_stream,
@@ -13,7 +13,7 @@ UtObject *ut_dbus_auth_client_new(UtObject *input_stream,
 void ut_dbus_auth_client_set_negotiate_unix_fd(UtObject *object,
                                                bool negotiate_unix_fd);
 
-void ut_dbus_auth_client_run(UtObject *object, UtAuthCompleteCallback callback,
-                             void *user_data, UtObject *cancel);
+void ut_dbus_auth_client_run(UtObject *object, UtObject *callback_object,
+                             UtAuthCompleteCallback callback);
 
 bool ut_object_is_dbus_auth_client(UtObject *object);

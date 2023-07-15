@@ -22,9 +22,8 @@ typedef struct {
   char *guid;
   bool unix_fd_supported;
   UtObject *error;
+  UtObject *complete_callback_object;
   UtAuthCompleteCallback complete_callback;
-  void *complete_user_data;
-  UtObject *complete_cancel;
 } UtDBusAuthClient;
 
 static void send_auth_message(UtDBusAuthClient *self, const char *message) {
@@ -61,8 +60,8 @@ static void done(UtDBusAuthClient *self) {
 
   ut_input_stream_close(self->input_stream);
 
-  if (!ut_cancel_is_active(self->complete_cancel)) {
-    self->complete_callback(self->complete_user_data, self->guid,
+  if (self->complete_callback_object != NULL) {
+    self->complete_callback(self->complete_callback_object, self->guid,
                             self->unix_fd_supported,
                             ut_object_ref(self->error));
   }
@@ -168,7 +167,7 @@ static void ut_dbus_auth_client_cleanup(UtObject *object) {
   ut_object_unref(self->output_stream);
   free(self->guid);
   ut_object_unref(self->error);
-  ut_object_unref(self->complete_cancel);
+  ut_object_weak_unref(&self->complete_callback_object);
 }
 
 static UtObjectInterface object_interface = {.type_name = "UtDBusAuthClient",
@@ -192,8 +191,8 @@ void ut_dbus_auth_client_set_negotiate_unix_fd(UtObject *object,
   self->negotiate_unix_fd = negotiate_unix_fd;
 }
 
-void ut_dbus_auth_client_run(UtObject *object, UtAuthCompleteCallback callback,
-                             void *user_data, UtObject *cancel) {
+void ut_dbus_auth_client_run(UtObject *object, UtObject *callback_object,
+                             UtAuthCompleteCallback callback) {
   assert(ut_object_is_dbus_auth_client(object));
   UtDBusAuthClient *self = (UtDBusAuthClient *)object;
 
@@ -201,9 +200,8 @@ void ut_dbus_auth_client_run(UtObject *object, UtAuthCompleteCallback callback,
   self->state = AUTH_STATE_PROBE_MECHANISMS;
 
   assert(callback != NULL);
+  ut_object_weak_ref(callback_object, &self->complete_callback_object);
   self->complete_callback = callback;
-  self->complete_user_data = user_data;
-  self->complete_cancel = ut_object_ref(cancel);
 
   ut_input_stream_read(self->input_stream, read_cb, self);
 
