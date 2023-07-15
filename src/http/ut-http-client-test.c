@@ -32,7 +32,7 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
   return ut_list_get_length(data);
 }
 
-static void http_response_cb(void *user_data, UtObject *response) {
+static void http_response_cb(UtObject *object, UtObject *response) {
   ut_assert_int_equal(ut_http_response_get_status_code(response), 200);
   ut_assert_cstring_equal(ut_http_response_get_reason_phrase(response), "OK");
   UtObject *headers = ut_http_response_get_headers(response);
@@ -56,8 +56,9 @@ int main(int argc, char **argv) {
 
   UtObjectRef http_client = ut_http_client_new();
   ut_cstring_ref uri = ut_cstring_new_printf("http://127.0.0.1:%d", http_port);
-  ut_http_client_send_request(http_client, "GET", uri, NULL, http_response_cb,
-                              NULL, NULL);
+  UtObjectRef dummy_object = ut_null_new();
+  ut_http_client_send_request(http_client, "GET", uri, NULL, dummy_object,
+                              http_response_cb);
 
   ut_event_loop_run();
 

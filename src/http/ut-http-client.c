@@ -14,9 +14,8 @@ typedef struct {
   char *method;
   char *path;
   UtObject *body;
+  UtObject *callback_object;
   UtHttpResponseCallback callback;
-  void *callback_user_data;
-  UtObject *callback_cancel;
   UtObject *message_encoder;
   UtObject *message_decoder_input_stream;
   UtObject *message_decoder;
@@ -39,7 +38,7 @@ static void http_request_cleanup(UtObject *object) {
   free(self->method);
   free(self->path);
   ut_object_unref(self->body);
-  ut_object_unref(self->callback_cancel);
+  ut_object_weak_unref(&self->callback_object);
   ut_object_unref(self->message_encoder);
   ut_object_unref(self->message_decoder_input_stream);
   ut_object_unref(self->message_decoder);
@@ -52,9 +51,8 @@ static UtObjectInterface request_object_interface = {.type_name = "HttpRequest",
 
 UtObject *http_request_new(const char *host, uint16_t port, const char *method,
                            const char *path, UtObject *body,
-                           UtHttpResponseCallback callback,
-                           void *callback_user_data,
-                           UtObject *callback_cancel) {
+                           UtObject *callback_object,
+                           UtHttpResponseCallback callback) {
   UtObject *object =
       ut_object_new(sizeof(HttpRequest), &request_object_interface);
   HttpRequest *self = (HttpRequest *)object;
@@ -63,25 +61,30 @@ UtObject *http_request_new(const char *host, uint16_t port, const char *method,
   self->method = ut_cstring_new(method);
   self->path = ut_cstring_new(path);
   self->body = ut_object_ref(body);
+  ut_object_weak_ref(callback_object, &self->callback_object);
   self->callback = callback;
-  self->callback_user_data = callback_user_data;
-  self->callback_cancel = ut_object_ref(callback_cancel);
   return object;
 }
 
 typedef struct {
   UtObject object;
   UtObject *ip_address_resolver;
+  UtObject *cancel;
 } UtHttpClient;
 
 static void ut_http_client_init(UtObject *object) {
   UtHttpClient *self = (UtHttpClient *)object;
   self->ip_address_resolver = ut_ip_address_resolver_new();
+  self->cancel = ut_cancel_new();
 }
 
 static void ut_http_client_cleanup(UtObject *object) {
   UtHttpClient *self = (UtHttpClient *)object;
+
+  ut_cancel_activate(self->cancel);
+
   ut_object_unref(self->ip_address_resolver);
+  ut_object_unref(self->cancel);
 }
 
 static size_t read_cb(void *user_data, UtObject *data, bool complete) {
@@ -98,8 +101,8 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
         ut_http_message_decoder_get_reason_phrase(request->message_decoder),
         ut_http_message_decoder_get_headers(request->message_decoder),
         ut_http_message_decoder_get_body(request->message_decoder));
-    if (request->callback != NULL) {
-      request->callback(request->callback_user_data, response);
+    if (request->callback_object != NULL && request->callback != NULL) {
+      request->callback(request->callback_object, response);
     }
   }
 
@@ -137,8 +140,8 @@ UtObject *ut_http_client_new() {
 
 void ut_http_client_send_request(UtObject *object, const char *method,
                                  const char *uri, UtObject *body,
-                                 UtHttpResponseCallback callback,
-                                 void *user_data, UtObject *cancel) {
+                                 UtObject *callback_object,
+                                 UtHttpResponseCallback callback) {
   assert(ut_object_is_http_client(object));
   UtHttpClient *self = (UtHttpClient *)object;
 
@@ -156,10 +159,10 @@ void ut_http_client_send_request(UtObject *object, const char *method,
     port = 80;
   }
 
-  UtObject *request = http_request_new(host, port, method, path, body, callback,
-                                       user_data, cancel);
+  UtObject *request = http_request_new(host, port, method, path, body,
+                                       callback_object, callback);
   ut_ip_address_resolver_lookup(self->ip_address_resolver, host, lookup_cb,
-                                request, cancel);
+                                request, self->cancel);
 }
 
 bool ut_object_is_http_client(UtObject *object) {

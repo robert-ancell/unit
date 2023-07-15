@@ -12,7 +12,7 @@ static size_t body_cb(void *user_data, UtObject *data, bool complete) {
   return ut_list_get_length(data);
 }
 
-static void response_cb(void *user_data, UtObject *response) {
+static void response_cb(UtObject *object, UtObject *response) {
   if (ut_http_response_get_status_code(response) != 200) {
     printf("%s\n", ut_http_response_get_reason_phrase(response));
     UtObjectRef return_code = ut_int32_new(1);
@@ -32,8 +32,9 @@ int main(int argc, char **argv) {
 
   UtObjectRef client = ut_http_client_new();
 
-  ut_http_client_send_request(client, "GET", uri, NULL, response_cb, NULL,
-                              NULL);
+  UtObjectRef dummy_object = ut_null_new();
+  ut_http_client_send_request(client, "GET", uri, NULL, dummy_object,
+                              response_cb);
 
   UtObjectRef return_code = ut_event_loop_run();
   return ut_int32_get_value(return_code);
