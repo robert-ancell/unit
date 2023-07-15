@@ -106,8 +106,8 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
   return n_used;
 }
 
-static void connect_cb(void *user_data) {
-  HttpRequest *request = user_data;
+static void connect_cb(UtObject *object) {
+  HttpRequest *request = (HttpRequest *)object;
 
   UtObjectRef headers = ut_list_new();
   ut_list_append_take(headers, ut_http_header_new("Host", request->host));
@@ -124,8 +124,7 @@ static void lookup_cb(void *user_data, UtObject *addresses) {
 
   UtObjectRef address = ut_list_get_first(addresses);
   request->tcp_socket = ut_tcp_socket_new(address, request->port);
-  ut_tcp_socket_connect(request->tcp_socket, connect_cb, request,
-                        request->callback_cancel);
+  ut_tcp_socket_connect(request->tcp_socket, (UtObject *)request, connect_cb);
 }
 
 static UtObjectInterface object_interface = {.type_name = "UtHttpClient",

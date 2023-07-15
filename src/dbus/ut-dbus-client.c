@@ -205,8 +205,8 @@ static void hello_cb(void *user_data, UtObject *out_args) {
       ut_string_get_text(ut_object_list_get_element(out_args, 0)));
 }
 
-static void connect_cb(void *user_data) {
-  UtDBusClient *self = (UtDBusClient *)user_data;
+static void connect_cb(UtObject *object) {
+  UtDBusClient *self = (UtDBusClient *)object;
 
   self->state = DECODER_STATE_AUTHENTICATION;
   ut_input_stream_read(self->socket, read_cb, self);
@@ -234,7 +234,7 @@ static void connect(UtDBusClient *self) {
               "org.freedesktop.DBus", "Hello", NULL, hello_cb, self,
               self->cancel);
 
-  ut_tcp_socket_connect(self->socket, connect_cb, self, self->cancel);
+  ut_tcp_socket_connect(self->socket, (UtObject *)self, connect_cb);
 }
 
 static void send_message(UtDBusClient *self, UtObject *message,

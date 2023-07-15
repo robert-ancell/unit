@@ -24,8 +24,8 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
   return ut_list_get_length(data);
 }
 
-static void connect_cb(void *user_data) {
-  UtObject *socket = user_data;
+static void connect_cb(UtObject *object) {
+  UtObject *socket = object;
 
   ut_input_stream_read(socket, read_cb, NULL);
 
@@ -48,7 +48,7 @@ int main(int argc, char **argv) {
   // Create a socket to send to the echo port.
   UtObjectRef address = ut_unix_socket_address_new(path);
   UtObjectRef socket = ut_tcp_socket_new(address, echo_port);
-  ut_tcp_socket_connect(socket, connect_cb, socket, NULL);
+  ut_tcp_socket_connect(socket, socket, connect_cb);
 
   ut_event_loop_run();
 

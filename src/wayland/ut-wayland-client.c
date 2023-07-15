@@ -131,7 +131,7 @@ void ut_wayland_client_connect(UtObject *object) {
   assert(ut_object_is_wayland_client(object));
   UtWaylandClient *self = (UtWaylandClient *)object;
 
-  ut_tcp_socket_connect(self->socket, NULL, NULL, NULL);
+  ut_tcp_socket_connect(self->socket, NULL, NULL);
   ut_input_stream_read(self->socket, read_cb, self);
 
   self->display = ut_wayland_display_new(object, &display_callbacks, self);

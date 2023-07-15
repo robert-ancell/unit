@@ -5,15 +5,14 @@
 
 #pragma once
 
-typedef void (*UtTcpSocketConnectCallback)(void *user_data);
+typedef void (*UtTcpSocketConnectCallback)(UtObject *object);
 
 UtObject *ut_tcp_socket_new_from_fd(UtObject *fd);
 
 UtObject *ut_tcp_socket_new(UtObject *address, uint16_t port);
 
-void ut_tcp_socket_connect(UtObject *object,
-                           UtTcpSocketConnectCallback callback, void *user_data,
-                           UtObject *cancel);
+void ut_tcp_socket_connect(UtObject *object, UtObject *callback_object,
+                           UtTcpSocketConnectCallback callback);
 
 UtObject *ut_tcp_socket_get_address(UtObject *object);
 

@@ -18,9 +18,8 @@ typedef struct {
   UtObject *fd;
   UtObject *write_watch_cancel;
   UtObject *read_watch_cancel;
+  UtObject *connect_callback_object;
   UtTcpSocketConnectCallback connect_callback;
-  void *connect_user_data;
-  UtObject *connect_cancel;
   UtObject *read_buffer;
   size_t n_read;
   bool is_complete;
@@ -39,12 +38,12 @@ static void ut_tcp_socket_cleanup(UtObject *object) {
     ut_cancel_activate(self->read_watch_cancel);
   }
   ut_object_unref(self->write_watch_cancel);
-  ut_object_unref(self->connect_cancel);
+  ut_object_weak_unref(&self->connect_callback_object);
   ut_object_unref(self->read_buffer);
   ut_object_unref(self->read_watch_cancel);
 }
 
-static void connect_cb(void *user_data) {}
+static void connect_cb(UtObject *object) {}
 
 static void write_cb(void *user_data) {
   UtTcpSocket *self = user_data;
@@ -58,9 +57,8 @@ static void write_cb(void *user_data) {
              &error_length);
   assert(error == 0);
 
-  if (!ut_cancel_is_active(self->connect_cancel) &&
-      self->connect_callback != NULL) {
-    self->connect_callback(self->connect_user_data);
+  if (self->connect_callback_object != NULL && self->connect_callback != NULL) {
+    self->connect_callback(self->connect_callback_object);
   }
 }
 
@@ -286,9 +284,8 @@ UtObject *ut_tcp_socket_new(UtObject *address, uint16_t port) {
   return object;
 }
 
-void ut_tcp_socket_connect(UtObject *object,
-                           UtTcpSocketConnectCallback callback, void *user_data,
-                           UtObject *cancel) {
+void ut_tcp_socket_connect(UtObject *object, UtObject *callback_object,
+                           UtTcpSocketConnectCallback callback) {
   assert(ut_object_is_tcp_socket(object));
   UtTcpSocket *self = (UtTcpSocket *)object;
 
@@ -297,9 +294,8 @@ void ut_tcp_socket_connect(UtObject *object,
     callback = connect_cb;
   }
 
+  ut_object_weak_ref(callback_object, &self->connect_callback_object);
   self->connect_callback = callback;
-  self->connect_user_data = user_data;
-  self->connect_cancel = ut_object_ref(cancel);
 
   self->write_watch_cancel = ut_cancel_new();
   ut_event_loop_add_write_watch(self->fd, write_cb, self,

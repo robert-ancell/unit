@@ -74,7 +74,6 @@ typedef enum {
 
 struct _UtX11Client {
   UtObject object;
-  UtObject *cancel;
   UtObject *socket;
 
   UtObject *extensions;
@@ -733,8 +732,8 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
   return offset;
 }
 
-static void connect_cb(void *user_data) {
-  UtX11Client *self = user_data;
+static void connect_cb(UtObject *object) {
+  UtX11Client *self = (UtX11Client *)object;
 
   UtObjectRef setup = ut_x11_buffer_new();
   ut_x11_buffer_append_card8(setup, 0x6c); // Little endian.
@@ -754,7 +753,6 @@ static void connect_cb(void *user_data) {
 
 static void ut_x11_client_init(UtObject *object) {
   UtX11Client *self = (UtX11Client *)object;
-  self->cancel = ut_cancel_new();
   self->extensions = ut_object_list_new();
   self->requests = ut_object_list_new();
 }
@@ -762,7 +760,6 @@ static void ut_x11_client_init(UtObject *object) {
 static void ut_x11_client_cleanup(UtObject *object) {
   UtX11Client *self = (UtX11Client *)object;
 
-  ut_cancel_activate(self->cancel);
   ut_input_stream_close(self->socket);
 
   size_t extensions_length = ut_list_get_length(self->extensions);
@@ -771,7 +768,6 @@ static void ut_x11_client_cleanup(UtObject *object) {
     ut_x11_extension_close(extension);
   }
 
-  ut_object_unref(self->cancel);
   ut_object_unref(self->socket);
   ut_object_unref(self->extensions);
   ut_object_unref(self->core);
@@ -841,7 +837,7 @@ void ut_x11_client_connect(UtObject *object, UtObject *callback_object,
       ut_cstring_new_printf("/tmp/.X11-unix/X%d", display_number);
   UtObjectRef address = ut_unix_socket_address_new(socket_path);
   self->socket = ut_tcp_socket_new(address, 0);
-  ut_tcp_socket_connect(self->socket, connect_cb, self, self->cancel);
+  ut_tcp_socket_connect(self->socket, object, connect_cb);
   ut_input_stream_read(self->socket, read_cb, self);
 }
 
