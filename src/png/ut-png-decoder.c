@@ -25,9 +25,8 @@ typedef struct {
   UtObject *input_stream;
 
   // Callback to notify when complete.
+  UtObject *callback_object;
   UtPngDecodeCallback callback;
-  void *user_data;
-  UtObject *cancel;
 
   // Current state of the decoder.
   DecoderState state;
@@ -114,7 +113,9 @@ static uint32_t crc32(UtObject *data, size_t offset, size_t length) {
 
 static void notify_complete(UtPngDecoder *self) {
   ut_input_stream_close(self->input_stream);
-  self->callback(self->user_data);
+  if (self->callback_object != NULL) {
+    self->callback(self->callback_object);
+  }
 }
 
 static void set_error(UtPngDecoder *self, const char *description) {
@@ -1157,11 +1158,6 @@ static size_t decode_chunk(UtPngDecoder *self, UtObject *data) {
 static size_t read_cb(void *user_data, UtObject *data, bool complete) {
   UtPngDecoder *self = user_data;
 
-  if (ut_cancel_is_active(self->cancel)) {
-    ut_input_stream_close(self->input_stream);
-    return 0;
-  }
-
   if (ut_object_implements_error(data)) {
     ut_cstring_ref description = ut_cstring_new_printf(
         "Failed to read PNG data: %s", ut_error_get_description(data));
@@ -1200,7 +1196,7 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
   }
 }
 
-static void done_cb(void *user_data) {}
+static void done_cb(UtObject *object) {}
 
 static void ut_png_decoder_init(UtObject *object) {
   UtPngDecoder *self = (UtPngDecoder *)object;
@@ -1214,7 +1210,7 @@ static void ut_png_decoder_cleanup(UtObject *object) {
   ut_input_stream_close(self->image_data_decoder);
 
   ut_object_unref(self->input_stream);
-  ut_object_unref(self->cancel);
+  ut_object_weak_unref(&self->callback_object);
   ut_object_unref(self->image_data_decoder_input_stream);
   ut_object_unref(self->image_data_decoder);
   ut_object_unref(self->previous_row);
@@ -1233,17 +1229,16 @@ UtObject *ut_png_decoder_new(UtObject *input_stream) {
   return object;
 }
 
-void ut_png_decoder_decode(UtObject *object, UtPngDecodeCallback callback,
-                           void *user_data, UtObject *cancel) {
+void ut_png_decoder_decode(UtObject *object, UtObject *callback_object,
+                           UtPngDecodeCallback callback) {
   assert(ut_object_is_png_decoder(object));
   UtPngDecoder *self = (UtPngDecoder *)object;
 
   assert(self->callback == NULL);
   assert(callback != NULL);
 
+  ut_object_weak_ref(callback_object, &self->callback_object);
   self->callback = callback;
-  self->user_data = user_data;
-  self->cancel = ut_object_ref(cancel);
 
   self->image_data_decoder_input_stream = ut_buffered_input_stream_new();
   self->image_data_decoder =
@@ -1257,7 +1252,8 @@ UtObject *ut_png_decoder_decode_sync(UtObject *object) {
   assert(ut_object_is_png_decoder(object));
   UtPngDecoder *self = (UtPngDecoder *)object;
 
-  ut_png_decoder_decode(object, done_cb, NULL, NULL);
+  UtObjectRef dummy_object = ut_null_new();
+  ut_png_decoder_decode(object, dummy_object, done_cb);
   if (self->error != NULL) {
     return ut_object_ref(self->error);
   }
