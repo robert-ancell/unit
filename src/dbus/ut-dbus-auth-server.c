@@ -19,9 +19,8 @@ typedef struct {
   AuthState state;
   bool authenticated;
   UtObject *error;
+  UtObject *complete_callback_object;
   UtAuthCompleteCallback complete_callback;
-  void *complete_user_data;
-  UtObject *complete_cancel;
 } UtDBusAuthServer;
 
 static void send_auth_message(UtDBusAuthServer *self, const char *message) {
@@ -36,8 +35,8 @@ static void done(UtDBusAuthServer *self) {
 
   ut_input_stream_close(self->input_stream);
 
-  if (!ut_cancel_is_active(self->complete_cancel)) {
-    self->complete_callback(self->complete_user_data,
+  if (self->complete_callback_object != NULL) {
+    self->complete_callback(self->complete_callback_object,
                             ut_object_ref(self->error));
   }
 }
@@ -156,7 +155,7 @@ static void ut_dbus_auth_server_cleanup(UtObject *object) {
   ut_object_unref(self->input_stream);
   ut_object_unref(self->output_stream);
   ut_object_unref(self->error);
-  ut_object_unref(self->complete_cancel);
+  ut_object_weak_unref(&self->complete_callback_object);
 }
 
 static UtObjectInterface object_interface = {.type_name = "UtDBusAuthServer",
@@ -173,8 +172,8 @@ UtObject *ut_dbus_auth_server_new(UtObject *input_stream,
   return object;
 }
 
-void ut_dbus_auth_server_run(UtObject *object, UtAuthCompleteCallback callback,
-                             void *user_data, UtObject *cancel) {
+void ut_dbus_auth_server_run(UtObject *object, UtObject *callback_object,
+                             UtAuthCompleteCallback callback) {
   assert(ut_object_is_dbus_auth_server(object));
   UtDBusAuthServer *self = (UtDBusAuthServer *)object;
 
@@ -182,9 +181,8 @@ void ut_dbus_auth_server_run(UtObject *object, UtAuthCompleteCallback callback,
   self->state = AUTH_STATE_CREDENTIALS;
 
   assert(callback != NULL);
+  ut_object_weak_ref(callback_object, &self->complete_callback_object);
   self->complete_callback = callback;
-  self->complete_user_data = user_data;
-  self->complete_cancel = ut_object_ref(cancel);
 
   ut_input_stream_read(self->input_stream, read_cb, self);
 }

@@ -190,8 +190,8 @@ static size_t messages_cb(void *user_data, UtObject *messages, bool complete) {
   return messages_length;
 }
 
-static void auth_complete_cb(void *user_data, UtObject *error) {
-  UtDBusServerClient *self = user_data;
+static void auth_complete_cb(UtObject *object, UtObject *error) {
+  UtDBusServerClient *self = (UtDBusServerClient *)object;
 
   self->state = DECODER_STATE_MESSAGES;
 
@@ -252,8 +252,8 @@ static void listen_cb(void *user_data, UtObject *socket) {
   client->auth_server =
       ut_dbus_auth_server_new(client->auth_input_stream, client->socket);
 
-  ut_dbus_auth_server_run(client->auth_server, auth_complete_cb, client,
-                          client->cancel);
+  ut_dbus_auth_server_run(client->auth_server, (UtObject *)client,
+                          auth_complete_cb);
 }
 
 static void ut_dbus_server_init(UtObject *object) {
