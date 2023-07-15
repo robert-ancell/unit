@@ -11,7 +11,7 @@ static size_t echo_read_cb(void *user_data, UtObject *data, bool complete) {
   return ut_list_get_length(data);
 }
 
-static void echo_listen_cb(void *user_data, UtObject *socket) {
+static void echo_listen_cb(UtObject *object, UtObject *socket) {
   ut_input_stream_read(socket, echo_read_cb, ut_object_ref(socket));
 }
 
@@ -41,8 +41,9 @@ int main(int argc, char **argv) {
 
   // Set up a socket that echos back requests.
   UtObjectRef echo_socket = ut_tcp_server_socket_new_unix(path);
-  ut_assert_true(ut_tcp_server_socket_listen(echo_socket, echo_listen_cb, NULL,
-                                             NULL, NULL));
+  UtObjectRef dummy_object = ut_null_new();
+  ut_assert_true(ut_tcp_server_socket_listen(echo_socket, dummy_object,
+                                             echo_listen_cb, NULL));
   uint16_t echo_port = ut_tcp_server_socket_get_port(echo_socket);
 
   // Create a socket to send to the echo port.

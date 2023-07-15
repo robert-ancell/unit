@@ -18,9 +18,8 @@ typedef struct {
   uint16_t port;
   UtObject *fd;
   UtObject *watch_cancel;
+  UtObject *listen_callback_object;
   UtTcpServerSocketListenCallback listen_callback;
-  void *listen_user_data;
-  UtObject *listen_cancel;
 } UtTcpServerSocket;
 
 static void ut_tcp_server_socket_cleanup(UtObject *object) {
@@ -31,24 +30,20 @@ static void ut_tcp_server_socket_cleanup(UtObject *object) {
     ut_cancel_activate(self->watch_cancel);
   }
   ut_object_unref(self->watch_cancel);
-  ut_object_unref(self->listen_cancel);
+  ut_object_weak_unref(&self->listen_callback_object);
 }
 
 static void listen_cb(void *user_data) {
   UtTcpServerSocket *self = user_data;
-
-  // Stop listening for connections when the consumer no longer wants them.
-  if (ut_cancel_is_active(self->listen_cancel)) {
-    ut_cancel_activate(self->watch_cancel);
-    return;
-  }
 
   int fd = accept(ut_file_descriptor_get_fd(self->fd), NULL, NULL);
   assert(fd >= 0);
 
   UtObjectRef fd_object = ut_file_descriptor_new(fd);
   UtObjectRef child_socket = ut_tcp_socket_new_from_fd(fd_object);
-  self->listen_callback(self->listen_user_data, child_socket);
+  if (self->listen_callback_object != NULL) {
+    self->listen_callback(self->listen_callback_object, child_socket);
+  }
 }
 
 static UtObjectInterface object_interface = {
@@ -82,9 +77,8 @@ UtObject *ut_tcp_server_socket_new_unix(const char *path) {
   return socket_new(AF_UNIX, path, 0);
 }
 
-bool ut_tcp_server_socket_listen(UtObject *object,
+bool ut_tcp_server_socket_listen(UtObject *object, UtObject *callback_object,
                                  UtTcpServerSocketListenCallback callback,
-                                 void *user_data, UtObject *cancel,
                                  UtObject **error) {
   assert(ut_object_is_tcp_server_socket(object));
   UtTcpServerSocket *self = (UtTcpServerSocket *)object;
@@ -92,9 +86,8 @@ bool ut_tcp_server_socket_listen(UtObject *object,
   assert(self->listen_callback == NULL);
   assert(callback != NULL);
 
+  ut_object_weak_ref(callback_object, &self->listen_callback_object);
   self->listen_callback = callback;
-  self->listen_user_data = user_data;
-  self->listen_cancel = ut_object_ref(cancel);
 
   struct sockaddr_in address4;
   struct sockaddr_in6 address6;

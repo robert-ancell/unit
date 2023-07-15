@@ -5,7 +5,7 @@
 
 #pragma once
 
-typedef void (*UtTcpServerSocketListenCallback)(void *user_data,
+typedef void (*UtTcpServerSocketListenCallback)(UtObject *object,
                                                 UtObject *socket);
 
 UtObject *ut_tcp_server_socket_new_ipv4(uint16_t port);
@@ -14,9 +14,8 @@ UtObject *ut_tcp_server_socket_new_ipv6(uint16_t port);
 
 UtObject *ut_tcp_server_socket_new_unix(const char *path);
 
-bool ut_tcp_server_socket_listen(UtObject *object,
+bool ut_tcp_server_socket_listen(UtObject *object, UtObject *callback_object,
                                  UtTcpServerSocketListenCallback callback,
-                                 void *user_data, UtObject *cancel,
                                  UtObject **error);
 
 uint16_t ut_tcp_server_socket_get_port(UtObject *object);

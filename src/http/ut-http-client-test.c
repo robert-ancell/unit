@@ -18,7 +18,7 @@ static size_t http_read_cb(void *user_data, UtObject *data, bool complete) {
   return ut_list_get_length(data);
 }
 
-static void http_listen_cb(void *user_data, UtObject *socket) {
+static void http_listen_cb(UtObject *object, UtObject *socket) {
   ut_input_stream_read(socket, http_read_cb, ut_object_ref(socket));
 }
 
@@ -50,13 +50,13 @@ static void http_response_cb(UtObject *object, UtObject *response) {
 int main(int argc, char **argv) {
   // Set up a test HTTP server
   UtObjectRef http_socket = ut_tcp_server_socket_new_ipv4(0);
-  ut_assert_true(ut_tcp_server_socket_listen(http_socket, http_listen_cb, NULL,
-                                             NULL, NULL));
+  UtObjectRef dummy_object = ut_null_new();
+  ut_assert_true(ut_tcp_server_socket_listen(http_socket, dummy_object,
+                                             http_listen_cb, NULL));
   uint16_t http_port = ut_tcp_server_socket_get_port(http_socket);
 
   UtObjectRef http_client = ut_http_client_new();
   ut_cstring_ref uri = ut_cstring_new_printf("http://127.0.0.1:%d", http_port);
-  UtObjectRef dummy_object = ut_null_new();
   ut_http_client_send_request(http_client, "GET", uri, NULL, dummy_object,
                               http_response_cb);
 

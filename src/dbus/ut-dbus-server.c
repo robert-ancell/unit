@@ -71,7 +71,6 @@ struct _UtDBusServer {
   UtObject *clients;
   int next_client_index;
   int next_message_serial;
-  UtObject *cancel;
 };
 
 static const char *get_unique_name(UtDBusServerClient *self) {
@@ -233,8 +232,8 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
   return offset;
 }
 
-static void listen_cb(void *user_data, UtObject *socket) {
-  UtDBusServer *self = user_data;
+static void listen_cb(UtObject *object, UtObject *socket) {
+  UtDBusServer *self = (UtDBusServer *)object;
 
   ut_cstring_ref unique_name =
       ut_cstring_new_printf(":1.%d", self->next_client_index);
@@ -261,15 +260,12 @@ static void ut_dbus_server_init(UtObject *object) {
   self->sockets = ut_list_new();
   self->clients = ut_object_list_new();
   self->next_message_serial = 1;
-  self->cancel = ut_cancel_new();
 }
 
 static void ut_dbus_server_cleanup(UtObject *object) {
   UtDBusServer *self = (UtDBusServer *)object;
-  ut_cancel_activate(self->cancel);
   ut_object_unref(self->sockets);
   ut_object_unref(self->clients);
-  ut_object_unref(self->cancel);
 }
 
 static UtObjectInterface object_interface = {.type_name = "UtDBusServer",
@@ -286,8 +282,7 @@ bool ut_dbus_server_listen_unix(UtObject *object, const char *path,
   UtDBusServer *self = (UtDBusServer *)object;
   UtObjectRef socket = ut_tcp_server_socket_new_unix(path);
   ut_list_append(self->sockets, socket);
-  return ut_tcp_server_socket_listen(socket, listen_cb, self, self->cancel,
-                                     error);
+  return ut_tcp_server_socket_listen(socket, object, listen_cb, error);
 }
 
 bool ut_object_is_dbus_server(UtObject *object) {
