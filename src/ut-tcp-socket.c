@@ -147,8 +147,8 @@ static UtInputStreamInterface input_stream_interface = {
     .read = ut_tcp_socket_read, .close = ut_tcp_socket_close};
 
 static void ut_tcp_socket_write(UtObject *object, UtObject *data,
-                                UtOutputStreamCallback callback,
-                                void *user_data, UtObject *cancel) {
+                                UtObject *callback_object,
+                                UtOutputStreamCallback callback) {
   UtTcpSocket *self = (UtTcpSocket *)object;
 
   UtObject *d;

@@ -158,8 +158,8 @@ static UtObject *ut_uint8_array_copy(UtObject *object) {
 }
 
 static void ut_uint8_array_write(UtObject *object, UtObject *data,
-                                 UtOutputStreamCallback callback,
-                                 void *user_data, UtObject *cancel) {
+                                 UtObject *callback_object,
+                                 UtOutputStreamCallback callback) {
   UtUint8Array *self = (UtUint8Array *)object;
 
   if (ut_object_is_uint8_array(data)) {
@@ -175,7 +175,7 @@ static void ut_uint8_array_write(UtObject *object, UtObject *data,
   }
 
   if (callback != NULL) {
-    callback(user_data, NULL);
+    callback(callback_object, NULL);
   }
 }
 

@@ -97,8 +97,8 @@ static UtInputStreamInterface input_stream_interface = {
     .read = ut_udp_socket_read, .close = ut_udp_socket_close};
 
 static void ut_udp_socket_write(UtObject *object, UtObject *datagram,
-                                UtOutputStreamCallback callback,
-                                void *user_data, UtObject *cancel) {
+                                UtObject *callback_object,
+                                UtOutputStreamCallback callback) {
   UtUdpSocket *self = (UtUdpSocket *)object;
 
   UtObject *address_object = ut_udp_datagram_get_address(datagram);

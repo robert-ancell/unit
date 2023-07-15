@@ -12,9 +12,8 @@ typedef struct _WriteBlock WriteBlock;
 struct _WriteBlock {
   UtObject *data;
   size_t n_written;
+  UtObject *callback_object;
   UtOutputStreamCallback callback;
-  void *user_data;
-  UtObject *cancel;
   WriteBlock *next;
 };
 
@@ -27,16 +26,15 @@ typedef struct {
 } UtFdOutputStream;
 
 static void add_block(UtFdOutputStream *self, UtObject *data,
-                      UtOutputStreamCallback callback, void *user_data,
-                      UtObject *cancel) {
+                      UtObject *callback_object,
+                      UtOutputStreamCallback callback) {
   WriteBlock *block;
 
   block = malloc(sizeof(WriteBlock));
   block->data = ut_object_ref(data);
   block->n_written = 0;
+  ut_object_weak_ref(callback_object, &block->callback_object);
   block->callback = callback;
-  block->user_data = user_data;
-  block->cancel = ut_object_ref(cancel);
   block->next = NULL;
 
   if (self->last_block != NULL) {
@@ -49,7 +47,7 @@ static void add_block(UtFdOutputStream *self, UtObject *data,
 
 static void free_block(WriteBlock *block) {
   ut_object_unref(block->data);
-  ut_object_unref(block->cancel);
+  ut_object_weak_unref(&block->callback_object);
   free(block);
 }
 
@@ -81,8 +79,8 @@ static void write_cb(void *user_data) {
       self->last_block = NULL;
     }
 
-    if (block->callback != NULL) {
-      block->callback(block->user_data, NULL);
+    if (block->callback_object != NULL && block->callback != NULL) {
+      block->callback(block->callback_object, NULL);
     }
 
     free_block(block);
@@ -109,11 +107,11 @@ static void ut_fd_output_stream_cleanup(UtObject *object) {
 }
 
 static void ut_fd_output_stream_write(UtObject *object, UtObject *data,
-                                      UtOutputStreamCallback callback,
-                                      void *user_data, UtObject *cancel) {
+                                      UtObject *callback_object,
+                                      UtOutputStreamCallback callback) {
   UtFdOutputStream *self = (UtFdOutputStream *)object;
 
-  add_block(self, data, callback, user_data, cancel);
+  add_block(self, data, callback_object, callback);
 
   if (self->watch_cancel == NULL) {
     self->watch_cancel = ut_cancel_new();
