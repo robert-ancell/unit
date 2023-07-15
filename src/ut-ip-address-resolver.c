@@ -7,36 +7,32 @@
 typedef struct {
   UtObject object;
   char *name;
+  UtObject *callback_object;
   UtIPAddressResolverLookupCallback callback;
-  void *user_data;
-  UtObject *cancel;
 } LookupData;
 
 static void lookup_data_cleanup(UtObject *object) {
   LookupData *self = (LookupData *)object;
   free(self->name);
-  ut_object_unref(self->cancel);
+  ut_object_weak_unref(&self->callback_object);
 }
 
 static UtObjectInterface lookup_data_object_interface = {
     .type_name = "LookupData", .cleanup = lookup_data_cleanup};
 
-static UtObject *lookup_data_new(const char *name,
-                                 UtIPAddressResolverLookupCallback callback,
-                                 void *user_data, UtObject *cancel) {
+static UtObject *lookup_data_new(const char *name, UtObject *callback_object,
+                                 UtIPAddressResolverLookupCallback callback) {
   UtObject *object =
       ut_object_new(sizeof(LookupData), &lookup_data_object_interface);
   LookupData *self = (LookupData *)object;
   self->name = ut_cstring_new(name);
+  ut_object_weak_ref(callback_object, &self->callback_object);
   self->callback = callback;
-  self->user_data = user_data;
-  self->cancel = ut_object_ref(cancel);
   return object;
 }
 
 typedef struct {
   UtObject object;
-  UtObject *cancel;
 } UtIPAddressResolver;
 
 static UtObject *lookup_thread_cb(UtObject *data_) {
@@ -69,8 +65,8 @@ static UtObject *lookup_thread_cb(UtObject *data_) {
 static void lookup_result_cb(UtObject *object, UtObject *result) {
   LookupData *data = (LookupData *)object;
 
-  if (!ut_cancel_is_active(data->cancel) && data->callback != NULL) {
-    data->callback(data->user_data, result);
+  if (data->callback_object != NULL && data->callback != NULL) {
+    data->callback(data->callback_object, result);
   }
 }
 
@@ -82,12 +78,12 @@ UtObject *ut_ip_address_resolver_new() {
 }
 
 void ut_ip_address_resolver_lookup(UtObject *object, const char *name,
-                                   UtIPAddressResolverLookupCallback callback,
-                                   void *user_data, UtObject *cancel) {
+                                   UtObject *callback_object,
+                                   UtIPAddressResolverLookupCallback callback) {
   assert(ut_object_is_ip_address_resolver(object));
 
   // FIXME: Cancel thread if this UtIPAddressResolver is deleted.
-  UtObject *data = lookup_data_new(name, callback, user_data, cancel);
+  UtObject *data = lookup_data_new(name, callback_object, callback);
   ut_event_loop_add_worker_thread(lookup_thread_cb, data, data,
                                   lookup_result_cb);
 }

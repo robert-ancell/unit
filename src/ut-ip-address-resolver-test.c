@@ -2,7 +2,7 @@
 
 #include "ut.h"
 
-static void resolve_cb(void *user_data, UtObject *addresses) {
+static void resolve_cb(UtObject *object, UtObject *addresses) {
   ut_cstring_ref text = ut_object_to_string(addresses);
   printf("%s\n", text);
   ut_event_loop_return(NULL);
@@ -10,8 +10,9 @@ static void resolve_cb(void *user_data, UtObject *addresses) {
 
 int main(int argc, char **argv) {
   UtObjectRef resolver = ut_ip_address_resolver_new();
-  ut_ip_address_resolver_lookup(resolver, "example.com", resolve_cb, NULL,
-                                NULL);
+  UtObjectRef dummy_object = ut_null_new();
+  ut_ip_address_resolver_lookup(resolver, "example.com", dummy_object,
+                                resolve_cb);
 
   ut_event_loop_run();
 

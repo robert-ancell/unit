@@ -70,23 +70,17 @@ typedef struct {
   UtObject object;
   UtObject *ip_address_resolver;
   UtObject *requests;
-  UtObject *cancel;
 } UtHttpClient;
 
 static void ut_http_client_init(UtObject *object) {
   UtHttpClient *self = (UtHttpClient *)object;
   self->ip_address_resolver = ut_ip_address_resolver_new();
   self->requests = ut_object_list_new();
-  self->cancel = ut_cancel_new();
 }
 
 static void ut_http_client_cleanup(UtObject *object) {
   UtHttpClient *self = (UtHttpClient *)object;
-
-  ut_cancel_activate(self->cancel);
-
   ut_object_unref(self->ip_address_resolver);
-  ut_object_unref(self->cancel);
 }
 
 static size_t read_cb(UtObject *object, UtObject *data, bool complete) {
@@ -131,12 +125,12 @@ static void connect_cb(UtObject *object, UtObject *error) {
   ut_input_stream_read(request->tcp_socket, object, read_cb);
 }
 
-static void lookup_cb(void *user_data, UtObject *addresses) {
-  HttpRequest *request = user_data;
+static void lookup_cb(UtObject *object, UtObject *addresses) {
+  HttpRequest *request = (HttpRequest *)object;
 
   UtObjectRef address = ut_list_get_first(addresses);
   request->tcp_socket = ut_tcp_socket_new(address, request->port);
-  ut_tcp_socket_connect(request->tcp_socket, (UtObject *)request, connect_cb);
+  ut_tcp_socket_connect(request->tcp_socket, object, connect_cb);
 }
 
 static UtObjectInterface object_interface = {.type_name = "UtHttpClient",
@@ -171,8 +165,8 @@ void ut_http_client_send_request(UtObject *object, const char *method,
   UtObjectRef request = http_request_new(host, port, method, path, body,
                                          callback_object, callback);
   ut_list_append(self->requests, request);
-  ut_ip_address_resolver_lookup(self->ip_address_resolver, host, lookup_cb,
-                                request, self->cancel);
+  ut_ip_address_resolver_lookup(self->ip_address_resolver, host, request,
+                                lookup_cb);
 }
 
 bool ut_object_is_http_client(UtObject *object) {
