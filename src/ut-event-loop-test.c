@@ -16,7 +16,7 @@ static void delay5_cb(void *user_data) {
 
 static void timer_cb(void *user_data) { printf("timer\n"); }
 
-static void *thread_cb(void *data) {
+static void *thread_cb(UtObject *object) {
   sleep(2);
   return ut_cstring_new("Hello World");
 }
@@ -40,7 +40,7 @@ int main(int argc, char **argv) {
   ut_event_loop_add_delay(3, delay3_cb, NULL, NULL);
   ut_event_loop_add_timer(1, timer_cb, NULL, timer_cancel);
 
-  ut_event_loop_add_worker_thread(thread_cb, NULL, NULL, thread_result_cb, NULL,
+  ut_event_loop_add_worker_thread(thread_cb, NULL, thread_result_cb, NULL,
                                   NULL);
 
   ut_event_loop_add_read_watch(0, stdin_cb, NULL, NULL);

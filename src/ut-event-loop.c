@@ -34,8 +34,7 @@ struct _WorkerThread {
   int complete_write_fd;
   int complete_read_fd;
   UtThreadCallback thread_callback;
-  void *thread_data;
-  UtEventLoopCallback thread_data_cleanup;
+  UtObject *thread_data;
   UtThreadResultCallback result_callback;
   void *user_data;
   UtObject *cancel;
@@ -154,7 +153,6 @@ static FdWatch *remove_cancelled_watches(FdWatch *watches) {
 
 static WorkerThread *worker_thread_new(UtThreadCallback thread_callback,
                                        void *thread_data,
-                                       UtEventLoopCallback thread_data_cleanup,
                                        UtThreadResultCallback result_callback,
                                        void *user_data, UtObject *cancel) {
   WorkerThread *thread = malloc(sizeof(WorkerThread));
@@ -165,7 +163,6 @@ static WorkerThread *worker_thread_new(UtThreadCallback thread_callback,
   thread->complete_read_fd = fds[0];
   thread->thread_callback = thread_callback;
   thread->thread_data = thread_data;
-  thread->thread_data_cleanup = thread_data_cleanup;
   thread->result_callback = result_callback;
   thread->user_data = user_data;
   thread->cancel = ut_object_ref(cancel);
@@ -176,9 +173,7 @@ static WorkerThread *worker_thread_new(UtThreadCallback thread_callback,
 static void free_worker_thread(WorkerThread *thread) {
   close(thread->complete_write_fd);
   close(thread->complete_read_fd);
-  if (thread->thread_data_cleanup != NULL) {
-    thread->thread_data_cleanup(thread->thread_data);
-  }
+  ut_object_unref(thread->thread_data);
   ut_object_unref(thread->cancel);
   free(thread);
 }
@@ -238,14 +233,12 @@ static void *thread_cb(void *data) {
 }
 
 void ut_event_loop_add_worker_thread(UtThreadCallback thread_callback,
-                                     void *thread_data,
-                                     UtEventLoopCallback thread_data_cleanup,
+                                     UtObject *thread_data,
                                      UtThreadResultCallback result_callback,
                                      void *user_data, UtObject *cancel) {
   EventLoop *loop = get_loop();
-  WorkerThread *thread =
-      worker_thread_new(thread_callback, thread_data, thread_data_cleanup,
-                        result_callback, user_data, cancel);
+  WorkerThread *thread = worker_thread_new(thread_callback, thread_data,
+                                           result_callback, user_data, cancel);
   thread->next = loop->worker_threads;
   loop->worker_threads = thread;
 
