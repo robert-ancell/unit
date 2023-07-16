@@ -333,8 +333,9 @@ UtObject *ut_event_loop_run() {
          thread = next_thread) {
       next_thread = thread->next;
       if (FD_ISSET(thread->complete_read_fd, &read_fds)) {
-        void *result;
-        assert(pthread_join(thread->thread_id, &result) == 0);
+        void *r;
+        assert(pthread_join(thread->thread_id, &r) == 0);
+        UtObjectRef result = r;
         if (thread->callback_object != NULL &&
             thread->result_callback != NULL) {
           thread->result_callback(thread->callback_object, result);

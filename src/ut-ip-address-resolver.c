@@ -39,22 +39,15 @@ typedef struct {
   UtObject *cancel;
 } UtIPAddressResolver;
 
-static void *lookup_thread_cb(UtObject *data_) {
+static UtObject *lookup_thread_cb(UtObject *data_) {
   LookupData *data = (LookupData *)data_;
 
   struct addrinfo hints = {.ai_socktype = SOCK_STREAM,
                            .ai_protocol = IPPROTO_TCP};
   struct addrinfo *addresses;
   getaddrinfo(data->name, NULL, &hints, &addresses);
-  return addresses;
-}
 
-static void lookup_result_cb(UtObject *object, void *result) {
-  LookupData *data = (LookupData *)object;
-  struct addrinfo *addresses = result;
-
-  assert(addresses != NULL);
-  UtObjectRef ip_addresses = ut_list_new();
+  UtObject *ip_addresses = ut_list_new();
   for (struct addrinfo *address = addresses; address != NULL;
        address = address->ai_next) {
     if (address->ai_family == AF_INET) {
@@ -68,11 +61,17 @@ static void lookup_result_cb(UtObject *object, void *result) {
     }
   }
 
-  if (!ut_cancel_is_active(data->cancel) && data->callback != NULL) {
-    data->callback(data->user_data, ip_addresses);
-  }
-
   freeaddrinfo(addresses);
+
+  return ip_addresses;
+}
+
+static void lookup_result_cb(UtObject *object, UtObject *result) {
+  LookupData *data = (LookupData *)object;
+
+  if (!ut_cancel_is_active(data->cancel) && data->callback != NULL) {
+    data->callback(data->user_data, result);
+  }
 }
 
 static UtObjectInterface object_interface = {.type_name =

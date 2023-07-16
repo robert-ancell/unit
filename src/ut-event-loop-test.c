@@ -16,15 +16,13 @@ static void delay5_cb(void *user_data) {
 
 static void timer_cb(void *user_data) { printf("timer\n"); }
 
-static void *thread_cb(UtObject *object) {
+static UtObject *thread_cb(UtObject *object) {
   sleep(2);
-  return ut_cstring_new("Hello World");
+  return ut_string_new("Hello World");
 }
 
-static void thread_result_cb(UtObject *object, void *result) {
-  char *result_ = result;
-  printf("Thread result: '%s'\n", result_);
-  free(result_);
+static void thread_result_cb(UtObject *object, UtObject *result) {
+  printf("Thread result: '%s'\n", ut_string_get_text(result));
 }
 
 static void stdin_cb(void *user_data) {

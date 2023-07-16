@@ -6,8 +6,8 @@
 #pragma once
 
 typedef void (*UtEventLoopCallback)(void *user_data);
-typedef void *(*UtThreadCallback)(UtObject *data);
-typedef void (*UtThreadResultCallback)(UtObject *object, void *result);
+typedef UtObject *(*UtThreadCallback)(UtObject *data);
+typedef void (*UtThreadResultCallback)(UtObject *object, UtObject *result);
 
 void ut_event_loop_add_delay(time_t seconds, UtEventLoopCallback callback,
                              void *user_data, UtObject *cancel);
