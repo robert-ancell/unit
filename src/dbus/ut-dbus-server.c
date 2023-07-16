@@ -24,13 +24,11 @@ typedef struct {
   UtObject *message_decoder;
   // FIXME bool received_hello;
   UtObject *names;
-  UtObject *cancel;
 } UtDBusServerClient;
 
 static void ut_dbus_server_client_init(UtObject *object) {
   UtDBusServerClient *self = (UtDBusServerClient *)object;
   self->names = ut_string_list_new();
-  self->cancel = ut_cancel_new();
 }
 
 static void ut_dbus_server_client_cleanup(UtObject *object) {
@@ -38,7 +36,6 @@ static void ut_dbus_server_client_cleanup(UtObject *object) {
 
   ut_input_stream_close(self->socket);
   ut_input_stream_close(self->message_decoder);
-  ut_cancel_activate(self->cancel);
 
   ut_object_unref(self->socket);
   ut_object_unref(self->auth_input_stream);
@@ -46,7 +43,6 @@ static void ut_dbus_server_client_cleanup(UtObject *object) {
   ut_object_unref(self->auth_server);
   ut_object_unref(self->message_decoder);
   ut_object_unref(self->names);
-  ut_object_unref(self->cancel);
 }
 
 static UtObjectInterface client_object_interface = {
