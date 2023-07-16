@@ -42,7 +42,8 @@ int main(int argc, char **argv) {
   ut_event_loop_add_worker_thread(thread_cb, NULL, dummy_object,
                                   thread_result_cb);
 
-  ut_event_loop_add_read_watch(0, stdin_cb, NULL, NULL);
+  UtObjectRef fd = ut_file_descriptor_new(0);
+  ut_event_loop_add_read_watch(fd, stdin_cb, NULL, NULL);
 
   ut_event_loop_run();
 
