@@ -9,15 +9,14 @@
 
 #include "ut.h"
 
-typedef struct _Timeout Timeout;
-struct _Timeout {
+typedef struct {
+  UtObject object;
   struct timespec when;
   struct timespec frequency;
   UtEventLoopCallback callback;
   void *user_data;
   UtObject *cancel;
-  Timeout *next;
-};
+} Timeout;
 
 typedef struct {
   UtObject object;
@@ -40,7 +39,7 @@ typedef struct {
 
 typedef struct {
   UtObject object;
-  Timeout *timeouts;
+  UtObject *timeouts;
   UtObject *read_watches;
   UtObject *write_watches;
   UtObject *worker_threads;
@@ -73,43 +72,43 @@ static void time_delta(struct timespec *a, struct timespec *b,
   }
 }
 
-static void free_timeout(Timeout *timeout) {
-  ut_object_unref(timeout->cancel);
-  free(timeout);
+static void timeout_cleanup(UtObject *object) {
+  Timeout *self = (Timeout *)object;
+  ut_object_unref(self->cancel);
 }
 
+static UtObjectInterface timeout_object_interface = {
+    .type_name = "Timeout", .cleanup = timeout_cleanup};
+
 static void insert_timeout(EventLoop *loop, Timeout *timeout) {
-  Timeout *prev_timeout = NULL;
-  for (Timeout *next_timeout = loop->timeouts; next_timeout != NULL;
-       next_timeout = next_timeout->next) {
+  size_t timeouts_length = ut_list_get_length(loop->timeouts);
+  size_t index = 0;
+  while (index < timeouts_length) {
+    Timeout *next_timeout =
+        (Timeout *)ut_object_list_get_element(loop->timeouts, index);
     if (time_compare(&next_timeout->when, &timeout->when) > 0) {
       break;
     }
-    prev_timeout = next_timeout;
+    index++;
   }
-  if (prev_timeout != NULL) {
-    timeout->next = prev_timeout->next;
-    prev_timeout->next = timeout;
-  } else {
-    timeout->next = loop->timeouts;
-    loop->timeouts = timeout;
-  }
+  ut_list_insert(loop->timeouts, index, (UtObject *)timeout);
 }
 
 static void add_timeout(EventLoop *loop, time_t seconds, bool repeat,
                         UtEventLoopCallback callback, void *user_data,
                         UtObject *cancel) {
-  Timeout *t = malloc(sizeof(Timeout));
-  assert(clock_gettime(CLOCK_MONOTONIC, &t->when) == 0);
-  t->when.tv_sec += seconds;
-  t->frequency.tv_sec = repeat ? seconds : 0;
-  t->frequency.tv_nsec = 0;
-  t->callback = callback;
-  t->user_data = user_data;
-  t->cancel = ut_object_ref(cancel);
-  t->next = NULL;
+  UtObjectRef object =
+      ut_object_new(sizeof(Timeout), &timeout_object_interface);
+  Timeout *self = (Timeout *)object;
+  assert(clock_gettime(CLOCK_MONOTONIC, &self->when) == 0);
+  self->when.tv_sec += seconds;
+  self->frequency.tv_sec = repeat ? seconds : 0;
+  self->frequency.tv_nsec = 0;
+  self->callback = callback;
+  self->user_data = user_data;
+  self->cancel = ut_object_ref(cancel);
 
-  insert_timeout(loop, t);
+  insert_timeout(loop, self);
 }
 
 static void fd_watch_cleanup(UtObject *object) {
@@ -162,6 +161,7 @@ static UtObject *worker_thread_new(UtThreadCallback thread_callback,
 
 static void event_loop_init(UtObject *object) {
   EventLoop *self = (EventLoop *)object;
+  self->timeouts = ut_list_new();
   self->read_watches = ut_list_new();
   self->write_watches = ut_list_new();
   self->worker_threads = ut_list_new();
@@ -169,6 +169,7 @@ static void event_loop_init(UtObject *object) {
 
 static void event_loop_cleanup(UtObject *object) {
   EventLoop *self = (EventLoop *)object;
+  ut_object_unref(self->timeouts);
   ut_object_unref(self->read_watches);
   ut_object_unref(self->write_watches);
   ut_object_unref(self->worker_threads);
@@ -249,40 +250,71 @@ void ut_event_loop_return(UtObject *object) {
 UtObject *ut_event_loop_run() {
   EventLoop *self = get_loop();
   while (!self->complete) {
-    // Do callbacks for any timers that have expired and work out time to next
-    // timer.
-    const struct timespec *timeout = NULL;
-    struct timespec first_timeout;
-    while (self->timeouts != NULL && timeout == NULL) {
-      Timeout *t = self->timeouts;
-      struct timespec now;
-      assert(clock_gettime(CLOCK_MONOTONIC, &now) == 0);
+    // Check for expired timeouts.
+    struct timespec now;
+    assert(clock_gettime(CLOCK_MONOTONIC, &now) == 0);
+    UtObjectRef expired_timeouts = ut_object_list_new();
+    UtObjectRef repeat_timeouts = ut_object_list_new();
+    size_t timeouts_length = ut_list_get_length(self->timeouts);
+    while (timeouts_length > 0) {
+      UtObject *timeout_object = ut_object_list_get_element(self->timeouts, 0);
+      Timeout *t = (Timeout *)timeout_object;
 
-      bool is_cancelled = ut_cancel_is_active(t->cancel);
-      if (is_cancelled || time_compare(&t->when, &now) <= 0) {
-        if (!is_cancelled) {
-          t->callback(t->user_data);
-        }
-
-        self->timeouts = t->next;
-        t->next = NULL;
-
-        bool repeats = t->frequency.tv_sec != 0 || t->frequency.tv_nsec != 0;
-        if (is_cancelled || !repeats) {
-          free_timeout(t);
-        } else {
-          t->when.tv_sec += t->frequency.tv_sec;
-          t->when.tv_nsec += t->frequency.tv_nsec;
-          if (t->when.tv_nsec > 1000000000) {
-            t->when.tv_sec++;
-            t->when.tv_nsec -= 1000000000;
-          }
-          insert_timeout(self, t);
-        }
-      } else {
-        time_delta(&now, &t->when, &first_timeout);
-        timeout = &first_timeout;
+      // All other timers are yet to expire.
+      if (time_compare(&t->when, &now) > 0) {
+        break;
       }
+
+      ut_list_append(expired_timeouts, timeout_object);
+      bool repeats = t->frequency.tv_sec != 0 || t->frequency.tv_nsec != 0;
+      if (repeats) {
+        t->when.tv_sec += t->frequency.tv_sec;
+        t->when.tv_nsec += t->frequency.tv_nsec;
+        if (t->when.tv_nsec > 1000000000) {
+          t->when.tv_sec++;
+          t->when.tv_nsec -= 1000000000;
+        }
+        ut_list_append(repeat_timeouts, timeout_object);
+      }
+      ut_list_remove(self->timeouts, 0, 1);
+      timeouts_length--;
+    }
+
+    // Do callbacks for any timers that have expired.
+    size_t expired_timeouts_length = ut_list_get_length(expired_timeouts);
+    for (size_t i = 0; i < expired_timeouts_length; i++) {
+      Timeout *t = (Timeout *)ut_object_list_get_element(expired_timeouts, i);
+      if (!ut_cancel_is_active(t->cancel)) {
+        t->callback(t->user_data);
+      }
+    }
+
+    // Put in repeated timeouts.
+    size_t repeat_timeouts_length = ut_list_get_length(repeat_timeouts);
+    for (size_t i = 0; i < repeat_timeouts_length; i++) {
+      Timeout *t = (Timeout *)ut_object_list_get_element(repeat_timeouts, i);
+      insert_timeout(self, t);
+    }
+
+    // Remove any cancelled timeouts.
+    timeouts_length = ut_list_get_length(self->timeouts);
+    for (size_t i = 0; i < timeouts_length;) {
+      Timeout *t = (Timeout *)ut_object_list_get_element(self->timeouts, i);
+      if (ut_cancel_is_active(t->cancel)) {
+        ut_list_remove(self->timeouts, i, 1);
+        timeouts_length--;
+      } else {
+        i++;
+      }
+    }
+
+    // Next wait time is time to the next timeout.
+    const struct timespec *timeout = NULL;
+    struct timespec next_timeout;
+    if (timeouts_length > 0) {
+      Timeout *t = (Timeout *)ut_object_list_get_element(self->timeouts, 0);
+      time_delta(&now, &t->when, &next_timeout);
+      timeout = &next_timeout;
     }
 
     if (self->complete) {
@@ -404,13 +436,6 @@ UtObject *ut_event_loop_run() {
   }
 
   UtObjectRef return_value = ut_object_ref(self->return_value);
-
-  Timeout *next_timeout;
-  for (Timeout *timeout = self->timeouts; timeout != NULL;
-       timeout = next_timeout) {
-    next_timeout = timeout->next;
-    free_timeout(timeout);
-  }
 
   ut_object_clear(&loop);
 
