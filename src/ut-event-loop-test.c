@@ -6,16 +6,16 @@
 
 static UtObject *timer = NULL;
 
-static void delay2_cb(void *user_data) { printf("delay 2s\n"); }
+static void delay2_cb(UtObject *object) { printf("delay 2s\n"); }
 
-static void delay3_cb(void *user_data) { printf("delay 3s\n"); }
+static void delay3_cb(UtObject *object) { printf("delay 3s\n"); }
 
-static void delay5_cb(void *user_data) {
+static void delay5_cb(UtObject *object) {
   printf("delay 5s\n");
   ut_event_loop_cancel_timer(timer);
 }
 
-static void timer_cb(void *user_data) { printf("timer\n"); }
+static void timer_cb(UtObject *object) { printf("timer\n"); }
 
 static UtObject *thread_cb(UtObject *object) {
   sleep(2);
@@ -33,12 +33,15 @@ static void stdin_cb(void *user_data) {
 }
 
 int main(int argc, char **argv) {
-  UtObjectRef delay2_timer = ut_event_loop_add_delay(2, delay2_cb, NULL, NULL);
-  UtObjectRef delay5_timer = ut_event_loop_add_delay(5, delay5_cb, NULL, NULL);
-  UtObjectRef delay3_timer = ut_event_loop_add_delay(3, delay3_cb, NULL, NULL);
-  timer = ut_event_loop_add_timer(1, timer_cb, NULL, NULL);
-
   UtObjectRef dummy_object = ut_null_new();
+  UtObjectRef delay2_timer =
+      ut_event_loop_add_delay(2, dummy_object, delay2_cb);
+  UtObjectRef delay5_timer =
+      ut_event_loop_add_delay(5, dummy_object, delay5_cb);
+  UtObjectRef delay3_timer =
+      ut_event_loop_add_delay(3, dummy_object, delay3_cb);
+  timer = ut_event_loop_add_timer(1, dummy_object, timer_cb);
+
   ut_event_loop_add_worker_thread(thread_cb, NULL, dummy_object,
                                   thread_result_cb);
 

@@ -13,9 +13,8 @@ typedef struct {
   UtObject object;
   struct timespec when;
   struct timespec frequency;
-  UtEventLoopCallback callback;
-  void *user_data;
-  UtObject *cancel;
+  UtObject *callback_object;
+  UtEventLoopTimerCallback callback;
   bool cancelled;
 } Timeout;
 
@@ -75,7 +74,7 @@ static void time_delta(struct timespec *a, struct timespec *b,
 
 static void timeout_cleanup(UtObject *object) {
   Timeout *self = (Timeout *)object;
-  ut_object_unref(self->cancel);
+  ut_object_weak_unref(&self->callback_object);
 }
 
 static UtObjectInterface timeout_object_interface = {
@@ -96,17 +95,16 @@ static void insert_timeout(EventLoop *loop, Timeout *timeout) {
 }
 
 static UtObject *add_timeout(EventLoop *loop, time_t seconds, bool repeat,
-                             UtEventLoopCallback callback, void *user_data,
-                             UtObject *cancel) {
+                             UtObject *callback_object,
+                             UtEventLoopTimerCallback callback) {
   UtObject *object = ut_object_new(sizeof(Timeout), &timeout_object_interface);
   Timeout *self = (Timeout *)object;
   assert(clock_gettime(CLOCK_MONOTONIC, &self->when) == 0);
   self->when.tv_sec += seconds;
   self->frequency.tv_sec = repeat ? seconds : 0;
   self->frequency.tv_nsec = 0;
+  ut_object_weak_ref(callback_object, &self->callback_object);
   self->callback = callback;
-  self->user_data = user_data;
-  self->cancel = ut_object_ref(cancel);
 
   insert_timeout(loop, self);
 
@@ -191,16 +189,16 @@ static EventLoop *get_loop() {
   return (EventLoop *)loop;
 }
 
-UtObject *ut_event_loop_add_delay(time_t seconds, UtEventLoopCallback callback,
-                                  void *user_data, UtObject *cancel) {
+UtObject *ut_event_loop_add_delay(time_t seconds, UtObject *callback_object,
+                                  UtEventLoopTimerCallback callback) {
   EventLoop *loop = get_loop();
-  return add_timeout(loop, seconds, false, callback, user_data, cancel);
+  return add_timeout(loop, seconds, false, callback_object, callback);
 }
 
-UtObject *ut_event_loop_add_timer(time_t seconds, UtEventLoopCallback callback,
-                                  void *user_data, UtObject *cancel) {
+UtObject *ut_event_loop_add_timer(time_t seconds, UtObject *callback_object,
+                                  UtEventLoopTimerCallback callback) {
   EventLoop *loop = get_loop();
-  return add_timeout(loop, seconds, true, callback, user_data, cancel);
+  return add_timeout(loop, seconds, true, callback_object, callback);
 }
 
 void ut_event_loop_cancel_timer(UtObject *timer) {
@@ -292,8 +290,8 @@ UtObject *ut_event_loop_run() {
     size_t expired_timeouts_length = ut_list_get_length(expired_timeouts);
     for (size_t i = 0; i < expired_timeouts_length; i++) {
       Timeout *t = (Timeout *)ut_object_list_get_element(expired_timeouts, i);
-      if (!t->cancelled && !ut_cancel_is_active(t->cancel)) {
-        t->callback(t->user_data);
+      if (!t->cancelled && t->callback_object) {
+        t->callback(t->callback_object);
       }
     }
 

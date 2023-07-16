@@ -6,14 +6,15 @@
 #pragma once
 
 typedef void (*UtEventLoopCallback)(void *user_data);
+typedef void (*UtEventLoopTimerCallback)(UtObject *user_data);
 typedef UtObject *(*UtThreadCallback)(UtObject *data);
 typedef void (*UtThreadResultCallback)(UtObject *object, UtObject *result);
 
-UtObject *ut_event_loop_add_delay(time_t seconds, UtEventLoopCallback callback,
-                                  void *user_data, UtObject *cancel);
+UtObject *ut_event_loop_add_delay(time_t seconds, UtObject *callback_object,
+                                  UtEventLoopTimerCallback callback);
 
-UtObject *ut_event_loop_add_timer(time_t seconds, UtEventLoopCallback callback,
-                                  void *user_data, UtObject *cancel);
+UtObject *ut_event_loop_add_timer(time_t seconds, UtObject *callback_object,
+                                  UtEventLoopTimerCallback callback);
 
 void ut_event_loop_cancel_timer(UtObject *timer);
 
