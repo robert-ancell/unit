@@ -17,7 +17,7 @@ typedef struct {
   char *unix_path;
   uint16_t port;
   UtObject *fd;
-  UtObject *watch_cancel;
+  UtObject *watch;
   UtObject *listen_callback_object;
   UtTcpServerSocketListenCallback listen_callback;
 } UtTcpServerSocket;
@@ -26,15 +26,12 @@ static void ut_tcp_server_socket_cleanup(UtObject *object) {
   UtTcpServerSocket *self = (UtTcpServerSocket *)object;
   free(self->unix_path);
   ut_object_unref(self->fd);
-  if (self->watch_cancel != NULL) {
-    ut_cancel_activate(self->watch_cancel);
-  }
-  ut_object_unref(self->watch_cancel);
+  ut_object_unref(self->watch);
   ut_object_weak_unref(&self->listen_callback_object);
 }
 
-static void listen_cb(void *user_data) {
-  UtTcpServerSocket *self = user_data;
+static void listen_cb(UtObject *object) {
+  UtTcpServerSocket *self = (UtTcpServerSocket *)object;
 
   int fd = accept(ut_file_descriptor_get_fd(self->fd), NULL, NULL);
   assert(fd >= 0);
@@ -123,8 +120,7 @@ bool ut_tcp_server_socket_listen(UtObject *object, UtObject *callback_object,
     return false;
   }
 
-  self->watch_cancel = ut_cancel_new();
-  ut_event_loop_add_read_watch(self->fd, listen_cb, self, self->watch_cancel);
+  self->watch = ut_event_loop_add_read_watch(self->fd, object, listen_cb);
 
   if (listen(ut_file_descriptor_get_fd(self->fd), 1024) != 0) {
     if (error != NULL) {

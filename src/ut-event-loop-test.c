@@ -26,7 +26,7 @@ static void thread_result_cb(UtObject *object, UtObject *result) {
   printf("Thread result: '%s'\n", ut_string_get_text(result));
 }
 
-static void stdin_cb(void *user_data) {
+static void stdin_cb(UtObject *object) {
   char buffer[1024];
   ssize_t n_read = read(0, buffer, 1024);
   printf("stdin - '%.*s'\n", (int)n_read, buffer);
@@ -46,7 +46,8 @@ int main(int argc, char **argv) {
                                   thread_result_cb);
 
   UtObjectRef fd = ut_file_descriptor_new(0);
-  ut_event_loop_add_read_watch(fd, stdin_cb, NULL, NULL);
+  UtObjectRef stdin_watch =
+      ut_event_loop_add_read_watch(fd, dummy_object, stdin_cb);
 
   ut_event_loop_run();
 

@@ -16,8 +16,8 @@ typedef struct {
   UtObject *address;
   uint16_t port;
   UtObject *fd;
-  UtObject *write_watch_cancel;
-  UtObject *read_watch_cancel;
+  UtObject *write_watch;
+  UtObject *read_watch;
   UtObject *connect_callback_object;
   UtTcpSocketConnectCallback connect_callback;
   UtObject *read_buffer;
@@ -31,25 +31,19 @@ static void ut_tcp_socket_cleanup(UtObject *object) {
   UtTcpSocket *self = (UtTcpSocket *)object;
   ut_object_unref(self->address);
   ut_object_unref(self->fd);
-  if (self->write_watch_cancel != NULL) {
-    ut_cancel_activate(self->write_watch_cancel);
-  }
-  if (self->read_watch_cancel != NULL) {
-    ut_cancel_activate(self->read_watch_cancel);
-  }
-  ut_object_unref(self->write_watch_cancel);
+  ut_object_unref(self->write_watch);
   ut_object_weak_unref(&self->connect_callback_object);
   ut_object_unref(self->read_buffer);
-  ut_object_unref(self->read_watch_cancel);
+  ut_object_unref(self->read_watch);
 }
 
 static void connect_cb(UtObject *object) {}
 
-static void write_cb(void *user_data) {
-  UtTcpSocket *self = user_data;
+static void write_cb(UtObject *object) {
+  UtTcpSocket *self = (UtTcpSocket *)object;
 
   // Only one event required to detect connect.
-  ut_cancel_activate(self->write_watch_cancel);
+  ut_event_loop_cancel_watch(self->write_watch);
 
   int error; // FIXME: use
   socklen_t error_length = sizeof(error);
@@ -62,8 +56,8 @@ static void write_cb(void *user_data) {
   }
 }
 
-static void read_cb(void *user_data) {
-  UtTcpSocket *self = user_data;
+static void read_cb(UtObject *object) {
+  UtTcpSocket *self = (UtTcpSocket *)object;
 
   size_t block_size = 65535;
   if (ut_list_get_length(self->read_buffer) < self->n_read + block_size) {
@@ -133,14 +127,12 @@ static void ut_tcp_socket_read(UtObject *object, UtInputStreamCallback callback,
   self->read_user_data = user_data;
 
   self->read_buffer = ut_uint8_array_new();
-  self->read_watch_cancel = ut_cancel_new();
-  ut_event_loop_add_read_watch(self->fd, read_cb, self,
-                               self->read_watch_cancel);
+  self->read_watch = ut_event_loop_add_read_watch(self->fd, object, read_cb);
 }
 
 static void ut_tcp_socket_close(UtObject *object) {
   UtTcpSocket *self = (UtTcpSocket *)object;
-  ut_cancel_activate(self->read_watch_cancel);
+  ut_event_loop_cancel_watch(self->read_watch);
 }
 
 static UtInputStreamInterface input_stream_interface = {
@@ -297,9 +289,7 @@ void ut_tcp_socket_connect(UtObject *object, UtObject *callback_object,
   ut_object_weak_ref(callback_object, &self->connect_callback_object);
   self->connect_callback = callback;
 
-  self->write_watch_cancel = ut_cancel_new();
-  ut_event_loop_add_write_watch(self->fd, write_cb, self,
-                                self->write_watch_cancel);
+  self->write_watch = ut_event_loop_add_write_watch(self->fd, object, write_cb);
 
   struct sockaddr_in address4;
   struct sockaddr_in6 address6;

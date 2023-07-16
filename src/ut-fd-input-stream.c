@@ -13,14 +13,14 @@ typedef struct {
   UtObject *read_buffer;
   bool complete;
   size_t block_size;
-  UtObject *watch_cancel;
+  UtObject *read_watch;
   UtInputStreamCallback callback;
   void *user_data;
   UtObject *cancel;
 } UtFdInputStream;
 
-static void read_cb(void *user_data) {
-  UtFdInputStream *self = user_data;
+static void read_cb(UtObject *object) {
+  UtFdInputStream *self = (UtFdInputStream *)object;
 
   // Make space to read a new block.
   size_t buffer_length = ut_list_get_length(self->read_buffer);
@@ -37,7 +37,6 @@ static void read_cb(void *user_data) {
 
   // No more data to read.
   if (n_read == 0) {
-    ut_cancel_activate(self->watch_cancel);
     self->complete = true;
   }
 
@@ -51,7 +50,6 @@ static void ut_fd_input_stream_init(UtObject *object) {
   UtFdInputStream *self = (UtFdInputStream *)object;
   self->read_buffer = ut_uint8_array_new();
   self->block_size = 4096;
-  self->watch_cancel = ut_cancel_new();
 }
 
 static void ut_fd_input_stream_cleanup(UtObject *object) {
@@ -59,10 +57,7 @@ static void ut_fd_input_stream_cleanup(UtObject *object) {
 
   ut_object_unref(self->fd);
   ut_object_unref(self->read_buffer);
-  if (self->watch_cancel != NULL) {
-    ut_cancel_activate(self->watch_cancel);
-  }
-  ut_object_unref(self->watch_cancel);
+  ut_object_unref(self->read_watch);
 }
 
 static void ut_fd_input_stream_read(UtObject *object,
@@ -76,12 +71,12 @@ static void ut_fd_input_stream_read(UtObject *object,
   self->callback = callback;
   self->user_data = user_data;
 
-  ut_event_loop_add_read_watch(self->fd, read_cb, self, self->watch_cancel);
+  self->read_watch = ut_event_loop_add_read_watch(self->fd, object, read_cb);
 }
 
 static void ut_fd_input_stream_close(UtObject *object) {
   UtFdInputStream *self = (UtFdInputStream *)object;
-  ut_cancel_activate(self->watch_cancel);
+  ut_event_loop_cancel_watch(self->read_watch);
 }
 
 static UtInputStreamInterface input_stream_interface = {

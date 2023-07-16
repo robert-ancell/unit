@@ -15,7 +15,7 @@ typedef struct {
   sa_family_t family;
   uint16_t port;
   UtObject *fd;
-  UtObject *watch_cancel;
+  UtObject *watch;
   UtObject *read_buffer;
   UtInputStreamCallback read_callback;
   void *read_user_data;
@@ -24,14 +24,11 @@ typedef struct {
 static void ut_udp_socket_cleanup(UtObject *object) {
   UtUdpSocket *self = (UtUdpSocket *)object;
   ut_object_unref(self->fd);
-  if (self->watch_cancel != NULL) {
-    ut_cancel_activate(self->watch_cancel);
-  }
-  ut_object_unref(self->watch_cancel);
+  ut_object_unref(self->watch);
 }
 
-static void read_cb(void *user_data) {
-  UtUdpSocket *self = user_data;
+static void read_cb(UtObject *object) {
+  UtUdpSocket *self = (UtUdpSocket *)object;
 
   UtObjectRef data = ut_uint8_array_new();
   ut_list_resize(data, 65535);
@@ -84,13 +81,12 @@ static void ut_udp_socket_read(UtObject *object, UtInputStreamCallback callback,
   self->read_user_data = user_data;
 
   self->read_buffer = ut_list_new();
-  self->watch_cancel = ut_cancel_new();
-  ut_event_loop_add_read_watch(self->fd, read_cb, self, self->watch_cancel);
+  self->watch = ut_event_loop_add_read_watch(self->fd, object, read_cb);
 }
 
 static void ut_udp_socket_close(UtObject *object) {
   UtUdpSocket *self = (UtUdpSocket *)object;
-  ut_cancel_activate(self->watch_cancel);
+  ut_event_loop_cancel_watch(self->watch);
 }
 
 static UtInputStreamInterface input_stream_interface = {

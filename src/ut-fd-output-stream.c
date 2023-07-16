@@ -20,7 +20,7 @@ struct _WriteBlock {
 typedef struct {
   UtObject object;
   UtObject *fd;
-  UtObject *watch_cancel;
+  UtObject *watch;
   WriteBlock *blocks;
   WriteBlock *last_block;
 } UtFdOutputStream;
@@ -51,8 +51,8 @@ static void free_block(WriteBlock *block) {
   free(block);
 }
 
-static void write_cb(void *user_data) {
-  UtFdOutputStream *self = user_data;
+static void write_cb(UtObject *object) {
+  UtFdOutputStream *self = (UtFdOutputStream *)object;
 
   WriteBlock *block = self->blocks;
   assert(block != NULL);
@@ -88,16 +88,15 @@ static void write_cb(void *user_data) {
 
   // Stop listening for write events when done.
   if (self->blocks == NULL) {
-    ut_cancel_activate(self->watch_cancel);
-    ut_object_unref(self->watch_cancel);
-    self->watch_cancel = NULL;
+    ut_event_loop_cancel_watch(self->watch);
+    ut_object_clear(&self->watch);
   }
 }
 
 static void ut_fd_output_stream_cleanup(UtObject *object) {
   UtFdOutputStream *self = (UtFdOutputStream *)object;
   ut_object_unref(self->fd);
-  ut_object_unref(self->watch_cancel);
+  ut_object_unref(self->watch);
   WriteBlock *next_block;
   for (WriteBlock *b = self->blocks; b != NULL; b = next_block) {
     next_block = b->next;
@@ -113,9 +112,8 @@ static void ut_fd_output_stream_write(UtObject *object, UtObject *data,
 
   add_block(self, data, callback_object, callback);
 
-  if (self->watch_cancel == NULL) {
-    self->watch_cancel = ut_cancel_new();
-    ut_event_loop_add_write_watch(self->fd, write_cb, self, self->watch_cancel);
+  if (self->watch == NULL) {
+    self->watch = ut_event_loop_add_write_watch(self->fd, object, write_cb);
   }
 }
 
