@@ -16,6 +16,7 @@ typedef struct {
   UtEventLoopCallback callback;
   void *user_data;
   UtObject *cancel;
+  bool cancelled;
 } Timeout;
 
 typedef struct {
@@ -94,11 +95,10 @@ static void insert_timeout(EventLoop *loop, Timeout *timeout) {
   ut_list_insert(loop->timeouts, index, (UtObject *)timeout);
 }
 
-static void add_timeout(EventLoop *loop, time_t seconds, bool repeat,
-                        UtEventLoopCallback callback, void *user_data,
-                        UtObject *cancel) {
-  UtObjectRef object =
-      ut_object_new(sizeof(Timeout), &timeout_object_interface);
+static UtObject *add_timeout(EventLoop *loop, time_t seconds, bool repeat,
+                             UtEventLoopCallback callback, void *user_data,
+                             UtObject *cancel) {
+  UtObject *object = ut_object_new(sizeof(Timeout), &timeout_object_interface);
   Timeout *self = (Timeout *)object;
   assert(clock_gettime(CLOCK_MONOTONIC, &self->when) == 0);
   self->when.tv_sec += seconds;
@@ -109,6 +109,8 @@ static void add_timeout(EventLoop *loop, time_t seconds, bool repeat,
   self->cancel = ut_object_ref(cancel);
 
   insert_timeout(loop, self);
+
+  return object;
 }
 
 static void fd_watch_cleanup(UtObject *object) {
@@ -189,16 +191,22 @@ static EventLoop *get_loop() {
   return (EventLoop *)loop;
 }
 
-void ut_event_loop_add_delay(time_t seconds, UtEventLoopCallback callback,
-                             void *user_data, UtObject *cancel) {
+UtObject *ut_event_loop_add_delay(time_t seconds, UtEventLoopCallback callback,
+                                  void *user_data, UtObject *cancel) {
   EventLoop *loop = get_loop();
-  add_timeout(loop, seconds, false, callback, user_data, cancel);
+  return add_timeout(loop, seconds, false, callback, user_data, cancel);
 }
 
-void ut_event_loop_add_timer(time_t seconds, UtEventLoopCallback callback,
-                             void *user_data, UtObject *cancel) {
+UtObject *ut_event_loop_add_timer(time_t seconds, UtEventLoopCallback callback,
+                                  void *user_data, UtObject *cancel) {
   EventLoop *loop = get_loop();
-  add_timeout(loop, seconds, true, callback, user_data, cancel);
+  return add_timeout(loop, seconds, true, callback, user_data, cancel);
+}
+
+void ut_event_loop_cancel_timer(UtObject *timer) {
+  assert(ut_object_is_type(timer, &timeout_object_interface));
+  Timeout *t = (Timeout *)timer;
+  t->cancelled = true;
 }
 
 void ut_event_loop_add_read_watch(UtObject *fd, UtEventLoopCallback callback,
@@ -284,7 +292,7 @@ UtObject *ut_event_loop_run() {
     size_t expired_timeouts_length = ut_list_get_length(expired_timeouts);
     for (size_t i = 0; i < expired_timeouts_length; i++) {
       Timeout *t = (Timeout *)ut_object_list_get_element(expired_timeouts, i);
-      if (!ut_cancel_is_active(t->cancel)) {
+      if (!t->cancelled && !ut_cancel_is_active(t->cancel)) {
         t->callback(t->user_data);
       }
     }
@@ -300,7 +308,7 @@ UtObject *ut_event_loop_run() {
     timeouts_length = ut_list_get_length(self->timeouts);
     for (size_t i = 0; i < timeouts_length;) {
       Timeout *t = (Timeout *)ut_object_list_get_element(self->timeouts, i);
-      if (ut_cancel_is_active(t->cancel)) {
+      if (t->cancelled) {
         ut_list_remove(self->timeouts, i, 1);
         timeouts_length--;
       } else {

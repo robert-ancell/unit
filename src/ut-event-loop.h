@@ -9,11 +9,13 @@ typedef void (*UtEventLoopCallback)(void *user_data);
 typedef UtObject *(*UtThreadCallback)(UtObject *data);
 typedef void (*UtThreadResultCallback)(UtObject *object, UtObject *result);
 
-void ut_event_loop_add_delay(time_t seconds, UtEventLoopCallback callback,
-                             void *user_data, UtObject *cancel);
+UtObject *ut_event_loop_add_delay(time_t seconds, UtEventLoopCallback callback,
+                                  void *user_data, UtObject *cancel);
 
-void ut_event_loop_add_timer(time_t seconds, UtEventLoopCallback callback,
-                             void *user_data, UtObject *cancel);
+UtObject *ut_event_loop_add_timer(time_t seconds, UtEventLoopCallback callback,
+                                  void *user_data, UtObject *cancel);
+
+void ut_event_loop_cancel_timer(UtObject *timer);
 
 void ut_event_loop_add_read_watch(UtObject *fd, UtEventLoopCallback callback,
                                   void *user_data, UtObject *cancel);
