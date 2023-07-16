@@ -16,7 +16,6 @@ typedef struct {
   UtObject *read_watch;
   UtInputStreamCallback callback;
   void *user_data;
-  UtObject *cancel;
 } UtFdInputStream;
 
 static void read_cb(UtObject *object) {
