@@ -41,6 +41,7 @@ struct _WorkerThread {
 };
 
 typedef struct {
+  UtObject object;
   Timeout *timeouts;
   FdWatch *read_watches;
   FdWatch *write_watches;
@@ -176,16 +177,14 @@ static void free_worker_thread(WorkerThread *thread) {
   free(thread);
 }
 
+static UtObjectInterface event_loop_object_interface = {.type_name =
+                                                            "EventLoop"};
+
 static EventLoop *get_loop() {
   // FIXME: Check if this loop is for another thread, and make a new loop if so.
   if (loop == NULL) {
-    loop = malloc(sizeof(EventLoop));
-    loop->timeouts = NULL;
-    loop->read_watches = NULL;
-    loop->write_watches = NULL;
-    loop->worker_threads = NULL;
-    loop->complete = false;
-    loop->return_value = NULL;
+    loop = (EventLoop *)ut_object_new(sizeof(EventLoop),
+                                      &event_loop_object_interface);
   }
   return loop;
 }
