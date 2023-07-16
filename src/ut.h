@@ -46,7 +46,6 @@
 #include "ut-bit-list.h"
 #include "ut-boolean.h"
 #include "ut-buffered-input-stream.h"
-#include "ut-cancel.h"
 #include "ut-color.h"
 #include "ut-constant-uint8-array.h"
 #include "ut-constant-utf8-string.h"
