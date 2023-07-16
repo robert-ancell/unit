@@ -41,8 +41,6 @@ typedef struct {
 
   // Number of bytes written from [body].
   size_t body_length;
-
-  UtObject *cancel;
 } UtHttpMessageEncoder;
 
 static UtObject *find_header(UtHttpMessageEncoder *self, const char *name) {

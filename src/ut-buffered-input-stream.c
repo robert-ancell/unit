@@ -6,7 +6,6 @@ typedef struct {
   UtObject object;
   UtInputStreamCallback callback;
   void *user_data;
-  UtObject *cancel;
   UtObject *buffer;
   bool closed;
   bool complete;
@@ -25,7 +24,6 @@ static void send_buffer(UtBufferedInputStream *self) {
 
 static void ut_buffered_input_stream_cleanup(UtObject *object) {
   UtBufferedInputStream *self = (UtBufferedInputStream *)object;
-  ut_object_unref(self->cancel);
   ut_object_unref(self->buffer);
 }
 
@@ -80,10 +78,6 @@ void ut_buffered_input_stream_write(UtObject *object, UtObject *data,
     } else {
       ut_list_append_list(self->buffer, data);
     }
-    return;
-  }
-
-  if (ut_cancel_is_active(self->cancel)) {
     return;
   }
 
