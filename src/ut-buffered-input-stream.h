@@ -5,9 +5,6 @@
 
 #pragma once
 
-typedef void (*UtBufferedInputStreamReadingCallback)(void *user_data,
-                                                     UtObject *stream);
-
 UtObject *ut_buffered_input_stream_new();
 
 void ut_buffered_input_stream_write(UtObject *object, UtObject *data,
