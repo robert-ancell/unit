@@ -24,8 +24,10 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
   return ut_list_get_length(data);
 }
 
-static void connect_cb(UtObject *object) {
+static void connect_cb(UtObject *object, UtObject *error) {
   UtObject *socket = object;
+
+  ut_assert_null(error);
 
   ut_input_stream_read(socket, read_cb, NULL);
 

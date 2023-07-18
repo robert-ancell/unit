@@ -732,8 +732,13 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
   return offset;
 }
 
-static void connect_cb(UtObject *object) {
+static void connect_cb(UtObject *object, UtObject *error) {
   UtX11Client *self = (UtX11Client *)object;
+
+  if (error != NULL) {
+    // FIXME: Use error
+    return;
+  }
 
   UtObjectRef setup = ut_x11_buffer_new();
   ut_x11_buffer_append_card8(setup, 0x6c); // Little endian.

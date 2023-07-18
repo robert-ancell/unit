@@ -5,7 +5,7 @@
 
 #pragma once
 
-typedef void (*UtTcpSocketConnectCallback)(UtObject *object);
+typedef void (*UtTcpSocketConnectCallback)(UtObject *object, UtObject *error);
 
 UtObject *ut_tcp_socket_new_from_fd(UtObject *fd);
 

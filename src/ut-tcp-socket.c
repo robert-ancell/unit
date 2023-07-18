@@ -37,7 +37,7 @@ static void ut_tcp_socket_cleanup(UtObject *object) {
   ut_object_unref(self->read_watch);
 }
 
-static void connect_cb(UtObject *object) {}
+static void connect_cb(UtObject *object, UtObject *error) {}
 
 static void write_cb(UtObject *object) {
   UtTcpSocket *self = (UtTcpSocket *)object;
@@ -45,14 +45,17 @@ static void write_cb(UtObject *object) {
   // Only one event required to detect connect.
   ut_event_loop_cancel_watch(self->write_watch);
 
-  int error; // FIXME: use
-  socklen_t error_length = sizeof(error);
-  getsockopt(ut_file_descriptor_get_fd(self->fd), SOL_SOCKET, SO_ERROR, &error,
-             &error_length);
-  assert(error == 0);
+  int error_code;
+  socklen_t error_length = sizeof(error_code);
+  getsockopt(ut_file_descriptor_get_fd(self->fd), SOL_SOCKET, SO_ERROR,
+             &error_code, &error_length);
+  UtObjectRef error = NULL;
+  if (error_code != 0) {
+    error = ut_system_error_new(error_code);
+  }
 
   if (self->connect_callback_object != NULL && self->connect_callback != NULL) {
-    self->connect_callback(self->connect_callback_object);
+    self->connect_callback(self->connect_callback_object, error);
   }
 }
 

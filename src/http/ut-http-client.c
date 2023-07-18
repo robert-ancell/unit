@@ -109,8 +109,15 @@ static size_t read_cb(void *user_data, UtObject *data, bool complete) {
   return n_used;
 }
 
-static void connect_cb(UtObject *object) {
+static void connect_cb(UtObject *object, UtObject *error) {
   HttpRequest *request = (HttpRequest *)object;
+
+  if (error != NULL) {
+    if (request->callback_object != NULL && request->callback != NULL) {
+      request->callback(request->callback_object, error);
+    }
+    return;
+  }
 
   UtObjectRef headers = ut_list_new();
   ut_list_append_take(headers, ut_http_header_new("Host", request->host));

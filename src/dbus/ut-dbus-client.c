@@ -200,8 +200,13 @@ static void hello_cb(UtObject *object, UtObject *out_args) {
       ut_string_get_text(ut_object_list_get_element(out_args, 0)));
 }
 
-static void connect_cb(UtObject *object) {
+static void connect_cb(UtObject *object, UtObject *error) {
   UtDBusClient *self = (UtDBusClient *)object;
+
+  if (error != NULL) {
+    // FIXME: Use error
+    return;
+  }
 
   self->state = DECODER_STATE_AUTHENTICATION;
   ut_input_stream_read(self->socket, read_cb, self);
