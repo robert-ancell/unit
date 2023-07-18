@@ -5,7 +5,7 @@
 
 #pragma once
 
-typedef void (*UtEventLoopCallback)(UtObject *user_data);
+typedef void (*UtEventLoopCallback)(UtObject *object);
 typedef UtObject *(*UtThreadCallback)(UtObject *data);
 typedef void (*UtThreadResultCallback)(UtObject *object, UtObject *result);
 
