@@ -69,12 +69,14 @@ UtObject *http_request_new(const char *host, uint16_t port, const char *method,
 typedef struct {
   UtObject object;
   UtObject *ip_address_resolver;
+  UtObject *requests;
   UtObject *cancel;
 } UtHttpClient;
 
 static void ut_http_client_init(UtObject *object) {
   UtHttpClient *self = (UtHttpClient *)object;
   self->ip_address_resolver = ut_ip_address_resolver_new();
+  self->requests = ut_object_list_new();
   self->cancel = ut_cancel_new();
 }
 
@@ -166,8 +168,9 @@ void ut_http_client_send_request(UtObject *object, const char *method,
     port = 80;
   }
 
-  UtObject *request = http_request_new(host, port, method, path, body,
-                                       callback_object, callback);
+  UtObjectRef request = http_request_new(host, port, method, path, body,
+                                         callback_object, callback);
+  ut_list_append(self->requests, request);
   ut_ip_address_resolver_lookup(self->ip_address_resolver, host, lookup_cb,
                                 request, self->cancel);
 }
