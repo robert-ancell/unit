@@ -7,13 +7,13 @@ typedef struct {
   UtObject object;
   UtObject *client;
   uint32_t id;
+  UtObject *callback_object;
   UtWaylandBufferReleaseCallback release_callback;
-  void *user_data;
 } UtWaylandBuffer;
 
 static void decode_release(UtWaylandBuffer *self, UtObject *data) {
-  if (self->release_callback != NULL) {
-    self->release_callback(self->user_data);
+  if (self->callback_object != NULL && self->release_callback != NULL) {
+    self->release_callback(self->callback_object);
   }
 }
 
@@ -38,6 +38,11 @@ static bool ut_wayland_buffer_decode_event(UtObject *object, uint16_t code,
   }
 }
 
+static void ut_wayland_buffer_cleanup(UtObject *object) {
+  UtWaylandBuffer *self = (UtWaylandBuffer *)object;
+  ut_object_weak_unref(&self->callback_object);
+}
+
 static UtWaylandObjectInterface wayland_object_interface = {
     .get_interface = ut_wayland_buffer_get_interface,
     .get_id = ut_wayland_buffer_get_id,
@@ -45,18 +50,19 @@ static UtWaylandObjectInterface wayland_object_interface = {
 
 static UtObjectInterface object_interface = {
     .type_name = "UtWaylandBuffer",
+    .cleanup = ut_wayland_buffer_cleanup,
     .interfaces = {{&ut_wayland_object_id, &wayland_object_interface},
                    {NULL, NULL}}};
 
-UtObject *ut_wayland_buffer_new(UtObject *client, uint32_t id,
-                                UtWaylandBufferReleaseCallback release_callback,
-                                void *user_data) {
+UtObject *
+ut_wayland_buffer_new(UtObject *client, uint32_t id, UtObject *callback_object,
+                      UtWaylandBufferReleaseCallback release_callback) {
   UtObject *object = ut_object_new(sizeof(UtWaylandBuffer), &object_interface);
   UtWaylandBuffer *self = (UtWaylandBuffer *)object;
   self->client = client;
   self->id = id;
+  ut_object_weak_ref(callback_object, &self->callback_object);
   self->release_callback = release_callback;
-  self->user_data = user_data;
   ut_wayland_client_register_object(client, object);
   return object;
 }

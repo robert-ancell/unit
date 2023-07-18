@@ -5,11 +5,11 @@
 
 #pragma once
 
-typedef void (*UtWaylandBufferReleaseCallback)(void *user_data);
+typedef void (*UtWaylandBufferReleaseCallback)(UtObject *object);
 
-UtObject *ut_wayland_buffer_new(UtObject *client, uint32_t id,
-                                UtWaylandBufferReleaseCallback release_callback,
-                                void *user_data);
+UtObject *
+ut_wayland_buffer_new(UtObject *client, uint32_t id, UtObject *callback_object,
+                      UtWaylandBufferReleaseCallback release_callback);
 
 void ut_wayland_buffer_destroy(UtObject *object);
 

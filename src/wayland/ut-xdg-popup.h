@@ -5,11 +5,12 @@
 
 #pragma once
 
-typedef void (*UtXdgPopupConfigureCallback)(void *user_data, int32_t x,
+typedef void (*UtXdgPopupConfigureCallback)(UtObject *object, int32_t x,
                                             int32_t y, int32_t width,
                                             int32_t height);
-typedef void (*UtXdgPopupPopupDoneCallback)(void *user_data);
-typedef void (*UtXdgPopupRepositionedCallback)(void *user_data, uint32_t token);
+typedef void (*UtXdgPopupPopupDoneCallback)(UtObject *object);
+typedef void (*UtXdgPopupRepositionedCallback)(UtObject *object,
+                                               uint32_t token);
 
 typedef struct {
   UtXdgPopupConfigureCallback configure;
@@ -18,8 +19,8 @@ typedef struct {
 } UtXdgPopupCallbacks;
 
 UtObject *ut_xdg_popup_new(UtObject *client, uint32_t id,
-                           const UtXdgPopupCallbacks *callbacks,
-                           void *user_data);
+                           UtObject *callback_object,
+                           const UtXdgPopupCallbacks *callbacks);
 
 void ut_xdg_popup_destroy(UtObject *object);
 

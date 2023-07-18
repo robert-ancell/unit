@@ -6,16 +6,16 @@
 #pragma once
 
 typedef void (*UtWaylandOutputGeometryCallback)(
-    void *user_data, int32_t x, int32_t y, int32_t physical_width,
+    UtObject *object, int32_t x, int32_t y, int32_t physical_width,
     int32_t physical_height, int32_t subpixel, const char *make,
     const char *model, int32_t transform);
-typedef void (*UtWaylandOutputModeCallback)(void *user_data, uint32_t flags,
+typedef void (*UtWaylandOutputModeCallback)(UtObject *object, uint32_t flags,
                                             int32_t width, int32_t height,
                                             int32_t refresh);
-typedef void (*UtWaylandOutputDoneCallback)(void *user_data);
-typedef void (*UtWaylandOutputScaleCallback)(void *user_data, int32_t scale);
-typedef void (*UtWaylandOutputNameCallback)(void *user_data, const char *name);
-typedef void (*UtWaylandOutputDescriptionCallback)(void *user_data,
+typedef void (*UtWaylandOutputDoneCallback)(UtObject *object);
+typedef void (*UtWaylandOutputScaleCallback)(UtObject *object, int32_t scale);
+typedef void (*UtWaylandOutputNameCallback)(UtObject *object, const char *name);
+typedef void (*UtWaylandOutputDescriptionCallback)(UtObject *object,
                                                    const char *description);
 
 typedef struct {
@@ -28,8 +28,8 @@ typedef struct {
 } UtWaylandOutputCallbacks;
 
 UtObject *ut_wayland_output_new(UtObject *client, uint32_t id,
-                                const UtWaylandOutputCallbacks *callbacks,
-                                void *user_data);
+                                UtObject *callback_object,
+                                const UtWaylandOutputCallbacks *callbacks);
 
 void ut_wayland_output_release(UtObject *object);
 

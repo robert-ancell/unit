@@ -7,8 +7,8 @@ typedef struct {
   UtObject object;
   UtObject *client;
   uint32_t id;
+  UtObject *callback_object;
   const UtXdgToplevelCallbacks *callbacks;
-  void *user_data;
 } UtXdgToplevel;
 
 static void decode_configure(UtXdgToplevel *self, UtObject *data) {
@@ -16,13 +16,13 @@ static void decode_configure(UtXdgToplevel *self, UtObject *data) {
   int32_t height = ut_wayland_decoder_get_int(data);
   UtObjectRef states = ut_wayland_decoder_get_uint_array(data);
   if (self->callbacks != NULL && self->callbacks->configure != NULL) {
-    self->callbacks->configure(self->user_data, width, height, states);
+    self->callbacks->configure(self->callback_object, width, height, states);
   }
 }
 
 static void decode_close(UtXdgToplevel *self, UtObject *data) {
   if (self->callbacks != NULL && self->callbacks->close != NULL) {
-    self->callbacks->close(self->user_data);
+    self->callbacks->close(self->callback_object);
   }
 }
 
@@ -30,14 +30,14 @@ static void decode_configure_bounds(UtXdgToplevel *self, UtObject *data) {
   int32_t width = ut_wayland_decoder_get_int(data);
   int32_t height = ut_wayland_decoder_get_int(data);
   if (self->callbacks != NULL && self->callbacks->configure_bounds != NULL) {
-    self->callbacks->configure_bounds(self->user_data, width, height);
+    self->callbacks->configure_bounds(self->callback_object, width, height);
   }
 }
 
 static void decode_wm_capabilities(UtXdgToplevel *self, UtObject *data) {
   UtObjectRef capabilities = ut_wayland_decoder_get_uint_array(data);
   if (self->callbacks != NULL && self->callbacks->wm_capabilities != NULL) {
-    self->callbacks->wm_capabilities(self->user_data, capabilities);
+    self->callbacks->wm_capabilities(self->callback_object, capabilities);
   }
 }
 
@@ -71,6 +71,11 @@ static bool ut_xdg_toplevel_decode_event(UtObject *object, uint16_t code,
   }
 }
 
+static void ut_xdg_toplevel_cleanup(UtObject *object) {
+  UtXdgToplevel *self = (UtXdgToplevel *)object;
+  ut_object_weak_unref(&self->callback_object);
+}
+
 static UtWaylandObjectInterface wayland_object_interface = {
     .get_interface = ut_xdg_toplevel_get_interface,
     .get_id = ut_xdg_toplevel_get_id,
@@ -78,18 +83,19 @@ static UtWaylandObjectInterface wayland_object_interface = {
 
 static UtObjectInterface object_interface = {
     .type_name = "UtXdgToplevel",
+    .cleanup = ut_xdg_toplevel_cleanup,
     .interfaces = {{&ut_wayland_object_id, &wayland_object_interface},
                    {NULL, NULL}}};
 
 UtObject *ut_xdg_toplevel_new(UtObject *client, uint32_t id,
-                              const UtXdgToplevelCallbacks *callbacks,
-                              void *user_data) {
+                              UtObject *callback_object,
+                              const UtXdgToplevelCallbacks *callbacks) {
   UtObject *object = ut_object_new(sizeof(UtXdgToplevel), &object_interface);
   UtXdgToplevel *self = (UtXdgToplevel *)object;
   self->client = client;
   self->id = id;
+  ut_object_weak_ref(callback_object, &self->callback_object);
   self->callbacks = callbacks;
-  self->user_data = user_data;
   ut_wayland_client_register_object(client, object);
   return object;
 }

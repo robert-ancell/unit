@@ -7,8 +7,8 @@ typedef struct {
   UtObject object;
   UtObject *client;
   uint32_t id;
+  UtObject *callback_object;
   const UtWaylandPointerCallbacks *callbacks;
-  void *user_data;
 } UtWaylandPointer;
 
 static void decode_enter(UtWaylandPointer *self, UtObject *data) {
@@ -17,8 +17,9 @@ static void decode_enter(UtWaylandPointer *self, UtObject *data) {
   UtObject *surface = ut_wayland_client_get_object(self->client, surface_id);
   double surface_x = ut_wayland_decoder_get_fixed(data);
   double surface_y = ut_wayland_decoder_get_fixed(data);
-  if (self->callbacks != NULL && self->callbacks->enter != NULL) {
-    self->callbacks->enter(self->user_data, serial, surface, surface_x,
+  if (self->callback_object != NULL && self->callbacks != NULL &&
+      self->callbacks->enter != NULL) {
+    self->callbacks->enter(self->callback_object, serial, surface, surface_x,
                            surface_y);
   }
 }
@@ -27,8 +28,9 @@ static void decode_leave(UtWaylandPointer *self, UtObject *data) {
   uint32_t serial = ut_wayland_decoder_get_uint(data);
   uint32_t surface_id = ut_wayland_decoder_get_uint(data);
   UtObject *surface = ut_wayland_client_get_object(self->client, surface_id);
-  if (self->callbacks != NULL && self->callbacks->leave != NULL) {
-    self->callbacks->leave(self->user_data, serial, surface);
+  if (self->callback_object != NULL && self->callbacks != NULL &&
+      self->callbacks->leave != NULL) {
+    self->callbacks->leave(self->callback_object, serial, surface);
   }
 }
 
@@ -36,8 +38,9 @@ static void decode_motion(UtWaylandPointer *self, UtObject *data) {
   uint32_t time = ut_wayland_decoder_get_uint(data);
   double surface_x = ut_wayland_decoder_get_fixed(data);
   double surface_y = ut_wayland_decoder_get_fixed(data);
-  if (self->callbacks != NULL && self->callbacks->motion != NULL) {
-    self->callbacks->motion(self->user_data, time, surface_x, surface_y);
+  if (self->callback_object != NULL && self->callbacks != NULL &&
+      self->callbacks->motion != NULL) {
+    self->callbacks->motion(self->callback_object, time, surface_x, surface_y);
   }
 }
 
@@ -46,8 +49,9 @@ static void decode_button(UtWaylandPointer *self, UtObject *data) {
   uint32_t time = ut_wayland_decoder_get_uint(data);
   uint32_t button = ut_wayland_decoder_get_uint(data);
   uint32_t state = ut_wayland_decoder_get_uint(data);
-  if (self->callbacks != NULL && self->callbacks->button != NULL) {
-    self->callbacks->button(self->user_data, serial, time, button, state);
+  if (self->callback_object != NULL && self->callbacks != NULL &&
+      self->callbacks->button != NULL) {
+    self->callbacks->button(self->callback_object, serial, time, button, state);
   }
 }
 
@@ -56,8 +60,9 @@ static void decode_axis(UtWaylandPointer *self, UtObject *data) {
 }
 
 static void decode_frame(UtWaylandPointer *self, UtObject *data) {
-  if (self->callbacks != NULL && self->callbacks->frame != NULL) {
-    self->callbacks->frame(self->user_data);
+  if (self->callback_object != NULL && self->callbacks != NULL &&
+      self->callbacks->frame != NULL) {
+    self->callbacks->frame(self->callback_object);
   }
 }
 
@@ -125,6 +130,11 @@ static bool ut_wayland_pointer_decode_event(UtObject *object, uint16_t code,
   }
 }
 
+static void ut_wayland_pointer_cleanup(UtObject *object) {
+  UtWaylandPointer *self = (UtWaylandPointer *)object;
+  ut_object_weak_unref(&self->callback_object);
+}
+
 static UtWaylandObjectInterface wayland_object_interface = {
     .get_interface = ut_wayland_pointer_get_interface,
     .get_id = ut_wayland_pointer_get_id,
@@ -132,18 +142,19 @@ static UtWaylandObjectInterface wayland_object_interface = {
 
 static UtObjectInterface object_interface = {
     .type_name = "UtWaylandPointer",
+    .cleanup = ut_wayland_pointer_cleanup,
     .interfaces = {{&ut_wayland_object_id, &wayland_object_interface},
                    {NULL, NULL}}};
 
 UtObject *ut_wayland_pointer_new(UtObject *client, uint32_t id,
-                                 const UtWaylandPointerCallbacks *callbacks,
-                                 void *user_data) {
+                                 UtObject *callback_object,
+                                 const UtWaylandPointerCallbacks *callbacks) {
   UtObject *object = ut_object_new(sizeof(UtWaylandPointer), &object_interface);
   UtWaylandPointer *self = (UtWaylandPointer *)object;
   self->client = client;
   self->id = id;
+  ut_object_weak_ref(callback_object, &self->callback_object);
   self->callbacks = callbacks;
-  self->user_data = user_data;
   ut_wayland_client_register_object(client, object);
   return object;
 }

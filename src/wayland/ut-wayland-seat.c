@@ -8,21 +8,23 @@ typedef struct {
   UtObject object;
   UtObject *client;
   uint32_t id;
+  UtObject *callback_object;
   const UtWaylandSeatCallbacks *callbacks;
-  void *user_data;
 } UtWaylandSeat;
 
 static void decode_capabilities(UtWaylandSeat *self, UtObject *data) {
   uint32_t capabilities = ut_wayland_decoder_get_uint(data);
-  if (self->callbacks != NULL && self->callbacks->capabilities != NULL) {
-    self->callbacks->capabilities(self->user_data, capabilities);
+  if (self->callback_object != NULL && self->callbacks != NULL &&
+      self->callbacks->capabilities != NULL) {
+    self->callbacks->capabilities(self->callback_object, capabilities);
   }
 }
 
 static void decode_name(UtWaylandSeat *self, UtObject *data) {
   ut_cstring_ref name = ut_wayland_decoder_get_string(data);
-  if (self->callbacks != NULL && self->callbacks->name != NULL) {
-    self->callbacks->name(self->user_data, name);
+  if (self->callback_object != NULL && self->callbacks != NULL &&
+      self->callbacks->name != NULL) {
+    self->callbacks->name(self->callback_object, name);
   }
 }
 
@@ -50,6 +52,11 @@ static bool ut_wayland_seat_decode_event(UtObject *object, uint16_t code,
   }
 }
 
+static void ut_xdg_wayland_seat_cleanup(UtObject *object) {
+  UtWaylandSeat *self = (UtWaylandSeat *)object;
+  ut_object_weak_unref(&self->callback_object);
+}
+
 static UtWaylandObjectInterface wayland_object_interface = {
     .get_interface = ut_wayland_seat_get_interface,
     .get_id = ut_wayland_seat_get_id,
@@ -57,35 +64,35 @@ static UtWaylandObjectInterface wayland_object_interface = {
 
 static UtObjectInterface object_interface = {
     .type_name = "UtWaylandSeat",
+    .cleanup = ut_xdg_wayland_seat_cleanup,
     .interfaces = {{&ut_wayland_object_id, &wayland_object_interface},
                    {NULL, NULL}}};
 
 UtObject *ut_wayland_seat_new(UtObject *client, uint32_t id,
-                              const UtWaylandSeatCallbacks *callbacks,
-                              void *user_data) {
+                              UtObject *callback_object,
+                              const UtWaylandSeatCallbacks *callbacks) {
   UtObject *object = ut_object_new(sizeof(UtWaylandSeat), &object_interface);
   UtWaylandSeat *self = (UtWaylandSeat *)object;
   self->client = client;
   self->id = id;
+  ut_object_weak_ref(callback_object, &self->callback_object);
   self->callbacks = callbacks;
-  self->user_data = user_data;
   ut_wayland_client_register_object(client, object);
   return object;
 }
 
 UtObject *
 ut_wayland_seat_new_from_registry(UtObject *registry, uint32_t name,
-                                  const UtWaylandSeatCallbacks *callbacks,
-                                  void *user_data) {
+                                  UtObject *callback_object,
+                                  const UtWaylandSeatCallbacks *callbacks) {
   uint32_t id = ut_wayland_registry_bind(registry, name, "wl_seat", 8);
   return ut_wayland_seat_new(ut_wayland_registry_get_client(registry), id,
-                             callbacks, user_data);
+                             callback_object, callbacks);
 }
 
 UtObject *
-ut_wayland_seat_get_pointer(UtObject *object,
-                            const UtWaylandPointerCallbacks *callbacks,
-                            void *user_data) {
+ut_wayland_seat_get_pointer(UtObject *object, UtObject *callback_object,
+                            const UtWaylandPointerCallbacks *callbacks) {
   assert(ut_object_is_wayland_seat(object));
   UtWaylandSeat *self = (UtWaylandSeat *)object;
 
@@ -94,13 +101,12 @@ ut_wayland_seat_get_pointer(UtObject *object,
   ut_wayland_encoder_append_uint(payload, id);
   ut_wayland_client_send_request(self->client, self->id, 0,
                                  ut_wayland_encoder_get_data(payload));
-  return ut_wayland_pointer_new(self->client, id, callbacks, user_data);
+  return ut_wayland_pointer_new(self->client, id, callback_object, callbacks);
 }
 
 UtObject *
-ut_wayland_seat_get_keyboard(UtObject *object,
-                             const UtWaylandKeyboardCallbacks *callbacks,
-                             void *user_data) {
+ut_wayland_seat_get_keyboard(UtObject *object, UtObject *callback_object,
+                             const UtWaylandKeyboardCallbacks *callbacks) {
   assert(ut_object_is_wayland_seat(object));
   UtWaylandSeat *self = (UtWaylandSeat *)object;
 
@@ -109,12 +115,11 @@ ut_wayland_seat_get_keyboard(UtObject *object,
   ut_wayland_encoder_append_uint(payload, id);
   ut_wayland_client_send_request(self->client, self->id, 1,
                                  ut_wayland_encoder_get_data(payload));
-  return ut_wayland_keyboard_new(self->client, id, callbacks, user_data);
+  return ut_wayland_keyboard_new(self->client, id, callback_object, callbacks);
 }
 
-UtObject *ut_wayland_seat_get_touch(UtObject *object,
-                                    const UtWaylandTouchCallbacks *callbacks,
-                                    void *user_data) {
+UtObject *ut_wayland_seat_get_touch(UtObject *object, UtObject *callback_object,
+                                    const UtWaylandTouchCallbacks *callbacks) {
   assert(ut_object_is_wayland_seat(object));
   UtWaylandSeat *self = (UtWaylandSeat *)object;
 
@@ -123,7 +128,7 @@ UtObject *ut_wayland_seat_get_touch(UtObject *object,
   ut_wayland_encoder_append_uint(payload, id);
   ut_wayland_client_send_request(self->client, self->id, 2,
                                  ut_wayland_encoder_get_data(payload));
-  return ut_wayland_touch_new(self->client, id, callbacks, user_data);
+  return ut_wayland_touch_new(self->client, id, callback_object, callbacks);
 }
 
 void ut_wayland_seat_release(UtObject *object) {

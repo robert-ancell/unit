@@ -45,10 +45,9 @@ UtObject *ut_wayland_compositor_new_from_registry(UtObject *registry,
                                    id);
 }
 
-UtObject *
-ut_wayland_compositor_create_surface(UtObject *object,
-                                     const UtWaylandSurfaceCallbacks *callbacks,
-                                     void *user_data) {
+UtObject *ut_wayland_compositor_create_surface(
+    UtObject *object, UtObject *callback_object,
+    const UtWaylandSurfaceCallbacks *callbacks) {
   assert(ut_object_is_wayland_compositor(object));
   UtWaylandCompositor *self = (UtWaylandCompositor *)object;
 
@@ -58,7 +57,7 @@ ut_wayland_compositor_create_surface(UtObject *object,
   ut_wayland_client_send_request(self->client, self->id, 0,
                                  ut_wayland_encoder_get_data(payload));
   UtObject *surface =
-      ut_wayland_surface_new(self->client, id, callbacks, user_data);
+      ut_wayland_surface_new(self->client, id, callback_object, callbacks);
   ut_wayland_client_register_object(self->client, surface);
   return surface;
 }

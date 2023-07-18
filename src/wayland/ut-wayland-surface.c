@@ -7,23 +7,25 @@ typedef struct {
   UtObject object;
   UtObject *client;
   uint32_t id;
+  UtObject *callback_object;
   const UtWaylandSurfaceCallbacks *callbacks;
-  void *user_data;
 } UtWaylandSurface;
 
 static void decode_enter(UtWaylandSurface *self, UtObject *data) {
   uint32_t output_id = ut_wayland_decoder_get_uint(data);
   UtObject *output = ut_wayland_client_get_object(self->client, output_id);
-  if (self->callbacks != NULL && self->callbacks->enter != NULL) {
-    self->callbacks->enter(self->user_data, output);
+  if (self->callback_object != NULL && self->callbacks != NULL &&
+      self->callbacks->enter != NULL) {
+    self->callbacks->enter(self->callback_object, output);
   }
 }
 
 static void decode_leave(UtWaylandSurface *self, UtObject *data) {
   uint32_t output_id = ut_wayland_decoder_get_uint(data);
   UtObject *output = ut_wayland_client_get_object(self->client, output_id);
-  if (self->callbacks != NULL && self->callbacks->leave != NULL) {
-    self->callbacks->leave(self->user_data, output);
+  if (self->callback_object != NULL && self->callbacks != NULL &&
+      self->callbacks->leave != NULL) {
+    self->callbacks->leave(self->callback_object, output);
   }
 }
 
@@ -51,6 +53,11 @@ static bool ut_wayland_surface_decode_event(UtObject *object, uint16_t code,
   }
 }
 
+static void ut_xdg_wayland_surface_cleanup(UtObject *object) {
+  UtWaylandSurface *self = (UtWaylandSurface *)object;
+  ut_object_weak_unref(&self->callback_object);
+}
+
 static UtWaylandObjectInterface wayland_object_interface = {
     .get_interface = ut_wayland_surface_get_interface,
     .get_id = ut_wayland_surface_get_id,
@@ -58,18 +65,19 @@ static UtWaylandObjectInterface wayland_object_interface = {
 
 static UtObjectInterface object_interface = {
     .type_name = "UtWaylandSurface",
+    .cleanup = ut_xdg_wayland_surface_cleanup,
     .interfaces = {{&ut_wayland_object_id, &wayland_object_interface},
                    {NULL, NULL}}};
 
 UtObject *ut_wayland_surface_new(UtObject *client, uint32_t id,
-                                 const UtWaylandSurfaceCallbacks *callbacks,
-                                 void *user_data) {
+                                 UtObject *callback_object,
+                                 const UtWaylandSurfaceCallbacks *callbacks) {
   UtObject *object = ut_object_new(sizeof(UtWaylandSurface), &object_interface);
   UtWaylandSurface *self = (UtWaylandSurface *)object;
   self->client = client;
   self->id = id;
+  ut_object_weak_ref(callback_object, &self->callback_object);
   self->callbacks = callbacks;
-  self->user_data = user_data;
   ut_wayland_client_register_object(client, object);
   return object;
 }
@@ -111,9 +119,9 @@ void ut_wayland_surface_damage(UtObject *object, int32_t x, int32_t y,
                                  ut_wayland_encoder_get_data(payload));
 }
 
-UtObject *ut_wayland_surface_frame(UtObject *object,
-                                   UtWaylandCallbackDoneCallback done_callback,
-                                   void *user_data) {
+UtObject *
+ut_wayland_surface_frame(UtObject *object, UtObject *callback_object,
+                         UtWaylandCallbackDoneCallback done_callback) {
   assert(ut_object_is_wayland_surface(object));
   UtWaylandSurface *self = (UtWaylandSurface *)object;
 
@@ -122,8 +130,8 @@ UtObject *ut_wayland_surface_frame(UtObject *object,
   ut_wayland_encoder_append_uint(payload, callback);
   ut_wayland_client_send_request(self->client, self->id, 3,
                                  ut_wayland_encoder_get_data(payload));
-  return ut_wayland_callback_new(self->client, callback, done_callback,
-                                 user_data);
+  return ut_wayland_callback_new(self->client, callback, callback_object,
+                                 done_callback);
 }
 
 void ut_wayland_surface_set_opaque_region(UtObject *object, UtObject *region) {

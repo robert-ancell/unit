@@ -6,9 +6,9 @@
 
 #pragma once
 
-typedef void (*UtWaylandSurfaceEnterCallback)(void *user_data,
+typedef void (*UtWaylandSurfaceEnterCallback)(UtObject *object,
                                               UtObject *output);
-typedef void (*UtWaylandSurfaceLeaveCallback)(void *user_data,
+typedef void (*UtWaylandSurfaceLeaveCallback)(UtObject *object,
                                               UtObject *output);
 
 typedef struct {
@@ -17,8 +17,8 @@ typedef struct {
 } UtWaylandSurfaceCallbacks;
 
 UtObject *ut_wayland_surface_new(UtObject *client, uint32_t id,
-                                 const UtWaylandSurfaceCallbacks *callbacks,
-                                 void *user_data);
+                                 UtObject *callback_object,
+                                 const UtWaylandSurfaceCallbacks *callbacks);
 
 void ut_wayland_surface_destroy(UtObject *object);
 
@@ -28,9 +28,8 @@ void ut_wayland_surface_attach(UtObject *object, UtObject *buffer, int32_t x,
 void ut_wayland_surface_damage(UtObject *object, int32_t x, int32_t y,
                                int32_t width, int32_t height);
 
-UtObject *ut_wayland_surface_frame(UtObject *object,
-                                   UtWaylandCallbackDoneCallback done_callback,
-                                   void *user_data);
+UtObject *ut_wayland_surface_frame(UtObject *object, UtObject *callback_object,
+                                   UtWaylandCallbackDoneCallback done_callback);
 
 void ut_wayland_surface_set_opaque_region(UtObject *object, UtObject *region);
 

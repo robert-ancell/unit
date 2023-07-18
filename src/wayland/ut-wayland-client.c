@@ -79,11 +79,11 @@ static size_t read_cb(UtObject *object, UtObject *data, bool complete) {
   }
 }
 
-static void error_cb(void *user_data, uint32_t id, uint32_t code,
+static void error_cb(UtObject *object, uint32_t id, uint32_t code,
                      const char *message) {}
 
-static void delete_id_cb(void *user_data, uint32_t id) {
-  UtWaylandClient *self = user_data;
+static void delete_id_cb(UtObject *object, uint32_t id) {
+  UtWaylandClient *self = (UtWaylandClient *)object;
 
   size_t objects_length = ut_list_get_length(self->objects);
   for (size_t i = 0; i < objects_length; i++) {
@@ -134,24 +134,23 @@ void ut_wayland_client_connect(UtObject *object) {
   ut_tcp_socket_connect(self->socket, NULL, NULL);
   ut_input_stream_read(self->socket, object, read_cb);
 
-  self->display = ut_wayland_display_new(object, &display_callbacks, self);
+  self->display = ut_wayland_display_new(object, object, &display_callbacks);
 }
 
-UtObject *ut_wayland_client_sync(UtObject *object,
-                                 UtWaylandCallbackDoneCallback done_callback,
-                                 void *user_data) {
+UtObject *ut_wayland_client_sync(UtObject *object, UtObject *callback_object,
+                                 UtWaylandCallbackDoneCallback done_callback) {
   assert(ut_object_is_wayland_client(object));
   UtWaylandClient *self = (UtWaylandClient *)object;
-  return ut_wayland_display_sync(self->display, done_callback, user_data);
+  return ut_wayland_display_sync(self->display, callback_object, done_callback);
 }
 
 UtObject *
-ut_wayland_client_get_registry(UtObject *object,
-                               const UtWaylandRegistryCallbacks *callbacks,
-                               void *user_data) {
+ut_wayland_client_get_registry(UtObject *object, UtObject *callback_object,
+                               const UtWaylandRegistryCallbacks *callbacks) {
   assert(ut_object_is_wayland_client(object));
   UtWaylandClient *self = (UtWaylandClient *)object;
-  return ut_wayland_display_get_registry(self->display, callbacks, user_data);
+  return ut_wayland_display_get_registry(self->display, callback_object,
+                                         callbacks);
 }
 
 uint32_t ut_wayland_client_allocate_id(UtObject *object) {

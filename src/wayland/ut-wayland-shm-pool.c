@@ -38,8 +38,8 @@ UtObject *ut_wayland_shm_pool_new(UtObject *client, uint32_t id) {
 
 UtObject *ut_wayland_shm_pool_create_buffer(
     UtObject *object, int32_t offset, int32_t width, int32_t height,
-    int32_t stride, uint32_t format,
-    UtWaylandBufferReleaseCallback release_callback, void *user_data) {
+    int32_t stride, uint32_t format, UtObject *callback_object,
+    UtWaylandBufferReleaseCallback release_callback) {
   assert(ut_object_is_wayland_shm_pool(object));
   UtWaylandShmPool *self = (UtWaylandShmPool *)object;
 
@@ -53,8 +53,8 @@ UtObject *ut_wayland_shm_pool_create_buffer(
   ut_wayland_encoder_append_uint(payload, format);
   ut_wayland_client_send_request(self->client, self->id, 0,
                                  ut_wayland_encoder_get_data(payload));
-  UtObject *buffer =
-      ut_wayland_buffer_new(self->client, id, release_callback, user_data);
+  UtObject *buffer = ut_wayland_buffer_new(self->client, id, callback_object,
+                                           release_callback);
   ut_wayland_client_register_object(self->client, buffer);
   return buffer;
 }

@@ -8,14 +8,15 @@ typedef struct {
   UtObject object;
   UtObject *client;
   uint32_t id;
+  UtObject *callback_object;
   const UtXdgWmBaseCallbacks *callbacks;
-  void *user_data;
 } UtXdgWmBase;
 
 static void decode_ping(UtXdgWmBase *self, UtObject *data) {
   uint32_t serial = ut_wayland_decoder_get_uint(data);
-  if (self->callbacks != NULL && self->callbacks->ping != NULL) {
-    self->callbacks->ping(self->user_data, serial);
+  if (self->callback_object != NULL && self->callbacks != NULL &&
+      self->callbacks->ping != NULL) {
+    self->callbacks->ping(self->callback_object, serial);
   }
 }
 
@@ -40,6 +41,11 @@ static bool ut_xdg_wm_base_decode_event(UtObject *object, uint16_t code,
   }
 }
 
+static void ut_xdg_wm_base_cleanup(UtObject *object) {
+  UtXdgWmBase *self = (UtXdgWmBase *)object;
+  ut_object_weak_unref(&self->callback_object);
+}
+
 static UtWaylandObjectInterface wayland_object_interface = {
     .get_interface = ut_xdg_wm_base_get_interface,
     .get_id = ut_xdg_wm_base_get_id,
@@ -47,29 +53,30 @@ static UtWaylandObjectInterface wayland_object_interface = {
 
 static UtObjectInterface object_interface = {
     .type_name = "UtXdgWmBase",
+    .cleanup = ut_xdg_wm_base_cleanup,
     .interfaces = {{&ut_wayland_object_id, &wayland_object_interface},
                    {NULL, NULL}}};
 
 UtObject *ut_xdg_wm_base_new(UtObject *client, uint32_t id,
-                             const UtXdgWmBaseCallbacks *callbacks,
-                             void *user_data) {
+                             UtObject *callback_object,
+                             const UtXdgWmBaseCallbacks *callbacks) {
   UtObject *object = ut_object_new(sizeof(UtXdgWmBase), &object_interface);
   UtXdgWmBase *self = (UtXdgWmBase *)object;
   self->client = client;
   self->id = id;
+  ut_object_weak_ref(callback_object, &self->callback_object);
   self->callbacks = callbacks;
-  self->user_data = user_data;
   ut_wayland_client_register_object(client, object);
   return object;
 }
 
 UtObject *
 ut_xdg_wm_base_new_from_registry(UtObject *registry, uint32_t name,
-                                 const UtXdgWmBaseCallbacks *callbacks,
-                                 void *user_data) {
+                                 UtObject *callback_object,
+                                 const UtXdgWmBaseCallbacks *callbacks) {
   uint32_t id = ut_wayland_registry_bind(registry, name, "xdg_wm_base", 4);
   return ut_xdg_wm_base_new(ut_wayland_registry_get_client(registry), id,
-                            callbacks, user_data);
+                            callback_object, callbacks);
 }
 
 void ut_xdg_wm_base_destroy(UtObject *object) {
@@ -93,9 +100,10 @@ UtObject *ut_xdg_wm_base_create_positioner(UtObject *object) {
   return ut_xdg_positioner_new(self->client, id);
 }
 
-UtObject *ut_xdg_wm_base_get_xdg_surface(UtObject *object, UtObject *surface,
-                                         const UtXdgSurfaceCallbacks *callbacks,
-                                         void *user_data) {
+UtObject *
+ut_xdg_wm_base_get_xdg_surface(UtObject *object, UtObject *surface,
+                               UtObject *callback_object,
+                               const UtXdgSurfaceCallbacks *callbacks) {
   assert(ut_object_is_xdg_wm_base(object));
   assert(ut_object_is_wayland_surface(surface));
   UtXdgWmBase *self = (UtXdgWmBase *)object;
@@ -106,7 +114,7 @@ UtObject *ut_xdg_wm_base_get_xdg_surface(UtObject *object, UtObject *surface,
   ut_wayland_encoder_append_object(payload, surface);
   ut_wayland_client_send_request(self->client, self->id, 2,
                                  ut_wayland_encoder_get_data(payload));
-  return ut_xdg_surface_new(self->client, id, callbacks, user_data);
+  return ut_xdg_surface_new(self->client, id, callback_object, callbacks);
 }
 
 void ut_xdg_wm_base_pong(UtObject *object, uint32_t serial) {

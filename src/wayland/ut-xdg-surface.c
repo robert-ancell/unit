@@ -7,14 +7,14 @@ typedef struct {
   UtObject object;
   UtObject *client;
   uint32_t id;
+  UtObject *callback_object;
   const UtXdgSurfaceCallbacks *callbacks;
-  void *user_data;
 } UtXdgSurface;
 
 static void decode_configure(UtXdgSurface *self, UtObject *data) {
   uint32_t serial = ut_wayland_decoder_get_uint(data);
   if (self->callbacks != NULL && self->callbacks->configure != NULL) {
-    self->callbacks->configure(self->user_data, serial);
+    self->callbacks->configure(self->callback_object, serial);
   }
 }
 
@@ -39,6 +39,11 @@ static bool ut_xdg_surface_decode_event(UtObject *object, uint16_t code,
   }
 }
 
+static void ut_xdg_surface_cleanup(UtObject *object) {
+  UtXdgSurface *self = (UtXdgSurface *)object;
+  ut_object_weak_unref(&self->callback_object);
+}
+
 static UtWaylandObjectInterface wayland_object_interface = {
     .get_interface = ut_xdg_surface_get_interface,
     .get_id = ut_xdg_surface_get_id,
@@ -46,18 +51,19 @@ static UtWaylandObjectInterface wayland_object_interface = {
 
 static UtObjectInterface object_interface = {
     .type_name = "UtXdgSurface",
+    .cleanup = ut_xdg_surface_cleanup,
     .interfaces = {{&ut_wayland_object_id, &wayland_object_interface},
                    {NULL, NULL}}};
 
 UtObject *ut_xdg_surface_new(UtObject *client, uint32_t id,
-                             const UtXdgSurfaceCallbacks *callbacks,
-                             void *user_data) {
+                             UtObject *callback_object,
+                             const UtXdgSurfaceCallbacks *callbacks) {
   UtObject *object = ut_object_new(sizeof(UtXdgSurface), &object_interface);
   UtXdgSurface *self = (UtXdgSurface *)object;
   self->client = client;
   self->id = id;
+  ut_object_weak_ref(callback_object, &self->callback_object);
   self->callbacks = callbacks;
-  self->user_data = user_data;
   ut_wayland_client_register_object(client, object);
   return object;
 }
@@ -72,8 +78,8 @@ void ut_xdg_surface_destroy(UtObject *object) {
 }
 
 UtObject *ut_xdg_surface_get_toplevel(UtObject *object,
-                                      const UtXdgToplevelCallbacks *callbacks,
-                                      void *user_data) {
+                                      UtObject *callback_object,
+                                      const UtXdgToplevelCallbacks *callbacks) {
   assert(ut_object_is_xdg_surface(object));
   UtXdgSurface *self = (UtXdgSurface *)object;
 
@@ -82,13 +88,13 @@ UtObject *ut_xdg_surface_get_toplevel(UtObject *object,
   ut_wayland_encoder_append_uint(payload, id);
   ut_wayland_client_send_request(self->client, self->id, 1,
                                  ut_wayland_encoder_get_data(payload));
-  return ut_xdg_toplevel_new(self->client, id, callbacks, user_data);
+  return ut_xdg_toplevel_new(self->client, id, callback_object, callbacks);
 }
 
 UtObject *ut_xdg_surface_get_popup(UtObject *object, UtObject *parent,
                                    UtObject *positioner,
-                                   const UtXdgPopupCallbacks *callbacks,
-                                   void *user_data) {
+                                   UtObject *callback_object,
+                                   const UtXdgPopupCallbacks *callbacks) {
   assert(ut_object_is_xdg_surface(object));
   UtXdgSurface *self = (UtXdgSurface *)object;
 
@@ -99,7 +105,7 @@ UtObject *ut_xdg_surface_get_popup(UtObject *object, UtObject *parent,
   ut_wayland_encoder_append_object(payload, positioner);
   ut_wayland_client_send_request(self->client, self->id, 2,
                                  ut_wayland_encoder_get_data(payload));
-  return ut_xdg_popup_new(self->client, id, callbacks, user_data);
+  return ut_xdg_popup_new(self->client, id, callback_object, callbacks);
 }
 
 void ut_xdg_surface_set_window_geometry(UtObject *object, int32_t x, int32_t y,

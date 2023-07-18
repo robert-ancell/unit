@@ -5,14 +5,14 @@
 
 #pragma once
 
-typedef void (*UtXdgToplevelConfigureCallback)(void *user_data, int32_t width,
+typedef void (*UtXdgToplevelConfigureCallback)(UtObject *object, int32_t width,
                                                int32_t height,
                                                UtObject *states);
-typedef void (*UtXdgToplevelCloseCallback)(void *user_data);
-typedef void (*UtXdgToplevelConfigureBoundsCallback)(void *user_data,
+typedef void (*UtXdgToplevelCloseCallback)(UtObject *object);
+typedef void (*UtXdgToplevelConfigureBoundsCallback)(UtObject *object,
                                                      int32_t width,
                                                      int32_t height);
-typedef void (*UtXdgToplevelWmCapabilitiesCallback)(void *user_data,
+typedef void (*UtXdgToplevelWmCapabilitiesCallback)(UtObject *object,
                                                     UtObject *capabilities);
 
 typedef struct {
@@ -23,8 +23,8 @@ typedef struct {
 } UtXdgToplevelCallbacks;
 
 UtObject *ut_xdg_toplevel_new(UtObject *client, uint32_t id,
-                              const UtXdgToplevelCallbacks *callbacks,
-                              void *user_data);
+                              UtObject *callback_object,
+                              const UtXdgToplevelCallbacks *callbacks);
 
 void ut_xdg_toplevel_destroy(UtObject *object);
 

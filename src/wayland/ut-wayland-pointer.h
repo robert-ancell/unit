@@ -5,19 +5,19 @@
 
 #pragma once
 
-typedef void (*UtWaylandPointerEnterCallback)(void *user_data, uint32_t serial,
+typedef void (*UtWaylandPointerEnterCallback)(UtObject *object, uint32_t serial,
                                               UtObject *surface,
                                               double surface_x,
                                               double surface_y);
-typedef void (*UtWaylandPointerLeaveCallback)(void *user_data, uint32_t serial,
+typedef void (*UtWaylandPointerLeaveCallback)(UtObject *object, uint32_t serial,
                                               UtObject *surface);
-typedef void (*UtWaylandPointerMotionCallback)(void *user_data, uint32_t time,
+typedef void (*UtWaylandPointerMotionCallback)(UtObject *object, uint32_t time,
                                                double surface_x,
                                                double surface_y);
-typedef void (*UtWaylandPointerButtonCallback)(void *user_data, uint32_t serial,
-                                               uint32_t time, uint32_t button,
-                                               uint32_t state);
-typedef void (*UtWaylandPointerFrameCallback)(void *user_data);
+typedef void (*UtWaylandPointerButtonCallback)(UtObject *object,
+                                               uint32_t serial, uint32_t time,
+                                               uint32_t button, uint32_t state);
+typedef void (*UtWaylandPointerFrameCallback)(UtObject *object);
 
 typedef struct {
   UtWaylandPointerEnterCallback enter;
@@ -28,8 +28,8 @@ typedef struct {
 } UtWaylandPointerCallbacks;
 
 UtObject *ut_wayland_pointer_new(UtObject *client, uint32_t id,
-                                 const UtWaylandPointerCallbacks *callbacks,
-                                 void *user_data);
+                                 UtObject *callback_object,
+                                 const UtWaylandPointerCallbacks *callbacks);
 
 void ut_wayland_pointer_set_cursor(UtObject *object, uint32_t serial,
                                    UtObject *surface, int32_t hotspot_x,

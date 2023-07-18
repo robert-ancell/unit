@@ -14,9 +14,9 @@ typedef enum {
   UT_WAYLAND_SEAT_CAPABILITY_TOUCH = 1 << 2
 } UtWaylandSeatCapability;
 
-typedef void (*UtWaylandSeatCapabilitiesCallback)(void *user_data,
+typedef void (*UtWaylandSeatCapabilitiesCallback)(UtObject *object,
                                                   uint32_t capabilities);
-typedef void (*UtWaylandSeatNameCallback)(void *user_data, const char *name);
+typedef void (*UtWaylandSeatNameCallback)(UtObject *object, const char *name);
 
 typedef struct {
   UtWaylandSeatCapabilitiesCallback capabilities;
@@ -24,27 +24,24 @@ typedef struct {
 } UtWaylandSeatCallbacks;
 
 UtObject *ut_wayland_seat_new(UtObject *client, uint32_t id,
-                              const UtWaylandSeatCallbacks *callbacks,
-                              void *user_data);
+                              UtObject *callback_object,
+                              const UtWaylandSeatCallbacks *callbacks);
 
 UtObject *
 ut_wayland_seat_new_from_registry(UtObject *registry, uint32_t name,
-                                  const UtWaylandSeatCallbacks *callbacks,
-                                  void *user_data);
+                                  UtObject *callback_object,
+                                  const UtWaylandSeatCallbacks *callbacks);
 
 UtObject *
-ut_wayland_seat_get_pointer(UtObject *object,
-                            const UtWaylandPointerCallbacks *callbacks,
-                            void *user_data);
+ut_wayland_seat_get_pointer(UtObject *object, UtObject *callback_object,
+                            const UtWaylandPointerCallbacks *callbacks);
 
 UtObject *
-ut_wayland_seat_get_keyboard(UtObject *object,
-                             const UtWaylandKeyboardCallbacks *callbacks,
-                             void *user_data);
+ut_wayland_seat_get_keyboard(UtObject *object, UtObject *callback_object,
+                             const UtWaylandKeyboardCallbacks *callbacks);
 
-UtObject *ut_wayland_seat_get_touch(UtObject *object,
-                                    const UtWaylandTouchCallbacks *callbacks,
-                                    void *user_data);
+UtObject *ut_wayland_seat_get_touch(UtObject *object, UtObject *callback_object,
+                                    const UtWaylandTouchCallbacks *callbacks);
 
 void ut_wayland_seat_release(UtObject *object);
 

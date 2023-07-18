@@ -8,23 +8,25 @@ typedef struct {
   UtObject object;
   UtObject *client;
   uint32_t id;
+  UtObject *callback_object;
   const UtWaylandRegistryCallbacks *callbacks;
-  void *user_data;
 } UtWaylandRegistry;
 
 static void decode_global(UtWaylandRegistry *self, UtObject *data) {
   uint32_t name = ut_wayland_decoder_get_uint(data);
   ut_cstring_ref interface = ut_wayland_decoder_get_string(data);
   uint32_t version = ut_wayland_decoder_get_uint(data);
-  if (self->callbacks != NULL && self->callbacks->global != NULL) {
-    self->callbacks->global(self->user_data, name, interface, version);
+  if (self->callback_object != NULL && self->callbacks != NULL &&
+      self->callbacks->global != NULL) {
+    self->callbacks->global(self->callback_object, name, interface, version);
   }
 }
 
 static void decode_global_remove(UtWaylandRegistry *self, UtObject *data) {
   uint32_t name = ut_wayland_decoder_get_uint(data);
-  if (self->callbacks != NULL && self->callbacks->global_remove != NULL) {
-    self->callbacks->global_remove(self->user_data, name);
+  if (self->callback_object != NULL && self->callbacks != NULL &&
+      self->callbacks->global_remove != NULL) {
+    self->callbacks->global_remove(self->callback_object, name);
   }
 }
 
@@ -52,6 +54,11 @@ static bool ut_wayland_registry_decode_event(UtObject *object, uint16_t code,
   }
 }
 
+static void ut_wayland_registry_cleanup(UtObject *object) {
+  UtWaylandRegistry *self = (UtWaylandRegistry *)object;
+  ut_object_weak_unref(&self->callback_object);
+}
+
 static UtWaylandObjectInterface wayland_object_interface = {
     .get_interface = ut_wayland_registry_get_interface,
     .get_id = ut_wayland_registry_get_id,
@@ -59,19 +66,20 @@ static UtWaylandObjectInterface wayland_object_interface = {
 
 static UtObjectInterface object_interface = {
     .type_name = "UtWaylandRegistry",
+    .cleanup = ut_wayland_registry_cleanup,
     .interfaces = {{&ut_wayland_object_id, &wayland_object_interface},
                    {NULL, NULL}}};
 
 UtObject *ut_wayland_registry_new(UtObject *client, uint32_t id,
-                                  const UtWaylandRegistryCallbacks *callbacks,
-                                  void *user_data) {
+                                  UtObject *callback_object,
+                                  const UtWaylandRegistryCallbacks *callbacks) {
   UtObject *object =
       ut_object_new(sizeof(UtWaylandRegistry), &object_interface);
   UtWaylandRegistry *self = (UtWaylandRegistry *)object;
   self->client = client;
   self->id = id;
+  ut_object_weak_ref(callback_object, &self->callback_object);
   self->callbacks = callbacks;
-  self->user_data = user_data;
   ut_wayland_client_register_object(client, object);
   return object;
 }

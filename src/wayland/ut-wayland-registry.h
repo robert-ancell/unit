@@ -4,10 +4,10 @@
 
 #pragma once
 
-typedef void (*UtWaylandRegistryGlobalCallback)(void *user_data, uint32_t name,
+typedef void (*UtWaylandRegistryGlobalCallback)(UtObject *object, uint32_t name,
                                                 const char *interface,
                                                 uint32_t version);
-typedef void (*UtWaylandRegistryGlobalRemoveCallback)(void *user_data,
+typedef void (*UtWaylandRegistryGlobalRemoveCallback)(UtObject *object,
                                                       uint32_t name);
 
 typedef struct {
@@ -16,8 +16,8 @@ typedef struct {
 } UtWaylandRegistryCallbacks;
 
 UtObject *ut_wayland_registry_new(UtObject *client, uint32_t id,
-                                  const UtWaylandRegistryCallbacks *callbacks,
-                                  void *user_data);
+                                  UtObject *callback_object,
+                                  const UtWaylandRegistryCallbacks *callbacks);
 
 uint32_t ut_wayland_registry_bind(UtObject *object, uint32_t name,
                                   const char *interface, uint32_t version);

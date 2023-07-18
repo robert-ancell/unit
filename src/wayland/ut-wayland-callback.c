@@ -7,14 +7,14 @@ typedef struct {
   UtObject object;
   UtObject *client;
   uint32_t id;
+  UtObject *callback_object;
   UtWaylandCallbackDoneCallback done_callback;
-  void *user_data;
 } UtWaylandCallback;
 
 static void decode_done(UtWaylandCallback *self, UtObject *data) {
   uint32_t callback_data = ut_wayland_decoder_get_uint(data);
-  if (self->done_callback != NULL) {
-    self->done_callback(self->user_data, callback_data);
+  if (self->callback_object != NULL && self->done_callback != NULL) {
+    self->done_callback(self->callback_object, callback_data);
   }
 }
 
@@ -39,6 +39,11 @@ static bool ut_wayland_callback_decode_event(UtObject *object, uint16_t code,
   }
 }
 
+static void ut_wayland_callback_cleanup(UtObject *object) {
+  UtWaylandCallback *self = (UtWaylandCallback *)object;
+  ut_object_weak_unref(&self->callback_object);
+}
+
 static UtWaylandObjectInterface wayland_object_interface = {
     .get_interface = ut_wayland_callback_get_interface,
     .get_id = ut_wayland_callback_get_id,
@@ -46,19 +51,20 @@ static UtWaylandObjectInterface wayland_object_interface = {
 
 static UtObjectInterface object_interface = {
     .type_name = "UtWaylandCallback",
+    .cleanup = ut_wayland_callback_cleanup,
     .interfaces = {{&ut_wayland_object_id, &wayland_object_interface},
                    {NULL, NULL}}};
 
 UtObject *ut_wayland_callback_new(UtObject *client, uint32_t id,
-                                  UtWaylandCallbackDoneCallback done_callback,
-                                  void *user_data) {
+                                  UtObject *callback_object,
+                                  UtWaylandCallbackDoneCallback done_callback) {
   UtObject *object =
       ut_object_new(sizeof(UtWaylandCallback), &object_interface);
   UtWaylandCallback *self = (UtWaylandCallback *)object;
   self->client = client;
   self->id = id;
+  ut_object_weak_ref(callback_object, &self->callback_object);
   self->done_callback = done_callback;
-  self->user_data = user_data;
   ut_wayland_client_register_object(client, object);
   return object;
 }

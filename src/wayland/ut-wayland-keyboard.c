@@ -7,8 +7,8 @@ typedef struct {
   UtObject object;
   UtObject *client;
   uint32_t id;
+  UtObject *callback_object;
   const UtWaylandKeyboardCallbacks *callbacks;
-  void *user_data;
 } UtWaylandKeyboard;
 
 static void decode_keymap(UtWaylandKeyboard *self, UtObject *data) {
@@ -20,8 +20,9 @@ static void decode_enter(UtWaylandKeyboard *self, UtObject *data) {
   uint32_t surface_id = ut_wayland_decoder_get_uint(data);
   UtObject *surface = ut_wayland_client_get_object(self->client, surface_id);
   UtObjectRef keys = ut_wayland_decoder_get_uint_array(data);
-  if (self->callbacks != NULL && self->callbacks->enter != NULL) {
-    self->callbacks->enter(self->user_data, serial, surface, keys);
+  if (self->callback_object != NULL && self->callbacks != NULL &&
+      self->callbacks->enter != NULL) {
+    self->callbacks->enter(self->callback_object, serial, surface, keys);
   }
 }
 
@@ -29,8 +30,9 @@ static void decode_leave(UtWaylandKeyboard *self, UtObject *data) {
   uint32_t serial = ut_wayland_decoder_get_uint(data);
   uint32_t surface_id = ut_wayland_decoder_get_uint(data);
   UtObject *surface = ut_wayland_client_get_object(self->client, surface_id);
-  if (self->callbacks != NULL && self->callbacks->leave != NULL) {
-    self->callbacks->leave(self->user_data, serial, surface);
+  if (self->callback_object != NULL && self->callbacks != NULL &&
+      self->callbacks->leave != NULL) {
+    self->callbacks->leave(self->callback_object, serial, surface);
   }
 }
 
@@ -39,8 +41,9 @@ static void decode_key(UtWaylandKeyboard *self, UtObject *data) {
   uint32_t time = ut_wayland_decoder_get_uint(data);
   uint32_t key = ut_wayland_decoder_get_uint(data);
   uint32_t state = ut_wayland_decoder_get_uint(data);
-  if (self->callbacks != NULL && self->callbacks->key != NULL) {
-    self->callbacks->key(self->user_data, serial, time, key, state);
+  if (self->callback_object != NULL && self->callbacks != NULL &&
+      self->callbacks->key != NULL) {
+    self->callbacks->key(self->callback_object, serial, time, key, state);
   }
 }
 
@@ -50,8 +53,9 @@ static void decode_modifiers(UtWaylandKeyboard *self, UtObject *data) {
   uint32_t mods_latched = ut_wayland_decoder_get_uint(data);
   uint32_t mods_locked = ut_wayland_decoder_get_uint(data);
   uint32_t group = ut_wayland_decoder_get_uint(data);
-  if (self->callbacks != NULL && self->callbacks->modifiers != NULL) {
-    self->callbacks->modifiers(self->user_data, serial, mods_depressed,
+  if (self->callback_object != NULL && self->callbacks != NULL &&
+      self->callbacks->modifiers != NULL) {
+    self->callbacks->modifiers(self->callback_object, serial, mods_depressed,
                                mods_latched, mods_locked, group);
   }
 }
@@ -59,8 +63,9 @@ static void decode_modifiers(UtWaylandKeyboard *self, UtObject *data) {
 static void decode_repeat_info(UtWaylandKeyboard *self, UtObject *data) {
   uint32_t rate = ut_wayland_decoder_get_int(data);
   uint32_t delay = ut_wayland_decoder_get_int(data);
-  if (self->callbacks != NULL && self->callbacks->repeat_info != NULL) {
-    self->callbacks->repeat_info(self->user_data, rate, delay);
+  if (self->callback_object != NULL && self->callbacks != NULL &&
+      self->callbacks->repeat_info != NULL) {
+    self->callbacks->repeat_info(self->callback_object, rate, delay);
   }
 }
 
@@ -100,6 +105,11 @@ static bool ut_wayland_keyboard_decode_event(UtObject *object, uint16_t code,
   }
 }
 
+static void ut_wayland_keyboard_cleanup(UtObject *object) {
+  UtWaylandKeyboard *self = (UtWaylandKeyboard *)object;
+  ut_object_weak_unref(&self->callback_object);
+}
+
 static UtWaylandObjectInterface wayland_object_interface = {
     .get_interface = ut_wayland_keyboard_get_interface,
     .get_id = ut_wayland_keyboard_get_id,
@@ -107,19 +117,20 @@ static UtWaylandObjectInterface wayland_object_interface = {
 
 static UtObjectInterface object_interface = {
     .type_name = "UtWaylandKeyboard",
+    .cleanup = ut_wayland_keyboard_cleanup,
     .interfaces = {{&ut_wayland_object_id, &wayland_object_interface},
                    {NULL, NULL}}};
 
 UtObject *ut_wayland_keyboard_new(UtObject *client, uint32_t id,
-                                  const UtWaylandKeyboardCallbacks *callbacks,
-                                  void *user_data) {
+                                  UtObject *callback_object,
+                                  const UtWaylandKeyboardCallbacks *callbacks) {
   UtObject *object =
       ut_object_new(sizeof(UtWaylandKeyboard), &object_interface);
   UtWaylandKeyboard *self = (UtWaylandKeyboard *)object;
   self->client = client;
   self->id = id;
+  ut_object_weak_ref(callback_object, &self->callback_object);
   self->callbacks = callbacks;
-  self->user_data = user_data;
   ut_wayland_client_register_object(client, object);
   return object;
 }
