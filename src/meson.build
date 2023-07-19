@@ -63,6 +63,7 @@ ut_sources = [
   'ut-constant-utf8-string.c',
   'ut-constant-uint8-array.c',
   'ut-cstring.c',
+  'ut-date-time.c',
   'ut-drawable.c',
   'ut-event-loop.c',
   'ut-error.c',
@@ -287,6 +288,11 @@ const_utf8_string_test = executable('ut-constant-utf8-string-test',
                                     'ut-constant-utf8-string-test.c',
                                     link_with: ut_lib)
 test('Constant String', const_utf8_string_test)
+
+date_time_test = executable('ut-date-time-test',
+                            'ut-date-time-test.c',
+                            link_with: ut_lib)
+test('Date/Time', date_time_test)
 
 shared_memory_array_test = executable('ut-shared-memory-array-test',
                               'ut-shared-memory-array-test.c',
