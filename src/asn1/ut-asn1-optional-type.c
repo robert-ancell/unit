@@ -33,6 +33,14 @@ static char *ut_asn1_optional_type_to_string(UtObject *object) {
   return ut_cstring_new_printf("<UtAsn1OptionalType>(%s)", type_string);
 }
 
+static bool ut_asn1_optional_type_equal(UtObject *object, UtObject *other) {
+  UtAsn1OptionalType *self = (UtAsn1OptionalType *)object;
+  UtAsn1OptionalType *other_self = (UtAsn1OptionalType *)other;
+  return ut_object_equal(self->type, ut_object_is_asn1_optional_type(other)
+                                         ? other_self->type
+                                         : other);
+}
+
 static void ut_asn1_optional_type_cleanup(UtObject *object) {
   UtAsn1OptionalType *self = (UtAsn1OptionalType *)object;
   ut_object_unref(self->type);
@@ -41,6 +49,7 @@ static void ut_asn1_optional_type_cleanup(UtObject *object) {
 static UtObjectInterface object_interface = {
     .type_name = "UtAsn1OptionalType",
     .to_string = ut_asn1_optional_type_to_string,
+    .equal = ut_asn1_optional_type_equal,
     .cleanup = ut_asn1_optional_type_cleanup,
     .interfaces = {{&ut_asn1_type_id, &asn1_type_interface}, {NULL, NULL}}};
 

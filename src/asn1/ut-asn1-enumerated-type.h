@@ -12,6 +12,9 @@ UtObject *ut_asn1_enumerated_type_new(UtObject *values_by_name,
 
 int64_t ut_asn1_enumerated_type_get_value(UtObject *object, const char *name);
 
+/// !return-ref
+UtObject *ut_asn1_enumerated_type_get_names(UtObject *object);
+
 const char *ut_asn1_enumerated_type_get_name(UtObject *object, int64_t number);
 
 bool ut_asn1_enumerated_type_get_extensible(UtObject *object);

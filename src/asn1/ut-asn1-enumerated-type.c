@@ -75,6 +75,19 @@ int64_t ut_asn1_enumerated_type_get_value(UtObject *object, const char *name) {
   }
 }
 
+UtObject *ut_asn1_enumerated_type_get_names(UtObject *object) {
+  assert(ut_object_is_asn1_enumerated_type(object));
+  UtAsn1EnumeratedType *self = (UtAsn1EnumeratedType *)object;
+  UtObjectRef keys = ut_map_get_keys(self->values_by_name);
+  size_t keys_length = ut_list_get_length(keys);
+  UtObject *names = ut_string_list_new();
+  for (size_t i = 0; i < keys_length; i++) {
+    UtObject *key = ut_object_list_get_element(keys, i);
+    ut_string_list_append(names, ut_string_get_text(key));
+  }
+  return names;
+}
+
 const char *ut_asn1_enumerated_type_get_name(UtObject *object, int64_t number) {
   assert(ut_object_is_asn1_enumerated_type(object));
   UtAsn1EnumeratedType *self = (UtAsn1EnumeratedType *)object;

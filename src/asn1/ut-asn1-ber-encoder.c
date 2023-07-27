@@ -378,6 +378,17 @@ static size_t encode_printable_string(UtAsn1BerEncoder *self,
   return encode_octet_string(self, printable_string);
 }
 
+static size_t encode_teletex_string(UtAsn1BerEncoder *self, const char *value) {
+  assert(false); // FIXME
+  return 0;
+}
+
+static size_t encode_videotex_string(UtAsn1BerEncoder *self,
+                                     const char *value) {
+  assert(false); // FIXME
+  return 0;
+}
+
 static size_t encode_ia5_string(UtAsn1BerEncoder *self, const char *value) {
   UtObjectRef ia5_string = ut_asn1_encode_ia5_string(value);
   if (ia5_string == NULL) {
@@ -814,6 +825,42 @@ static size_t encode_ia5_string_value(UtAsn1BerEncoder *self, UtObject *value,
   return length;
 }
 
+static size_t encode_teletex_string_value(UtAsn1BerEncoder *self,
+                                          UtObject *value, bool encode_tag,
+                                          bool *is_constructed) {
+  if (!ut_object_implements_string(value)) {
+    // set_error
+    assert(false);
+    return 0;
+  }
+  size_t length = encode_teletex_string(self, ut_string_get_text(value));
+  if (encode_tag) {
+    length += encode_definite_length(self, length);
+    length += encode_identifier(self, UT_ASN1_TAG_CLASS_UNIVERSAL, false,
+                                UT_ASN1_TAG_UNIVERSAL_TELETEX_STRING);
+  }
+  *is_constructed = encode_tag;
+  return length;
+}
+
+static size_t encode_videotex_string_value(UtAsn1BerEncoder *self,
+                                           UtObject *value, bool encode_tag,
+                                           bool *is_constructed) {
+  if (!ut_object_implements_string(value)) {
+    // set_error
+    assert(false);
+    return 0;
+  }
+  size_t length = encode_videotex_string(self, ut_string_get_text(value));
+  if (encode_tag) {
+    length += encode_definite_length(self, length);
+    length += encode_identifier(self, UT_ASN1_TAG_CLASS_UNIVERSAL, false,
+                                UT_ASN1_TAG_UNIVERSAL_VIDEOTEX_STRING);
+  }
+  *is_constructed = encode_tag;
+  return length;
+}
+
 static size_t encode_graphic_string_value(UtAsn1BerEncoder *self,
                                           UtObject *value, bool encode_tag,
                                           bool *is_constructed) {
@@ -934,6 +981,11 @@ static size_t encode_value(UtAsn1BerEncoder *self, UtObject *type,
     return encode_visible_string_value(self, value, encode_tag, is_constructed);
   } else if (ut_object_is_asn1_general_string_type(type)) {
     return encode_general_string_value(self, value, encode_tag, is_constructed);
+  } else if (ut_object_is_asn1_teletex_string_type(type)) {
+    return encode_teletex_string_value(self, value, encode_tag, is_constructed);
+  } else if (ut_object_is_asn1_videotex_string_type(type)) {
+    return encode_videotex_string_value(self, value, encode_tag,
+                                        is_constructed);
   } else if (ut_object_is_asn1_tagged_type(type)) {
     return encode_tagged_value(self, type, value, encode_tag, is_constructed);
   } else {

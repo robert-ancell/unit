@@ -1013,6 +1013,16 @@ static UtObject *decode_graphic_string_value(UtAsn1BerDecoder *self,
   return decode_graphic_string(self, "GraphicString");
 }
 
+static UtObject *decode_teletex_string_value(UtAsn1BerDecoder *self,
+                                             bool decode_tag) {
+  return ut_string_new("");
+}
+
+static UtObject *decode_videotex_string_value(UtAsn1BerDecoder *self,
+                                              bool decode_tag) {
+  return ut_string_new("");
+}
+
 static UtObject *decode_visible_string_value(UtAsn1BerDecoder *self,
                                              bool decode_tag) {
   if (decode_tag && !expect_tag(self, UT_ASN1_TAG_CLASS_UNIVERSAL,
@@ -1093,6 +1103,10 @@ static UtObject *decode_value(UtAsn1BerDecoder *self, UtObject *type,
     return decode_visible_string_value(self, decode_tag);
   } else if (ut_object_is_asn1_general_string_type(type)) {
     return decode_general_string_value(self, decode_tag);
+  } else if (ut_object_is_asn1_teletex_string_type(type)) {
+    return decode_teletex_string_value(self, decode_tag);
+  } else if (ut_object_is_asn1_videotex_string_type(type)) {
+    return decode_videotex_string_value(self, decode_tag);
   } else if (ut_object_is_asn1_tagged_type(type)) {
     return decode_tagged_value(self, type, decode_tag);
   } else {

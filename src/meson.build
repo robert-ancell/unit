@@ -2,7 +2,9 @@ ut_sources = [
   'asn1/ut-asn1-ber-decoder.c',
   'asn1/ut-asn1-ber-encoder.c',
   'asn1/ut-asn1-bit-string-type.c',
+  'asn1/ut-asn1-bmp-string-type.c',
   'asn1/ut-asn1-boolean-type.c',
+  'asn1/ut-asn1-character-string-type.c',
   'asn1/ut-asn1-choice-type.c',
   'asn1/ut-asn1-choice-value.c',
   'asn1/ut-asn1-constrained-type.c',
@@ -12,6 +14,7 @@ ut_sources = [
   'asn1/ut-asn1-enumerated-type.c',
   'asn1/ut-asn1-error.c',
   'asn1/ut-asn1-general-string-type.c',
+  'asn1/ut-asn1-generalized-time-type.c',
   'asn1/ut-asn1-graphic-string-type.c',
   'asn1/ut-asn1-ia5-string-type.c',
   'asn1/ut-asn1-integer-range-constraint.c',
@@ -19,6 +22,7 @@ ut_sources = [
   'asn1/ut-asn1-intersection-constraint.c',
   'asn1/ut-asn1-module-definition.c',
   'asn1/ut-asn1-module-definition-parser.c',
+  'asn1/ut-asn1-module-imports.c',
   'asn1/ut-asn1-null-type.c',
   'asn1/ut-asn1-numeric-string-type.c',
   'asn1/ut-asn1-object-descriptor-type.c',
@@ -38,11 +42,17 @@ ut_sources = [
   'asn1/ut-asn1-string.c',
   'asn1/ut-asn1-tag.c',
   'asn1/ut-asn1-tagged-type.c',
+  'asn1/ut-asn1-teletex-string-type.c',
   'asn1/ut-asn1-type-value.c',
   'asn1/ut-asn1-type.c',
+  'asn1/ut-asn1-type-value.c',
   'asn1/ut-asn1-union-constraint.c',
+  'asn1/ut-asn1-universal-string-type.c',
+  'asn1/ut-asn1-utc-time-type.c',
   'asn1/ut-asn1-utf8-string-type.c',
   'asn1/ut-asn1-value-constraint.c',
+  'asn1/ut-asn1-value-range.c',
+  'asn1/ut-asn1-videotex-string-type.c',
   'asn1/ut-asn1-visible-string-type.c',
   'dbus/ut-dbus-array.c',
   'dbus/ut-dbus-auth-client.c',
@@ -386,12 +396,12 @@ test('ASN.1 Module Definition Parser', asn1_module_definition_parser_test)
 asn1_ber_encoder_test = executable('ut-asn1-ber-encoder-test',
                                    'asn1/ut-asn1-ber-encoder-test.c',
                                    link_with: ut_lib)
-test('ASN.1 BER encoder', asn1_ber_encoder_test)
+test('ASN.1 BER Encoder', asn1_ber_encoder_test)
 
 asn1_ber_decoder_test = executable('ut-asn1-ber-decoder-test',
                                    'asn1/ut-asn1-ber-decoder-test.c',
                                    link_with: ut_lib)
-test('ASN.1 BER decoder', asn1_ber_decoder_test)
+test('ASN.1 BER Decoder', asn1_ber_decoder_test)
 
 huffman_decoder_test = executable('ut-huffman-decoder-test',
                                   'huffman/ut-huffman-decoder-test.c',

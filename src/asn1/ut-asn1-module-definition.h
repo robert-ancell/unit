@@ -16,10 +16,22 @@ UtObject *ut_asn1_module_definition_new(const char *identifier,
 /// !return-ref
 UtObject *ut_asn1_module_definition_new_from_text(const char *text);
 
+void ut_asn1_module_definition_set_exports(UtObject *object, UtObject *exports);
+
+void ut_asn1_module_definition_set_export_all(UtObject *object);
+
+void ut_asn1_module_definition_set_imports(UtObject *object, UtObject *imports);
+
 /// Returns the identifier for this module.
 const char *ut_asn1_module_definition_get_identifier(UtObject *object);
 
 UtObject *ut_asn1_module_definition_get_object_identifier(UtObject *object);
+
+UtObject *ut_asn1_module_definition_get_exports(UtObject *object);
+
+bool ut_asn1_module_definition_get_export_all(UtObject *object);
+
+UtObject *ut_asn1_module_definition_get_imports(UtObject *object);
 
 /// Returns the assignments in this module.
 UtObject *ut_asn1_module_definition_get_assignments(UtObject *object);

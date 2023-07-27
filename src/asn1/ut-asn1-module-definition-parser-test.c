@@ -121,6 +121,175 @@ static void test_comments() {
   ut_assert_is_not_error(module4);
 }
 
+static void test_exports() {
+  // Empty exports.
+  UtObjectRef module1 =
+      ut_asn1_module_definition_new_from_text("Test DEFINITIONS ::= BEGIN\n"
+                                              "    EXPORTS;\n"
+                                              "    Type1 ::= BOOLEAN\n"
+                                              "    Type2 ::= INTEGER\n"
+                                              "END");
+  ut_assert_is_not_error(module1);
+  ut_assert_false(ut_asn1_module_definition_get_export_all(module1));
+  ut_assert_int_equal(
+      ut_list_get_length(ut_asn1_module_definition_get_exports(module1)), 0);
+
+  // Export all symbols.
+  UtObjectRef module2 =
+      ut_asn1_module_definition_new_from_text("Test DEFINITIONS ::= BEGIN\n"
+                                              "    EXPORTS ALL;\n"
+                                              "    Type1 ::= BOOLEAN\n"
+                                              "    Type2 ::= INTEGER\n"
+                                              "END");
+  ut_assert_is_not_error(module2);
+  ut_assert_true(ut_asn1_module_definition_get_export_all(module2));
+  ut_assert_int_equal(
+      ut_list_get_length(ut_asn1_module_definition_get_exports(module2)), 0);
+
+  // Export one symbol.
+  UtObjectRef module3 =
+      ut_asn1_module_definition_new_from_text("Test DEFINITIONS ::= BEGIN\n"
+                                              "    EXPORTS Type1;\n"
+                                              "    Type1 ::= BOOLEAN\n"
+                                              "    Type2 ::= INTEGER\n"
+                                              "END");
+  ut_assert_is_not_error(module3);
+  ut_assert_false(ut_asn1_module_definition_get_export_all(module3));
+  UtObject *exports3 = ut_asn1_module_definition_get_exports(module3);
+  ut_assert_int_equal(ut_list_get_length(exports3), 1);
+  ut_assert_cstring_equal(ut_string_list_get_element(exports3, 0), "Type1");
+
+  // Export two symbols.
+  UtObjectRef module4 =
+      ut_asn1_module_definition_new_from_text("Test DEFINITIONS ::= BEGIN\n"
+                                              "    EXPORTS Type1, Type2;\n"
+                                              "    Type1 ::= BOOLEAN\n"
+                                              "    Type2 ::= INTEGER\n"
+                                              "END");
+  ut_assert_is_not_error(module4);
+  ut_assert_false(ut_asn1_module_definition_get_export_all(module4));
+  UtObject *exports4 = ut_asn1_module_definition_get_exports(module4);
+  ut_assert_int_equal(ut_list_get_length(exports4), 2);
+  ut_assert_cstring_equal(ut_string_list_get_element(exports4, 0), "Type1");
+  ut_assert_cstring_equal(ut_string_list_get_element(exports4, 1), "Type2");
+
+  // Missing comma
+  UtObjectRef module5 =
+      ut_asn1_module_definition_new_from_text("Test DEFINITIONS ::= BEGIN\n"
+                                              "    EXPORTS Type1 Type2;\n"
+                                              "    Type1 ::= BOOLEAN\n"
+                                              "    Type2 ::= INTEGER\n"
+                                              "END");
+  ut_assert_is_error_with_description(module5, "Expected ;, got Type2");
+
+  // Missing semicolon.
+  UtObjectRef module6 =
+      ut_asn1_module_definition_new_from_text("Test DEFINITIONS ::= BEGIN\n"
+                                              "    EXPORTS Type1, Type2\n"
+                                              "    Type1 ::= BOOLEAN\n"
+                                              "    Type2 ::= INTEGER\n"
+                                              "END");
+  ut_assert_is_error_with_description(module6, "Expected ;, got Type1");
+}
+
+static void test_imports() {
+  // Empty imports.
+  UtObjectRef module1 =
+      ut_asn1_module_definition_new_from_text("Test DEFINITIONS ::= BEGIN\n"
+                                              "    IMPORTS;\n"
+                                              "END");
+  ut_assert_is_not_error(module1);
+  ut_assert_int_equal(
+      ut_list_get_length(ut_asn1_module_definition_get_imports(module1)), 0);
+
+  // Single import.
+  UtObjectRef module2 = ut_asn1_module_definition_new_from_text(
+      "Test DEFINITIONS ::= BEGIN\n"
+      "    IMPORTS Type1 FROM Module1;\n"
+      "END");
+  ut_assert_is_not_error(module2);
+  UtObject *imports2 = ut_asn1_module_definition_get_imports(module2);
+  ut_assert_int_equal(ut_list_get_length(imports2), 1);
+  UtObject *imports2a = ut_object_list_get_element(imports2, 0);
+  UtObject *symbols2a = ut_asn1_module_imports_get_symbols(imports2a);
+  ut_cstring_equal(ut_asn1_module_imports_get_module(imports2a), "Module1");
+  ut_assert_int_equal(ut_list_get_length(symbols2a), 1);
+  ut_cstring_equal(ut_string_list_get_element(symbols2a, 0), "Type1");
+
+  // Multiple symbols imported.
+  UtObjectRef module3 = ut_asn1_module_definition_new_from_text(
+      "Test DEFINITIONS ::= BEGIN\n"
+      "    IMPORTS Type1, value1 FROM Module1;\n"
+      "END");
+  ut_assert_is_not_error(module3);
+  UtObject *imports3 = ut_asn1_module_definition_get_imports(module3);
+  ut_assert_int_equal(ut_list_get_length(imports3), 1);
+  UtObject *imports3a = ut_object_list_get_element(imports3, 0);
+  UtObject *symbols3a = ut_asn1_module_imports_get_symbols(imports3a);
+  ut_cstring_equal(ut_asn1_module_imports_get_module(imports3a), "Module1");
+  ut_assert_int_equal(ut_list_get_length(symbols3a), 2);
+  ut_cstring_equal(ut_string_list_get_element(symbols3a, 0), "Type1");
+  ut_cstring_equal(ut_string_list_get_element(symbols3a, 1), "value1");
+
+  // Multiple modules imported.
+  UtObjectRef module4 = ut_asn1_module_definition_new_from_text(
+      "Test DEFINITIONS ::= BEGIN\n"
+      "    IMPORTS Type1, value1 FROM Module1 Type2 FROM Module2;\n"
+      "END");
+  ut_assert_is_not_error(module4);
+  UtObject *imports4 = ut_asn1_module_definition_get_imports(module4);
+  ut_assert_int_equal(ut_list_get_length(imports4), 2);
+  UtObject *imports4a = ut_object_list_get_element(imports4, 0);
+  UtObject *symbols4a = ut_asn1_module_imports_get_symbols(imports4a);
+  UtObject *imports4b = ut_object_list_get_element(imports4, 1);
+  UtObject *symbols4b = ut_asn1_module_imports_get_symbols(imports4b);
+  ut_cstring_equal(ut_asn1_module_imports_get_module(imports4a), "Module1");
+  ut_assert_int_equal(ut_list_get_length(symbols4a), 2);
+  ut_cstring_equal(ut_string_list_get_element(symbols4a, 0), "Type1");
+  ut_cstring_equal(ut_string_list_get_element(symbols4a, 1), "value1");
+  ut_cstring_equal(ut_asn1_module_imports_get_module(imports4b), "Module2");
+  ut_assert_int_equal(ut_list_get_length(symbols4b), 1);
+  ut_cstring_equal(ut_string_list_get_element(symbols4b, 0), "Type2");
+
+  // Missing comma.
+  UtObjectRef module5 = ut_asn1_module_definition_new_from_text(
+      "Test DEFINITIONS ::= BEGIN\n"
+      "    IMPORTS Type1 value1 FROM Module1;\n"
+      "END");
+  ut_assert_is_error_with_description(module5, "Expected FROM, got value1");
+
+  // Missing FROM.
+  UtObjectRef module6 = ut_asn1_module_definition_new_from_text(
+      "Test DEFINITIONS ::= BEGIN\n"
+      "    IMPORTS Type1, value1 Module1;\n"
+      "END");
+  ut_assert_is_error_with_description(module6, "Expected FROM, got Module1");
+
+  // FROM without symbols.
+  UtObjectRef module7 =
+      ut_asn1_module_definition_new_from_text("Test DEFINITIONS ::= BEGIN\n"
+                                              "    IMPORTS FROM Module1;\n"
+                                              "END");
+  ut_assert_is_error_with_description(
+      module7, "Expected typereference or valuereference, got FROM");
+
+  // Missing module.
+  UtObjectRef module8 = ut_asn1_module_definition_new_from_text(
+      "Test DEFINITIONS ::= BEGIN\n"
+      "    IMPORTS Type1, value1 FROM;\n"
+      "END");
+  ut_assert_is_error_with_description(module8,
+                                      "Expected modulereference, got ;");
+
+  // Missing semicolon.
+  UtObjectRef module9 = ut_asn1_module_definition_new_from_text(
+      "Test DEFINITIONS ::= BEGIN\n"
+      "    IMPORTS Type1, value1 FROM Module1\n"
+      "END");
+  ut_assert_is_error_with_description(
+      module9, "Expected typereference or valuereference, got END");
+}
+
 static void test_boolean_type_assignment() {
   UtObjectRef module1 =
       ut_asn1_module_definition_new_from_text("Test DEFINITIONS ::= BEGIN\n"
@@ -1003,6 +1172,39 @@ static void test_object_identifier_type_assignment() {
   ut_assert_true(ut_object_implements_uint32_list(constraint_value3));
   uint32_t expected_values3[4] = {1, 0, 8571, 1};
   ut_assert_uint32_list_equal(constraint_value3, expected_values3, 4);
+
+  // Constrained to certain values.
+  UtObjectRef module4 = ut_asn1_module_definition_new_from_text(
+      "Test DEFINITIONS ::= BEGIN\n"
+      "    allowedValue2 OBJECT IDENTIFIER ::= { 1 0 9999 42 }\n"
+      "    ObjectIdentifierType ::= OBJECT IDENTIFIER ({ 1 0 8571 1 } | "
+      "allowedValue2)\n"
+      "END");
+  ut_assert_is_not_error(module4);
+  UtObject *type4 =
+      ut_asn1_module_definition_get_assignment(module4, "ObjectIdentifierType");
+  ut_assert_non_null_object(type4);
+  ut_assert_true(ut_object_is_asn1_constrained_type(type4));
+  ut_assert_true(ut_object_is_asn1_object_identifier_type(
+      ut_asn1_constrained_type_get_type(type4)));
+  UtObject *constraint4 = ut_asn1_constrained_type_get_constraint(type4);
+  UtObject *constraints4 =
+      ut_asn1_union_constraint_get_constraints(constraint4);
+  ut_assert_int_equal(ut_list_get_length(constraints4), 2);
+  UtObject *constraint4a = ut_object_list_get_element(constraints4, 0);
+  ut_assert_true(ut_object_is_asn1_value_constraint(constraint4a));
+  UtObject *constraint_value4a =
+      ut_asn1_value_constraint_get_value(constraint4a);
+  ut_assert_true(ut_object_implements_uint32_list(constraint_value4a));
+  uint32_t expected_values4a[4] = {1, 0, 8571, 1};
+  ut_assert_uint32_list_equal(constraint_value4a, expected_values4a, 4);
+  UtObject *constraint4b = ut_object_list_get_element(constraints4, 1);
+  ut_assert_true(ut_object_is_asn1_value_constraint(constraint4b));
+  UtObject *constraint_value4b =
+      ut_asn1_value_constraint_get_value(constraint4b);
+  ut_assert_true(ut_object_implements_uint32_list(constraint_value4b));
+  uint32_t expected_values4b[4] = {1, 0, 9999, 42};
+  ut_assert_uint32_list_equal(constraint_value4b, expected_values4b, 4);
 
   // Invalid type in constraint.
   UtObjectRef module10 = ut_asn1_module_definition_new_from_text(
@@ -3302,6 +3504,42 @@ static void test_general_string_value_assignment() {
   ut_assert_cstring_equal(ut_string_get_text(value3), "Hello World");
 }
 
+static void test_teletex_string_type_assignment() {
+  UtObjectRef module = ut_asn1_module_definition_new_from_text(
+      "Test DEFINITIONS ::= BEGIN\n"
+      "    TeletexStringType ::= TeletexString\n"
+      "END");
+  ut_assert_is_not_error(module);
+  UtObject *type =
+      ut_asn1_module_definition_get_assignment(module, "TeletexStringType");
+  ut_assert_non_null_object(type);
+  ut_assert_true(ut_object_is_asn1_teletex_string_type(type));
+}
+
+static void test_videotex_string_type_assignment() {
+  UtObjectRef module = ut_asn1_module_definition_new_from_text(
+      "Test DEFINITIONS ::= BEGIN\n"
+      "    VideotexStringType ::= VideotexString\n"
+      "END");
+  ut_assert_is_not_error(module);
+  UtObject *type =
+      ut_asn1_module_definition_get_assignment(module, "VideotexStringType");
+  ut_assert_non_null_object(type);
+  ut_assert_true(ut_object_is_asn1_videotex_string_type(type));
+}
+
+static void test_utc_time_type_assignment() {
+  UtObjectRef module =
+      ut_asn1_module_definition_new_from_text("Test DEFINITIONS ::= BEGIN\n"
+                                              "    UTCTimeType ::= UTCTime\n"
+                                              "END");
+  ut_assert_is_not_error(module);
+  UtObject *type =
+      ut_asn1_module_definition_get_assignment(module, "UTCTimeType");
+  ut_assert_non_null_object(type);
+  ut_assert_true(ut_object_is_asn1_utc_time_type(type));
+}
+
 static void test_tagged_type_assignment() {
   UtObjectRef module1 = ut_asn1_module_definition_new_from_text(
       "Test DEFINITIONS ::= BEGIN\n"
@@ -3516,6 +3754,8 @@ int main(int argc, char **argv) {
   test_whitespace();
   test_module_definitions();
   test_comments();
+  test_exports();
+  test_imports();
   test_boolean_type_assignment();
   test_boolean_value_assignment();
   test_integer_type_assignment();
@@ -3530,10 +3770,14 @@ int main(int argc, char **argv) {
   test_object_identifier_value_assignment();
   test_object_descriptor_type_assignment();
   test_object_descriptor_value_assignment();
+  // test_external_type_assignment();
+  // test_external_value_assignment();
   test_real_type_assignment();
   test_real_value_assignment();
   test_enumerated_type_assignment();
   test_enumerated_value_assignment();
+  // test_embedded_pdv_type_assignment();
+  // test_embedded_pdv_value_assignment();
   test_utf8_string_type_assignment();
   test_utf8_string_value_assignment();
   test_relative_oid_type_assignment();
@@ -3560,6 +3804,19 @@ int main(int argc, char **argv) {
   test_visible_string_value_assignment();
   test_general_string_type_assignment();
   test_general_string_value_assignment();
+  test_teletex_string_type_assignment();
+  // test_teletex_string_value_assignment();
+  test_videotex_string_type_assignment();
+  // test_videotex_string_value_assignment();
+  test_utc_time_type_assignment();
+  // test_utc_time_value_assignment();
+  //  test_generalized_time_type_assignment();
+  //  test_graphic_string_type_assignment();
+  //  test_visible_string_type_assignment();
+  //  test_general_string_type_assignment();
+  //  test_universal_string_type_assignment();
+  //  test_character_string_type_assignment();
+  //  test_bmp_string_type_assignment();
   test_tagged_type_assignment();
   test_tagged_value_assignment();
 }

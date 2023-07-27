@@ -873,16 +873,23 @@ static bool parse_symbol_list(UtAsn1ModuleDefinitionParser *self,
   return false;
 }
 
-static bool parse_exports(UtAsn1ModuleDefinitionParser *self) {
+static bool parse_exports(UtAsn1ModuleDefinitionParser *self, bool *all,
+                          UtObject **symbols) {
   if (!maybe_parse_text(self, "EXPORTS")) {
+    *all = false;
+    *symbols = ut_string_list_new();
     return true;
   }
 
   if (maybe_parse_text(self, "ALL")) {
+    *all = true;
+    *symbols = ut_string_list_new();
     return parse_text(self, ";");
   }
 
   if (maybe_parse_text(self, ";")) {
+    *all = false;
+    *symbols = ut_string_list_new();
     return true;
   }
 
@@ -895,10 +902,13 @@ static bool parse_exports(UtAsn1ModuleDefinitionParser *self) {
     return false;
   }
 
+  *all = false;
+  *symbols = ut_object_ref(symbols_);
   return true;
 }
 
-static bool parse_symbols_from_module(UtAsn1ModuleDefinitionParser *self) {
+static bool parse_symbols_from_module(UtAsn1ModuleDefinitionParser *self,
+                                      UtObject **module_imports) {
   UtObjectRef symbols = NULL;
   if (!parse_symbol_list(self, &symbols)) {
     return false;
@@ -913,24 +923,32 @@ static bool parse_symbols_from_module(UtAsn1ModuleDefinitionParser *self) {
     return false;
   }
 
+  *module_imports = ut_asn1_module_imports_new(reference, symbols);
+
   return true;
 }
 
-static bool parse_imports(UtAsn1ModuleDefinitionParser *self) {
+static bool parse_imports(UtAsn1ModuleDefinitionParser *self,
+                          UtObject **imports) {
   if (!maybe_parse_text(self, "IMPORTS")) {
     return true;
   }
 
+  UtObjectRef imports_ = ut_object_list_new();
   while (!current_token_is(self, ";")) {
-    if (!parse_symbols_from_module(self)) {
+    ut_cstring_ref module = NULL;
+    UtObjectRef module_imports = NULL;
+    if (!parse_symbols_from_module(self, &module_imports)) {
       return false;
     }
+    ut_list_append(imports_, module_imports);
   }
 
   if (!parse_text(self, ";")) {
     return false;
   }
 
+  *imports = ut_object_ref(imports_);
   return true;
 }
 
@@ -2008,19 +2026,15 @@ static bool parse_type(UtAsn1ModuleDefinitionParser *self, UtObject **type) {
   } else if (maybe_parse_text(self, "PrintableString")) {
     type_ = ut_asn1_printable_string_type_new();
   } else if (maybe_parse_text(self, "TeletexString")) {
-    set_error(self, "TeletexString not supported");
-    return false;
+    type_ = ut_asn1_teletex_string_type_new();
   } else if (maybe_parse_text(self, "VideotexString")) {
-    set_error(self, "VideotexString not supported");
-    return false;
+    type_ = ut_asn1_videotex_string_type_new();
   } else if (maybe_parse_text(self, "IA5String")) {
     type_ = ut_asn1_ia5_string_type_new();
   } else if (maybe_parse_text(self, "UTCTime")) {
-    set_error(self, "UTCTime not supported");
-    return false;
+    type_ = ut_asn1_utc_time_type_new();
   } else if (maybe_parse_text(self, "GeneralizedTime")) {
-    set_error(self, "GeneralizedTime not supported");
-    return false;
+    type_ = ut_asn1_generalized_time_type_new();
   } else if (maybe_parse_text(self, "GraphicString")) {
     type_ = ut_asn1_graphic_string_type_new();
   } else if (maybe_parse_text(self, "VisibleString")) {
@@ -2028,17 +2042,14 @@ static bool parse_type(UtAsn1ModuleDefinitionParser *self, UtObject **type) {
   } else if (maybe_parse_text(self, "GeneralString")) {
     type_ = ut_asn1_general_string_type_new();
   } else if (maybe_parse_text(self, "UniversalString")) {
-    set_error(self, "UniversalString not supported");
-    return false;
+    type_ = ut_asn1_universal_string_type_new();
   } else if (maybe_parse_text(self, "CHARACTER")) {
     if (!parse_text(self, "STRING")) {
       return false;
     }
-    set_error(self, "CHARACTER not supported");
-    return false;
+    type_ = ut_asn1_character_string_type_new();
   } else if (maybe_parse_text(self, "BMPString")) {
-    set_error(self, "BMPString not supported");
-    return false;
+    type_ = ut_asn1_bmp_string_type_new();
   } else {
     ut_cstring_ref reference = NULL;
     if (!parse_type_reference(self, &reference)) {
@@ -2134,11 +2145,15 @@ static bool parse_module_definition(UtAsn1ModuleDefinitionParser *self,
 
   ut_cstring_ref identifier = NULL;
   UtObjectRef object_identifier = NULL;
+  bool export_all;
+  UtObjectRef exported_symbols = NULL;
+  UtObjectRef imports = NULL;
   if (!parse_module_identifier(self, &identifier, &object_identifier) ||
       !parse_text(self, "DEFINITIONS") || !parse_tag_default(self) ||
       !parse_extension_default(self) || !parse_text(self, "::=") ||
-      !parse_text(self, "BEGIN") || !parse_exports(self) ||
-      !parse_imports(self) || !parse_assignments(self) ||
+      !parse_text(self, "BEGIN") ||
+      !parse_exports(self, &export_all, &exported_symbols) ||
+      !parse_imports(self, &imports) || !parse_assignments(self) ||
       !parse_text(self, "END")) {
     return false;
   }
@@ -2146,6 +2161,13 @@ static bool parse_module_definition(UtAsn1ModuleDefinitionParser *self,
   ut_object_clear(&self->module_definition);
   self->module_definition = ut_asn1_module_definition_new(
       identifier, object_identifier, self->assignments);
+  if (export_all) {
+    ut_asn1_module_definition_set_export_all(self->module_definition);
+  } else {
+    ut_asn1_module_definition_set_exports(self->module_definition,
+                                          exported_symbols);
+  }
+  ut_asn1_module_definition_set_imports(self->module_definition, imports);
 
   return true;
 }
