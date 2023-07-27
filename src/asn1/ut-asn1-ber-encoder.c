@@ -17,9 +17,6 @@ typedef struct {
 
   // Number of bytes of used data.
   size_t length;
-
-  // Actual used data.
-  UtObject *data;
 } UtAsn1BerEncoder;
 
 static void resize(UtAsn1BerEncoder *self, size_t required_length) {
@@ -138,7 +135,6 @@ static void ut_asn1_ber_encoder_init(UtObject *object) {
 static void ut_asn1_ber_encoder_cleanup(UtObject *object) {
   UtAsn1BerEncoder *self = (UtAsn1BerEncoder *)object;
   ut_object_unref(self->buffer);
-  ut_object_unref(self->data);
 }
 
 static UtObjectInterface object_interface = {.type_name = "UtAsn1BerEncoder",
@@ -345,10 +341,8 @@ size_t ut_asn1_ber_encoder_encode_visible_string(UtObject *object,
 UtObject *ut_asn1_ber_encoder_get_data(UtObject *object) {
   assert(ut_object_is_asn1_ber_encoder(object));
   UtAsn1BerEncoder *self = (UtAsn1BerEncoder *)object;
-  ut_object_unref(self->data);
-  self->data = ut_list_get_sublist(
-      self->buffer, self->buffer_length - self->length, self->length);
-  return self->data;
+  return ut_list_get_sublist(self->buffer, self->buffer_length - self->length,
+                             self->length);
 }
 
 bool ut_object_is_asn1_ber_encoder(UtObject *object) {
