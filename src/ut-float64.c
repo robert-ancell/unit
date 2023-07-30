@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <math.h>
 #include <stdio.h>
 
 #include "ut.h"
@@ -38,6 +39,12 @@ UtObject *ut_float64_new(double value) {
   self->value = value;
   return object;
 }
+
+UtObject *ut_float64_new_plus_infinity() { return ut_float64_new(INFINITY); }
+
+UtObject *ut_float64_new_minus_infinity() { return ut_float64_new(-INFINITY); }
+
+UtObject *ut_float64_new_not_a_number() { return ut_float64_new(NAN); }
 
 double ut_float64_get_value(UtObject *object) {
   assert(ut_object_is_float64(object));
