@@ -262,7 +262,15 @@ void ut_string_append(UtObject *object, const char *text) {
       ut_object_get_interface(object, &ut_string_id);
   assert(string_interface != NULL);
   assert(string_interface->is_mutable);
-  string_interface->append(object, text);
+  string_interface->append(object, text, ut_cstring_get_length(text));
+}
+
+void ut_string_append_sized(UtObject *object, const char *text, size_t length) {
+  UtStringInterface *string_interface =
+      ut_object_get_interface(object, &ut_string_id);
+  assert(string_interface != NULL);
+  assert(string_interface->is_mutable);
+  string_interface->append(object, text, length);
 }
 
 void ut_string_append_printf(UtObject *object, const char *format, ...) {

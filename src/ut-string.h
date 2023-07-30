@@ -14,7 +14,7 @@ typedef struct {
   void (*clear)(UtObject *object);
   void (*prepend)(UtObject *object, const char *text);
   void (*prepend_code_point)(UtObject *object, uint32_t code_point);
-  void (*append)(UtObject *object, const char *text);
+  void (*append)(UtObject *object, const char *text, size_t length);
   void (*append_code_point)(UtObject *object, uint32_t code_point);
 } UtStringInterface;
 
@@ -133,6 +133,9 @@ void ut_string_prepend_code_point(UtObject *object, uint32_t code_point);
 
 /// Adds [text] to the start of [object].
 void ut_string_append(UtObject *object, const char *text);
+
+/// Adds the first [length] characters of [text] to the start of [object].
+void ut_string_append_sized(UtObject *object, const char *text, size_t length);
 
 /// Adds printf [format] text to the end of [object].
 void ut_string_append_printf(UtObject *object, const char *format, ...)

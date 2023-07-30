@@ -98,14 +98,15 @@ static void ut_utf8_string_prepend_code_point(UtObject *object,
   write_utf8_code_unit(data, 0, code_point);
 }
 
-static void ut_utf8_string_append(UtObject *object, const char *text) {
+static void ut_utf8_string_append(UtObject *object, const char *text,
+                                  size_t length) {
   assert(ut_object_is_utf8_string(object));
   UtUtf8String *self = (UtUtf8String *)object;
-  size_t text_length = ut_cstring_get_length(text);
   size_t orig_length = ut_list_get_length(self->data);
-  ut_list_resize(self->data, orig_length + text_length);
-  memcpy(ut_uint8_list_get_writable_data(self->data) + orig_length - 1, text,
-         text_length + 1);
+  ut_list_resize(self->data, orig_length + length);
+  uint8_t *data = ut_uint8_list_get_writable_data(self->data);
+  memcpy(data + orig_length - 1, text, length);
+  data[orig_length + length - 1] = '\0';
 }
 
 static void ut_utf8_string_append_code_point(UtObject *object,
