@@ -84,8 +84,7 @@ void _ut_assert_non_null(const char *file, int line, const char *value_name,
     return;
   }
 
-  fprintf(stderr, "%s:%d Expected %s to be not be NULL\n", file, line,
-          value_name);
+  fprintf(stderr, "%s:%d Expected %s to not be NULL\n", file, line, value_name);
 
   abort();
 }
