@@ -80,7 +80,7 @@ UtObject *ut_bit_list_new() {
 UtObject *ut_bit_list_new_from_data(UtObject *data, size_t bit_count) {
   UtObject *object = ut_object_new(sizeof(UtBitList), &object_interface);
   UtBitList *self = (UtBitList *)object;
-  assert(ut_list_get_length(data) >= bit_count * 8);
+  assert(ut_list_get_length(data) * 8 >= bit_count);
   self->data = ut_object_ref(data);
   self->bit_count = bit_count;
   return object;
@@ -107,6 +107,12 @@ UtObject *ut_bit_list_new_from_bin_string(const char *bin) {
     append(self, value, 1);
   }
   return object;
+}
+
+size_t ut_bit_list_get_length(UtObject *object) {
+  assert(ut_object_is_bit_list(object));
+  UtBitList *self = (UtBitList *)object;
+  return self->bit_count;
 }
 
 bool ut_bit_list_get_element(UtObject *object, size_t index) {
