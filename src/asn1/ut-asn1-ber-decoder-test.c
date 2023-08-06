@@ -28,19 +28,22 @@ static void test_boolean() {
   UtObjectRef data4 = ut_uint8_list_new_from_hex_string("0100");
   UtObjectRef decoder4 = ut_asn1_ber_decoder_new(data4);
   ut_asn1_ber_decoder_decode_boolean(decoder4);
-  ut_assert_is_error(ut_asn1_ber_decoder_get_error(decoder4));
+  ut_assert_is_error_with_description(ut_asn1_ber_decoder_get_error(decoder4),
+                                      "Invalid boolean data length");
 
   // Too much data.
   UtObjectRef data5 = ut_uint8_list_new_from_hex_string("01020000");
   UtObjectRef decoder5 = ut_asn1_ber_decoder_new(data5);
   ut_asn1_ber_decoder_decode_boolean(decoder5);
-  ut_assert_is_error(ut_asn1_ber_decoder_get_error(decoder5));
+  ut_assert_is_error_with_description(ut_asn1_ber_decoder_get_error(decoder5),
+                                      "Invalid boolean data length");
 
   // Constructed form.
   UtObjectRef data6 = ut_uint8_list_new_from_hex_string("210100");
   UtObjectRef decoder6 = ut_asn1_ber_decoder_new(data6);
   ut_asn1_ber_decoder_decode_boolean(decoder6);
-  ut_assert_is_error(ut_asn1_ber_decoder_get_error(decoder6));
+  ut_assert_is_error_with_description(ut_asn1_ber_decoder_get_error(decoder6),
+                                      "Boolean does not have constructed form");
 }
 
 static void test_integer() {
@@ -163,19 +166,22 @@ static void test_integer() {
       ut_uint8_list_new_from_hex_string("0210ffffffffffffffffffffffffffffffff");
   UtObjectRef decoder10 = ut_asn1_ber_decoder_new(data10);
   ut_asn1_ber_decoder_decode_integer(decoder10);
-  ut_assert_is_error(ut_asn1_ber_decoder_get_error(decoder10));
+  ut_assert_is_error_with_description(ut_asn1_ber_decoder_get_error(decoder10),
+                                      "Only 64 bit integers supported");
 
   // Empty data.
   UtObjectRef data11 = ut_uint8_list_new_from_hex_string("0200");
   UtObjectRef decoder11 = ut_asn1_ber_decoder_new(data11);
   ut_asn1_ber_decoder_decode_integer(decoder11);
-  ut_assert_is_error(ut_asn1_ber_decoder_get_error(decoder11));
+  ut_assert_is_error_with_description(ut_asn1_ber_decoder_get_error(decoder11),
+                                      "Invalid integer data length");
 
   // Constructed form.
   UtObjectRef data12 = ut_uint8_list_new_from_hex_string("220100");
   UtObjectRef decoder12 = ut_asn1_ber_decoder_new(data12);
   ut_asn1_ber_decoder_decode_integer(decoder12);
-  ut_assert_is_error(ut_asn1_ber_decoder_get_error(decoder12));
+  ut_assert_is_error_with_description(ut_asn1_ber_decoder_get_error(decoder12),
+                                      "Integer does not have constructed form");
 }
 
 static void test_octet_string() {
@@ -254,7 +260,8 @@ static void test_octet_string() {
   UtObjectRef decoder11 = ut_asn1_ber_decoder_new(data11);
   UtObjectRef string11 = ut_asn1_ber_decoder_decode_octet_string(decoder11);
   // ut_assert_uint8_list_equal_hex(string11, "0123456789abcdef");
-  ut_assert_is_error(ut_asn1_ber_decoder_get_error(decoder11));
+  ut_assert_is_error_with_description(ut_asn1_ber_decoder_get_error(decoder11),
+                                      "Insufficient data");
 }
 
 static void test_null() {
@@ -271,13 +278,15 @@ static void test_null() {
   UtObjectRef data2 = ut_uint8_list_new_from_hex_string("050100");
   UtObjectRef decoder2 = ut_asn1_ber_decoder_new(data2);
   ut_asn1_ber_decoder_decode_null(decoder2);
-  ut_assert_is_error(ut_asn1_ber_decoder_get_error(decoder2));
+  ut_assert_is_error_with_description(ut_asn1_ber_decoder_get_error(decoder2),
+                                      "Invalid null data length");
 
   // Constructed form.
   UtObjectRef data3 = ut_uint8_list_new_from_hex_string("2500");
   UtObjectRef decoder3 = ut_asn1_ber_decoder_new(data3);
   ut_asn1_ber_decoder_decode_null(decoder3);
-  ut_assert_is_error(ut_asn1_ber_decoder_get_error(decoder3));
+  ut_assert_is_error_with_description(ut_asn1_ber_decoder_get_error(decoder3),
+                                      "Null does not have constructed form");
 }
 
 static void test_object_identifier() {
@@ -293,22 +302,26 @@ static void test_object_identifier() {
   ut_assert_null(ut_asn1_ber_decoder_get_error(decoder1));
 
   // Empty.
-  UtObjectRef data2 = ut_uint8_list_new_from_hex_string("2600");
+  UtObjectRef data2 = ut_uint8_list_new_from_hex_string("0600");
   UtObjectRef decoder2 = ut_asn1_ber_decoder_new(data2);
   UtObjectRef id2 = ut_asn1_ber_decoder_decode_object_identifier(decoder2);
-  ut_assert_is_error(ut_asn1_ber_decoder_get_error(decoder2));
+  ut_assert_is_error_with_description(ut_asn1_ber_decoder_get_error(decoder2),
+                                      "Invalid object identifier");
 
   // Invalid integer.
-  UtObjectRef data3 = ut_uint8_list_new_from_hex_string("260188");
+  UtObjectRef data3 = ut_uint8_list_new_from_hex_string("060188");
   UtObjectRef decoder3 = ut_asn1_ber_decoder_new(data3);
   UtObjectRef id3 = ut_asn1_ber_decoder_decode_object_identifier(decoder3);
-  ut_assert_is_error(ut_asn1_ber_decoder_get_error(decoder3));
+  ut_assert_is_error_with_description(ut_asn1_ber_decoder_get_error(decoder3),
+                                      "Invalid object identifier");
 
   // Constructed form.
   UtObjectRef data4 = ut_uint8_list_new_from_hex_string("2603883703");
   UtObjectRef decoder4 = ut_asn1_ber_decoder_new(data4);
   UtObjectRef id4 = ut_asn1_ber_decoder_decode_object_identifier(decoder4);
-  ut_assert_is_error(ut_asn1_ber_decoder_get_error(decoder4));
+  ut_assert_is_error_with_description(
+      ut_asn1_ber_decoder_get_error(decoder4),
+      "Object identifier does not have constructed form");
 }
 
 static void test_enumerated() {
@@ -325,7 +338,8 @@ static void test_enumerated() {
   UtObjectRef data2 = ut_uint8_list_new_from_hex_string("2a012a");
   UtObjectRef decoder2 = ut_asn1_ber_decoder_new(data2);
   ut_asn1_ber_decoder_decode_enumerated(decoder2);
-  ut_assert_is_error(ut_asn1_ber_decoder_get_error(decoder2));
+  ut_assert_is_error_with_description(ut_asn1_ber_decoder_get_error(decoder2),
+                                      "Integer does not have constructed form");
 }
 
 static void test_utf8_string() {
@@ -353,7 +367,8 @@ static void test_utf8_string() {
   UtObjectRef decoder3 = ut_asn1_ber_decoder_new(data3);
   UtObjectRef string3 = ut_asn1_ber_decoder_decode_octet_string(decoder3);
   // ut_assert_uint8_list_equal_hex(string3, "Hello 😀");
-  ut_assert_is_error(ut_asn1_ber_decoder_get_error(decoder3));
+  ut_assert_is_error_with_description(ut_asn1_ber_decoder_get_error(decoder3),
+                                      "Constructed octet string not supported");
 
   // FIXME: Invalid UTF8
 }
@@ -385,14 +400,17 @@ static void test_relative_object_identifier() {
   UtObjectRef decoder3 = ut_asn1_ber_decoder_new(data3);
   UtObjectRef id3 =
       ut_asn1_ber_decoder_decode_relative_object_identifier(decoder3);
-  ut_assert_is_error(ut_asn1_ber_decoder_get_error(decoder3));
+  ut_assert_is_error_with_description(ut_asn1_ber_decoder_get_error(decoder3),
+                                      "Invalid relative object identifier");
 
   // Constructed form.
   UtObjectRef data4 = ut_uint8_list_new_from_hex_string("2d04c27b0302");
   UtObjectRef decoder4 = ut_asn1_ber_decoder_new(data4);
   UtObjectRef id4 =
       ut_asn1_ber_decoder_decode_relative_object_identifier(decoder4);
-  ut_assert_is_error(ut_asn1_ber_decoder_get_error(decoder4));
+  ut_assert_is_error_with_description(
+      ut_asn1_ber_decoder_get_error(decoder4),
+      "Relative object identifier does not have constructed form");
 }
 
 static void test_sequence() {
@@ -422,7 +440,8 @@ static void test_sequence() {
   UtObjectRef data3 = ut_uint8_list_new_from_hex_string("1000");
   UtObjectRef decoder3 = ut_asn1_ber_decoder_new(data3);
   UtObjectRef sequence3 = ut_asn1_ber_decoder_decode_sequence(decoder3);
-  ut_assert_is_error(ut_asn1_ber_decoder_get_error(decoder3));
+  ut_assert_is_error_with_description(ut_asn1_ber_decoder_get_error(decoder3),
+                                      "Sequence must be constructed");
 }
 
 static void test_set() {
@@ -452,7 +471,8 @@ static void test_set() {
   UtObjectRef data3 = ut_uint8_list_new_from_hex_string("1100");
   UtObjectRef decoder3 = ut_asn1_ber_decoder_new(data3);
   UtObjectRef set3 = ut_asn1_ber_decoder_decode_set(decoder3);
-  ut_assert_is_error(ut_asn1_ber_decoder_get_error(decoder3));
+  ut_assert_is_error_with_description(ut_asn1_ber_decoder_get_error(decoder3),
+                                      "Set must be constructed");
 }
 
 static void test_numeric_string() {
@@ -479,7 +499,8 @@ static void test_numeric_string() {
       ut_uint8_list_new_from_hex_string("120b48656c6c6f20576f726c64");
   UtObjectRef decoder3 = ut_asn1_ber_decoder_new(data3);
   ut_cstring_ref string3 = ut_asn1_ber_decoder_decode_numeric_string(decoder3);
-  ut_assert_is_error(ut_asn1_ber_decoder_get_error(decoder3));
+  ut_assert_is_error_with_description(ut_asn1_ber_decoder_get_error(decoder3),
+                                      "Invalid numeric string");
 
   // Constructed form (not currently supported).
   UtObjectRef data4 =
@@ -487,7 +508,9 @@ static void test_numeric_string() {
   UtObjectRef decoder4 = ut_asn1_ber_decoder_new(data4);
   ut_cstring_ref string4 = ut_asn1_ber_decoder_decode_numeric_string(decoder4);
   // ut_assert_cstring_equal(string4, "12345 67890");
-  ut_assert_is_error(ut_asn1_ber_decoder_get_error(decoder4));
+  ut_assert_is_error_with_description(
+      ut_asn1_ber_decoder_get_error(decoder4),
+      "Constructed numeric string not supported");
 }
 
 static void test_printable_string() {
@@ -517,15 +540,19 @@ static void test_printable_string() {
   UtObjectRef decoder3 = ut_asn1_ber_decoder_new(data3);
   ut_cstring_ref string3 =
       ut_asn1_ber_decoder_decode_printable_string(decoder3);
-  ut_assert_is_error(ut_asn1_ber_decoder_get_error(decoder3));
+  ut_assert_is_error_with_description(ut_asn1_ber_decoder_get_error(decoder3),
+                                      "Invalid printable string");
 
   // Constructed form (not currently supported).
   UtObjectRef data4 =
       ut_uint8_list_new_from_hex_string("330f130648656c6c6f201306576f726c64");
   UtObjectRef decoder4 = ut_asn1_ber_decoder_new(data4);
-  ut_cstring_ref string4 = ut_asn1_ber_decoder_decode_numeric_string(decoder4);
+  ut_cstring_ref string4 =
+      ut_asn1_ber_decoder_decode_printable_string(decoder4);
   // ut_assert_cstring_equal(string4, "Hello World");
-  ut_assert_is_error(ut_asn1_ber_decoder_get_error(decoder4));
+  ut_assert_is_error_with_description(
+      ut_asn1_ber_decoder_get_error(decoder4),
+      "Constructed printable string not supported");
 }
 
 static void test_ia5_string() {
@@ -550,7 +577,8 @@ static void test_ia5_string() {
   UtObjectRef data3 = ut_uint8_list_new_from_hex_string("1601ff");
   UtObjectRef decoder3 = ut_asn1_ber_decoder_new(data3);
   UtObjectRef string3 = ut_asn1_ber_decoder_decode_ia5_string(decoder3);
-  ut_assert_is_error(ut_asn1_ber_decoder_get_error(decoder3));
+  ut_assert_is_error_with_description(ut_asn1_ber_decoder_get_error(decoder3),
+                                      "Invalid IA5 string");
 
   // Constructed form (not currently supported).
   UtObjectRef data4 =
@@ -558,7 +586,8 @@ static void test_ia5_string() {
   UtObjectRef decoder4 = ut_asn1_ber_decoder_new(data4);
   UtObjectRef string4 = ut_asn1_ber_decoder_decode_ia5_string(decoder4);
   // ut_assert_cstring_equal(string4, "Hello World");
-  ut_assert_is_error(ut_asn1_ber_decoder_get_error(decoder4));
+  ut_assert_is_error_with_description(ut_asn1_ber_decoder_get_error(decoder4),
+                                      "Constructed IA5 string not supported");
 }
 
 static void test_visible_string() {
@@ -583,7 +612,8 @@ static void test_visible_string() {
   UtObjectRef data3 = ut_uint8_list_new_from_hex_string("160101");
   UtObjectRef decoder3 = ut_asn1_ber_decoder_new(data3);
   ut_cstring_ref string3 = ut_asn1_ber_decoder_decode_visible_string(decoder3);
-  ut_assert_is_error(ut_asn1_ber_decoder_get_error(decoder3));
+  ut_assert_is_error_with_description(ut_asn1_ber_decoder_get_error(decoder3),
+                                      "Invalid visible string");
 
   // Constructed form (not currently supported).
   UtObjectRef data4 =
@@ -591,7 +621,9 @@ static void test_visible_string() {
   UtObjectRef decoder4 = ut_asn1_ber_decoder_new(data4);
   ut_cstring_ref string4 = ut_asn1_ber_decoder_decode_visible_string(decoder4);
   // ut_assert_cstring_equal(string4, "Hello World");
-  ut_assert_is_error(ut_asn1_ber_decoder_get_error(decoder4));
+  ut_assert_is_error_with_description(
+      ut_asn1_ber_decoder_get_error(decoder4),
+      "Constructed visible string not supported");
 }
 
 int main(int argc, char **argv) {

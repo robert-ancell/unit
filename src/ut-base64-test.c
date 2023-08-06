@@ -50,19 +50,19 @@ static void test_decode() {
 
   UtObjectRef whitespace = ut_base64_decode(" ");
   ut_assert_non_null(whitespace);
-  ut_assert_is_error(whitespace);
+  ut_assert_is_error_with_description(whitespace, "Invalid Base64");
 
   UtObjectRef unknown_character = ut_base64_decode("!");
   ut_assert_non_null(unknown_character);
-  ut_assert_is_error(unknown_character);
+  ut_assert_is_error_with_description(unknown_character, "Invalid Base64");
 
   UtObjectRef non_ascii_character = ut_base64_decode("\xff");
   ut_assert_non_null(non_ascii_character);
-  ut_assert_is_error(non_ascii_character);
+  ut_assert_is_error_with_description(non_ascii_character, "Invalid Base64");
 
   UtObjectRef missing_data = ut_base64_decode("T");
   ut_assert_non_null(missing_data);
-  ut_assert_is_error(missing_data);
+  ut_assert_is_error_with_description(missing_data, "Invalid Base64");
 
   UtObjectRef short1a = ut_base64_decode("TQ==");
   ut_assert_non_null(short1a);

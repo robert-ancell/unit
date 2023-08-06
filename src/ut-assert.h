@@ -37,6 +37,14 @@ void _ut_assert_equal(const char *file, int line, const char *a_name,
 void _ut_assert_is_error(const char *file, int line, const char *name,
                          UtObject *value);
 
+/// Asserts that [value] is a [UtError] with [description].
+#define ut_assert_is_error_with_description(value, description)                \
+  _ut_assert_is_error_with_description(__FILE__, __LINE__, #value, value,      \
+                                       description)
+void _ut_assert_is_error_with_description(const char *file, int line,
+                                          const char *name, UtObject *value,
+                                          const char *description);
+
 /// Asserts that [value] is not a [UtError].
 #define ut_assert_is_not_error(value)                                          \
   _ut_assert_is_not_error(__FILE__, __LINE__, #value, value)

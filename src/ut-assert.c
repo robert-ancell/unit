@@ -128,6 +128,27 @@ void _ut_assert_is_error(const char *file, int line, const char *name,
   abort();
 }
 
+void _ut_assert_is_error_with_description(const char *file, int line,
+                                          const char *name, UtObject *value,
+                                          const char *description) {
+  _ut_assert_is_error(file, line, name, value);
+
+  ut_cstring_ref value_description = ut_error_get_description(value);
+  if (ut_cstring_equal(description, value_description)) {
+    return;
+  }
+
+  ut_cstring_ref value_string =
+      value != NULL ? ut_object_to_string(value) : ut_cstring_new("(NULL)");
+  fprintf(stderr,
+          "%s:%d Error %s doesn't have expected description:\n"
+          "  %s\n"
+          "  %s\n",
+          file, line, name, value_description, description);
+
+  abort();
+}
+
 void _ut_assert_is_not_error(const char *file, int line, const char *name,
                              UtObject *value) {
   if (!ut_object_implements_error(value)) {

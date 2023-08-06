@@ -132,7 +132,8 @@ static void test_lsb() {
   UtObjectRef no_eoi_decoder =
       ut_lzw_decoder_new_lsb(256, 4096, no_eoi_data_stream);
   UtObjectRef no_eoi_result = ut_input_stream_read_sync(no_eoi_decoder);
-  ut_assert_is_error(no_eoi_result);
+  ut_assert_is_error_with_description(no_eoi_result,
+                                      "Missing end of information");
 
   // Invalid code (encoded "hello" with code for o set to 511).
   UtObjectRef invalid_code_data =
@@ -143,7 +144,8 @@ static void test_lsb() {
       ut_lzw_decoder_new_lsb(256, 4096, invalid_code_data_stream);
   UtObjectRef invalid_code_result =
       ut_input_stream_read_sync(invalid_code_decoder);
-  ut_assert_is_error(invalid_code_result);
+  ut_assert_is_error_with_description(invalid_code_result,
+                                      "Invalid code received");
 }
 
 static void test_msb() {
@@ -275,7 +277,8 @@ static void test_msb() {
   UtObjectRef no_eoi_decoder =
       ut_lzw_decoder_new_msb(256, 4096, no_eoi_data_stream);
   UtObjectRef no_eoi_result = ut_input_stream_read_sync(no_eoi_decoder);
-  ut_assert_is_error(no_eoi_result);
+  ut_assert_is_error_with_description(no_eoi_result,
+                                      "Missing end of information");
 
   // Invalid code (encoded "hello" with code for o set to 511).
   UtObjectRef invalid_code_data =
@@ -286,7 +289,8 @@ static void test_msb() {
       ut_lzw_decoder_new_lsb(256, 4096, invalid_code_data_stream);
   UtObjectRef invalid_code_result =
       ut_input_stream_read_sync(invalid_code_decoder);
-  ut_assert_is_error(invalid_code_result);
+  ut_assert_is_error_with_description(invalid_code_result,
+                                      "Invalid code received");
 }
 
 int main(int argc, char **argv) {

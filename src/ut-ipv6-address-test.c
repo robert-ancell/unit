@@ -62,25 +62,28 @@ int main(int argc, char **argv) {
 
   // Empty string
   UtObjectRef a8 = ut_ipv6_address_new_from_string("");
-  ut_assert_is_error(a8);
+  ut_assert_is_error_with_description(
+      a8, "Insufficient number of groups in IPv6 address");
 
   // Too few groups
   UtObjectRef a9 =
       ut_ipv6_address_new_from_string("2001:0db8:85a3:0000:0000:8a2e:0370");
-  ut_assert_is_error(a9);
+  ut_assert_is_error_with_description(
+      a9, "Insufficient number of groups in IPv6 address");
 
   // Too many groups
   UtObjectRef a10 = ut_ipv6_address_new_from_string(
       "2001:0db8:85a3:0000:0000:8a2e:0370:7334:ffff");
-  ut_assert_is_error(a10);
+  ut_assert_is_error_with_description(a10, "Too many groups in IPv6 address");
 
   // Empty groups
   UtObjectRef a11 = ut_ipv6_address_new_from_string(":::::::");
-  ut_assert_is_error(a11);
+  ut_assert_is_error_with_description(a11,
+                                      "Invalid colon sequence in IPv6 address");
 
   // Duplicate zeros
   UtObjectRef a12 = ut_ipv6_address_new_from_string("2001:db8::1::1");
-  ut_assert_is_error(a12);
+  ut_assert_is_error_with_description(a12, "Duplicate :: in IPv6 address");
 
   return 0;
 }

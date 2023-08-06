@@ -83,33 +83,44 @@ static void test_request_line() {
   ut_assert_int_equal(ut_list_get_length(path2_headers), 0);
 
   UtObjectRef empty_decoder = decode_request("");
-  ut_assert_is_error(ut_http_message_decoder_get_error(empty_decoder));
+  ut_assert_is_error_with_description(
+      ut_http_message_decoder_get_error(empty_decoder),
+      "Incomplete HTTP message");
 
   UtObjectRef empty_line_decoder = decode_request("\r\n");
-  ut_assert_is_error(ut_http_message_decoder_get_error(empty_line_decoder));
+  ut_assert_is_error_with_description(
+      ut_http_message_decoder_get_error(empty_line_decoder),
+      "Invalid HTTP request line");
 
   UtObjectRef missing_method_decoder = decode_request("/ HTTP/1.1\r\n"
                                                       "\r\n");
-  ut_assert_is_error(ut_http_message_decoder_get_error(missing_method_decoder));
+  ut_assert_is_error_with_description(
+      ut_http_message_decoder_get_error(missing_method_decoder),
+      "Invalid HTTP request line");
 
   UtObjectRef missing_path_decoder = decode_request("GET HTTP/1.1\r\n"
                                                     "\r\n");
-  ut_assert_is_error(ut_http_message_decoder_get_error(missing_path_decoder));
+  ut_assert_is_error_with_description(
+      ut_http_message_decoder_get_error(missing_path_decoder),
+      "Invalid HTTP request line");
 
   UtObjectRef missing_version_decoder = decode_request("GET /\r\n"
                                                        "\r\n");
-  ut_assert_is_error(
-      ut_http_message_decoder_get_error(missing_version_decoder));
+  ut_assert_is_error_with_description(
+      ut_http_message_decoder_get_error(missing_version_decoder),
+      "Invalid HTTP request line");
 
   UtObjectRef invalid_version_decoder = decode_request("GET / HTTP/8.2\r\n"
                                                        "\r\n");
-  ut_assert_is_error(
-      ut_http_message_decoder_get_error(invalid_version_decoder));
+  ut_assert_is_error_with_description(
+      ut_http_message_decoder_get_error(invalid_version_decoder),
+      "Invalid HTTP version");
 
   UtObjectRef invalid_newline_decoder = decode_request("GET / HTTP/1.1\n"
                                                        "\n");
-  ut_assert_is_error(
-      ut_http_message_decoder_get_error(invalid_newline_decoder));
+  ut_assert_is_error_with_description(
+      ut_http_message_decoder_get_error(invalid_newline_decoder),
+      "Incomplete HTTP message");
 }
 
 static void test_response_line() {
@@ -125,34 +136,44 @@ static void test_response_line() {
   ut_assert_int_equal(ut_list_get_length(ok_headers), 0);
 
   UtObjectRef empty_decoder = decode_response("");
-  ut_assert_is_error(ut_http_message_decoder_get_error(empty_decoder));
+  ut_assert_is_error_with_description(
+      ut_http_message_decoder_get_error(empty_decoder),
+      "Incomplete HTTP message");
 
   UtObjectRef empty_line_decoder = decode_response("\r\n");
-  ut_assert_is_error(ut_http_message_decoder_get_error(empty_line_decoder));
+  ut_assert_is_error_with_description(
+      ut_http_message_decoder_get_error(empty_line_decoder),
+      "Invalid HTTP status line");
 
   UtObjectRef missing_status_decoder = decode_response("HTTP/1.1 OK\r\n"
                                                        "\r\n");
-  ut_assert_is_error(ut_http_message_decoder_get_error(missing_status_decoder));
+  ut_assert_is_error_with_description(
+      ut_http_message_decoder_get_error(missing_status_decoder),
+      "Invalid HTTP status line");
 
   UtObjectRef missing_reason_phrase_decoder = decode_response("HTTP/1.1 200\r\n"
                                                               "\r\n");
-  ut_assert_is_error(
-      ut_http_message_decoder_get_error(missing_reason_phrase_decoder));
+  ut_assert_is_error_with_description(
+      ut_http_message_decoder_get_error(missing_reason_phrase_decoder),
+      "Invalid HTTP status line");
 
   UtObjectRef missing_version_decoder = decode_response("200 OK\r\n"
                                                         "\r\n");
-  ut_assert_is_error(
-      ut_http_message_decoder_get_error(missing_version_decoder));
+  ut_assert_is_error_with_description(
+      ut_http_message_decoder_get_error(missing_version_decoder),
+      "Invalid HTTP version");
 
   UtObjectRef invalid_version_decoder = decode_response("HTTP/8.2 200 OK\r\n"
                                                         "\r\n");
-  ut_assert_is_error(
-      ut_http_message_decoder_get_error(invalid_version_decoder));
+  ut_assert_is_error_with_description(
+      ut_http_message_decoder_get_error(invalid_version_decoder),
+      "Invalid HTTP version");
 
   UtObjectRef invalid_newline_decoder = decode_response("HTTP/1.1 200 OK\n"
                                                         "\n");
-  ut_assert_is_error(
-      ut_http_message_decoder_get_error(invalid_newline_decoder));
+  ut_assert_is_error_with_description(
+      ut_http_message_decoder_get_error(invalid_newline_decoder),
+      "Incomplete HTTP message");
 }
 
 static void test_headers() {
@@ -206,8 +227,9 @@ static void test_body() {
                                                        "Content-Length: 10\r\n"
                                                        "\r\n"
                                                        "012345678");
-  ut_assert_is_error(
-      ut_http_message_decoder_get_error(missing_content_decoder));
+  ut_assert_is_error_with_description(
+      ut_http_message_decoder_get_error(missing_content_decoder),
+      "Incomplete HTTP message");
 
   UtObjectRef chunked_headers =
       test_decode_response("HTTP/1.1 200 OK\r\n"
@@ -237,7 +259,9 @@ static void test_body() {
       decode_request("GET / HTTP/1.1\r\n"
                      "Transfer-Encoding: chunked\r\n"
                      "\r\n");
-  ut_assert_is_error(ut_http_message_decoder_get_error(missing_chunks_decoder));
+  ut_assert_is_error_with_description(
+      ut_http_message_decoder_get_error(missing_chunks_decoder),
+      "Incomplete HTTP message");
 
   UtObjectRef missing_final_chunk_decoder =
       decode_request("GET / HTTP/1.1\r\n"
@@ -247,8 +271,9 @@ static void test_body() {
                      "one\r\n"
                      "3\r\n"
                      "two\r\n");
-  ut_assert_is_error(
-      ut_http_message_decoder_get_error(missing_final_chunk_decoder));
+  ut_assert_is_error_with_description(
+      ut_http_message_decoder_get_error(missing_final_chunk_decoder),
+      "Incomplete HTTP message");
 
   UtObjectRef missing_final_chunk_data_decoder =
       decode_request("GET / HTTP/1.1\r\n"
@@ -259,8 +284,9 @@ static void test_body() {
                      "3\r\n"
                      "two\r\n"
                      "0\r\n");
-  ut_assert_is_error(
-      ut_http_message_decoder_get_error(missing_final_chunk_data_decoder));
+  ut_assert_is_error_with_description(
+      ut_http_message_decoder_get_error(missing_final_chunk_data_decoder),
+      "Incomplete HTTP message");
 
   UtObjectRef invalid_chunk_header_newline_decoder =
       decode_request("GET / HTTP/1.1\r\n"
@@ -272,8 +298,9 @@ static void test_body() {
                      "two\r\n"
                      "0\r\n"
                      "\r\n");
-  ut_assert_is_error(
-      ut_http_message_decoder_get_error(invalid_chunk_header_newline_decoder));
+  ut_assert_is_error_with_description(
+      ut_http_message_decoder_get_error(invalid_chunk_header_newline_decoder),
+      "Incomplete HTTP message");
 
   UtObjectRef invalid_chunk_data_newline_decoder =
       decode_request("GET / HTTP/1.1\r\n"
@@ -285,8 +312,9 @@ static void test_body() {
                      "two\r\n"
                      "0\r\n"
                      "\r\n");
-  ut_assert_is_error(
-      ut_http_message_decoder_get_error(invalid_chunk_data_newline_decoder));
+  ut_assert_is_error_with_description(
+      ut_http_message_decoder_get_error(invalid_chunk_data_newline_decoder),
+      "Invalid HTTP chunk");
 }
 
 int main(int argc, char **argv) {

@@ -18,10 +18,11 @@ int main(int argc, char **argv) {
   ut_assert_uint8_list_equal_hex(array3, "0078ff");
 
   UtObjectRef array4 = ut_uint8_array_new_from_hex_string("0078F");
-  ut_assert_is_error(array4);
+  ut_assert_is_error_with_description(array4,
+                                      "Invalid hexadecimal string length");
 
   UtObjectRef array5 = ut_uint8_array_new_from_hex_string("0078FG");
-  ut_assert_is_error(array5);
+  ut_assert_is_error_with_description(array5, "Invalid hexadecimal string");
 
   UtObjectRef array6 = ut_uint8_array_new();
   ut_uint8_list_append(array6, 0x00);

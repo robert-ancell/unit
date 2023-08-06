@@ -17,22 +17,22 @@ int main(int argc, char **argv) {
   ut_assert_int_equal(ut_ipv4_address_get_address(a3), 0xc0a8012a);
 
   UtObjectRef a4 = ut_ipv4_address_new_from_string("");
-  ut_assert_is_error(a4);
+  ut_assert_is_error_with_description(a4, "Empty value in IPv4 address");
 
   UtObjectRef a5 = ut_ipv4_address_new_from_string("192.168.1.");
-  ut_assert_is_error(a5);
+  ut_assert_is_error_with_description(a5, "Empty value in IPv4 address");
 
   UtObjectRef a6 = ut_ipv4_address_new_from_string(".168.1.55");
-  ut_assert_is_error(a6);
+  ut_assert_is_error_with_description(a6, "Empty value in IPv4 address");
 
   UtObjectRef a7 = ut_ipv4_address_new_from_string("...");
-  ut_assert_is_error(a7);
+  ut_assert_is_error_with_description(a7, "Empty value in IPv4 address");
 
   UtObjectRef a8 = ut_ipv4_address_new_from_string("192.168.1.X");
-  ut_assert_is_error(a8);
+  ut_assert_is_error_with_description(a8, "Invalid character in IPv4 address");
 
   UtObjectRef a9 = ut_ipv4_address_new_from_string("192.168.1.999");
-  ut_assert_is_error(a9);
+  ut_assert_is_error_with_description(a9, "Value too large in IPv4 address");
 
   return 0;
 }

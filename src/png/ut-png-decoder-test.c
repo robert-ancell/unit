@@ -49,12 +49,12 @@ static void check_png(const char *hex_data, uint32_t width, uint32_t height,
 }
 
 // Check the PNG image in [hex_data] is invalid.
-static void check_corrupt_png(const char *hex_data) {
+static void check_corrupt_png(const char *hex_data, const char *description) {
   UtObjectRef data = ut_uint8_list_new_from_hex_string(hex_data);
   UtObjectRef data_stream = ut_list_input_stream_new(data);
   UtObjectRef decoder = ut_png_decoder_new(data_stream);
   UtObjectRef image = ut_png_decoder_decode_sync(decoder);
-  ut_assert_is_error(image);
+  ut_assert_is_error_with_description(image, description);
 }
 
 static void test_png_suite_basic_formats() {
@@ -946,46 +946,46 @@ static void test_png_suite_zlib_compression_level() {
 
 static void test_png_suite_corrupted_files() {
   // signature byte 1 MSBit reset to zero
-  check_corrupt_png(xs1n0g01_data);
+  check_corrupt_png(xs1n0g01_data, "Invalid PNG signature");
 
   // signature byte 2 is a 'Q'
-  check_corrupt_png(xs2n0g01_data);
+  check_corrupt_png(xs2n0g01_data, "Invalid PNG signature");
 
   // signature byte 4 lowercase
-  check_corrupt_png(xs4n0g01_data);
+  check_corrupt_png(xs4n0g01_data, "Invalid PNG signature");
 
   // 7th byte a space instead of control-Z
-  check_corrupt_png(xs7n0g01_data);
+  check_corrupt_png(xs7n0g01_data, "Invalid PNG signature");
 
   // added cr bytes
-  check_corrupt_png(xcrn0g04_data);
+  check_corrupt_png(xcrn0g04_data, "Invalid PNG signature");
 
   // added lf bytes
-  check_corrupt_png(xlfn0g04_data);
+  check_corrupt_png(xlfn0g04_data, "Invalid PNG signature");
 
   // incorrect IHDR checksum
-  check_corrupt_png(xhdn0g08_data);
+  check_corrupt_png(xhdn0g08_data, "PNG chunk CRC mismatch");
 
   // color type 1
-  check_corrupt_png(xc1n0g08_data);
+  check_corrupt_png(xc1n0g08_data, "Invalid PNG color type");
 
   // color type 9
-  check_corrupt_png(xc9n2c08_data);
+  check_corrupt_png(xc9n2c08_data, "Invalid PNG color type");
 
   // bit-depth 0
-  check_corrupt_png(xd0n2c08_data);
+  check_corrupt_png(xd0n2c08_data, "Invalid PNG bit depth");
 
   // bit-depth 3
-  check_corrupt_png(xd3n2c08_data);
+  check_corrupt_png(xd3n2c08_data, "Invalid PNG bit depth");
 
   // bit-depth 99
-  check_corrupt_png(xd9n2c08_data);
+  check_corrupt_png(xd9n2c08_data, "Invalid PNG bit depth");
 
   // missing IDAT chunk
-  check_corrupt_png(xdtn0g01_data);
+  check_corrupt_png(xdtn0g01_data, "Insufficient PNG image data");
 
   // incorrect IDAT checksum
-  check_corrupt_png(xcsn0g01_data);
+  check_corrupt_png(xcsn0g01_data, "PNG chunk CRC mismatch");
 }
 
 int main(int argc, char **argv) {
