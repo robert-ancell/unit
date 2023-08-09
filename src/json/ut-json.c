@@ -271,7 +271,7 @@ static UtObject *decode_object(const char *text, size_t *offset) {
 
   decode_whitespace(text, &end);
 
-  UtObjectRef object = ut_hash_table_new();
+  UtObjectRef object = ut_map_new();
   if (text[end] == '}') {
     *offset = end + 1;
     return ut_object_ref(object);
