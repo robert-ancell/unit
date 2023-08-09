@@ -103,7 +103,7 @@ static void ut_hash_table_insert(UtObject *object, UtObject *key,
 static UtObject *ut_hash_table_lookup(UtObject *object, UtObject *key) {
   UtHashTable *self = (UtHashTable *)object;
   UtHashTableItem *item = lookup(self, key, NULL);
-  return item != NULL ? ut_object_ref(item->value) : NULL;
+  return item != NULL ? item->value : NULL;
 }
 
 static void ut_hash_table_remove(UtObject *object, UtObject *key) {

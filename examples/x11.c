@@ -15,7 +15,7 @@ static uint32_t pixmap = 0;
 static uint32_t gc = 0;
 
 static uint32_t get_atom(const char *name) {
-  UtObjectRef value = ut_map_lookup_string(atoms, name);
+  UtObject *value = ut_map_lookup_string(atoms, name);
   if (value == NULL) {
     return 0;
   }

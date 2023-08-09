@@ -436,7 +436,7 @@ void ut_png_image_set_international_text(UtObject *object, const char *keyword,
   if (self->international_keywords == NULL) {
     self->international_keywords = ut_map_new();
   }
-  UtObjectRef language_keywords =
+  UtObject *language_keywords =
       ut_map_lookup_string(self->international_keywords, lower_language);
   if (language_keywords == NULL) {
     language_keywords = ut_map_new();
@@ -449,7 +449,7 @@ void ut_png_image_set_international_text(UtObject *object, const char *keyword,
   if (self->international_text == NULL) {
     self->international_text = ut_map_new();
   }
-  UtObjectRef language_text =
+  UtObject *language_text =
       ut_map_lookup_string(self->international_text, lower_language);
   if (language_text == NULL) {
     language_text = ut_map_new();
@@ -465,7 +465,7 @@ const char *ut_png_image_get_text(UtObject *object, const char *keyword) {
   if (self->text == NULL) {
     return NULL;
   }
-  UtObjectRef text = ut_map_lookup_string(self->text, keyword);
+  UtObject *text = ut_map_lookup_string(self->text, keyword);
   return text != NULL ? ut_string_get_text(text) : NULL;
 }
 
@@ -479,7 +479,7 @@ ut_png_image_get_international_text(UtObject *object, const char *keyword,
   ut_cstring_ref lower_language = ut_cstring_new_lowercase(language);
 
   if (translated_keyword != NULL) {
-    UtObjectRef language_keywords =
+    UtObject *language_keywords =
         self->international_keywords != NULL
             ? ut_map_lookup_string(self->international_keywords, lower_language)
             : NULL;
@@ -492,13 +492,13 @@ ut_png_image_get_international_text(UtObject *object, const char *keyword,
                               : NULL;
   }
 
-  UtObjectRef language_text =
+  UtObject *language_text =
       self->international_text != NULL
           ? ut_map_lookup_string(self->international_text, lower_language)
           : NULL;
-  UtObjectRef text = language_text != NULL
-                         ? ut_map_lookup_string(language_text, keyword)
-                         : NULL;
+  UtObject *text = language_text != NULL
+                       ? ut_map_lookup_string(language_text, keyword)
+                       : NULL;
   return text != NULL ? ut_string_get_text(text) : NULL;
 }
 
