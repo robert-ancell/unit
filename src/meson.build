@@ -3,6 +3,7 @@ ut_sources = [
   'asn1/ut-asn1-ber-encoder.c',
   'asn1/ut-asn1-error.c',
   'asn1/ut-asn1-string.c',
+  'asn1/ut-asn1-tag.c',
   'dbus/ut-dbus-array.c',
   'dbus/ut-dbus-auth-client.c',
   'dbus/ut-dbus-auth-server.c',
