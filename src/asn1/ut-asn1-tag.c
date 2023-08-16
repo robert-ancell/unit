@@ -39,4 +39,6 @@ uint32_t ut_asn1_tag_get_number(UtObject *object) {
 }
 
 /// Returns [true] if [object] is a [UtAsn1Tag].
-bool ut_object_is_asn1_tag(UtObject *object);
+bool ut_object_is_asn1_tag(UtObject *object) {
+  return ut_object_is_type(object, &object_interface);
+}
