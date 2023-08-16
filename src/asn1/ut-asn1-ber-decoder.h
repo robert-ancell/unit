@@ -23,6 +23,8 @@ UtObject *ut_asn1_ber_decoder_get_contents(UtObject *object);
 
 UtObject *ut_asn1_ber_decoder_get_error(UtObject *object);
 
+UtObject *ut_asn1_ber_decoder_decode_value(UtObject *object, UtObject *type);
+
 bool ut_asn1_ber_decoder_decode_boolean(UtObject *object);
 
 int64_t ut_asn1_ber_decoder_decode_integer(UtObject *object);
@@ -32,6 +34,8 @@ UtObject *ut_asn1_ber_decoder_decode_octet_string(UtObject *object);
 void ut_asn1_ber_decoder_decode_null(UtObject *object);
 
 UtObject *ut_asn1_ber_decoder_decode_object_identifier(UtObject *object);
+
+double ut_asn1_ber_decoder_decode_real(UtObject *object);
 
 int64_t ut_asn1_ber_decoder_decode_enumerated(UtObject *object);
 

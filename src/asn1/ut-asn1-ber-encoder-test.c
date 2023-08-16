@@ -184,15 +184,25 @@ static void test_length() {
 }
 
 static void test_boolean() {
+  // False.
   UtObjectRef encoder1 = ut_asn1_ber_encoder_new();
   ut_asn1_ber_encoder_encode_boolean(encoder1, false);
   UtObjectRef data1 = ut_asn1_ber_encoder_get_data(encoder1);
   ut_assert_uint8_list_equal_hex(data1, "00");
 
+  // True.
   UtObjectRef encoder2 = ut_asn1_ber_encoder_new();
   ut_asn1_ber_encoder_encode_boolean(encoder2, true);
   UtObjectRef data2 = ut_asn1_ber_encoder_get_data(encoder2);
   ut_assert_uint8_list_equal_hex(data2, "ff");
+
+  // Encoded as object with type.
+  UtObjectRef encoder3 = ut_asn1_ber_encoder_new();
+  UtObjectRef type3 = ut_asn1_boolean_type_new();
+  UtObjectRef value3 = ut_boolean_new(true);
+  ut_asn1_ber_encoder_encode_value(encoder3, type3, value3);
+  UtObjectRef data3 = ut_asn1_ber_encoder_get_data(encoder3);
+  ut_assert_uint8_list_equal_hex(data3, "0101ff");
 }
 
 static void test_integer() {
@@ -243,6 +253,18 @@ static void test_integer() {
   ut_asn1_ber_encoder_encode_integer(encoder9, 0x0123456789abcdef);
   UtObjectRef data9 = ut_asn1_ber_encoder_get_data(encoder9);
   ut_assert_uint8_list_equal_hex(data9, "0123456789abcdef");
+
+  // Encoded as object with type.
+  UtObjectRef encoder10 = ut_asn1_ber_encoder_new();
+  UtObjectRef type10 = ut_asn1_integer_type_new();
+  UtObjectRef value10 = ut_int64_new(42);
+  ut_asn1_ber_encoder_encode_value(encoder10, type10, value10);
+  UtObjectRef data10 = ut_asn1_ber_encoder_get_data(encoder10);
+  ut_assert_uint8_list_equal_hex(data10, "02012a");
+}
+
+static void test_bit_string() {
+  // FIXME
 }
 
 static void test_octet_string() {
@@ -263,6 +285,14 @@ static void test_octet_string() {
   ut_asn1_ber_encoder_encode_octet_string(encoder3, string3);
   UtObjectRef data3 = ut_asn1_ber_encoder_get_data(encoder3);
   ut_assert_uint8_list_equal_hex(data3, "0123456789abcdef");
+
+  // Encoded as object with type.
+  UtObjectRef encoder4 = ut_asn1_ber_encoder_new();
+  UtObjectRef type4 = ut_asn1_octet_string_type_new();
+  UtObjectRef value4 = ut_uint8_list_new_from_hex_string("0123456789abcdef");
+  ut_asn1_ber_encoder_encode_value(encoder4, type4, value4);
+  UtObjectRef data4 = ut_asn1_ber_encoder_get_data(encoder4);
+  ut_assert_uint8_list_equal_hex(data4, "04080123456789abcdef");
 }
 
 static void test_null() {
@@ -270,14 +300,30 @@ static void test_null() {
   ut_asn1_ber_encoder_encode_null(encoder1);
   UtObjectRef data1 = ut_asn1_ber_encoder_get_data(encoder1);
   ut_assert_uint8_list_equal_hex(data1, "");
+
+  // Encoded as object with type.
+  UtObjectRef encoder2 = ut_asn1_ber_encoder_new();
+  UtObjectRef type2 = ut_asn1_null_type_new();
+  UtObjectRef value2 = ut_null_new();
+  ut_asn1_ber_encoder_encode_value(encoder2, type2, value2);
+  UtObjectRef data2 = ut_asn1_ber_encoder_get_data(encoder2);
+  ut_assert_uint8_list_equal_hex(data2, "0500");
 }
 
 static void test_object_identifier() {
   UtObjectRef encoder1 = ut_asn1_ber_encoder_new();
-  UtObjectRef id = ut_uint32_list_new_from_elements(3, 2, 999, 3);
-  ut_asn1_ber_encoder_encode_object_identifier(encoder1, id);
+  UtObjectRef id1 = ut_uint32_list_new_from_elements(3, 2, 999, 3);
+  ut_asn1_ber_encoder_encode_object_identifier(encoder1, id1);
   UtObjectRef data1 = ut_asn1_ber_encoder_get_data(encoder1);
   ut_assert_uint8_list_equal_hex(data1, "883703");
+
+  // Encoded as object with type.
+  UtObjectRef encoder2 = ut_asn1_ber_encoder_new();
+  UtObjectRef type2 = ut_asn1_object_identifier_type_new();
+  UtObjectRef value2 = ut_uint32_list_new_from_elements(3, 2, 999, 3);
+  ut_asn1_ber_encoder_encode_value(encoder2, type2, value2);
+  UtObjectRef data2 = ut_asn1_ber_encoder_get_data(encoder2);
+  ut_assert_uint8_list_equal_hex(data2, "0603883703");
 }
 
 static void test_enumerated() {
@@ -285,6 +331,8 @@ static void test_enumerated() {
   ut_asn1_ber_encoder_encode_enumerated(encoder1, 42);
   UtObjectRef data1 = ut_asn1_ber_encoder_get_data(encoder1);
   ut_assert_uint8_list_equal_hex(data1, "2a");
+
+  // FIXME: Encoded as object with type.
 }
 
 static void test_utf8_string() {
@@ -301,15 +349,129 @@ static void test_utf8_string() {
   UtObjectRef data2 = ut_asn1_ber_encoder_get_data(encoder2);
   ut_assert_uint8_list_equal_hex(data2, "");
 
+  // Encoded as object with type.
+  UtObjectRef encoder3 = ut_asn1_ber_encoder_new();
+  UtObjectRef type3 = ut_asn1_utf8_string_type_new();
+  UtObjectRef value3 = ut_string_new("Hello 😀");
+  ut_asn1_ber_encoder_encode_value(encoder3, type3, value3);
+  UtObjectRef data3 = ut_asn1_ber_encoder_get_data(encoder3);
+  ut_assert_uint8_list_equal_hex(data3, "0c0a48656c6c6f20f09f9880");
+
   // FIXME: Invalid UTF8
 }
 
 static void test_relative_oid() {
   UtObjectRef encoder1 = ut_asn1_ber_encoder_new();
-  UtObjectRef id = ut_uint32_list_new_from_elements(3, 8571, 3, 2);
-  ut_asn1_ber_encoder_encode_relative_oid(encoder1, id);
+  UtObjectRef id1 = ut_uint32_list_new_from_elements(3, 8571, 3, 2);
+  ut_asn1_ber_encoder_encode_relative_oid(encoder1, id1);
   UtObjectRef data1 = ut_asn1_ber_encoder_get_data(encoder1);
   ut_assert_uint8_list_equal_hex(data1, "c27b0302");
+
+  // Encoded as object with type.
+  UtObjectRef encoder2 = ut_asn1_ber_encoder_new();
+  UtObjectRef type2 = ut_asn1_relative_oid_type_new();
+  UtObjectRef value2 = ut_uint32_list_new_from_elements(3, 8571, 3, 2);
+  ut_asn1_ber_encoder_encode_value(encoder2, type2, value2);
+  UtObjectRef data2 = ut_asn1_ber_encoder_get_data(encoder2);
+  ut_assert_uint8_list_equal_hex(data2, "0d04c27b0302");
+}
+
+static void test_sequence() {
+  UtObjectRef encoder1 = ut_asn1_ber_encoder_new();
+  UtObjectRef components1 = ut_map_new_ordered();
+  ut_map_insert_string_take(components1, "name",
+                            ut_asn1_utf8_string_type_new());
+  ut_map_insert_string_take(components1, "age", ut_asn1_integer_type_new());
+  UtObjectRef type1 = ut_asn1_sequence_type_new(components1, false);
+  UtObjectRef value1 = ut_map_new();
+  ut_map_insert_string_take(value1, "name", ut_string_new("Arthur Dent"));
+  ut_map_insert_string_take(value1, "age", ut_int64_new(42));
+  ut_asn1_ber_encoder_encode_value(encoder1, type1, value1);
+  UtObjectRef data1 = ut_asn1_ber_encoder_get_data(encoder1);
+  ut_assert_uint8_list_equal_hex(data1, "30100c0b4172746875722044656e7402012a");
+
+  // Empty sequence.
+  UtObjectRef encoder2 = ut_asn1_ber_encoder_new();
+  UtObjectRef components2 = ut_map_new_ordered();
+  UtObjectRef type2 = ut_asn1_sequence_type_new(components2, false);
+  UtObjectRef value2 = ut_map_new();
+  ut_asn1_ber_encoder_encode_value(encoder2, type2, value2);
+  UtObjectRef data2 = ut_asn1_ber_encoder_get_data(encoder2);
+  ut_assert_uint8_list_equal_hex(data2, "3000");
+
+  // FIXME: Optional components
+  // FIXME: Default components
+  // FIXME: Tagged components
+  // FIXME: Extensible
+}
+
+static void test_sequence_of() {
+  UtObjectRef encoder1 = ut_asn1_ber_encoder_new();
+  UtObjectRef child_type1 = ut_asn1_integer_type_new();
+  UtObjectRef type1 = ut_asn1_sequence_of_type_new(child_type1);
+  UtObjectRef value1 = ut_list_new_from_elements_take(
+      ut_int64_new(1), ut_int64_new(2), ut_int64_new(3), NULL);
+  ut_asn1_ber_encoder_encode_value(encoder1, type1, value1);
+  UtObjectRef data1 = ut_asn1_ber_encoder_get_data(encoder1);
+  ut_assert_uint8_list_equal_hex(data1, "3009020101020102020103");
+
+  // Empty list.
+  UtObjectRef encoder2 = ut_asn1_ber_encoder_new();
+  UtObjectRef child_type2 = ut_asn1_integer_type_new();
+  UtObjectRef type2 = ut_asn1_sequence_of_type_new(child_type2);
+  UtObjectRef value2 = ut_list_new();
+  ut_asn1_ber_encoder_encode_value(encoder2, type2, value2);
+  UtObjectRef data2 = ut_asn1_ber_encoder_get_data(encoder2);
+  ut_assert_uint8_list_equal_hex(data2, "3000");
+}
+
+static void test_set() {
+  UtObjectRef encoder1 = ut_asn1_ber_encoder_new();
+  UtObjectRef components1 = ut_map_new_ordered();
+  ut_map_insert_string_take(components1, "name",
+                            ut_asn1_utf8_string_type_new());
+  ut_map_insert_string_take(components1, "age", ut_asn1_integer_type_new());
+  UtObjectRef type1 = ut_asn1_set_type_new(components1, false);
+  UtObjectRef value1 = ut_map_new();
+  ut_map_insert_string_take(value1, "name", ut_string_new("Arthur Dent"));
+  ut_map_insert_string_take(value1, "age", ut_int64_new(42));
+  ut_asn1_ber_encoder_encode_value(encoder1, type1, value1);
+  UtObjectRef data1 = ut_asn1_ber_encoder_get_data(encoder1);
+  ut_assert_uint8_list_equal_hex(data1, "31100c0b4172746875722044656e7402012a");
+
+  // Empty set.
+  UtObjectRef encoder2 = ut_asn1_ber_encoder_new();
+  UtObjectRef components2 = ut_map_new_ordered();
+  UtObjectRef type2 = ut_asn1_set_type_new(components2, false);
+  UtObjectRef value2 = ut_map_new();
+  ut_asn1_ber_encoder_encode_value(encoder2, type2, value2);
+  UtObjectRef data2 = ut_asn1_ber_encoder_get_data(encoder2);
+  ut_assert_uint8_list_equal_hex(data2, "3100");
+
+  // FIXME: Optional components
+  // FIXME: Default components
+  // FIXME: Tagged components
+  // FIXME: Extensible
+}
+
+static void test_set_of() {
+  UtObjectRef encoder1 = ut_asn1_ber_encoder_new();
+  UtObjectRef child_type1 = ut_asn1_integer_type_new();
+  UtObjectRef type1 = ut_asn1_set_of_type_new(child_type1);
+  UtObjectRef value1 = ut_list_new_from_elements_take(
+      ut_int64_new(1), ut_int64_new(2), ut_int64_new(3), NULL);
+  ut_asn1_ber_encoder_encode_value(encoder1, type1, value1);
+  UtObjectRef data1 = ut_asn1_ber_encoder_get_data(encoder1);
+  ut_assert_uint8_list_equal_hex(data1, "3109020101020102020103");
+
+  // Empty list.
+  UtObjectRef encoder2 = ut_asn1_ber_encoder_new();
+  UtObjectRef child_type2 = ut_asn1_integer_type_new();
+  UtObjectRef type2 = ut_asn1_set_of_type_new(child_type2);
+  UtObjectRef value2 = ut_list_new();
+  ut_asn1_ber_encoder_encode_value(encoder2, type2, value2);
+  UtObjectRef data2 = ut_asn1_ber_encoder_get_data(encoder2);
+  ut_assert_uint8_list_equal_hex(data2, "3100");
 }
 
 static void test_numeric_string() {
@@ -323,6 +485,8 @@ static void test_numeric_string() {
   ut_asn1_ber_encoder_encode_numeric_string(encoder2, "");
   UtObjectRef data2 = ut_asn1_ber_encoder_get_data(encoder2);
   ut_assert_uint8_list_equal_hex(data2, "");
+
+  // FIXME: Encoded as object with type.
 
   // FIXME: Invalid characters
 }
@@ -338,6 +502,8 @@ static void test_printable_string() {
   ut_asn1_ber_encoder_encode_printable_string(encoder2, "");
   UtObjectRef data2 = ut_asn1_ber_encoder_get_data(encoder2);
   ut_assert_uint8_list_equal_hex(data2, "");
+
+  // FIXME: Encoded as object with type.
 
   // FIXME: Invalid characters
 }
@@ -356,6 +522,8 @@ static void test_ia5_string() {
   UtObjectRef data2 = ut_asn1_ber_encoder_get_data(encoder2);
   ut_assert_uint8_list_equal_hex(data2, "");
 
+  // FIXME: Encoded as object with type.
+
   // FIXME: Invalid characters
 }
 
@@ -371,24 +539,17 @@ static void test_visible_string() {
   UtObjectRef data2 = ut_asn1_ber_encoder_get_data(encoder2);
   ut_assert_uint8_list_equal_hex(data2, "");
 
+  // FIXME: Encoded as object with type.
+
   // FIXME: Invalid characters
 }
 
-static void test_sequence() {
-  UtObjectRef encoder = ut_asn1_ber_encoder_new();
-  size_t length = ut_asn1_ber_encoder_encode_integer(encoder, 42);
-  length += ut_asn1_ber_encoder_encode_definite_length(encoder, 1);
-  length += ut_asn1_ber_encoder_encode_primitive_identifier(
-      encoder, UT_ASN1_TAG_CLASS_UNIVERSAL, UT_ASN1_TAG_UNIVERSAL_INTEGER);
-  length += ut_asn1_ber_encoder_encode_boolean(encoder, true);
-  length += ut_asn1_ber_encoder_encode_definite_length(encoder, 1);
-  length += ut_asn1_ber_encoder_encode_primitive_identifier(
-      encoder, UT_ASN1_TAG_CLASS_UNIVERSAL, UT_ASN1_TAG_UNIVERSAL_BOOLEAN);
-  ut_asn1_ber_encoder_encode_definite_length(encoder, length);
-  ut_asn1_ber_encoder_encode_constructed_identifier(
-      encoder, UT_ASN1_TAG_CLASS_UNIVERSAL, UT_ASN1_TAG_UNIVERSAL_SEQUENCE);
-  UtObjectRef data = ut_asn1_ber_encoder_get_data(encoder);
-  ut_assert_uint8_list_equal_hex(data, "30060101ff02012a");
+static void test_choice() {
+  // FIXME
+}
+
+static void test_tagged_type() {
+  // FIXME
 }
 
 int main(int argc, char **argv) {
@@ -396,18 +557,23 @@ int main(int argc, char **argv) {
   test_length();
   test_boolean();
   test_integer();
+  test_bit_string();
   test_octet_string();
   test_null();
   test_object_identifier();
   test_enumerated();
   test_utf8_string();
   test_relative_oid();
+  test_sequence();
+  test_sequence_of();
+  test_set();
+  test_set_of();
   test_numeric_string();
   test_printable_string();
   test_ia5_string();
   test_visible_string();
-
-  test_sequence();
+  test_choice();
+  test_tagged_type();
 
   return 0;
 }

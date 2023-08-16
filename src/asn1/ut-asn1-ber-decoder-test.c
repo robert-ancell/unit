@@ -17,33 +17,42 @@ static void test_boolean() {
   UtObjectRef data2 = ut_uint8_list_new_from_hex_string("0101ff");
   UtObjectRef decoder2 = ut_asn1_ber_decoder_new(data2);
   ut_assert_true(ut_asn1_ber_decoder_decode_boolean(decoder2));
-  ut_assert_null(ut_asn1_ber_decoder_get_error(decoder1));
+  ut_assert_null(ut_asn1_ber_decoder_get_error(decoder2));
 
   UtObjectRef data3 = ut_uint8_list_new_from_hex_string("010101");
   UtObjectRef decoder3 = ut_asn1_ber_decoder_new(data3);
   ut_assert_true(ut_asn1_ber_decoder_decode_boolean(decoder3));
-  ut_assert_null(ut_asn1_ber_decoder_get_error(decoder1));
+  ut_assert_null(ut_asn1_ber_decoder_get_error(decoder3));
+
+  // Decoded as object with type.
+  UtObjectRef data4 = ut_uint8_list_new_from_hex_string("0101ff");
+  UtObjectRef decoder4 = ut_asn1_ber_decoder_new(data4);
+  UtObjectRef type4 = ut_asn1_boolean_type_new();
+  UtObjectRef value4 = ut_asn1_ber_decoder_decode_value(decoder4, type4);
+  ut_assert_null(ut_asn1_ber_decoder_get_error(decoder4));
+  ut_assert_true(ut_object_is_boolean(value4));
+  ut_assert_true(ut_boolean_get_value(value4));
 
   // Empty data.
-  UtObjectRef data4 = ut_uint8_list_new_from_hex_string("0100");
-  UtObjectRef decoder4 = ut_asn1_ber_decoder_new(data4);
-  ut_asn1_ber_decoder_decode_boolean(decoder4);
-  ut_assert_is_error_with_description(ut_asn1_ber_decoder_get_error(decoder4),
-                                      "Invalid boolean data length");
-
-  // Too much data.
-  UtObjectRef data5 = ut_uint8_list_new_from_hex_string("01020000");
+  UtObjectRef data5 = ut_uint8_list_new_from_hex_string("0100");
   UtObjectRef decoder5 = ut_asn1_ber_decoder_new(data5);
   ut_asn1_ber_decoder_decode_boolean(decoder5);
   ut_assert_is_error_with_description(ut_asn1_ber_decoder_get_error(decoder5),
-                                      "Invalid boolean data length");
+                                      "Invalid BOOLEAN data length");
 
-  // Constructed form.
-  UtObjectRef data6 = ut_uint8_list_new_from_hex_string("210100");
+  // Too much data.
+  UtObjectRef data6 = ut_uint8_list_new_from_hex_string("01020000");
   UtObjectRef decoder6 = ut_asn1_ber_decoder_new(data6);
   ut_asn1_ber_decoder_decode_boolean(decoder6);
   ut_assert_is_error_with_description(ut_asn1_ber_decoder_get_error(decoder6),
-                                      "Boolean does not have constructed form");
+                                      "Invalid BOOLEAN data length");
+
+  // Constructed form.
+  UtObjectRef data7 = ut_uint8_list_new_from_hex_string("210100");
+  UtObjectRef decoder7 = ut_asn1_ber_decoder_new(data7);
+  ut_asn1_ber_decoder_decode_boolean(decoder7);
+  ut_assert_is_error_with_description(ut_asn1_ber_decoder_get_error(decoder7),
+                                      "BOOLEAN does not have constructed form");
 }
 
 static void test_integer() {
@@ -161,27 +170,40 @@ static void test_integer() {
                       0x0123456789abcdef);
   ut_assert_null(ut_asn1_ber_decoder_get_error(decoder9));
 
-  // Values greater than 64 bit not supported.
-  UtObjectRef data10 =
-      ut_uint8_list_new_from_hex_string("0210ffffffffffffffffffffffffffffffff");
+  // Decoded as object with type.
+  UtObjectRef data10 = ut_uint8_list_new_from_hex_string("02012a");
   UtObjectRef decoder10 = ut_asn1_ber_decoder_new(data10);
-  ut_asn1_ber_decoder_decode_integer(decoder10);
-  ut_assert_is_error_with_description(ut_asn1_ber_decoder_get_error(decoder10),
-                                      "Only 64 bit integers supported");
+  UtObjectRef type10 = ut_asn1_integer_type_new();
+  UtObjectRef value10 = ut_asn1_ber_decoder_decode_value(decoder10, type10);
+  ut_assert_null(ut_asn1_ber_decoder_get_error(decoder10));
+  ut_assert_true(ut_object_is_int64(value10));
+  ut_assert_int_equal(ut_int64_get_value(value10), 42);
 
-  // Empty data.
-  UtObjectRef data11 = ut_uint8_list_new_from_hex_string("0200");
+  // Values greater than 64 bit not supported.
+  UtObjectRef data11 =
+      ut_uint8_list_new_from_hex_string("0210ffffffffffffffffffffffffffffffff");
   UtObjectRef decoder11 = ut_asn1_ber_decoder_new(data11);
   ut_asn1_ber_decoder_decode_integer(decoder11);
   ut_assert_is_error_with_description(ut_asn1_ber_decoder_get_error(decoder11),
-                                      "Invalid integer data length");
+                                      "Only 64 bit integers supported");
 
-  // Constructed form.
-  UtObjectRef data12 = ut_uint8_list_new_from_hex_string("220100");
+  // Empty data.
+  UtObjectRef data12 = ut_uint8_list_new_from_hex_string("0200");
   UtObjectRef decoder12 = ut_asn1_ber_decoder_new(data12);
   ut_asn1_ber_decoder_decode_integer(decoder12);
   ut_assert_is_error_with_description(ut_asn1_ber_decoder_get_error(decoder12),
-                                      "Integer does not have constructed form");
+                                      "Invalid INTEGER data length");
+
+  // Constructed form.
+  UtObjectRef data13 = ut_uint8_list_new_from_hex_string("220100");
+  UtObjectRef decoder13 = ut_asn1_ber_decoder_new(data13);
+  ut_asn1_ber_decoder_decode_integer(decoder13);
+  ut_assert_is_error_with_description(ut_asn1_ber_decoder_get_error(decoder13),
+                                      "INTEGER does not have constructed form");
+}
+
+static void test_bit_string() {
+  // FIXME
 }
 
 static void test_octet_string() {
@@ -262,6 +284,8 @@ static void test_octet_string() {
   // ut_assert_uint8_list_equal_hex(string11, "0123456789abcdef");
   ut_assert_is_error_with_description(ut_asn1_ber_decoder_get_error(decoder11),
                                       "Insufficient data");
+
+  // FIXME: Decoded as object with type.
 }
 
 static void test_null() {
@@ -274,19 +298,27 @@ static void test_null() {
   ut_asn1_ber_decoder_decode_null(decoder1);
   ut_assert_null(ut_asn1_ber_decoder_get_error(decoder1));
 
-  // Too much data.
-  UtObjectRef data2 = ut_uint8_list_new_from_hex_string("050100");
+  // Decoded as object with type.
+  UtObjectRef data2 = ut_uint8_list_new_from_hex_string("0500");
   UtObjectRef decoder2 = ut_asn1_ber_decoder_new(data2);
-  ut_asn1_ber_decoder_decode_null(decoder2);
-  ut_assert_is_error_with_description(ut_asn1_ber_decoder_get_error(decoder2),
-                                      "Invalid null data length");
+  UtObjectRef type2 = ut_asn1_null_type_new();
+  UtObjectRef value2 = ut_asn1_ber_decoder_decode_value(decoder2, type2);
+  ut_assert_null(ut_asn1_ber_decoder_get_error(decoder2));
+  ut_assert_true(ut_object_is_null(value2));
 
-  // Constructed form.
-  UtObjectRef data3 = ut_uint8_list_new_from_hex_string("2500");
+  // Too much data.
+  UtObjectRef data3 = ut_uint8_list_new_from_hex_string("050100");
   UtObjectRef decoder3 = ut_asn1_ber_decoder_new(data3);
   ut_asn1_ber_decoder_decode_null(decoder3);
   ut_assert_is_error_with_description(ut_asn1_ber_decoder_get_error(decoder3),
-                                      "Null does not have constructed form");
+                                      "Invalid NULL data length");
+
+  // Constructed form.
+  UtObjectRef data4 = ut_uint8_list_new_from_hex_string("2500");
+  UtObjectRef decoder4 = ut_asn1_ber_decoder_new(data4);
+  ut_asn1_ber_decoder_decode_null(decoder4);
+  ut_assert_is_error_with_description(ut_asn1_ber_decoder_get_error(decoder4),
+                                      "NULL does not have constructed form");
 }
 
 static void test_object_identifier() {
@@ -297,31 +329,41 @@ static void test_object_identifier() {
   ut_assert_int_equal(ut_asn1_ber_decoder_get_identifier_number(decoder1),
                       UT_ASN1_TAG_UNIVERSAL_OBJECT_IDENTIFIER);
   UtObjectRef id1 = ut_asn1_ber_decoder_decode_object_identifier(decoder1);
+  ut_assert_null(ut_asn1_ber_decoder_get_error(decoder1));
   uint32_t expected_id1[] = {2, 999, 3};
   ut_assert_uint32_list_equal(id1, expected_id1, 3);
-  ut_assert_null(ut_asn1_ber_decoder_get_error(decoder1));
+
+  // Decoded as object with type.
+  UtObjectRef data2 = ut_uint8_list_new_from_hex_string("0603883703");
+  UtObjectRef decoder2 = ut_asn1_ber_decoder_new(data2);
+  UtObjectRef type2 = ut_asn1_object_identifier_type_new();
+  UtObjectRef value2 = ut_asn1_ber_decoder_decode_value(decoder2, type2);
+  ut_assert_null(ut_asn1_ber_decoder_get_error(decoder2));
+  ut_assert_true(ut_object_implements_uint32_list(value2));
+  uint32_t expected_id2[] = {2, 999, 3};
+  ut_assert_uint32_list_equal(id1, expected_id2, 3);
 
   // Empty.
-  UtObjectRef data2 = ut_uint8_list_new_from_hex_string("0600");
-  UtObjectRef decoder2 = ut_asn1_ber_decoder_new(data2);
-  UtObjectRef id2 = ut_asn1_ber_decoder_decode_object_identifier(decoder2);
-  ut_assert_is_error_with_description(ut_asn1_ber_decoder_get_error(decoder2),
-                                      "Invalid object identifier");
-
-  // Invalid integer.
-  UtObjectRef data3 = ut_uint8_list_new_from_hex_string("060188");
+  UtObjectRef data3 = ut_uint8_list_new_from_hex_string("0600");
   UtObjectRef decoder3 = ut_asn1_ber_decoder_new(data3);
   UtObjectRef id3 = ut_asn1_ber_decoder_decode_object_identifier(decoder3);
   ut_assert_is_error_with_description(ut_asn1_ber_decoder_get_error(decoder3),
-                                      "Invalid object identifier");
+                                      "Invalid OBJECT IDENTIFIER");
 
-  // Constructed form.
-  UtObjectRef data4 = ut_uint8_list_new_from_hex_string("2603883703");
+  // Invalid integer.
+  UtObjectRef data4 = ut_uint8_list_new_from_hex_string("060188");
   UtObjectRef decoder4 = ut_asn1_ber_decoder_new(data4);
   UtObjectRef id4 = ut_asn1_ber_decoder_decode_object_identifier(decoder4);
+  ut_assert_is_error_with_description(ut_asn1_ber_decoder_get_error(decoder4),
+                                      "Invalid OBJECT IDENTIFIER");
+
+  // Constructed form.
+  UtObjectRef data5 = ut_uint8_list_new_from_hex_string("2603883703");
+  UtObjectRef decoder5 = ut_asn1_ber_decoder_new(data5);
+  UtObjectRef id5 = ut_asn1_ber_decoder_decode_object_identifier(decoder5);
   ut_assert_is_error_with_description(
-      ut_asn1_ber_decoder_get_error(decoder4),
-      "Object identifier does not have constructed form");
+      ut_asn1_ber_decoder_get_error(decoder5),
+      "OBJECT IDENTIFIER does not have constructed form");
 }
 
 static void test_enumerated() {
@@ -334,12 +376,15 @@ static void test_enumerated() {
   ut_assert_int_equal(ut_asn1_ber_decoder_decode_enumerated(decoder1), 42);
   ut_assert_null(ut_asn1_ber_decoder_get_error(decoder1));
 
+  // FIXME: Decoded as object with type.
+
   // Constructed form.
-  UtObjectRef data2 = ut_uint8_list_new_from_hex_string("2a012a");
-  UtObjectRef decoder2 = ut_asn1_ber_decoder_new(data2);
-  ut_asn1_ber_decoder_decode_enumerated(decoder2);
-  ut_assert_is_error_with_description(ut_asn1_ber_decoder_get_error(decoder2),
-                                      "Integer does not have constructed form");
+  UtObjectRef data3 = ut_uint8_list_new_from_hex_string("2a012a");
+  UtObjectRef decoder3 = ut_asn1_ber_decoder_new(data3);
+  ut_asn1_ber_decoder_decode_enumerated(decoder3);
+  ut_assert_is_error_with_description(
+      ut_asn1_ber_decoder_get_error(decoder3),
+      "ENUMERATED does not have constructed form");
 }
 
 static void test_utf8_string() {
@@ -370,6 +415,8 @@ static void test_utf8_string() {
   ut_assert_is_error_with_description(ut_asn1_ber_decoder_get_error(decoder3),
                                       "Constructed octet string not supported");
 
+  // FIXME: Decoded as object with type.
+
   // FIXME: Invalid UTF8
 }
 
@@ -393,20 +440,30 @@ static void test_relative_oid() {
   ut_assert_uint32_list_equal(id2, expected_id2, 0);
   ut_assert_null(ut_asn1_ber_decoder_get_error(decoder2));
 
-  // Invalid integer.
-  UtObjectRef data3 = ut_uint8_list_new_from_hex_string("0d0188");
+  // Decoded as object with type.
+  UtObjectRef data3 = ut_uint8_list_new_from_hex_string("0d04c27b0302");
   UtObjectRef decoder3 = ut_asn1_ber_decoder_new(data3);
-  UtObjectRef id3 = ut_asn1_ber_decoder_decode_relative_oid(decoder3);
-  ut_assert_is_error_with_description(ut_asn1_ber_decoder_get_error(decoder3),
-                                      "Invalid relative object identifier");
+  UtObjectRef type3 = ut_asn1_relative_oid_type_new();
+  UtObjectRef value3 = ut_asn1_ber_decoder_decode_value(decoder3, type3);
+  ut_assert_null(ut_asn1_ber_decoder_get_error(decoder3));
+  ut_assert_true(ut_object_implements_uint32_list(value3));
+  uint32_t expected_id3[] = {8571, 3, 2};
+  ut_assert_uint32_list_equal(id1, expected_id3, 3);
 
-  // Constructed form.
-  UtObjectRef data4 = ut_uint8_list_new_from_hex_string("2d04c27b0302");
+  // Invalid integer.
+  UtObjectRef data4 = ut_uint8_list_new_from_hex_string("0d0188");
   UtObjectRef decoder4 = ut_asn1_ber_decoder_new(data4);
   UtObjectRef id4 = ut_asn1_ber_decoder_decode_relative_oid(decoder4);
+  ut_assert_is_error_with_description(ut_asn1_ber_decoder_get_error(decoder4),
+                                      "Invalid RELATIVE-OID");
+
+  // Constructed form.
+  UtObjectRef data5 = ut_uint8_list_new_from_hex_string("2d04c27b0302");
+  UtObjectRef decoder5 = ut_asn1_ber_decoder_new(data5);
+  UtObjectRef id5 = ut_asn1_ber_decoder_decode_relative_oid(decoder5);
   ut_assert_is_error_with_description(
-      ut_asn1_ber_decoder_get_error(decoder4),
-      "Relative object identifier does not have constructed form");
+      ut_asn1_ber_decoder_get_error(decoder5),
+      "RELATIVE-OID does not have constructed form");
 }
 
 static void test_sequence() {
@@ -432,12 +489,90 @@ static void test_sequence() {
   ut_assert_int_equal(ut_list_get_length(sequence2), 0);
   ut_assert_null(ut_asn1_ber_decoder_get_error(decoder2));
 
-  // Non-constructed form.
-  UtObjectRef data3 = ut_uint8_list_new_from_hex_string("1000");
+  // Decoded as object with type.
+  UtObjectRef data3 =
+      ut_uint8_list_new_from_hex_string("30100c0b4172746875722044656e7402012a");
   UtObjectRef decoder3 = ut_asn1_ber_decoder_new(data3);
-  UtObjectRef sequence3 = ut_asn1_ber_decoder_decode_sequence(decoder3);
-  ut_assert_is_error_with_description(ut_asn1_ber_decoder_get_error(decoder3),
+  UtObjectRef components3 = ut_map_new_ordered();
+  ut_map_insert_string_take(components3, "name",
+                            ut_asn1_utf8_string_type_new());
+  ut_map_insert_string_take(components3, "age", ut_asn1_integer_type_new());
+  UtObjectRef type3 = ut_asn1_sequence_type_new(components3, false);
+  UtObjectRef value3 = ut_asn1_ber_decoder_decode_value(decoder3, type3);
+  ut_assert_null(ut_asn1_ber_decoder_get_error(decoder3));
+  ut_assert_true(ut_object_implements_map(value3));
+  ut_assert_int_equal(ut_map_get_length(value3), 2);
+  UtObject *value3a = ut_map_lookup_string(value3, "name");
+  ut_assert_true(ut_object_implements_string(value3a));
+  ut_assert_cstring_equal(ut_string_get_text(value3a), "Arthur Dent");
+  UtObject *value3b = ut_map_lookup_string(value3, "age");
+  ut_assert_true(ut_object_is_int64(value3b));
+  ut_assert_int_equal(ut_int64_get_value(value3b), 42);
+
+  // Decoded as object with type (empty sequence).
+  UtObjectRef data4 = ut_uint8_list_new_from_hex_string("3000");
+  UtObjectRef decoder4 = ut_asn1_ber_decoder_new(data4);
+  UtObjectRef components4 = ut_map_new_ordered();
+  UtObjectRef type4 = ut_asn1_sequence_type_new(components4, false);
+  UtObjectRef value4 = ut_asn1_ber_decoder_decode_value(decoder4, type4);
+  ut_assert_null(ut_asn1_ber_decoder_get_error(decoder4));
+  ut_assert_true(ut_object_implements_map(value4));
+  ut_assert_int_equal(ut_map_get_length(value4), 0);
+
+  // FIXME: Optional components.
+  // FIXME: Default components.
+  // FIXME: Extended type with additional components.
+
+  // Non-constructed form.
+  UtObjectRef data5 = ut_uint8_list_new_from_hex_string("1000");
+  UtObjectRef decoder5 = ut_asn1_ber_decoder_new(data5);
+  UtObjectRef sequence5 = ut_asn1_ber_decoder_decode_sequence(decoder5);
+  ut_assert_is_error_with_description(ut_asn1_ber_decoder_get_error(decoder5),
                                       "Sequence must be constructed");
+
+  // Missing component (age).
+  UtObjectRef data6 =
+      ut_uint8_list_new_from_hex_string("300d0c0b4172746875722044656e74");
+  UtObjectRef decoder6 = ut_asn1_ber_decoder_new(data6);
+  UtObjectRef components6 = ut_map_new_ordered();
+  ut_map_insert_string_take(components6, "name",
+                            ut_asn1_utf8_string_type_new());
+  ut_map_insert_string_take(components6, "age", ut_asn1_integer_type_new());
+  UtObjectRef type6 = ut_asn1_sequence_type_new(components6, false);
+  UtObjectRef value6 = ut_asn1_ber_decoder_decode_value(decoder6, type6);
+  ut_assert_is_error_with_description(ut_asn1_ber_decoder_get_error(decoder6),
+                                      "Required SEQUENCE components missing");
+}
+
+static void test_sequence_of() {
+  UtObjectRef data1 =
+      ut_uint8_list_new_from_hex_string("3009020101020102020103");
+  UtObjectRef decoder1 = ut_asn1_ber_decoder_new(data1);
+  UtObjectRef child_type1 = ut_asn1_integer_type_new();
+  UtObjectRef type1 = ut_asn1_sequence_of_type_new(child_type1);
+  UtObjectRef value1 = ut_asn1_ber_decoder_decode_value(decoder1, type1);
+  ut_assert_null(ut_asn1_ber_decoder_get_error(decoder1));
+  ut_assert_true(ut_object_implements_list(value1));
+  ut_assert_int_equal(ut_list_get_length(value1), 3);
+  UtObject *value1a = ut_object_list_get_element(value1, 0);
+  ut_assert_true(ut_object_is_int64(value1a));
+  ut_assert_int_equal(ut_int64_get_value(value1a), 1);
+  UtObject *value1b = ut_object_list_get_element(value1, 1);
+  ut_assert_true(ut_object_is_int64(value1b));
+  ut_assert_int_equal(ut_int64_get_value(value1b), 2);
+  UtObject *value1c = ut_object_list_get_element(value1, 2);
+  ut_assert_true(ut_object_is_int64(value1c));
+  ut_assert_int_equal(ut_int64_get_value(value1c), 3);
+
+  // Empty list.
+  UtObjectRef data2 = ut_uint8_list_new_from_hex_string("3000");
+  UtObjectRef decoder2 = ut_asn1_ber_decoder_new(data2);
+  UtObjectRef child_type2 = ut_asn1_integer_type_new();
+  UtObjectRef type2 = ut_asn1_sequence_of_type_new(child_type2);
+  UtObjectRef value2 = ut_asn1_ber_decoder_decode_value(decoder2, type2);
+  ut_assert_null(ut_asn1_ber_decoder_get_error(decoder2));
+  ut_assert_true(ut_object_implements_list(value2));
+  ut_assert_int_equal(ut_list_get_length(value2), 0);
 }
 
 static void test_set() {
@@ -463,12 +598,86 @@ static void test_set() {
   ut_assert_int_equal(ut_list_get_length(set2), 0);
   ut_assert_null(ut_asn1_ber_decoder_get_error(decoder2));
 
-  // Non-constructed form.
-  UtObjectRef data3 = ut_uint8_list_new_from_hex_string("1100");
+  // Decoded as object with type.
+  UtObjectRef data3 =
+      ut_uint8_list_new_from_hex_string("31100c0b4172746875722044656e7402012a");
   UtObjectRef decoder3 = ut_asn1_ber_decoder_new(data3);
-  UtObjectRef set3 = ut_asn1_ber_decoder_decode_set(decoder3);
-  ut_assert_is_error_with_description(ut_asn1_ber_decoder_get_error(decoder3),
+  UtObjectRef components3 = ut_map_new_ordered();
+  ut_map_insert_string_take(components3, "name",
+                            ut_asn1_utf8_string_type_new());
+  ut_map_insert_string_take(components3, "age", ut_asn1_integer_type_new());
+  UtObjectRef type3 = ut_asn1_set_type_new(components3, false);
+  UtObjectRef value3 = ut_asn1_ber_decoder_decode_value(decoder3, type3);
+  ut_assert_null(ut_asn1_ber_decoder_get_error(decoder3));
+  ut_assert_true(ut_object_implements_map(value3));
+  ut_assert_int_equal(ut_map_get_length(value3), 2);
+  UtObject *value3a = ut_map_lookup_string(value3, "name");
+  ut_assert_true(ut_object_implements_string(value3a));
+  ut_assert_cstring_equal(ut_string_get_text(value3a), "Arthur Dent");
+  UtObject *value3b = ut_map_lookup_string(value3, "age");
+  ut_assert_true(ut_object_is_int64(value3b));
+  ut_assert_int_equal(ut_int64_get_value(value3b), 42);
+
+  // Decoded as object with type (empty set).
+  UtObjectRef data4 = ut_uint8_list_new_from_hex_string("3100");
+  UtObjectRef decoder4 = ut_asn1_ber_decoder_new(data4);
+  UtObjectRef components4 = ut_map_new_ordered();
+  UtObjectRef type4 = ut_asn1_set_type_new(components4, false);
+  UtObjectRef value4 = ut_asn1_ber_decoder_decode_value(decoder4, type4);
+  ut_assert_null(ut_asn1_ber_decoder_get_error(decoder4));
+  ut_assert_true(ut_object_implements_map(value4));
+  ut_assert_int_equal(ut_map_get_length(value4), 0);
+
+  // Non-constructed form.
+  UtObjectRef data5 = ut_uint8_list_new_from_hex_string("1100");
+  UtObjectRef decoder5 = ut_asn1_ber_decoder_new(data5);
+  UtObjectRef set5 = ut_asn1_ber_decoder_decode_set(decoder5);
+  ut_assert_is_error_with_description(ut_asn1_ber_decoder_get_error(decoder5),
                                       "Set must be constructed");
+
+  // Missing component (age).
+  UtObjectRef data6 =
+      ut_uint8_list_new_from_hex_string("310d0c0b4172746875722044656e74");
+  UtObjectRef decoder6 = ut_asn1_ber_decoder_new(data6);
+  UtObjectRef components6 = ut_map_new_ordered();
+  ut_map_insert_string_take(components6, "name",
+                            ut_asn1_utf8_string_type_new());
+  ut_map_insert_string_take(components6, "age", ut_asn1_integer_type_new());
+  UtObjectRef type6 = ut_asn1_set_type_new(components6, false);
+  UtObjectRef value6 = ut_asn1_ber_decoder_decode_value(decoder6, type6);
+  ut_assert_is_error_with_description(ut_asn1_ber_decoder_get_error(decoder6),
+                                      "Required SET components missing");
+}
+
+static void test_set_of() {
+  UtObjectRef data1 =
+      ut_uint8_list_new_from_hex_string("3109020101020102020103");
+  UtObjectRef decoder1 = ut_asn1_ber_decoder_new(data1);
+  UtObjectRef child_type1 = ut_asn1_integer_type_new();
+  UtObjectRef type1 = ut_asn1_set_of_type_new(child_type1);
+  UtObjectRef value1 = ut_asn1_ber_decoder_decode_value(decoder1, type1);
+  ut_assert_null(ut_asn1_ber_decoder_get_error(decoder1));
+  ut_assert_true(ut_object_implements_list(value1));
+  ut_assert_int_equal(ut_list_get_length(value1), 3);
+  UtObject *value1a = ut_object_list_get_element(value1, 0);
+  ut_assert_true(ut_object_is_int64(value1a));
+  ut_assert_int_equal(ut_int64_get_value(value1a), 1);
+  UtObject *value1b = ut_object_list_get_element(value1, 1);
+  ut_assert_true(ut_object_is_int64(value1b));
+  ut_assert_int_equal(ut_int64_get_value(value1b), 2);
+  UtObject *value1c = ut_object_list_get_element(value1, 2);
+  ut_assert_true(ut_object_is_int64(value1c));
+  ut_assert_int_equal(ut_int64_get_value(value1c), 3);
+
+  // Empty list.
+  UtObjectRef data2 = ut_uint8_list_new_from_hex_string("3100");
+  UtObjectRef decoder2 = ut_asn1_ber_decoder_new(data2);
+  UtObjectRef child_type2 = ut_asn1_integer_type_new();
+  UtObjectRef type2 = ut_asn1_set_of_type_new(child_type2);
+  UtObjectRef value2 = ut_asn1_ber_decoder_decode_value(decoder2, type2);
+  ut_assert_null(ut_asn1_ber_decoder_get_error(decoder2));
+  ut_assert_true(ut_object_implements_list(value2));
+  ut_assert_int_equal(ut_list_get_length(value2), 0);
 }
 
 static void test_numeric_string() {
@@ -489,6 +698,8 @@ static void test_numeric_string() {
   ut_cstring_ref string2 = ut_asn1_ber_decoder_decode_numeric_string(decoder2);
   ut_assert_cstring_equal(string2, "");
   ut_assert_null(ut_asn1_ber_decoder_get_error(decoder2));
+
+  // FIXME: Decoded as object with type.
 
   // Invalid characters - "Hello World"
   UtObjectRef data3 =
@@ -530,6 +741,8 @@ static void test_printable_string() {
   ut_assert_cstring_equal(string2, "");
   ut_assert_null(ut_asn1_ber_decoder_get_error(decoder2));
 
+  // FIXME: Decoded as object with type.
+
   // Invalid characters - "#invalid"
   UtObjectRef data3 =
       ut_uint8_list_new_from_hex_string("130823696e76616c696423");
@@ -569,6 +782,8 @@ static void test_ia5_string() {
   ut_assert_cstring_equal(ut_string_get_text(string2), "");
   ut_assert_null(ut_asn1_ber_decoder_get_error(decoder2));
 
+  // FIXME: Decoded as object with type.
+
   // Invalid characters (>7 bits).
   UtObjectRef data3 = ut_uint8_list_new_from_hex_string("1601ff");
   UtObjectRef decoder3 = ut_asn1_ber_decoder_new(data3);
@@ -604,6 +819,8 @@ static void test_visible_string() {
   ut_assert_cstring_equal(string2, "");
   ut_assert_null(ut_asn1_ber_decoder_get_error(decoder2));
 
+  // FIXME: Decoded as object with type.
+
   // Invalid characters (control character).
   UtObjectRef data3 = ut_uint8_list_new_from_hex_string("160101");
   UtObjectRef decoder3 = ut_asn1_ber_decoder_new(data3);
@@ -622,9 +839,18 @@ static void test_visible_string() {
       "Constructed visible string not supported");
 }
 
+static void test_choice() {
+  // FIXME
+}
+
+static void test_tagged_type() {
+  // FIXME
+}
+
 int main(int argc, char **argv) {
   test_boolean();
   test_integer();
+  test_bit_string();
   test_octet_string();
   test_null();
   test_object_identifier();
@@ -632,11 +858,15 @@ int main(int argc, char **argv) {
   test_utf8_string();
   test_relative_oid();
   test_sequence();
+  test_sequence_of();
   test_set();
+  test_set_of();
   test_numeric_string();
   test_printable_string();
   test_ia5_string();
   test_visible_string();
+  test_choice();
+  test_tagged_type();
 
   return 0;
 }
