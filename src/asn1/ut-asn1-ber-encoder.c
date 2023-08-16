@@ -286,9 +286,8 @@ size_t ut_asn1_ber_encoder_encode_utf8_string(UtObject *object,
   return encode_uint8_list(self, utf8);
 }
 
-size_t
-ut_asn1_ber_encoder_encode_relative_object_identifier(UtObject *object,
-                                                      UtObject *identifier) {
+size_t ut_asn1_ber_encoder_encode_relative_oid(UtObject *object,
+                                               UtObject *identifier) {
   assert(ut_object_is_asn1_ber_encoder(object));
   UtAsn1BerEncoder *self = (UtAsn1BerEncoder *)object;
 

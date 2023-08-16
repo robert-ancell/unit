@@ -352,8 +352,7 @@ char *ut_asn1_ber_decoder_decode_utf8_string(UtObject *object) {
   return ut_string_take_text(value);
 }
 
-UtObject *
-ut_asn1_ber_decoder_decode_relative_object_identifier(UtObject *object) {
+UtObject *ut_asn1_ber_decoder_decode_relative_oid(UtObject *object) {
   assert(ut_object_is_asn1_ber_decoder(object));
   UtAsn1BerDecoder *self = (UtAsn1BerDecoder *)object;
 

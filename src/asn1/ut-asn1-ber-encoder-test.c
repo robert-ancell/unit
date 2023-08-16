@@ -82,13 +82,13 @@ static void test_identifier() {
       ut_asn1_ber_encoder_get_data(utf8_string_encoder);
   ut_assert_uint8_list_equal_hex(utf8_string_data, "0c");
 
-  UtObjectRef relative_object_identifier_encoder = ut_asn1_ber_encoder_new();
+  UtObjectRef relative_oid_encoder = ut_asn1_ber_encoder_new();
   ut_asn1_ber_encoder_encode_primitive_identifier(
-      relative_object_identifier_encoder, UT_ASN1_TAG_CLASS_UNIVERSAL,
-      UT_ASN1_TAG_UNIVERSAL_RELATIVE_OBJECT_IDENTIFIER);
-  UtObjectRef relative_object_identifier_data =
-      ut_asn1_ber_encoder_get_data(relative_object_identifier_encoder);
-  ut_assert_uint8_list_equal_hex(relative_object_identifier_data, "0d");
+      relative_oid_encoder, UT_ASN1_TAG_CLASS_UNIVERSAL,
+      UT_ASN1_TAG_UNIVERSAL_RELATIVE_OID);
+  UtObjectRef relative_oid_data =
+      ut_asn1_ber_encoder_get_data(relative_oid_encoder);
+  ut_assert_uint8_list_equal_hex(relative_oid_data, "0d");
 
   UtObjectRef numeric_string_encoder = ut_asn1_ber_encoder_new();
   ut_asn1_ber_encoder_encode_primitive_identifier(
@@ -304,10 +304,10 @@ static void test_utf8_string() {
   // FIXME: Invalid UTF8
 }
 
-static void test_relative_object_identifier() {
+static void test_relative_oid() {
   UtObjectRef encoder1 = ut_asn1_ber_encoder_new();
   UtObjectRef id = ut_uint32_list_new_from_elements(3, 8571, 3, 2);
-  ut_asn1_ber_encoder_encode_relative_object_identifier(encoder1, id);
+  ut_asn1_ber_encoder_encode_relative_oid(encoder1, id);
   UtObjectRef data1 = ut_asn1_ber_encoder_get_data(encoder1);
   ut_assert_uint8_list_equal_hex(data1, "c27b0302");
 }
@@ -401,7 +401,7 @@ int main(int argc, char **argv) {
   test_object_identifier();
   test_enumerated();
   test_utf8_string();
-  test_relative_object_identifier();
+  test_relative_oid();
   test_numeric_string();
   test_printable_string();
   test_ia5_string();

@@ -373,15 +373,14 @@ static void test_utf8_string() {
   // FIXME: Invalid UTF8
 }
 
-static void test_relative_object_identifier() {
+static void test_relative_oid() {
   UtObjectRef data1 = ut_uint8_list_new_from_hex_string("0d04c27b0302");
   UtObjectRef decoder1 = ut_asn1_ber_decoder_new(data1);
   ut_assert_int_equal(ut_asn1_ber_decoder_get_tag_class(decoder1),
                       UT_ASN1_TAG_CLASS_UNIVERSAL);
   ut_assert_int_equal(ut_asn1_ber_decoder_get_identifier_number(decoder1),
-                      UT_ASN1_TAG_UNIVERSAL_RELATIVE_OBJECT_IDENTIFIER);
-  UtObjectRef id1 =
-      ut_asn1_ber_decoder_decode_relative_object_identifier(decoder1);
+                      UT_ASN1_TAG_UNIVERSAL_RELATIVE_OID);
+  UtObjectRef id1 = ut_asn1_ber_decoder_decode_relative_oid(decoder1);
   uint32_t expected_id1[] = {8571, 3, 2};
   ut_assert_uint32_list_equal(id1, expected_id1, 3);
   ut_assert_null(ut_asn1_ber_decoder_get_error(decoder1));
@@ -389,8 +388,7 @@ static void test_relative_object_identifier() {
   // Empty.
   UtObjectRef data2 = ut_uint8_list_new_from_hex_string("0d00");
   UtObjectRef decoder2 = ut_asn1_ber_decoder_new(data2);
-  UtObjectRef id2 =
-      ut_asn1_ber_decoder_decode_relative_object_identifier(decoder2);
+  UtObjectRef id2 = ut_asn1_ber_decoder_decode_relative_oid(decoder2);
   uint32_t expected_id2[] = {};
   ut_assert_uint32_list_equal(id2, expected_id2, 0);
   ut_assert_null(ut_asn1_ber_decoder_get_error(decoder2));
@@ -398,16 +396,14 @@ static void test_relative_object_identifier() {
   // Invalid integer.
   UtObjectRef data3 = ut_uint8_list_new_from_hex_string("0d0188");
   UtObjectRef decoder3 = ut_asn1_ber_decoder_new(data3);
-  UtObjectRef id3 =
-      ut_asn1_ber_decoder_decode_relative_object_identifier(decoder3);
+  UtObjectRef id3 = ut_asn1_ber_decoder_decode_relative_oid(decoder3);
   ut_assert_is_error_with_description(ut_asn1_ber_decoder_get_error(decoder3),
                                       "Invalid relative object identifier");
 
   // Constructed form.
   UtObjectRef data4 = ut_uint8_list_new_from_hex_string("2d04c27b0302");
   UtObjectRef decoder4 = ut_asn1_ber_decoder_new(data4);
-  UtObjectRef id4 =
-      ut_asn1_ber_decoder_decode_relative_object_identifier(decoder4);
+  UtObjectRef id4 = ut_asn1_ber_decoder_decode_relative_oid(decoder4);
   ut_assert_is_error_with_description(
       ut_asn1_ber_decoder_get_error(decoder4),
       "Relative object identifier does not have constructed form");
@@ -634,7 +630,7 @@ int main(int argc, char **argv) {
   test_object_identifier();
   test_enumerated();
   test_utf8_string();
-  test_relative_object_identifier();
+  test_relative_oid();
   test_sequence();
   test_set();
   test_numeric_string();
