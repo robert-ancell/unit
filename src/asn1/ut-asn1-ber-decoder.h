@@ -21,10 +21,6 @@ size_t ut_asn1_ber_decoder_get_length(UtObject *object);
 
 UtObject *ut_asn1_ber_decoder_get_contents(UtObject *object);
 
-UtObject *ut_asn1_ber_decoder_get_error(UtObject *object);
-
-UtObject *ut_asn1_ber_decoder_decode_value(UtObject *object, UtObject *type);
-
 bool ut_asn1_ber_decoder_decode_boolean(UtObject *object);
 
 int64_t ut_asn1_ber_decoder_decode_integer(UtObject *object);

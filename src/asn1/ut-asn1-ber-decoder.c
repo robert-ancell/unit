@@ -55,7 +55,7 @@ static UtObject *decode_constructed(UtAsn1BerDecoder *self) {
     UtObjectRef data =
         ut_list_get_sublist(self->contents, offset, contents_length - offset);
     UtObjectRef child = ut_asn1_ber_decoder_new(data);
-    UtObject *child_error = ut_asn1_ber_decoder_get_error(child);
+    UtObject *child_error = ut_asn1_decoder_get_error(child);
     if (child_error != NULL) {
       ut_cstring_ref child_description = ut_error_get_description(child_error);
       ut_cstring_ref description = ut_cstring_new_printf(
@@ -354,8 +354,8 @@ static UtObject *decode_sequence_value(UtAsn1BerDecoder *self, UtObject *type,
     }
     next_component++;
     UtObjectRef component_value =
-        ut_asn1_ber_decoder_decode_value(decoder, component_type);
-    UtObject *error = ut_asn1_ber_decoder_get_error(decoder);
+        ut_asn1_decoder_decode_value(decoder, component_type);
+    UtObject *error = ut_asn1_decoder_get_error(decoder);
     if (error != NULL) {
       ut_cstring_ref child_description = ut_error_get_description(error);
       ut_cstring_ref description =
@@ -388,8 +388,8 @@ static UtObject *decode_value_list(UtAsn1BerDecoder *self, UtObject *type,
     UtObjectRef data =
         ut_list_get_sublist(self->contents, offset, contents_length - offset);
     UtObjectRef decoder = ut_asn1_ber_decoder_new(data);
-    UtObjectRef child_value = ut_asn1_ber_decoder_decode_value(decoder, type);
-    UtObject *error = ut_asn1_ber_decoder_get_error(decoder);
+    UtObjectRef child_value = ut_asn1_decoder_decode_value(decoder, type);
+    UtObject *error = ut_asn1_decoder_get_error(decoder);
     if (error != NULL) {
       ut_cstring_ref child_description = ut_error_get_description(error);
       ut_cstring_ref description = ut_cstring_new_printf(
@@ -474,8 +474,8 @@ static UtObject *decode_set_value(UtAsn1BerDecoder *self, UtObject *type,
 
     UtObject *component_type = ut_map_lookup(components, component_name);
     UtObjectRef component_value =
-        ut_asn1_ber_decoder_decode_value(decoder, component_type);
-    UtObject *error = ut_asn1_ber_decoder_get_error(decoder);
+        ut_asn1_decoder_decode_value(decoder, component_type);
+    UtObject *error = ut_asn1_decoder_get_error(decoder);
     if (error != NULL) {
       ut_cstring_ref child_description = ut_error_get_description(error);
       ut_cstring_ref description =
@@ -545,6 +545,17 @@ static UtObject *decode_value(UtAsn1BerDecoder *self, UtObject *type,
   }
 }
 
+static UtObject *ut_asn1_ber_decoder_decode_value(UtObject *object,
+                                                  UtObject *type) {
+  UtAsn1BerDecoder *self = (UtAsn1BerDecoder *)object;
+  return decode_value(self, type, true);
+}
+
+static UtObject *ut_asn1_ber_decoder_get_error(UtObject *object) {
+  UtAsn1BerDecoder *self = (UtAsn1BerDecoder *)object;
+  return self->error;
+}
+
 static char *ut_asn1_ber_decoder_to_string(UtObject *object) {
   UtAsn1BerDecoder *self = (UtAsn1BerDecoder *)object;
   ut_cstring_ref contents_string = ut_object_to_string(self->contents);
@@ -557,10 +568,16 @@ static void ut_asn1_ber_decoder_cleanup(UtObject *object) {
   ut_object_unref(self->error);
 }
 
+static UtAsn1DecoderInterface asn1_decoder_interface = {
+    .decode_value = ut_asn1_ber_decoder_decode_value,
+    .get_error = ut_asn1_ber_decoder_get_error};
+
 static UtObjectInterface object_interface = {
     .type_name = "UtAsn1BerDecoder",
     .to_string = ut_asn1_ber_decoder_to_string,
-    .cleanup = ut_asn1_ber_decoder_cleanup};
+    .cleanup = ut_asn1_ber_decoder_cleanup,
+    .interfaces = {{&ut_asn1_decoder_id, &asn1_decoder_interface},
+                   {NULL, NULL}}};
 
 UtObject *ut_asn1_ber_decoder_new(UtObject *data) {
   UtObjectRef object =
@@ -679,18 +696,6 @@ UtObject *ut_asn1_ber_decoder_get_contents(UtObject *object) {
   assert(ut_object_is_asn1_ber_decoder(object));
   UtAsn1BerDecoder *self = (UtAsn1BerDecoder *)object;
   return self->contents;
-}
-
-UtObject *ut_asn1_ber_decoder_get_error(UtObject *object) {
-  assert(ut_object_is_asn1_ber_decoder(object));
-  UtAsn1BerDecoder *self = (UtAsn1BerDecoder *)object;
-  return self->error;
-}
-
-UtObject *ut_asn1_ber_decoder_decode_value(UtObject *object, UtObject *type) {
-  assert(ut_object_is_asn1_ber_decoder(object));
-  UtAsn1BerDecoder *self = (UtAsn1BerDecoder *)object;
-  return decode_value(self, type, true);
 }
 
 bool ut_asn1_ber_decoder_decode_boolean(UtObject *object) {

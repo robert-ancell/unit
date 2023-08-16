@@ -11,9 +11,6 @@
 /// !return-ref
 UtObject *ut_asn1_ber_encoder_new();
 
-size_t ut_asn1_ber_encoder_encode_value(UtObject *object, UtObject *type,
-                                        UtObject *value);
-
 size_t ut_asn1_ber_encoder_encode_primitive_identifier(UtObject *object,
                                                        UtAsn1TagClass class,
                                                        uint32_t number);

@@ -17,6 +17,9 @@ typedef struct {
 
   // Number of bytes of used data.
   size_t length;
+
+  // First error that occurred during encoding.
+  UtObject *error;
 } UtAsn1BerEncoder;
 
 static void resize(UtAsn1BerEncoder *self, size_t required_length) {
@@ -542,6 +545,18 @@ static size_t encode_value(UtAsn1BerEncoder *self, UtObject *type,
   }
 }
 
+static void ut_asn1_ber_encoder_encode_value(UtObject *object, UtObject *type,
+                                             UtObject *value) {
+  UtAsn1BerEncoder *self = (UtAsn1BerEncoder *)object;
+  bool is_constructed;
+  encode_value(self, type, value, true, &is_constructed);
+}
+
+static UtObject *ut_asn1_ber_encoder_get_error(UtObject *object) {
+  UtAsn1BerEncoder *self = (UtAsn1BerEncoder *)object;
+  return self->error;
+}
+
 static void ut_asn1_ber_encoder_init(UtObject *object) {
   UtAsn1BerEncoder *self = (UtAsn1BerEncoder *)object;
   self->buffer = ut_uint8_array_new_sized(MINIMUM_BUFFER_LENGTH);
@@ -552,23 +567,22 @@ static void ut_asn1_ber_encoder_init(UtObject *object) {
 static void ut_asn1_ber_encoder_cleanup(UtObject *object) {
   UtAsn1BerEncoder *self = (UtAsn1BerEncoder *)object;
   ut_object_unref(self->buffer);
+  ut_object_unref(self->error);
 }
 
-static UtObjectInterface object_interface = {.type_name = "UtAsn1BerEncoder",
-                                             .init = ut_asn1_ber_encoder_init,
-                                             .cleanup =
-                                                 ut_asn1_ber_encoder_cleanup};
+static UtAsn1EncoderInterface asn1_encoder_interface = {
+    .encode_value = ut_asn1_ber_encoder_encode_value,
+    .get_error = ut_asn1_ber_encoder_get_error};
+
+static UtObjectInterface object_interface = {
+    .type_name = "UtAsn1BerEncoder",
+    .init = ut_asn1_ber_encoder_init,
+    .cleanup = ut_asn1_ber_encoder_cleanup,
+    .interfaces = {{&ut_asn1_encoder_id, &asn1_encoder_interface},
+                   {NULL, NULL}}};
 
 UtObject *ut_asn1_ber_encoder_new() {
   return ut_object_new(sizeof(UtAsn1BerEncoder), &object_interface);
-}
-
-size_t ut_asn1_ber_encoder_encode_value(UtObject *object, UtObject *type,
-                                        UtObject *value) {
-  assert(ut_object_is_asn1_ber_encoder(object));
-  UtAsn1BerEncoder *self = (UtAsn1BerEncoder *)object;
-  bool is_constructed;
-  return encode_value(self, type, value, true, &is_constructed);
 }
 
 size_t ut_asn1_ber_encoder_encode_primitive_identifier(UtObject *object,
