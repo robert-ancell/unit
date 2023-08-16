@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <math.h>
 
 #include "ut-asn1-string.h"
 #include "ut.h"
@@ -274,15 +275,153 @@ static UtObject *decode_object_identifier(UtAsn1BerDecoder *self) {
   return ut_object_ref(identifier);
 }
 
+static double decode_binary_real(UtAsn1BerDecoder *self) {
+  size_t data_length = ut_list_get_length(self->contents);
+
+  size_t offset = 0;
+  uint8_t v = ut_uint8_list_get_element(self->contents, offset);
+  offset++;
+
+  double sign = (v & 0x40) != 0 ? -1.0 : 1.0;
+
+  uint8_t base;
+  switch ((v >> 4) & 0x3) {
+  case 0:
+    base = 2;
+    break;
+  case 1:
+    base = 8;
+    break;
+  case 2:
+    base = 16;
+    break;
+  default:
+    set_error(self, "Invalid REAL base");
+    return 0.0;
+  }
+
+  uint32_t scaling_factor = 1 << ((v >> 2) & 0x3);
+
+  size_t exponent_length;
+  switch (v & 0x3) {
+  case 0:
+    exponent_length = 1;
+    break;
+  case 1:
+    exponent_length = 2;
+    break;
+  case 2:
+    exponent_length = 3;
+    break;
+  case 3:
+    if (data_length < 2) {
+      set_error(self, "Insufficient space for REAL exponent");
+      return 0.0;
+    }
+    exponent_length = ut_uint8_list_get_element(self->contents, offset);
+    if (exponent_length == 0) {
+      set_error(self, "Invalid REAL exponent length");
+      return 0.0;
+    }
+    offset++;
+    break;
+  }
+  if (exponent_length > 4) {
+    set_error(self, "Unsupported REAL exponent length");
+    return 0.0;
+  }
+  if (offset + exponent_length > data_length) {
+    set_error(self, "Insufficient space for REAL exponent");
+    return 0.0;
+  }
+
+  uint32_t raw_exponent = ut_uint8_list_get_element(self->contents, offset);
+  offset++;
+  // If negative, extend leading ones.
+  if ((raw_exponent & 0x80) != 0) {
+    raw_exponent |= 0xffffff00;
+  }
+  for (size_t i = 1; i < exponent_length; i++) {
+    raw_exponent =
+        raw_exponent << 8 | ut_uint8_list_get_element(self->contents, offset);
+    offset++;
+  }
+  int32_t exponent = raw_exponent;
+
+  uint64_t n = 0;
+  while (offset < data_length) {
+    n = n << 8 | ut_uint8_list_get_element(self->contents, offset);
+    offset++;
+  }
+
+  if (exponent >= 0) {
+    return sign * n * scaling_factor * pow(base, exponent);
+  } else {
+    return sign * n * scaling_factor / pow(base, -exponent);
+  }
+}
+
+static double decode_special_real(UtAsn1BerDecoder *self) {
+  size_t data_length = ut_list_get_length(self->contents);
+  if (data_length != 1) {
+    set_error(self, "Invalid length REAL special value");
+    return 0.0;
+  }
+
+  uint8_t v = ut_uint8_list_get_element(self->contents, 0);
+  switch (v & 0x3f) {
+  case 0:
+    return INFINITY;
+  case 1:
+    return -INFINITY;
+  case 2:
+    return NAN;
+  case 3:
+    return -0.0;
+  default:
+    set_error(self, "Invalid REAL special value");
+    return 0.0;
+  }
+}
+
+static double decode_decimal_real(UtAsn1BerDecoder *self, uint8_t form) {
+  switch (form) {
+  case 1:
+    set_error(self, "REAL ISO 6093 NR1 decimal encoding not supported");
+    return 0.0;
+  case 2:
+    set_error(self, "REAL ISO 6093 NR2 decimal encoding not supported");
+    return 0.0;
+  case 3:
+    set_error(self, "REAL ISO 6093 NR3 decimal encoding not supported");
+    return 0.0;
+  default:
+    set_error(self, "Invalid REAL decimal encoding");
+    return 0.0;
+  }
+}
+
 static double decode_real(UtAsn1BerDecoder *self) {
   if (self->constructed) {
     set_error(self, "REAL does not have constructed form");
     return 0.0;
   }
 
-  // FIXME
-  assert(false);
-  return 0.0;
+  size_t data_length = ut_list_get_length(self->contents);
+  if (data_length == 0) {
+    return 0.0;
+  }
+
+  uint8_t v = ut_uint8_list_get_element(self->contents, 0);
+  if ((v & 0x80) != 0) {
+    return decode_binary_real(self);
+  } else {
+    if ((v & 0x40) != 0) {
+      return decode_special_real(self);
+    } else {
+      return decode_decimal_real(self, v);
+    }
+  }
 }
 
 static int64_t decode_enumerated(UtAsn1BerDecoder *self) {
@@ -387,6 +526,14 @@ static UtObject *decode_object_identifier_value(UtAsn1BerDecoder *self,
     return ut_uint32_list_new();
   }
   return decode_object_identifier(self);
+}
+
+static UtObject *decode_real_value(UtAsn1BerDecoder *self, bool decode_tag) {
+  if (decode_tag && !expect_tag(self, UT_ASN1_TAG_CLASS_UNIVERSAL,
+                                UT_ASN1_TAG_UNIVERSAL_REAL)) {
+    return ut_float64_new(0.0);
+  }
+  return ut_float64_new(decode_real(self));
 }
 
 static UtObject *decode_utf8_string_value(UtAsn1BerDecoder *self,
@@ -641,6 +788,8 @@ static UtObject *decode_value(UtAsn1BerDecoder *self, UtObject *type,
     return decode_null_value(self, decode_tag);
   } else if (ut_object_is_asn1_object_identifier_type(type)) {
     return decode_object_identifier_value(self, decode_tag);
+  } else if (ut_object_is_asn1_real_type(type)) {
+    return decode_real_value(self, decode_tag);
   } else if (ut_object_is_asn1_utf8_string_type(type)) {
     return decode_utf8_string_value(self, decode_tag);
   } else if (ut_object_is_asn1_relative_oid_type(type)) {

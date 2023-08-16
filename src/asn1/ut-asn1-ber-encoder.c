@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <math.h>
 #include <string.h>
 
 #include "ut-asn1-string.h"
@@ -242,8 +243,97 @@ static size_t encode_object_identifier(UtAsn1BerEncoder *self,
   return length;
 }
 
+static size_t encode_special_real(UtAsn1BerEncoder *self, uint8_t value) {
+  return encode_byte(self, 0x40 | value);
+}
+
+static size_t encode_real_exponent(UtAsn1BerEncoder *self, int32_t exponent) {
+  if (exponent > 0) {
+    if (exponent > 0x7fffff) {
+      set_error(self, "REAL exponent too large");
+      return 0;
+    } else if (exponent > 0x7fff) {
+      return encode_byte(self, exponent & 0xff) +
+             encode_byte(self, (exponent >> 8) & 0xff) +
+             encode_byte(self, (exponent >> 16) & 0xff);
+    } else if (exponent > 0x7f) {
+      return encode_byte(self, exponent & 0xff) +
+             encode_byte(self, exponent >> 8);
+    } else {
+      return encode_byte(self, exponent);
+    }
+  } else {
+    uint32_t raw_exponent = exponent;
+    if (exponent >= -128) {
+      return encode_byte(self, raw_exponent & 0xff);
+    } else if (exponent >= -32768) {
+      return encode_byte(self, raw_exponent & 0xff) +
+             encode_byte(self, (raw_exponent >> 8) & 0xff);
+    } else if (exponent >= -8388608) {
+      return encode_byte(self, raw_exponent & 0xff) +
+             encode_byte(self, (raw_exponent >> 8) & 0xff) +
+             encode_byte(self, (raw_exponent >> 16) & 0xff);
+    } else {
+      set_error(self, "REAL exponent too large");
+      return 0;
+    }
+  }
+}
+
+static size_t encode_binary_real(UtAsn1BerEncoder *self, double value) {
+  uint8_t v = 0x80;
+
+  if (value < 0.0) {
+    v |= 0x40;
+    value = -value;
+  }
+
+  int exponent;
+  double fraction = frexp(value, &exponent);
+  while (fraction != floor(fraction)) {
+    fraction *= 2;
+    exponent--;
+  }
+  uint64_t n = (uint64_t)fraction;
+  size_t length = 0;
+  while (n != 0) {
+    length += encode_byte(self, n & 0xff);
+    n >>= 8;
+  }
+
+  size_t exponent_length = encode_real_exponent(self, exponent);
+  length += exponent_length;
+  if (exponent_length == 0) {
+    return length;
+  } else if (exponent_length >= 4) {
+    v |= 3;
+    length += encode_byte(self, exponent_length);
+  } else {
+    v |= exponent_length - 1;
+  }
+
+  return length + encode_byte(self, v);
+}
+
 static size_t encode_real(UtAsn1BerEncoder *self, double value) {
-  assert(false);
+  switch (fpclassify(value)) {
+  case FP_NAN:
+    return encode_special_real(self, 2);
+  case FP_INFINITE:
+    if (signbit(value)) {
+      return encode_special_real(self, 1);
+    } else {
+      return encode_special_real(self, 0);
+    }
+  case FP_ZERO:
+    if (signbit(value)) {
+      return encode_special_real(self, 3);
+    } else {
+      return 0;
+    }
+  default:
+    return encode_binary_real(self, value);
+  }
 }
 
 static size_t encode_enumerated(UtAsn1BerEncoder *self, int64_t value) {
@@ -380,6 +470,22 @@ static size_t encode_object_identifier_value(UtAsn1BerEncoder *self,
     length += encode_definite_length(self, length);
     length += encode_identifier(self, UT_ASN1_TAG_CLASS_UNIVERSAL, false,
                                 UT_ASN1_TAG_UNIVERSAL_OBJECT_IDENTIFIER);
+  }
+  *is_constructed = encode_tag;
+  return length;
+}
+
+static size_t encode_real_value(UtAsn1BerEncoder *self, UtObject *value,
+                                bool encode_tag, bool *is_constructed) {
+  if (!ut_object_is_float64(value)) {
+    set_type_error(self, "REAL", value);
+    return 0;
+  }
+  size_t length = encode_real(self, ut_float64_get_value(value));
+  if (encode_tag) {
+    length += encode_definite_length(self, length);
+    length += encode_identifier(self, UT_ASN1_TAG_CLASS_UNIVERSAL, false,
+                                UT_ASN1_TAG_UNIVERSAL_REAL);
   }
   *is_constructed = encode_tag;
   return length;
@@ -554,6 +660,8 @@ static size_t encode_value(UtAsn1BerEncoder *self, UtObject *type,
   } else if (ut_object_is_asn1_object_identifier_type(type)) {
     return encode_object_identifier_value(self, value, encode_tag,
                                           is_constructed);
+  } else if (ut_object_is_asn1_real_type(type)) {
+    return encode_real_value(self, value, encode_tag, is_constructed);
   } else if (ut_object_is_asn1_utf8_string_type(type)) {
     return encode_utf8_string_value(self, value, encode_tag, is_constructed);
   } else if (ut_object_is_asn1_relative_oid_type(type)) {

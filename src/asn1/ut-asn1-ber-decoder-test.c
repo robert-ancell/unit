@@ -1,4 +1,6 @@
 #include <assert.h>
+#include <float.h>
+#include <math.h>
 
 #include "ut.h"
 
@@ -482,6 +484,170 @@ static void test_object_identifier() {
   ut_assert_is_error_with_description(
       ut_asn1_decoder_get_error(decoder5),
       "OBJECT IDENTIFIER does not have constructed form");
+}
+
+static void test_real() {
+  // Zero.
+  UtObjectRef data1 = ut_uint8_list_new_from_hex_string("0900");
+  UtObjectRef decoder1 = ut_asn1_ber_decoder_new(data1);
+  ut_assert_int_equal(ut_asn1_ber_decoder_get_tag_class(decoder1),
+                      UT_ASN1_TAG_CLASS_UNIVERSAL);
+  ut_assert_int_equal(ut_asn1_ber_decoder_get_identifier_number(decoder1),
+                      UT_ASN1_TAG_UNIVERSAL_REAL);
+  ut_assert_float_equal(ut_asn1_ber_decoder_decode_real(decoder1), 0.0);
+
+  // Integer.
+  UtObjectRef data2 = ut_uint8_list_new_from_hex_string("0903800105");
+  UtObjectRef decoder2 = ut_asn1_ber_decoder_new(data2);
+  ut_assert_float_equal(ut_asn1_ber_decoder_decode_real(decoder2), 10.0);
+
+  // Negative number.
+  UtObjectRef data3 = ut_uint8_list_new_from_hex_string("0903c00105");
+  UtObjectRef decoder3 = ut_asn1_ber_decoder_new(data3);
+  ut_assert_float_equal(ut_asn1_ber_decoder_decode_real(decoder3), -10.0);
+
+  // Pi.
+  UtObjectRef data4 =
+      ut_uint8_list_new_from_hex_string("090980ce0c90fcf80dc337");
+  UtObjectRef decoder4 = ut_asn1_ber_decoder_new(data4);
+  ut_assert_float_equal(ut_asn1_ber_decoder_decode_real(decoder4), 3.14159);
+
+  // Largest double.
+  UtObjectRef data5 =
+      ut_uint8_list_new_from_hex_string("090a8103cb1fffffffffffff");
+  UtObjectRef decoder5 = ut_asn1_ber_decoder_new(data5);
+  ut_assert_float_equal(ut_asn1_ber_decoder_decode_real(decoder5), DBL_MAX);
+
+  // Smallest double.
+  UtObjectRef data6 = ut_uint8_list_new_from_hex_string("090481fc0201");
+  UtObjectRef decoder6 = ut_asn1_ber_decoder_new(data6);
+  ut_assert_float_equal(ut_asn1_ber_decoder_decode_real(decoder6), DBL_MIN);
+
+  // Infinity.
+  UtObjectRef data10 = ut_uint8_list_new_from_hex_string("090140");
+  UtObjectRef decoder10 = ut_asn1_ber_decoder_new(data10);
+  ut_assert_float_equal(ut_asn1_ber_decoder_decode_real(decoder10), INFINITY);
+
+  // Minus infinity.
+  UtObjectRef data11 = ut_uint8_list_new_from_hex_string("090141");
+  UtObjectRef decoder11 = ut_asn1_ber_decoder_new(data11);
+  ut_assert_float_equal(ut_asn1_ber_decoder_decode_real(decoder11), -INFINITY);
+
+  // Not a number.
+  UtObjectRef data12 = ut_uint8_list_new_from_hex_string("090142");
+  UtObjectRef decoder12 = ut_asn1_ber_decoder_new(data12);
+  ut_assert_true(isnan(ut_asn1_ber_decoder_decode_real(decoder12)));
+
+  // Negative zero.
+  UtObjectRef data13 = ut_uint8_list_new_from_hex_string("090143");
+  UtObjectRef decoder13 = ut_asn1_ber_decoder_new(data13);
+  ut_assert_float_equal(ut_asn1_ber_decoder_decode_real(decoder13), -0.0);
+
+  // Base 8 number.
+  UtObjectRef data14 = ut_uint8_list_new_from_hex_string("0903900105");
+  UtObjectRef decoder14 = ut_asn1_ber_decoder_new(data14);
+  ut_assert_float_equal(ut_asn1_ber_decoder_decode_real(decoder14), 40.0);
+
+  // Base 16 number.
+  UtObjectRef data15 = ut_uint8_list_new_from_hex_string("0903a00105");
+  UtObjectRef decoder15 = ut_asn1_ber_decoder_new(data15);
+  ut_assert_float_equal(ut_asn1_ber_decoder_decode_real(decoder15), 80.0);
+
+  // Decoded as object with type.
+  UtObjectRef data20 = ut_uint8_list_new_from_hex_string("090380000a");
+  UtObjectRef decoder20 = ut_asn1_ber_decoder_new(data20);
+  UtObjectRef type20 = ut_asn1_real_type_new();
+  UtObjectRef value20 = ut_asn1_decoder_decode_value(decoder20, type20);
+  ut_assert_null_object(ut_asn1_decoder_get_error(decoder20));
+  ut_assert_true(ut_object_is_float64(value20));
+  ut_assert_float_equal(ut_float64_get_value(value20), 10.0);
+
+  // Constructed form.
+  UtObjectRef data21 = ut_uint8_list_new_from_hex_string("290380000a");
+  UtObjectRef decoder21 = ut_asn1_ber_decoder_new(data21);
+  ut_asn1_ber_decoder_decode_real(decoder21);
+  ut_assert_is_error_with_description(ut_asn1_decoder_get_error(decoder21),
+                                      "REAL does not have constructed form");
+
+  // Invalid special value.
+  UtObjectRef data22 = ut_uint8_list_new_from_hex_string("09014f");
+  UtObjectRef decoder22 = ut_asn1_ber_decoder_new(data22);
+  ut_asn1_ber_decoder_decode_real(decoder22);
+  ut_assert_is_error_with_description(ut_asn1_decoder_get_error(decoder22),
+                                      "Invalid REAL special value");
+
+  // Invalid base.
+  UtObjectRef data23 = ut_uint8_list_new_from_hex_string("0903b00105");
+  UtObjectRef decoder23 = ut_asn1_ber_decoder_new(data23);
+  ut_asn1_ber_decoder_decode_real(decoder23);
+  ut_assert_is_error_with_description(ut_asn1_decoder_get_error(decoder23),
+                                      "Invalid REAL base");
+
+  // ISO 6093 NR1 decimal encoding.
+  UtObjectRef data24 = ut_uint8_list_new_from_hex_string("09020131");
+  UtObjectRef decoder24 = ut_asn1_ber_decoder_new(data24);
+  ut_asn1_ber_decoder_decode_real(decoder24);
+  ut_assert_is_error_with_description(
+      ut_asn1_decoder_get_error(decoder24),
+      "REAL ISO 6093 NR1 decimal encoding not supported");
+
+  // ISO 6093 NR2 decimal encoding.
+  UtObjectRef data25 = ut_uint8_list_new_from_hex_string("09020231");
+  UtObjectRef decoder25 = ut_asn1_ber_decoder_new(data25);
+  ut_asn1_ber_decoder_decode_real(decoder25);
+  ut_assert_is_error_with_description(
+      ut_asn1_decoder_get_error(decoder25),
+      "REAL ISO 6093 NR2 decimal encoding not supported");
+
+  // ISO 6093 NR3 decimal encoding.
+  UtObjectRef data26 = ut_uint8_list_new_from_hex_string("09020331");
+  UtObjectRef decoder26 = ut_asn1_ber_decoder_new(data26);
+  ut_asn1_ber_decoder_decode_real(decoder26);
+  ut_assert_is_error_with_description(
+      ut_asn1_decoder_get_error(decoder26),
+      "REAL ISO 6093 NR3 decimal encoding not supported");
+
+  // Invalid decimal encoding.
+  UtObjectRef data27 = ut_uint8_list_new_from_hex_string("09023f31");
+  UtObjectRef decoder27 = ut_asn1_ber_decoder_new(data27);
+  ut_asn1_ber_decoder_decode_real(decoder27);
+  ut_assert_is_error_with_description(ut_asn1_decoder_get_error(decoder27),
+                                      "Invalid REAL decimal encoding");
+
+  // Special value with additional data.
+  UtObjectRef data28 = ut_uint8_list_new_from_hex_string("09024fff");
+  UtObjectRef decoder28 = ut_asn1_ber_decoder_new(data28);
+  ut_asn1_ber_decoder_decode_real(decoder28);
+  ut_assert_is_error_with_description(ut_asn1_decoder_get_error(decoder28),
+                                      "Invalid length REAL special value");
+
+  // Insufficient space for exponent.
+  UtObjectRef data29 = ut_uint8_list_new_from_hex_string("090180");
+  UtObjectRef decoder29 = ut_asn1_ber_decoder_new(data29);
+  ut_asn1_ber_decoder_decode_real(decoder29);
+  ut_assert_is_error_with_description(ut_asn1_decoder_get_error(decoder29),
+                                      "Insufficient space for REAL exponent");
+
+  // Insufficient space for variable length exponent.
+  UtObjectRef data30 = ut_uint8_list_new_from_hex_string("09028301");
+  UtObjectRef decoder30 = ut_asn1_ber_decoder_new(data30);
+  ut_asn1_ber_decoder_decode_real(decoder30);
+  ut_assert_is_error_with_description(ut_asn1_decoder_get_error(decoder30),
+                                      "Insufficient space for REAL exponent");
+
+  // Invalid variable exponent length.
+  UtObjectRef data31 = ut_uint8_list_new_from_hex_string("09028300");
+  UtObjectRef decoder31 = ut_asn1_ber_decoder_new(data31);
+  ut_asn1_ber_decoder_decode_real(decoder31);
+  ut_assert_is_error_with_description(ut_asn1_decoder_get_error(decoder31),
+                                      "Invalid REAL exponent length");
+
+  // Variable exponent > 32 bits.
+  UtObjectRef data32 = ut_uint8_list_new_from_hex_string("09028305ffffffff");
+  UtObjectRef decoder32 = ut_asn1_ber_decoder_new(data32);
+  ut_asn1_ber_decoder_decode_real(decoder32);
+  ut_assert_is_error_with_description(ut_asn1_decoder_get_error(decoder32),
+                                      "Unsupported REAL exponent length");
 }
 
 static void test_enumerated() {
@@ -971,6 +1137,7 @@ int main(int argc, char **argv) {
   test_octet_string();
   test_null();
   test_object_identifier();
+  test_real();
   test_enumerated();
   test_utf8_string();
   test_relative_oid();

@@ -1,3 +1,6 @@
+#include <float.h>
+#include <math.h>
+
 #include "ut.h"
 
 static void test_identifier() {
@@ -471,6 +474,96 @@ static void test_object_identifier() {
       "Unknown type UtBoolean provided for OBJECT IDENTIFIER");
 }
 
+static void test_real() {
+  // Zero.
+  UtObjectRef encoder1 = ut_asn1_ber_encoder_new();
+  ut_asn1_ber_encoder_encode_real(encoder1, 0.0);
+  ut_assert_null_object(ut_asn1_encoder_get_error(encoder1));
+  UtObjectRef data1 = ut_asn1_ber_encoder_get_data(encoder1);
+  ut_assert_uint8_list_equal_hex(data1, "");
+
+  // Integer.
+  UtObjectRef encoder2 = ut_asn1_ber_encoder_new();
+  ut_asn1_ber_encoder_encode_real(encoder2, 10.0);
+  ut_assert_null_object(ut_asn1_encoder_get_error(encoder2));
+  UtObjectRef data2 = ut_asn1_ber_encoder_get_data(encoder2);
+  ut_assert_uint8_list_equal_hex(data2, "800105");
+
+  // Negative number.
+  UtObjectRef encoder3 = ut_asn1_ber_encoder_new();
+  ut_asn1_ber_encoder_encode_real(encoder3, -10.0);
+  ut_assert_null_object(ut_asn1_encoder_get_error(encoder3));
+  UtObjectRef data3 = ut_asn1_ber_encoder_get_data(encoder3);
+  ut_assert_uint8_list_equal_hex(data3, "c00105");
+
+  // Pi.
+  UtObjectRef encoder4 = ut_asn1_ber_encoder_new();
+  ut_asn1_ber_encoder_encode_real(encoder4, 3.14159);
+  ut_assert_null_object(ut_asn1_encoder_get_error(encoder4));
+  UtObjectRef data4 = ut_asn1_ber_encoder_get_data(encoder4);
+  ut_assert_uint8_list_equal_hex(data4, "80ce0c90fcf80dc337");
+
+  // Largest double.
+  UtObjectRef encoder5 = ut_asn1_ber_encoder_new();
+  ut_asn1_ber_encoder_encode_real(encoder5, DBL_MAX);
+  ut_assert_null_object(ut_asn1_encoder_get_error(encoder5));
+  UtObjectRef data5 = ut_asn1_ber_encoder_get_data(encoder5);
+  ut_assert_uint8_list_equal_hex(data5, "8103cb1fffffffffffff");
+
+  // Smallest double.
+  UtObjectRef encoder6 = ut_asn1_ber_encoder_new();
+  ut_asn1_ber_encoder_encode_real(encoder6, DBL_MIN);
+  ut_assert_null_object(ut_asn1_encoder_get_error(encoder6));
+  UtObjectRef data6 = ut_asn1_ber_encoder_get_data(encoder6);
+  ut_assert_uint8_list_equal_hex(data6, "81fc0201");
+
+  // Infinity.
+  UtObjectRef encoder7 = ut_asn1_ber_encoder_new();
+  ut_asn1_ber_encoder_encode_real(encoder7, INFINITY);
+  ut_assert_null_object(ut_asn1_encoder_get_error(encoder7));
+  UtObjectRef data7 = ut_asn1_ber_encoder_get_data(encoder7);
+  ut_assert_uint8_list_equal_hex(data7, "40");
+
+  // Minus infinity.
+  UtObjectRef encoder8 = ut_asn1_ber_encoder_new();
+  ut_asn1_ber_encoder_encode_real(encoder8, -INFINITY);
+  ut_assert_null_object(ut_asn1_encoder_get_error(encoder8));
+  UtObjectRef data8 = ut_asn1_ber_encoder_get_data(encoder8);
+  ut_assert_uint8_list_equal_hex(data8, "41");
+
+  // Not a number.
+  UtObjectRef encoder9 = ut_asn1_ber_encoder_new();
+  ut_asn1_ber_encoder_encode_real(encoder9, NAN);
+  ut_assert_null_object(ut_asn1_encoder_get_error(encoder9));
+  UtObjectRef data9 = ut_asn1_ber_encoder_get_data(encoder9);
+  ut_assert_uint8_list_equal_hex(data9, "42");
+
+  // Negative zero.
+  UtObjectRef encoder10 = ut_asn1_ber_encoder_new();
+  ut_asn1_ber_encoder_encode_real(encoder10, -0.0);
+  ut_assert_null_object(ut_asn1_encoder_get_error(encoder10));
+  UtObjectRef data10 = ut_asn1_ber_encoder_get_data(encoder10);
+  ut_assert_uint8_list_equal_hex(data10, "43");
+
+  // Encoded as object with type.
+  UtObjectRef encoder11 = ut_asn1_ber_encoder_new();
+  UtObjectRef type11 = ut_asn1_real_type_new();
+  UtObjectRef value11 = ut_float64_new(10.0);
+  ut_asn1_encoder_encode_value(encoder11, type11, value11);
+  ut_assert_null_object(ut_asn1_encoder_get_error(encoder11));
+  UtObjectRef data11 = ut_asn1_ber_encoder_get_data(encoder11);
+  ut_assert_uint8_list_equal_hex(data11, "0903800105");
+
+  // Encoded with wrong value.
+  UtObjectRef encoder12 = ut_asn1_ber_encoder_new();
+  UtObjectRef type12 = ut_asn1_real_type_new();
+  UtObjectRef value12 = ut_boolean_new(true);
+  ut_asn1_encoder_encode_value(encoder12, type12, value12);
+  ut_assert_is_error_with_description(
+      ut_asn1_encoder_get_error(encoder12),
+      "Unknown type UtBoolean provided for REAL");
+}
+
 static void test_enumerated() {
   UtObjectRef encoder1 = ut_asn1_ber_encoder_new();
   ut_asn1_ber_encoder_encode_enumerated(encoder1, 42);
@@ -737,6 +830,7 @@ int main(int argc, char **argv) {
   test_octet_string();
   test_null();
   test_object_identifier();
+  test_real();
   test_enumerated();
   test_utf8_string();
   test_relative_oid();
