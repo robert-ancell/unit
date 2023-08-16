@@ -22,6 +22,20 @@ typedef struct {
   UtObject *error;
 } UtAsn1BerEncoder;
 
+static void set_error(UtAsn1BerEncoder *self, const char *description) {
+  if (self->error == NULL) {
+    self->error = ut_asn1_error_new(description);
+  }
+}
+
+static void set_type_error(UtAsn1BerEncoder *self, const char *type_name,
+                           UtObject *value) {
+  ut_cstring_ref description =
+      ut_cstring_new_printf("Unknown type %s provided for %s",
+                            ut_object_get_type_name(value), type_name);
+  set_error(self, description);
+}
+
 static void resize(UtAsn1BerEncoder *self, size_t required_length) {
   if (required_length <= self->buffer_length) {
     return;
@@ -269,8 +283,7 @@ static size_t encode_visible_string(UtAsn1BerEncoder *self, const char *value) {
 static size_t encode_boolean_value(UtAsn1BerEncoder *self, UtObject *value,
                                    bool encode_tag, bool *is_constructed) {
   if (!ut_object_is_boolean(value)) {
-    // set_error
-    assert(false);
+    set_type_error(self, "BOOLEAN", value);
     return 0;
   }
   size_t length = encode_boolean(self, ut_boolean_get_value(value));
@@ -286,8 +299,7 @@ static size_t encode_boolean_value(UtAsn1BerEncoder *self, UtObject *value,
 static size_t encode_integer_value(UtAsn1BerEncoder *self, UtObject *value,
                                    bool encode_tag, bool *is_constructed) {
   if (!ut_object_is_int64(value)) {
-    // set_error
-    assert(false);
+    set_type_error(self, "INTEGER", value);
     return 0;
   }
   size_t length = encode_integer(self, ut_int64_get_value(value));
@@ -303,8 +315,7 @@ static size_t encode_integer_value(UtAsn1BerEncoder *self, UtObject *value,
 static size_t encode_octet_string_value(UtAsn1BerEncoder *self, UtObject *value,
                                         bool encode_tag, bool *is_constructed) {
   if (!ut_object_implements_uint8_list(value)) {
-    // set_error
-    assert(false);
+    set_type_error(self, "OCTET STRING", value);
     return 0;
   }
   size_t length = encode_octet_string(self, value);
@@ -320,8 +331,7 @@ static size_t encode_octet_string_value(UtAsn1BerEncoder *self, UtObject *value,
 static size_t encode_null_value(UtAsn1BerEncoder *self, UtObject *value,
                                 bool encode_tag, bool *is_constructed) {
   if (!ut_object_is_null(value)) {
-    // set_error
-    assert(false);
+    set_type_error(self, "NULL", value);
     return 0;
   }
   size_t length = encode_null(self);
@@ -338,8 +348,7 @@ static size_t encode_object_identifier_value(UtAsn1BerEncoder *self,
                                              UtObject *value, bool encode_tag,
                                              bool *is_constructed) {
   if (!ut_object_implements_uint32_list(value)) {
-    // set_error
-    assert(false);
+    set_type_error(self, "OBJECT IDENTIFIER", value);
     return 0;
   }
   size_t length = encode_object_identifier(self, value);
@@ -355,8 +364,7 @@ static size_t encode_object_identifier_value(UtAsn1BerEncoder *self,
 static size_t encode_utf8_string_value(UtAsn1BerEncoder *self, UtObject *value,
                                        bool encode_tag, bool *is_constructed) {
   if (!ut_object_implements_string(value)) {
-    // set_error
-    assert(false);
+    set_type_error(self, "UTF8String", value);
     return 0;
   }
   size_t length = encode_utf8_string(self, value);
@@ -372,8 +380,7 @@ static size_t encode_utf8_string_value(UtAsn1BerEncoder *self, UtObject *value,
 static size_t encode_relative_oid_value(UtAsn1BerEncoder *self, UtObject *value,
                                         bool encode_tag, bool *is_constructed) {
   if (!ut_object_implements_uint32_list(value)) {
-    // set_error
-    assert(false);
+    set_type_error(self, "RELATIVE-OID", value);
     return 0;
   }
   size_t length = encode_relative_oid(self, value);
@@ -390,8 +397,8 @@ static size_t encode_value(UtAsn1BerEncoder *self, UtObject *type,
                            UtObject *value, bool encode_tag,
                            bool *is_constructed);
 
-static size_t encode_components(UtAsn1BerEncoder *self, UtObject *components,
-                                UtObject *value) {
+static size_t encode_components(UtAsn1BerEncoder *self, const char *type_name,
+                                UtObject *components, UtObject *value) {
   UtObjectRef identifiers = ut_map_get_keys(components);
   size_t identifiers_length = ut_list_get_length(identifiers);
   size_t length = 0;
@@ -404,8 +411,9 @@ static size_t encode_components(UtAsn1BerEncoder *self, UtObject *components,
     UtObject *component_value = ut_map_lookup_string(value, identifier_text);
 
     if (component_value == NULL) {
-      // set_error
-      assert(false);
+      ut_cstring_ref description = ut_cstring_new_printf(
+          "Missing %s value %s", type_name, identifier_text);
+      set_error(self, description);
       return 0;
     }
 
@@ -421,13 +429,12 @@ static size_t encode_sequence_value(UtAsn1BerEncoder *self, UtObject *type,
                                     UtObject *value, bool encode_tag,
                                     bool *is_constructed) {
   if (!ut_object_implements_map(value)) {
-    // set_error
-    assert(false);
+    set_type_error(self, "SEQUENCE", value);
     return 0;
   }
 
   size_t length = encode_components(
-      self, ut_asn1_sequence_type_get_components(type), value);
+      self, "SEQUENCE", ut_asn1_sequence_type_get_components(type), value);
   if (encode_tag) {
     length += encode_definite_length(self, length);
     length += encode_identifier(self, UT_ASN1_TAG_CLASS_UNIVERSAL, true,
@@ -454,8 +461,7 @@ static size_t encode_sequence_of_value(UtAsn1BerEncoder *self, UtObject *type,
                                        UtObject *value, bool encode_tag,
                                        bool *is_constructed) {
   if (!ut_object_implements_list(value)) {
-    // set_error
-    assert(false);
+    set_type_error(self, "SEQUENCE OF", value);
     return 0;
   }
 
@@ -474,13 +480,12 @@ static size_t encode_set_value(UtAsn1BerEncoder *self, UtObject *type,
                                UtObject *value, bool encode_tag,
                                bool *is_constructed) {
   if (!ut_object_implements_map(value)) {
-    // set_error
-    assert(false);
+    set_type_error(self, "SET", value);
     return 0;
   }
 
-  size_t length =
-      encode_components(self, ut_asn1_set_type_get_components(type), value);
+  size_t length = encode_components(
+      self, "SET", ut_asn1_set_type_get_components(type), value);
   if (encode_tag) {
     length += encode_definite_length(self, length);
     length += encode_identifier(self, UT_ASN1_TAG_CLASS_UNIVERSAL, true,
@@ -494,8 +499,7 @@ static size_t encode_set_of_value(UtAsn1BerEncoder *self, UtObject *type,
                                   UtObject *value, bool encode_tag,
                                   bool *is_constructed) {
   if (!ut_object_implements_list(value)) {
-    // set_error
-    assert(false);
+    set_type_error(self, "SET OF", value);
     return 0;
   }
 
@@ -538,8 +542,9 @@ static size_t encode_value(UtAsn1BerEncoder *self, UtObject *type,
   } else if (ut_object_is_asn1_set_of_type(type)) {
     return encode_set_of_value(self, type, value, encode_tag, is_constructed);
   } else {
-    // set_error
-    assert(false);
+    ut_cstring_ref description = ut_cstring_new_printf(
+        "Unknown ASN.1 type %s", ut_object_get_type_name(type));
+    set_error(self, description);
     *is_constructed = true;
     return 0;
   }
