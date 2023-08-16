@@ -26,6 +26,10 @@ UtObject *ut_asn1_tag_new(UtAsn1TagClass class, uint32_t number) {
   return object;
 }
 
+UtObject *ut_asn1_tag_new_universal(UtAsn1TagUniversal type) {
+  return ut_asn1_tag_new(UT_ASN1_TAG_CLASS_UNIVERSAL, type);
+}
+
 UtAsn1TagClass ut_asn1_tag_get_class(UtObject *object) {
   assert(ut_object_is_asn1_tag(object));
   UtAsn1Tag *self = (UtAsn1Tag *)object;

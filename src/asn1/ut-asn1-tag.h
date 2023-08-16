@@ -45,6 +45,9 @@ typedef enum {
 /// !return-ref
 UtObject *ut_asn1_tag_new(UtAsn1TagClass class, uint32_t number);
 
+/// !return-ref
+UtObject *ut_asn1_tag_new_universal(UtAsn1TagUniversal type);
+
 UtAsn1TagClass ut_asn1_tag_get_class(UtObject *object);
 
 uint32_t ut_asn1_tag_get_number(UtObject *object);
