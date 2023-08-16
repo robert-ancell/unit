@@ -9,7 +9,14 @@ typedef struct {
   uint32_t number;
 } UtAsn1Tag;
 
-static UtObjectInterface object_interface = {.type_name = "UtAsn1Tag"};
+static char *ut_asn1_tag_to_string(UtObject *object) {
+  UtAsn1Tag *self = (UtAsn1Tag *)object;
+  return ut_cstring_new_printf("<UtAsn1Tag>(%d, %d)", self->class,
+                               self->number);
+}
+
+static UtObjectInterface object_interface = {
+    .type_name = "UtAsn1Tag", .to_string = ut_asn1_tag_to_string};
 
 UtObject *ut_asn1_tag_new(UtAsn1TagClass class, uint32_t number) {
   UtObject *object = ut_object_new(sizeof(UtAsn1Tag), &object_interface);
