@@ -67,13 +67,16 @@ void _ut_assert_false(const char *file, int line, const char *value_name,
   abort();
 }
 
-void _ut_assert_null(const char *file, int line, const char *value_name,
-                     const void *value) {
+void _ut_assert_null_cstring(const char *file, int line, const char *value_name,
+                             const char *value) {
   if (value == NULL) {
     return;
   }
 
-  fprintf(stderr, "%s:%d Expected %s to be NULL\n", file, line, value_name);
+  fprintf(stderr,
+          "%s:%d Expected %s to be NULL:\n"
+          "  %s\n",
+          file, line, value_name, value);
 
   abort();
 }

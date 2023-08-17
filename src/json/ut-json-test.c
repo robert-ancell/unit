@@ -128,13 +128,13 @@ static void test_encode() {
 
 static void test_decode() {
   UtObjectRef empty = ut_json_decode("");
-  ut_assert_null(empty);
+  ut_assert_null_object(empty);
 
   UtObjectRef unknown_keyword = ut_json_decode("foo");
-  ut_assert_null(unknown_keyword);
+  ut_assert_null_object(unknown_keyword);
 
   UtObjectRef unknown_container = ut_json_decode("<>");
-  ut_assert_null(unknown_container);
+  ut_assert_null_object(unknown_container);
 
   UtObjectRef null = ut_json_decode("null");
   ut_assert_non_null(null);
@@ -218,7 +218,7 @@ static void test_decode() {
   ut_assert_cstring_equal(ut_string_get_text(emoji_string), "😀");
 
   UtObjectRef unterminated_array = ut_json_decode("[");
-  ut_assert_null(unterminated_array);
+  ut_assert_null_object(unterminated_array);
 
   UtObjectRef empty_array = ut_json_decode("[]");
   ut_assert_non_null(empty_array);
@@ -236,7 +236,7 @@ static void test_decode() {
   ut_assert_int_equal(ut_list_get_length(mixed_array), 3);
 
   UtObjectRef unterminated_object = ut_json_decode("{");
-  ut_assert_null(unterminated_object);
+  ut_assert_null_object(unterminated_object);
 
   UtObjectRef empty_object = ut_json_decode("{}");
   ut_assert_non_null(empty_object);

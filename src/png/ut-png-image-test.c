@@ -229,7 +229,7 @@ int main(int argc, char **argv) {
                           "Foo <foo@example.com>");
   ut_assert_cstring_equal(ut_png_image_get_text(text_image, "Description"),
                           "Lorem Ipsum.\nFoo Bar");
-  ut_assert_null(ut_png_image_get_text(text_image, "Comment"));
+  ut_assert_null_cstring(ut_png_image_get_text(text_image, "Comment"));
 
   UtObjectRef international_text_image_data =
       ut_uint8_list_new_from_hex_string("00");
@@ -250,9 +250,9 @@ int main(int argc, char **argv) {
                                           "De", &translated_keyword),
       "Foo <foo-de@example.com>");
   ut_assert_cstring_equal(translated_keyword, "Autor");
-  ut_assert_null(ut_png_image_get_international_text(
+  ut_assert_null_cstring(ut_png_image_get_international_text(
       international_text_image, "fi", "Title", &translated_keyword));
-  ut_assert_null(translated_keyword);
+  ut_assert_null_cstring(translated_keyword);
 
   return 0;
 }

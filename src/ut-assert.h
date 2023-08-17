@@ -15,10 +15,11 @@ void _ut_assert_true(const char *file, int line, const char *value_name,
 void _ut_assert_false(const char *file, int line, const char *value_name,
                       bool value);
 
-/// Asserts that [value] is NULL.
-#define ut_assert_null(value) _ut_assert_null(__FILE__, __LINE__, #value, value)
-void _ut_assert_null(const char *file, int line, const char *value_name,
-                     const void *value);
+/// Asserts that [value] is a NULL string.
+#define ut_assert_null_cstring(value)                                          \
+  _ut_assert_null_cstring(__FILE__, __LINE__, #value, value)
+void _ut_assert_null_cstring(const char *file, int line, const char *value_name,
+                             const char *value);
 
 /// Asserts that [value] is a NULL object.
 #define ut_assert_null_object(value)                                           \
