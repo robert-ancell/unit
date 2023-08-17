@@ -210,46 +210,80 @@ static void test_bit_string() {
   ut_assert_int_equal(ut_asn1_ber_decoder_get_identifier_number(decoder1),
                       UT_ASN1_TAG_UNIVERSAL_BIT_STRING);
   UtObjectRef string1 = ut_asn1_ber_decoder_decode_bit_string(decoder1);
+  ut_assert_null_object(ut_asn1_decoder_get_error(decoder1));
   ut_assert_bit_list_equal_bin(string1, "");
   ut_assert_null_object(ut_asn1_decoder_get_error(decoder1));
 
   UtObjectRef data2 = ut_uint8_list_new_from_hex_string("03020000");
   UtObjectRef decoder2 = ut_asn1_ber_decoder_new(data2);
   UtObjectRef string2 = ut_asn1_ber_decoder_decode_bit_string(decoder2);
+  ut_assert_null_object(ut_asn1_decoder_get_error(decoder2));
   ut_assert_bit_list_equal_bin(string2, "00000000");
 
   UtObjectRef data3 = ut_uint8_list_new_from_hex_string("03020780");
   UtObjectRef decoder3 = ut_asn1_ber_decoder_new(data3);
   UtObjectRef string3 = ut_asn1_ber_decoder_decode_bit_string(decoder3);
+  ut_assert_null_object(ut_asn1_decoder_get_error(decoder3));
   ut_assert_bit_list_equal_bin(string3, "1");
 
   UtObjectRef data4 = ut_uint8_list_new_from_hex_string("030204d0");
   UtObjectRef decoder4 = ut_asn1_ber_decoder_new(data4);
   UtObjectRef string4 = ut_asn1_ber_decoder_decode_bit_string(decoder4);
+  ut_assert_null_object(ut_asn1_decoder_get_error(decoder4));
   ut_assert_bit_list_equal_bin(string4, "1101");
 
   UtObjectRef data5 = ut_uint8_list_new_from_hex_string("030500ff00f00f");
   UtObjectRef decoder5 = ut_asn1_ber_decoder_new(data5);
   UtObjectRef string5 = ut_asn1_ber_decoder_decode_bit_string(decoder5);
+  ut_assert_null_object(ut_asn1_decoder_get_error(decoder5));
   ut_assert_bit_list_equal_bin(string5, "11111111000000001111000000001111");
 
-  // Decoded as object with type.
-  UtObjectRef data6 = ut_uint8_list_new_from_hex_string("030204d0");
+  // Constructed form.
+  UtObjectRef data6 = ut_uint8_list_new_from_hex_string("2308030204d0030204d0");
   UtObjectRef decoder6 = ut_asn1_ber_decoder_new(data6);
-  UtObjectRef type6 = ut_asn1_bit_string_type_new();
-  UtObjectRef value6 = ut_asn1_decoder_decode_value(decoder6, type6);
+  UtObjectRef string6 = ut_asn1_ber_decoder_decode_bit_string(decoder6);
   ut_assert_null_object(ut_asn1_decoder_get_error(decoder6));
-  ut_assert_true(ut_object_is_bit_list(value6));
-  ut_assert_bit_list_equal_bin(value6, "1101");
+  ut_assert_bit_list_equal_bin(string6, "11011101");
 
-  // Constructed form (not currently supported).
-  UtObjectRef data11 =
-      ut_uint8_list_new_from_hex_string("2308030204d0030204d0");
-  UtObjectRef decoder11 = ut_asn1_ber_decoder_new(data11);
-  UtObjectRef string11 = ut_asn1_ber_decoder_decode_bit_string(decoder11);
-  // ut_assert_bit_list_equal_bin(string11, "11011101");
-  ut_assert_is_error_with_description(ut_asn1_decoder_get_error(decoder11),
-                                      "Constructed BIT STRING not supported");
+  // Decoded as object with type.
+  UtObjectRef data7 = ut_uint8_list_new_from_hex_string("030204d0");
+  UtObjectRef decoder7 = ut_asn1_ber_decoder_new(data7);
+  UtObjectRef type7 = ut_asn1_bit_string_type_new();
+  UtObjectRef value7 = ut_asn1_decoder_decode_value(decoder7, type7);
+  ut_assert_null_object(ut_asn1_decoder_get_error(decoder7));
+  ut_assert_true(ut_object_is_bit_list(value7));
+  ut_assert_bit_list_equal_bin(value7, "1101");
+
+  // Invalid number of unused bits.
+  UtObjectRef data8 = ut_uint8_list_new_from_hex_string("030508ff00f00f");
+  UtObjectRef decoder8 = ut_asn1_ber_decoder_new(data8);
+  UtObjectRef string8 = ut_asn1_ber_decoder_decode_bit_string(decoder8);
+  ut_assert_is_error_with_description(
+      ut_asn1_decoder_get_error(decoder8),
+      "Invalid number of unused bits in BIT STRING");
+
+  // Invalid constructed form - wrong type.
+  UtObjectRef data14 = ut_uint8_list_new_from_hex_string("230301012a");
+  UtObjectRef decoder14 = ut_asn1_ber_decoder_new(data14);
+  UtObjectRef string14 = ut_asn1_ber_decoder_decode_bit_string(decoder14);
+  ut_assert_is_error_with_description(
+      ut_asn1_decoder_get_error(decoder14),
+      "Invalid tag inside constructed BIT STRING");
+
+  // Invalid constructed form - nested.
+  UtObjectRef data15 = ut_uint8_list_new_from_hex_string("23062304030204d0");
+  UtObjectRef decoder15 = ut_asn1_ber_decoder_new(data15);
+  UtObjectRef string15 = ut_asn1_ber_decoder_decode_bit_string(decoder15);
+  ut_assert_is_error_with_description(ut_asn1_decoder_get_error(decoder15),
+                                      "Invalid nested constructed BIT STRING");
+
+  // Invalid constructed form - insufficient data in child element.
+  UtObjectRef data16 = ut_uint8_list_new_from_hex_string("2304030304d0");
+  UtObjectRef decoder16 = ut_asn1_ber_decoder_new(data16);
+  UtObjectRef string16 = ut_asn1_ber_decoder_decode_bit_string(decoder16);
+  ut_assert_is_error_with_description(
+      ut_asn1_decoder_get_error(decoder16),
+      "Error decoding constructed BIT STRING element: Insufficient data");
 }
 
 static void test_octet_string() {

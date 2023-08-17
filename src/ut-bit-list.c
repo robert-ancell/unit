@@ -186,6 +186,16 @@ void ut_bit_list_append_bits(UtObject *object, uint8_t data, size_t bit_count) {
   append(self, data, bit_count);
 }
 
+void ut_bit_list_append_list(UtObject *object, UtObject *value) {
+  assert(ut_object_is_bit_list(object));
+  assert(ut_object_is_bit_list(value));
+  UtBitList *self = (UtBitList *)object;
+  UtBitList *value_self = (UtBitList *)value;
+  for (size_t i = 0; i < value_self->bit_count; i++) {
+    append(self, get_element(value_self, i) ? 0x01 : 0x00, 1);
+  }
+}
+
 char *ut_bit_list_to_bin_string(UtObject *object) {
   assert(ut_object_is_bit_list(object));
   UtBitList *self = (UtBitList *)object;

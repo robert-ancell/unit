@@ -116,14 +116,10 @@ static int64_t decode_integer(UtAsn1BerDecoder *self) {
   return (int64_t)value;
 }
 
-static UtObject *decode_bit_string(UtAsn1BerDecoder *self) {
+static UtObject *decode_primitive_bit_string(UtAsn1BerDecoder *self) {
   size_t data_length = ut_list_get_length(self->contents);
   if (data_length < 1) {
     set_error(self, "Invalid BIT STRING data length");
-    return ut_bit_list_new_msb();
-  }
-  if (self->constructed) {
-    set_error(self, "Constructed BIT STRING not supported");
     return ut_bit_list_new_msb();
   }
   uint8_t unused_bits = ut_uint8_list_get_element(self->contents, 0);
@@ -135,6 +131,51 @@ static UtObject *decode_bit_string(UtAsn1BerDecoder *self) {
   UtObjectRef bit_data =
       ut_list_get_sublist(self->contents, 1, data_length - 1);
   return ut_bit_list_new_msb_from_data(bit_data, bit_count);
+}
+
+static UtObject *decode_constructed_bit_string(UtAsn1BerDecoder *self) {
+  UtObjectRef value = ut_bit_list_new_msb();
+  size_t contents_length = ut_list_get_length(self->contents);
+  size_t offset = 0;
+  while (offset < contents_length) {
+    UtObjectRef data =
+        ut_list_get_sublist(self->contents, offset, contents_length - offset);
+    UtObjectRef decoder = ut_asn1_ber_decoder_new(data);
+    offset += ut_asn1_ber_decoder_get_length(decoder);
+
+    if (ut_asn1_ber_decoder_get_tag_class(decoder) != self->class ||
+        ut_asn1_ber_decoder_get_identifier_number(decoder) != self->number) {
+      set_error(self, "Invalid tag inside constructed BIT STRING");
+      return ut_bit_list_new_msb();
+    }
+    if (ut_asn1_ber_decoder_get_constructed(decoder)) {
+      set_error(self, "Invalid nested constructed BIT STRING");
+      return ut_bit_list_new_msb();
+    }
+
+    UtObjectRef child_value =
+        decode_primitive_bit_string((UtAsn1BerDecoder *)decoder);
+    UtObject *error = ut_asn1_decoder_get_error(decoder);
+    if (error != NULL) {
+      ut_cstring_ref child_description = ut_error_get_description(error);
+      ut_cstring_ref description = ut_cstring_new_printf(
+          "Error decoding constructed BIT STRING element: %s",
+          child_description);
+      set_error(self, description);
+      return ut_bit_list_new_msb();
+    }
+    ut_bit_list_append_list(value, child_value);
+  }
+
+  return ut_object_ref(value);
+}
+
+static UtObject *decode_bit_string(UtAsn1BerDecoder *self) {
+  if (self->constructed) {
+    return decode_constructed_bit_string(self);
+  }
+
+  return decode_primitive_bit_string(self);
 }
 
 static UtObject *decode_constructed_octet_string(UtAsn1BerDecoder *self,

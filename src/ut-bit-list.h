@@ -27,6 +27,8 @@ void ut_bit_list_append(UtObject *object, bool value);
 
 void ut_bit_list_append_bits(UtObject *object, uint8_t data, size_t bit_count);
 
+void ut_bit_list_append_list(UtObject *object, UtObject *value);
+
 char *ut_bit_list_to_bin_string(UtObject *object);
 
 bool ut_object_is_bit_list(UtObject *object);
