@@ -5,11 +5,17 @@
 
 #pragma once
 
-UtObject *ut_bit_list_new();
+UtObject *ut_bit_list_new_msb();
 
-UtObject *ut_bit_list_new_from_data(UtObject *data, size_t bit_count);
+UtObject *ut_bit_list_new_lsb();
 
-UtObject *ut_bit_list_new_from_bin_string(const char *bin);
+UtObject *ut_bit_list_new_msb_from_data(UtObject *data, size_t bit_count);
+
+UtObject *ut_bit_list_new_lsb_from_data(UtObject *data, size_t bit_count);
+
+UtObject *ut_bit_list_new_msb_from_bin_string(const char *bin);
+
+UtObject *ut_bit_list_new_lsb_from_bin_string(const char *bin);
 
 size_t ut_bit_list_get_length(UtObject *object);
 

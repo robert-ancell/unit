@@ -228,7 +228,7 @@ void _ut_assert_cstring_equal(const char *file, int line, const char *a_name,
 void _ut_assert_bit_list_equal_bin(const char *file, int line,
                                    const char *a_name, UtObject *a_value,
                                    const char *b_bin) {
-  UtObjectRef b_value = ut_bit_list_new_from_bin_string(b_bin);
+  UtObjectRef b_value = ut_bit_list_new_msb_from_bin_string(b_bin);
   size_t length = ut_bit_list_get_length(a_value);
   if (length == ut_bit_list_get_length(b_value)) {
     bool match = true;
