@@ -137,10 +137,50 @@ static UtObject *decode_bit_string(UtAsn1BerDecoder *self) {
   return ut_bit_list_new_msb_from_data(bit_data, bit_count);
 }
 
-static UtObject *decode_octet_string(UtAsn1BerDecoder *self) {
+static UtObject *decode_constructed_octet_string(UtAsn1BerDecoder *self,
+                                                 const char *type_name) {
+  UtObjectRef value = ut_uint8_list_new();
+  size_t contents_length = ut_list_get_length(self->contents);
+  size_t offset = 0;
+  while (offset < contents_length) {
+    UtObjectRef data =
+        ut_list_get_sublist(self->contents, offset, contents_length - offset);
+    UtObjectRef decoder = ut_asn1_ber_decoder_new(data);
+    offset += ut_asn1_ber_decoder_get_length(decoder);
+
+    if (ut_asn1_ber_decoder_get_tag_class(decoder) != self->class ||
+        ut_asn1_ber_decoder_get_identifier_number(decoder) != self->number) {
+      ut_cstring_ref description =
+          ut_cstring_new_printf("Invalid tag inside constructed %s", type_name);
+      set_error(self, description);
+      return ut_uint8_list_new();
+    }
+    if (ut_asn1_ber_decoder_get_constructed(decoder)) {
+      ut_cstring_ref description =
+          ut_cstring_new_printf("Invalid nested constructed %s", type_name);
+      set_error(self, description);
+      return ut_uint8_list_new();
+    }
+
+    ut_list_append_list(value, ut_asn1_ber_decoder_get_contents(decoder));
+    UtObject *error = ut_asn1_decoder_get_error(decoder);
+    if (error != NULL) {
+      ut_cstring_ref child_description = ut_error_get_description(error);
+      ut_cstring_ref description =
+          ut_cstring_new_printf("Error decoding constructed %s element: %s",
+                                type_name, child_description);
+      set_error(self, description);
+      return ut_uint8_list_new();
+    }
+  }
+
+  return ut_object_ref(value);
+}
+
+static UtObject *decode_octet_string(UtAsn1BerDecoder *self,
+                                     const char *type_name) {
   if (self->constructed) {
-    set_error(self, "Constructed OCTET STRING not supported");
-    return ut_uint8_list_new();
+    return decode_constructed_octet_string(self, type_name);
   }
   return ut_object_ref(self->contents);
 }
@@ -215,12 +255,8 @@ static int64_t decode_enumerated(UtAsn1BerDecoder *self) {
 }
 
 static UtObject *decode_utf8_string(UtAsn1BerDecoder *self) {
-  if (self->constructed) {
-    set_error(self, "Constructed Utf8String not supported");
-    return ut_string_new("");
-  }
-
-  UtObjectRef value = ut_string_new_from_utf8(self->contents);
+  UtObjectRef data = decode_octet_string(self, "UTF8String");
+  UtObjectRef value = ut_string_new_from_utf8(data);
   if (ut_object_implements_error(value)) {
     set_error(self, "Invalid Utf8String");
     return ut_string_new("");
@@ -291,7 +327,7 @@ static UtObject *decode_octet_string_value(UtAsn1BerDecoder *self,
                                 UT_ASN1_TAG_UNIVERSAL_OCTET_STRING)) {
     return ut_uint8_list_new();
   }
-  return decode_octet_string(self);
+  return decode_octet_string(self, "OCTET STRING");
 }
 
 static UtObject *decode_null_value(UtAsn1BerDecoder *self, bool decode_tag) {
@@ -758,7 +794,7 @@ UtObject *ut_asn1_ber_decoder_decode_bit_string(UtObject *object) {
 UtObject *ut_asn1_ber_decoder_decode_octet_string(UtObject *object) {
   assert(ut_object_is_asn1_ber_decoder(object));
   UtAsn1BerDecoder *self = (UtAsn1BerDecoder *)object;
-  return decode_octet_string(self);
+  return decode_octet_string(self, "OCTET STRING");
 }
 
 void ut_asn1_ber_decoder_decode_null(UtObject *object) {

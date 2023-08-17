@@ -78,6 +78,21 @@ void _ut_assert_null(const char *file, int line, const char *value_name,
   abort();
 }
 
+void _ut_assert_null_object(const char *file, int line, const char *value_name,
+                            UtObject *value) {
+  if (value == NULL) {
+    return;
+  }
+
+  ut_cstring_ref value_string = ut_object_to_string(value);
+  fprintf(stderr,
+          "%s:%d Expected %s to be NULL:\n"
+          "  %s\n",
+          file, line, value_name, value_string);
+
+  abort();
+}
+
 void _ut_assert_non_null(const char *file, int line, const char *value_name,
                          const void *value) {
   if (value != NULL) {
