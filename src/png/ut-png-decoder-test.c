@@ -19,14 +19,14 @@ static UtObject *check_png_full(const char *hex_data, uint32_t width,
   ut_assert_int_equal(ut_png_image_get_bit_depth(image), bit_depth);
   ut_assert_int_equal(ut_png_image_get_color_type(image), color_type);
   if (hex_background == NULL) {
-    ut_assert_null(ut_png_image_get_background_color(image));
+    ut_assert_null_object(ut_png_image_get_background_color(image));
   } else {
     ut_assert_non_null(ut_png_image_get_background_color(image));
     ut_assert_uint8_list_equal_hex(ut_png_image_get_background_color(image),
                                    hex_background);
   }
   if (hex_palette_data == NULL) {
-    ut_assert_null(ut_png_image_get_palette(image));
+    ut_assert_null_object(ut_png_image_get_palette(image));
   } else {
     ut_assert_non_null(ut_png_image_get_palette(image));
     ut_assert_uint8_list_equal_hex(ut_png_image_get_palette(image),

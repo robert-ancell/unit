@@ -52,24 +52,24 @@ static void test_encode() {
 
 static void test_decode() {
   UtObjectRef empty_document = ut_xml_document_new_from_text("");
-  ut_assert_null(empty_document);
+  ut_assert_null_object(empty_document);
 
   UtObjectRef empty_element_document = ut_xml_document_new_from_text("<tag/>");
   ut_assert_non_null(empty_element_document);
   UtObject *root = ut_xml_document_get_root(empty_element_document);
   ut_assert_cstring_equal(ut_xml_element_get_name(root), "tag");
-  ut_assert_null(ut_xml_element_get_content(root));
+  ut_assert_null_object(ut_xml_element_get_content(root));
 
   UtObjectRef tag_name_leading_whitespace_document =
       ut_xml_document_new_from_text("< tag/>");
-  ut_assert_null(tag_name_leading_whitespace_document);
+  ut_assert_null_object(tag_name_leading_whitespace_document);
 
   UtObjectRef tag_name_trailing_whitespace_document =
       ut_xml_document_new_from_text("<tag />");
   ut_assert_non_null(tag_name_trailing_whitespace_document);
   root = ut_xml_document_get_root(tag_name_trailing_whitespace_document);
   ut_assert_cstring_equal(ut_xml_element_get_name(root), "tag");
-  ut_assert_null(ut_xml_element_get_content(root));
+  ut_assert_null_object(ut_xml_element_get_content(root));
 
   UtObjectRef attribute_document =
       ut_xml_document_new_from_text("<tag name=\"value\"/>");
@@ -88,7 +88,7 @@ static void test_decode() {
   ut_assert_non_null(no_content_document);
   root = ut_xml_document_get_root(no_content_document);
   ut_assert_cstring_equal(ut_xml_element_get_name(root), "tag");
-  ut_assert_null(ut_xml_element_get_content(root));
+  ut_assert_null_object(ut_xml_element_get_content(root));
 
   UtObjectRef content_document =
       ut_xml_document_new_from_text("<tag>Hello World!</tag>");
@@ -117,11 +117,11 @@ static void test_decode() {
 
   UtObjectRef mismatched_tags_document =
       ut_xml_document_new_from_text("<foo></bar>");
-  ut_assert_null(mismatched_tags_document);
+  ut_assert_null_object(mismatched_tags_document);
 
   UtObjectRef interleaved_tags_document =
       ut_xml_document_new_from_text("<foo><bar></foo></bar>");
-  ut_assert_null(interleaved_tags_document);
+  ut_assert_null_object(interleaved_tags_document);
 }
 
 int main(int argc, char **argv) {

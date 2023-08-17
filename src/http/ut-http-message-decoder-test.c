@@ -25,7 +25,7 @@ static UtObject *test_decode_request(const char *data_text,
                                      const char *expected_body_text) {
   UtObjectRef decoder = decode_request(data_text);
 
-  ut_assert_null(ut_http_message_decoder_get_error(decoder));
+  ut_assert_null_object(ut_http_message_decoder_get_error(decoder));
   ut_assert_cstring_equal(ut_http_message_decoder_get_method(decoder),
                           expected_method);
   ut_assert_cstring_equal(ut_http_message_decoder_get_path(decoder),
@@ -53,7 +53,7 @@ static UtObject *test_decode_response(const char *data_text,
                                       const char *expected_body_text) {
   UtObjectRef decoder = decode_response(data_text);
 
-  ut_assert_null(ut_http_message_decoder_get_error(decoder));
+  ut_assert_null_object(ut_http_message_decoder_get_error(decoder));
   ut_assert_int_equal(ut_http_message_decoder_get_status_code(decoder),
                       expected_status_code);
   ut_assert_cstring_equal(ut_http_message_decoder_get_reason_phrase(decoder),

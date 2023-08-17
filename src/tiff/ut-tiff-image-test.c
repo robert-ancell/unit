@@ -18,7 +18,7 @@ check_tiff(const char *hex_data, uint32_t width, uint32_t length,
   ut_assert_int_equal(ut_tiff_image_get_samples_per_pixel(image),
                       samples_per_pixel);
   if (hex_color_map_data == NULL) {
-    ut_assert_null(ut_tiff_image_get_color_map(image));
+    ut_assert_null_object(ut_tiff_image_get_color_map(image));
   } else {
     ut_assert_non_null(ut_tiff_image_get_color_map(image));
     ut_assert_uint16_list_equal_hex(ut_tiff_image_get_color_map(image),
