@@ -206,7 +206,7 @@ static void test_body() {
                                                 "\r\n"
                                                 "Hello World!",
                                                 "GET", "/", "Hello World!");
-  ut_assert_non_null(eof_headers);
+  ut_assert_non_null_object(eof_headers);
 
   UtObjectRef content_length_headers =
       test_decode_response("HTTP/1.1 200 OK\r\n"
@@ -214,14 +214,14 @@ static void test_body() {
                            "\r\n"
                            "0123456789abcdef",
                            200, "OK", "0123456789");
-  ut_assert_non_null(content_length_headers);
+  ut_assert_non_null_object(content_length_headers);
 
   UtObjectRef empty_content_length_headers =
       test_decode_response("HTTP/1.1 200 OK\r\n"
                            "Content-Length: 0\r\n"
                            "\r\n",
                            200, "OK", "");
-  ut_assert_non_null(empty_content_length_headers);
+  ut_assert_non_null_object(empty_content_length_headers);
 
   UtObjectRef missing_content_decoder = decode_request("GET / HTTP/1.1\r\n"
                                                        "Content-Length: 10\r\n"
@@ -244,7 +244,7 @@ static void test_body() {
                            "0\r\n"
                            "\r\n",
                            200, "OK", "life is more complicated in chunks.");
-  ut_assert_non_null(chunked_headers);
+  ut_assert_non_null_object(chunked_headers);
 
   UtObjectRef empty_chunked_headers =
       test_decode_response("HTTP/1.1 200 OK\r\n"
@@ -253,7 +253,7 @@ static void test_body() {
                            "0\r\n"
                            "\r\n",
                            200, "OK", "");
-  ut_assert_non_null(empty_chunked_headers);
+  ut_assert_non_null_object(empty_chunked_headers);
 
   UtObjectRef missing_chunks_decoder =
       decode_request("GET / HTTP/1.1\r\n"

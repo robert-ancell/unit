@@ -55,7 +55,7 @@ static void test_decode() {
   ut_assert_null_object(empty_document);
 
   UtObjectRef empty_element_document = ut_xml_document_new_from_text("<tag/>");
-  ut_assert_non_null(empty_element_document);
+  ut_assert_non_null_object(empty_element_document);
   UtObject *root = ut_xml_document_get_root(empty_element_document);
   ut_assert_cstring_equal(ut_xml_element_get_name(root), "tag");
   ut_assert_null_object(ut_xml_element_get_content(root));
@@ -66,37 +66,37 @@ static void test_decode() {
 
   UtObjectRef tag_name_trailing_whitespace_document =
       ut_xml_document_new_from_text("<tag />");
-  ut_assert_non_null(tag_name_trailing_whitespace_document);
+  ut_assert_non_null_object(tag_name_trailing_whitespace_document);
   root = ut_xml_document_get_root(tag_name_trailing_whitespace_document);
   ut_assert_cstring_equal(ut_xml_element_get_name(root), "tag");
   ut_assert_null_object(ut_xml_element_get_content(root));
 
   UtObjectRef attribute_document =
       ut_xml_document_new_from_text("<tag name=\"value\"/>");
-  ut_assert_non_null(attribute_document);
+  ut_assert_non_null_object(attribute_document);
 
   UtObjectRef multiple_attribute_document = ut_xml_document_new_from_text(
       "<foo name1=\"'value1'\" name2='\"value2\"'/>");
-  ut_assert_non_null(multiple_attribute_document);
+  ut_assert_non_null_object(multiple_attribute_document);
 
   UtObjectRef escaped_attribute_document =
       ut_xml_document_new_from_text("<tag name=\"&quot;value&quot;\"/>");
-  ut_assert_non_null(escaped_attribute_document);
+  ut_assert_non_null_object(escaped_attribute_document);
 
   UtObjectRef no_content_document =
       ut_xml_document_new_from_text("<tag></tag>");
-  ut_assert_non_null(no_content_document);
+  ut_assert_non_null_object(no_content_document);
   root = ut_xml_document_get_root(no_content_document);
   ut_assert_cstring_equal(ut_xml_element_get_name(root), "tag");
   ut_assert_null_object(ut_xml_element_get_content(root));
 
   UtObjectRef content_document =
       ut_xml_document_new_from_text("<tag>Hello World!</tag>");
-  ut_assert_non_null(content_document);
+  ut_assert_non_null_object(content_document);
   root = ut_xml_document_get_root(content_document);
   ut_assert_cstring_equal(ut_xml_element_get_name(root), "tag");
   UtObject *content = ut_xml_element_get_content(root);
-  ut_assert_non_null(content);
+  ut_assert_non_null_object(content);
   ut_assert_int_equal(ut_list_get_length(content), 1);
   UtObjectRef content_document_content = ut_list_get_element(content, 0);
   ut_assert_cstring_equal(ut_string_get_text(content_document_content),
@@ -104,12 +104,12 @@ static void test_decode() {
 
   UtObjectRef escaped_document = ut_xml_document_new_from_text(
       "<tag>&lt;&quot;Fast&quot; &amp; &apos;Efficient&apos;&gt;</tag>");
-  ut_assert_non_null(escaped_document);
+  ut_assert_non_null_object(escaped_document);
   root = ut_xml_document_get_root(escaped_document);
   ut_assert_cstring_equal(ut_xml_element_get_name(root), "tag");
-  ut_assert_non_null(ut_xml_element_get_content(root));
+  ut_assert_non_null_object(ut_xml_element_get_content(root));
   content = ut_xml_element_get_content(root);
-  ut_assert_non_null(content);
+  ut_assert_non_null_object(content);
   ut_assert_int_equal(ut_list_get_length(content), 1);
   UtObjectRef escaped_document_content = ut_list_get_element(content, 0);
   ut_assert_cstring_equal(ut_string_get_text(escaped_document_content),

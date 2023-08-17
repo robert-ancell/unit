@@ -20,7 +20,7 @@ check_tiff(const char *hex_data, uint32_t width, uint32_t length,
   if (hex_color_map_data == NULL) {
     ut_assert_null_object(ut_tiff_image_get_color_map(image));
   } else {
-    ut_assert_non_null(ut_tiff_image_get_color_map(image));
+    ut_assert_non_null_object(ut_tiff_image_get_color_map(image));
     ut_assert_uint16_list_equal_hex(ut_tiff_image_get_color_map(image),
                                     hex_color_map_data);
   }

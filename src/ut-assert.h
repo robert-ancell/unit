@@ -28,10 +28,10 @@ void _ut_assert_null_object(const char *file, int line, const char *value_name,
                             UtObject *value);
 
 /// Asserts that [value] is not NULL.
-#define ut_assert_non_null(value)                                              \
-  _ut_assert_non_null(__FILE__, __LINE__, #value, value)
-void _ut_assert_non_null(const char *file, int line, const char *value_name,
-                         const void *value);
+#define ut_assert_non_null_object(value)                                       \
+  _ut_assert_non_null_object(__FILE__, __LINE__, #value, value)
+void _ut_assert_non_null_object(const char *file, int line,
+                                const char *value_name, UtObject *value);
 
 /// Asserts that the two objects [a] and [b] are equal.
 #define ut_assert_equal(a, b) _ut_assert_equal(__FILE__, __LINE__, #a, a, #b, b)

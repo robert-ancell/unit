@@ -44,54 +44,54 @@ static void test_encode() {
 
 static void test_decode() {
   UtObjectRef empty = ut_base64_decode("");
-  ut_assert_non_null(empty);
+  ut_assert_non_null_object(empty);
   ut_assert_true(ut_object_implements_uint8_list(empty));
   ut_assert_int_equal(ut_list_get_length(empty), 0);
 
   UtObjectRef whitespace = ut_base64_decode(" ");
-  ut_assert_non_null(whitespace);
+  ut_assert_non_null_object(whitespace);
   ut_assert_is_error_with_description(whitespace, "Invalid Base64");
 
   UtObjectRef unknown_character = ut_base64_decode("!");
-  ut_assert_non_null(unknown_character);
+  ut_assert_non_null_object(unknown_character);
   ut_assert_is_error_with_description(unknown_character, "Invalid Base64");
 
   UtObjectRef non_ascii_character = ut_base64_decode("\xff");
-  ut_assert_non_null(non_ascii_character);
+  ut_assert_non_null_object(non_ascii_character);
   ut_assert_is_error_with_description(non_ascii_character, "Invalid Base64");
 
   UtObjectRef missing_data = ut_base64_decode("T");
-  ut_assert_non_null(missing_data);
+  ut_assert_non_null_object(missing_data);
   ut_assert_is_error_with_description(missing_data, "Invalid Base64");
 
   UtObjectRef short1a = ut_base64_decode("TQ==");
-  ut_assert_non_null(short1a);
+  ut_assert_non_null_object(short1a);
   ut_assert_true(ut_object_implements_uint8_list(short1a));
   ut_assert_int_equal(ut_list_get_length(short1a), 1);
 
   UtObjectRef short1b = ut_base64_decode("TQ");
-  ut_assert_non_null(short1b);
+  ut_assert_non_null_object(short1b);
   ut_assert_true(ut_object_implements_uint8_list(short1b));
   ut_assert_int_equal(ut_list_get_length(short1b), 1);
 
   UtObjectRef short2a = ut_base64_decode("TWE=");
-  ut_assert_non_null(short2a);
+  ut_assert_non_null_object(short2a);
   ut_assert_true(ut_object_implements_uint8_list(short2a));
   ut_assert_int_equal(ut_list_get_length(short2a), 2);
 
   UtObjectRef short2b = ut_base64_decode("TWE");
-  ut_assert_non_null(short2b);
+  ut_assert_non_null_object(short2b);
   ut_assert_true(ut_object_implements_uint8_list(short2b));
   ut_assert_int_equal(ut_list_get_length(short2b), 2);
 
   UtObjectRef short3 = ut_base64_decode("TQFu");
-  ut_assert_non_null(short3);
+  ut_assert_non_null_object(short3);
   ut_assert_true(ut_object_implements_uint8_list(short3));
   ut_assert_int_equal(ut_list_get_length(short3), 3);
 
   UtObjectRef sentence =
       ut_base64_decode("TWFueSBoYW5kcyBtYWtlIGxpZ2h0IHdvcmsu");
-  ut_assert_non_null(sentence);
+  ut_assert_non_null_object(sentence);
   ut_assert_true(ut_object_implements_uint8_list(sentence));
   UtObjectRef sentence_text = ut_utf8_string_new_from_data(sentence);
   ut_assert_cstring_equal(ut_string_get_text(sentence_text),
@@ -105,7 +105,7 @@ static void test_decode() {
       "AgYKDhIWGh4iJiouMjY6PkJGSk5SVlpeYmZqbnJ2en6ChoqOkpaanqKmqq6ytrq+"
       "wsbKztLW2t7i5uru8vb6/wMHCw8TFxsfIycrLzM3Oz9DR0tPU1dbX2Nna29zd3t/"
       "g4eLj5OXm5+jp6uvs7e7v8PHy8/T19vf4+fr7/P3+/w==");
-  ut_assert_non_null(binary);
+  ut_assert_non_null_object(binary);
   ut_assert_true(ut_object_implements_uint8_list(binary));
   ut_assert_int_equal(ut_list_get_length(binary), 256);
   for (size_t i = 0; i < 256; i++) {
