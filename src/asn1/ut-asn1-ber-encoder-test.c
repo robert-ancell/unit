@@ -233,6 +233,15 @@ static void test_boolean() {
   ut_assert_null(ut_asn1_encoder_get_error(encoder3));
   UtObjectRef data3 = ut_asn1_ber_encoder_get_data(encoder3);
   ut_assert_uint8_list_equal_hex(data3, "0101ff");
+
+  // Encoded with wrong value.
+  UtObjectRef encoder4 = ut_asn1_ber_encoder_new();
+  UtObjectRef type4 = ut_asn1_boolean_type_new();
+  UtObjectRef value4 = ut_int64_new(42);
+  ut_asn1_encoder_encode_value(encoder4, type4, value4);
+  ut_assert_is_error_with_description(
+      ut_asn1_encoder_get_error(encoder4),
+      "Unknown type UtInt64 provided for BOOLEAN");
 }
 
 static void test_integer() {
@@ -301,6 +310,15 @@ static void test_integer() {
   ut_assert_null(ut_asn1_encoder_get_error(encoder10));
   UtObjectRef data10 = ut_asn1_ber_encoder_get_data(encoder10);
   ut_assert_uint8_list_equal_hex(data10, "02012a");
+
+  // Encoded with wrong value.
+  UtObjectRef encoder11 = ut_asn1_ber_encoder_new();
+  UtObjectRef type11 = ut_asn1_integer_type_new();
+  UtObjectRef value11 = ut_boolean_new(true);
+  ut_asn1_encoder_encode_value(encoder11, type11, value11);
+  ut_assert_is_error_with_description(
+      ut_asn1_encoder_get_error(encoder11),
+      "Unknown type UtBoolean provided for INTEGER");
 }
 
 static void test_bit_string() {
@@ -337,6 +355,15 @@ static void test_octet_string() {
   ut_assert_null(ut_asn1_encoder_get_error(encoder4));
   UtObjectRef data4 = ut_asn1_ber_encoder_get_data(encoder4);
   ut_assert_uint8_list_equal_hex(data4, "04080123456789abcdef");
+
+  // Encoded with wrong value.
+  UtObjectRef encoder5 = ut_asn1_ber_encoder_new();
+  UtObjectRef type5 = ut_asn1_octet_string_type_new();
+  UtObjectRef value5 = ut_boolean_new(true);
+  ut_asn1_encoder_encode_value(encoder5, type5, value5);
+  ut_assert_is_error_with_description(
+      ut_asn1_encoder_get_error(encoder5),
+      "Unknown type UtBoolean provided for OCTET STRING");
 }
 
 static void test_null() {
@@ -354,6 +381,15 @@ static void test_null() {
   ut_assert_null(ut_asn1_encoder_get_error(encoder2));
   UtObjectRef data2 = ut_asn1_ber_encoder_get_data(encoder2);
   ut_assert_uint8_list_equal_hex(data2, "0500");
+
+  // Encoded with wrong value.
+  UtObjectRef encoder3 = ut_asn1_ber_encoder_new();
+  UtObjectRef type3 = ut_asn1_null_type_new();
+  UtObjectRef value3 = ut_boolean_new(true);
+  ut_asn1_encoder_encode_value(encoder3, type3, value3);
+  ut_assert_is_error_with_description(
+      ut_asn1_encoder_get_error(encoder3),
+      "Unknown type UtBoolean provided for NULL");
 }
 
 static void test_object_identifier() {
@@ -372,6 +408,15 @@ static void test_object_identifier() {
   ut_assert_null(ut_asn1_encoder_get_error(encoder2));
   UtObjectRef data2 = ut_asn1_ber_encoder_get_data(encoder2);
   ut_assert_uint8_list_equal_hex(data2, "0603883703");
+
+  // Encoded with wrong value.
+  UtObjectRef encoder3 = ut_asn1_ber_encoder_new();
+  UtObjectRef type3 = ut_asn1_object_identifier_type_new();
+  UtObjectRef value3 = ut_boolean_new(true);
+  ut_asn1_encoder_encode_value(encoder3, type3, value3);
+  ut_assert_is_error_with_description(
+      ut_asn1_encoder_get_error(encoder3),
+      "Unknown type UtBoolean provided for OBJECT IDENTIFIER");
 }
 
 static void test_enumerated() {
@@ -428,6 +473,15 @@ static void test_relative_oid() {
   ut_assert_null(ut_asn1_encoder_get_error(encoder2));
   UtObjectRef data2 = ut_asn1_ber_encoder_get_data(encoder2);
   ut_assert_uint8_list_equal_hex(data2, "0d04c27b0302");
+
+  // Encoded with wrong value.
+  UtObjectRef encoder3 = ut_asn1_ber_encoder_new();
+  UtObjectRef type3 = ut_asn1_relative_oid_type_new();
+  UtObjectRef value3 = ut_boolean_new(true);
+  ut_asn1_encoder_encode_value(encoder3, type3, value3);
+  ut_assert_is_error_with_description(
+      ut_asn1_encoder_get_error(encoder3),
+      "Unknown type UtBoolean provided for RELATIVE-OID");
 }
 
 static void test_sequence() {
