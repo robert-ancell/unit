@@ -340,7 +340,36 @@ static void test_octet_string() {
   ut_assert_null_object(ut_asn1_decoder_get_error(decoder12));
   ut_assert_uint8_list_equal_hex(string12, "0123456789abcdef");
 
-  // FIXME: Invalid constructed forms
+  // Insufficient data.
+  UtObjectRef data13 = ut_uint8_list_new_from_hex_string("0408dead");
+  UtObjectRef decoder13 = ut_asn1_ber_decoder_new(data13);
+  UtObjectRef string13 = ut_asn1_ber_decoder_decode_octet_string(decoder13);
+  ut_assert_is_error_with_description(ut_asn1_decoder_get_error(decoder13),
+                                      "Insufficient data");
+
+  // Invalid constructed form - wrong type.
+  UtObjectRef data14 = ut_uint8_list_new_from_hex_string("240301012a");
+  UtObjectRef decoder14 = ut_asn1_ber_decoder_new(data14);
+  UtObjectRef string14 = ut_asn1_ber_decoder_decode_octet_string(decoder14);
+  ut_assert_is_error_with_description(
+      ut_asn1_decoder_get_error(decoder14),
+      "Invalid tag inside constructed OCTET STRING");
+
+  // Invalid constructed form - nested.
+  UtObjectRef data15 = ut_uint8_list_new_from_hex_string("240624040402dead");
+  UtObjectRef decoder15 = ut_asn1_ber_decoder_new(data15);
+  UtObjectRef string15 = ut_asn1_ber_decoder_decode_octet_string(decoder15);
+  ut_assert_is_error_with_description(
+      ut_asn1_decoder_get_error(decoder15),
+      "Invalid nested constructed OCTET STRING");
+
+  // Invalid constructed form - insufficient data in child element.
+  UtObjectRef data16 = ut_uint8_list_new_from_hex_string("24040403dead");
+  UtObjectRef decoder16 = ut_asn1_ber_decoder_new(data16);
+  UtObjectRef string16 = ut_asn1_ber_decoder_decode_octet_string(decoder16);
+  ut_assert_is_error_with_description(
+      ut_asn1_decoder_get_error(decoder16),
+      "Error decoding constructed OCTET STRING element: Insufficient data");
 }
 
 static void test_null() {
