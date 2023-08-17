@@ -25,6 +25,8 @@ bool ut_asn1_ber_decoder_decode_boolean(UtObject *object);
 
 int64_t ut_asn1_ber_decoder_decode_integer(UtObject *object);
 
+UtObject *ut_asn1_ber_decoder_decode_bit_string(UtObject *object);
+
 UtObject *ut_asn1_ber_decoder_decode_octet_string(UtObject *object);
 
 void ut_asn1_ber_decoder_decode_null(UtObject *object);

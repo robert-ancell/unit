@@ -26,6 +26,8 @@ size_t ut_asn1_ber_encoder_encode_boolean(UtObject *object, bool value);
 
 size_t ut_asn1_ber_encoder_encode_integer(UtObject *object, int64_t value);
 
+size_t ut_asn1_ber_encoder_encode_bit_string(UtObject *object, UtObject *value);
+
 size_t ut_asn1_ber_encoder_encode_octet_string(UtObject *object,
                                                UtObject *value);
 

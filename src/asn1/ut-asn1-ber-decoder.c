@@ -116,6 +116,35 @@ static int64_t decode_integer(UtAsn1BerDecoder *self) {
   return (int64_t)value;
 }
 
+static UtObject *decode_bit_string(UtAsn1BerDecoder *self) {
+  size_t data_length = ut_list_get_length(self->contents);
+  if (data_length < 1) {
+    set_error(self, "Invalid BIT STRING data length");
+    return ut_bit_list_new_msb();
+  }
+  if (self->constructed) {
+    set_error(self, "Constructed BIT STRING not supported");
+    return ut_bit_list_new_msb();
+  }
+  uint8_t unused_bits = ut_uint8_list_get_element(self->contents, 0);
+  if (unused_bits > 7) {
+    set_error(self, "Invalid number of unused bits in BIT STRING");
+    return ut_bit_list_new_msb();
+  }
+  size_t bit_count = (data_length - 1) * 8 - unused_bits;
+  UtObjectRef bit_data =
+      ut_list_get_sublist(self->contents, 1, data_length - 1);
+  return ut_bit_list_new_msb_from_data(bit_data, bit_count);
+}
+
+static UtObject *decode_octet_string(UtAsn1BerDecoder *self) {
+  if (self->constructed) {
+    set_error(self, "Constructed OCTET STRING not supported");
+    return ut_uint8_list_new();
+  }
+  return ut_object_ref(self->contents);
+}
+
 static void decode_null(UtAsn1BerDecoder *self) {
   size_t data_length = ut_list_get_length(self->contents);
   if (data_length != 0) {
@@ -247,14 +276,22 @@ static UtObject *decode_integer_value(UtAsn1BerDecoder *self, bool decode_tag) {
   return ut_int64_new(decode_integer(self));
 }
 
+static UtObject *decode_bit_string_value(UtAsn1BerDecoder *self,
+                                         bool decode_tag) {
+  if (decode_tag && !expect_tag(self, UT_ASN1_TAG_CLASS_UNIVERSAL,
+                                UT_ASN1_TAG_UNIVERSAL_BIT_STRING)) {
+    return ut_bit_list_new_msb();
+  }
+  return decode_bit_string(self);
+}
+
 static UtObject *decode_octet_string_value(UtAsn1BerDecoder *self,
                                            bool decode_tag) {
   if (decode_tag && !expect_tag(self, UT_ASN1_TAG_CLASS_UNIVERSAL,
                                 UT_ASN1_TAG_UNIVERSAL_OCTET_STRING)) {
     return ut_uint8_list_new();
   }
-  // FIXME
-  return ut_uint8_list_new();
+  return decode_octet_string(self);
 }
 
 static UtObject *decode_null_value(UtAsn1BerDecoder *self, bool decode_tag) {
@@ -519,6 +556,8 @@ static UtObject *decode_value(UtAsn1BerDecoder *self, UtObject *type,
     return decode_boolean_value(self, decode_tag);
   } else if (ut_object_is_asn1_integer_type(type)) {
     return decode_integer_value(self, decode_tag);
+  } else if (ut_object_is_asn1_bit_string_type(type)) {
+    return decode_bit_string_value(self, decode_tag);
   } else if (ut_object_is_asn1_octet_string_type(type)) {
     return decode_octet_string_value(self, decode_tag);
   } else if (ut_object_is_asn1_null_type(type)) {
@@ -710,14 +749,16 @@ int64_t ut_asn1_ber_decoder_decode_integer(UtObject *object) {
   return decode_integer(self);
 }
 
+UtObject *ut_asn1_ber_decoder_decode_bit_string(UtObject *object) {
+  assert(ut_object_is_asn1_ber_decoder(object));
+  UtAsn1BerDecoder *self = (UtAsn1BerDecoder *)object;
+  return decode_bit_string(self);
+}
+
 UtObject *ut_asn1_ber_decoder_decode_octet_string(UtObject *object) {
   assert(ut_object_is_asn1_ber_decoder(object));
   UtAsn1BerDecoder *self = (UtAsn1BerDecoder *)object;
-  if (self->constructed) {
-    set_error(self, "Constructed octet string not supported");
-    return false;
-  }
-  return ut_object_ref(self->contents);
+  return decode_octet_string(self);
 }
 
 void ut_asn1_ber_decoder_decode_null(UtObject *object) {

@@ -1,6 +1,7 @@
 ut_sources = [
   'asn1/ut-asn1-ber-decoder.c',
   'asn1/ut-asn1-ber-encoder.c',
+  'asn1/ut-asn1-bit-string-type.c',
   'asn1/ut-asn1-boolean-type.c',
   'asn1/ut-asn1-decoder.c',
   'asn1/ut-asn1-encoder.c',

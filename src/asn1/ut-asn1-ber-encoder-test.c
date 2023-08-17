@@ -322,7 +322,59 @@ static void test_integer() {
 }
 
 static void test_bit_string() {
-  // FIXME
+  UtObjectRef encoder1 = ut_asn1_ber_encoder_new();
+  UtObjectRef string1 = ut_bit_list_new_msb();
+  ut_asn1_ber_encoder_encode_bit_string(encoder1, string1);
+  ut_assert_null(ut_asn1_encoder_get_error(encoder1));
+  UtObjectRef data1 = ut_asn1_ber_encoder_get_data(encoder1);
+  ut_assert_uint8_list_equal_hex(data1, "00");
+
+  UtObjectRef encoder2 = ut_asn1_ber_encoder_new();
+  UtObjectRef string2 = ut_bit_list_new_msb_from_bin_string("00000000");
+  ut_asn1_ber_encoder_encode_bit_string(encoder2, string2);
+  ut_assert_null(ut_asn1_encoder_get_error(encoder2));
+  UtObjectRef data2 = ut_asn1_ber_encoder_get_data(encoder2);
+  ut_assert_uint8_list_equal_hex(data2, "0000");
+
+  UtObjectRef encoder3 = ut_asn1_ber_encoder_new();
+  UtObjectRef string3 = ut_bit_list_new_msb_from_bin_string("1");
+  ut_asn1_ber_encoder_encode_bit_string(encoder3, string3);
+  ut_assert_null(ut_asn1_encoder_get_error(encoder3));
+  UtObjectRef data3 = ut_asn1_ber_encoder_get_data(encoder3);
+  ut_assert_uint8_list_equal_hex(data3, "0780");
+
+  UtObjectRef encoder4 = ut_asn1_ber_encoder_new();
+  UtObjectRef string4 = ut_bit_list_new_msb_from_bin_string("1101");
+  ut_asn1_ber_encoder_encode_bit_string(encoder4, string4);
+  ut_assert_null(ut_asn1_encoder_get_error(encoder4));
+  UtObjectRef data4 = ut_asn1_ber_encoder_get_data(encoder4);
+  ut_assert_uint8_list_equal_hex(data4, "04d0");
+
+  UtObjectRef encoder5 = ut_asn1_ber_encoder_new();
+  UtObjectRef string5 =
+      ut_bit_list_new_msb_from_bin_string("11111111000000001111000000001111");
+  ut_asn1_ber_encoder_encode_bit_string(encoder5, string5);
+  ut_assert_null(ut_asn1_encoder_get_error(encoder5));
+  UtObjectRef data5 = ut_asn1_ber_encoder_get_data(encoder5);
+  ut_assert_uint8_list_equal_hex(data5, "00ff00f00f");
+
+  // Encoded as object with type.
+  UtObjectRef encoder6 = ut_asn1_ber_encoder_new();
+  UtObjectRef type6 = ut_asn1_bit_string_type_new();
+  UtObjectRef value6 = ut_bit_list_new_msb_from_bin_string("1101");
+  ut_asn1_encoder_encode_value(encoder6, type6, value6);
+  ut_assert_null(ut_asn1_encoder_get_error(encoder6));
+  UtObjectRef data6 = ut_asn1_ber_encoder_get_data(encoder6);
+  ut_assert_uint8_list_equal_hex(data6, "030204d0");
+
+  // Encoded with wrong value.
+  UtObjectRef encoder7 = ut_asn1_ber_encoder_new();
+  UtObjectRef type7 = ut_asn1_bit_string_type_new();
+  UtObjectRef value7 = ut_boolean_new(true);
+  ut_asn1_encoder_encode_value(encoder7, type7, value7);
+  ut_assert_is_error_with_description(
+      ut_asn1_encoder_get_error(encoder7),
+      "Unknown type UtBoolean provided for BIT STRING");
 }
 
 static void test_octet_string() {

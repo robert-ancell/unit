@@ -211,6 +211,14 @@ static size_t encode_integer(UtAsn1BerEncoder *self, int64_t value) {
   }
 }
 
+static size_t encode_bit_string(UtAsn1BerEncoder *self, UtObject *value) {
+  // FIXME: Check is MSB
+  size_t value_length = ut_bit_list_get_length(value);
+  UtObject *value_data = ut_bit_list_get_data(value);
+  size_t unused_bits = (ut_list_get_length(value_data) * 8) - value_length;
+  return encode_uint8_list(self, value_data) + encode_byte(self, unused_bits);
+}
+
 static size_t encode_octet_string(UtAsn1BerEncoder *self, UtObject *value) {
   return encode_uint8_list(self, value);
 }
@@ -307,6 +315,22 @@ static size_t encode_integer_value(UtAsn1BerEncoder *self, UtObject *value,
     length += encode_definite_length(self, length);
     length += encode_identifier(self, UT_ASN1_TAG_CLASS_UNIVERSAL, false,
                                 UT_ASN1_TAG_UNIVERSAL_INTEGER);
+  }
+  *is_constructed = encode_tag;
+  return length;
+}
+
+static size_t encode_bit_string_value(UtAsn1BerEncoder *self, UtObject *value,
+                                      bool encode_tag, bool *is_constructed) {
+  if (!ut_object_is_bit_list(value)) {
+    set_type_error(self, "BIT STRING", value);
+    return 0;
+  }
+  size_t length = encode_bit_string(self, value);
+  if (encode_tag) {
+    length += encode_definite_length(self, length);
+    length += encode_identifier(self, UT_ASN1_TAG_CLASS_UNIVERSAL, false,
+                                UT_ASN1_TAG_UNIVERSAL_BIT_STRING);
   }
   *is_constructed = encode_tag;
   return length;
@@ -521,6 +545,8 @@ static size_t encode_value(UtAsn1BerEncoder *self, UtObject *type,
     return encode_boolean_value(self, value, encode_tag, is_constructed);
   } else if (ut_object_is_asn1_integer_type(type)) {
     return encode_integer_value(self, value, encode_tag, is_constructed);
+  } else if (ut_object_is_asn1_bit_string_type(type)) {
+    return encode_bit_string_value(self, value, encode_tag, is_constructed);
   } else if (ut_object_is_asn1_octet_string_type(type)) {
     return encode_octet_string_value(self, value, encode_tag, is_constructed);
   } else if (ut_object_is_asn1_null_type(type)) {
@@ -623,6 +649,13 @@ size_t ut_asn1_ber_encoder_encode_integer(UtObject *object, int64_t value) {
   assert(ut_object_is_asn1_ber_encoder(object));
   UtAsn1BerEncoder *self = (UtAsn1BerEncoder *)object;
   return encode_integer(self, value);
+}
+
+size_t ut_asn1_ber_encoder_encode_bit_string(UtObject *object,
+                                             UtObject *value) {
+  assert(ut_object_is_asn1_ber_encoder(object));
+  UtAsn1BerEncoder *self = (UtAsn1BerEncoder *)object;
+  return encode_bit_string(self, value);
 }
 
 size_t ut_asn1_ber_encoder_encode_octet_string(UtObject *object,
