@@ -693,18 +693,6 @@ static size_t encode_tagged_value(UtAsn1BerEncoder *self, UtObject *type,
   return length;
 }
 
-static size_t encode_optional_value(UtAsn1BerEncoder *self, UtObject *type,
-                                    UtObject *value, bool encode_tag,
-                                    bool *is_constructed) {
-  if (value == NULL) {
-    *is_constructed = false;
-    return 0;
-  }
-
-  return encode_value(self, ut_asn1_optional_type_get_type(type), value,
-                      encode_tag, is_constructed);
-}
-
 static size_t encode_value(UtAsn1BerEncoder *self, UtObject *type,
                            UtObject *value, bool encode_tag,
                            bool *is_constructed) {
@@ -741,8 +729,6 @@ static size_t encode_value(UtAsn1BerEncoder *self, UtObject *type,
     return encode_set_of_value(self, type, value, encode_tag, is_constructed);
   } else if (ut_object_is_asn1_tagged_type(type)) {
     return encode_tagged_value(self, type, value, encode_tag, is_constructed);
-  } else if (ut_object_is_asn1_optional_type(type)) {
-    return encode_optional_value(self, type, value, encode_tag, is_constructed);
   } else {
     ut_cstring_ref description = ut_cstring_new_printf(
         "Unknown ASN.1 type %s", ut_object_get_type_name(type));

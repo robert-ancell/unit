@@ -664,7 +664,7 @@ static void test_sequence() {
   UtObjectRef data2 = ut_asn1_ber_encoder_get_data(encoder2);
   ut_assert_uint8_list_equal_hex(data2, "3000");
 
-  // Optional component (set).
+  // Optional component (present).
   UtObjectRef encoder3 = ut_asn1_ber_encoder_new();
   UtObjectRef components3 = ut_map_new_ordered();
   ut_map_insert_string_take(components3, "name",
@@ -676,9 +676,8 @@ static void test_sequence() {
   UtObjectRef type3 = ut_asn1_sequence_type_new(components3, false);
   UtObjectRef value3 = ut_map_new();
   ut_map_insert_string_take(value3, "name", ut_string_new("Arthur Dent"));
-  ut_map_insert_string_take(
-      value3, "alternate_name",
-      ut_string_new("Slartibartfast")); // FIXME: Should be tagged.
+  ut_map_insert_string_take(value3, "alternate_name",
+                            ut_string_new("Slartibartfast"));
   ut_map_insert_string_take(value3, "age", ut_int64_new(42));
   ut_asn1_encoder_encode_value(encoder3, type3, value3);
   ut_assert_null_object(ut_asn1_encoder_get_error(encoder3));
@@ -687,7 +686,7 @@ static void test_sequence() {
       data3,
       "30200c0b4172746875722044656e740c0e536c61727469626172746661737402012a");
 
-  // Optional component (not set).
+  // Optional component (not present).
   UtObjectRef encoder4 = ut_asn1_ber_encoder_new();
   UtObjectRef components4 = ut_map_new_ordered();
   ut_map_insert_string_take(components4, "name",
@@ -770,7 +769,7 @@ static void test_set() {
   UtObjectRef data2 = ut_asn1_ber_encoder_get_data(encoder2);
   ut_assert_uint8_list_equal_hex(data2, "3100");
 
-  // Optional component (set).
+  // Optional component (present).
   UtObjectRef encoder3 = ut_asn1_ber_encoder_new();
   UtObjectRef components3 = ut_map_new_ordered();
   ut_map_insert_string_take(components3, "name",
@@ -784,9 +783,8 @@ static void test_set() {
   UtObjectRef type3 = ut_asn1_set_type_new(components3, false);
   UtObjectRef value3 = ut_map_new();
   ut_map_insert_string_take(value3, "name", ut_string_new("Arthur Dent"));
-  ut_map_insert_string_take(
-      value3, "alternate_name",
-      ut_string_new("Slartibartfast")); // FIXME: Should be tagged.
+  ut_map_insert_string_take(value3, "alternate_name",
+                            ut_string_new("Slartibartfast"));
   ut_map_insert_string_take(value3, "age", ut_int64_new(42));
   ut_asn1_encoder_encode_value(encoder3, type3, value3);
   ut_assert_null_object(ut_asn1_encoder_get_error(encoder3));
@@ -795,7 +793,7 @@ static void test_set() {
       data3,
       "31200c0b4172746875722044656e74800e536c61727469626172746661737402012a");
 
-  // Optional component (not set).
+  // Optional component (not present).
   UtObjectRef encoder4 = ut_asn1_ber_encoder_new();
   UtObjectRef components4 = ut_map_new_ordered();
   ut_map_insert_string_take(components4, "name",
