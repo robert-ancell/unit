@@ -571,7 +571,17 @@ static void test_enumerated() {
   UtObjectRef data1 = ut_asn1_ber_encoder_get_data(encoder1);
   ut_assert_uint8_list_equal_hex(data1, "2a");
 
-  // FIXME: Encoded as object with type.
+  // Encoded as object with type.
+  UtObjectRef encoder2 = ut_asn1_ber_encoder_new();
+  UtObjectRef type2_items = ut_map_new();
+  ut_map_insert_take(type2_items, ut_string_new("red"), ut_uint64_new(1));
+  ut_map_insert_take(type2_items, ut_string_new("green"), ut_uint64_new(2));
+  ut_map_insert_take(type2_items, ut_string_new("blue"), ut_uint64_new(3));
+  UtObjectRef type2 = ut_asn1_enumerated_type_new(type2_items, false);
+  UtObjectRef value2 = ut_string_new("green");
+  ut_asn1_encoder_encode_value(encoder2, type2, value2);
+  UtObjectRef data2 = ut_asn1_ber_encoder_get_data(encoder2);
+  ut_assert_uint8_list_equal_hex(data2, "0a0102");
 }
 
 static void test_utf8_string() {

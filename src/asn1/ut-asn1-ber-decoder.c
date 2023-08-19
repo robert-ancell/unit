@@ -85,18 +85,24 @@ static bool decode_boolean(UtAsn1BerDecoder *self) {
   return ut_uint8_list_get_element(self->contents, 0) != 0;
 }
 
-static int64_t decode_integer(UtAsn1BerDecoder *self) {
+static int64_t decode_integer(UtAsn1BerDecoder *self, const char *type_name) {
   size_t data_length = ut_list_get_length(self->contents);
   if (data_length == 0) {
-    set_error(self, "Invalid INTEGER data length");
+    ut_cstring_ref description =
+        ut_cstring_new_printf("Invalid %s data length", type_name);
+    set_error(self, description);
     return 0;
   }
   if (data_length > 8) {
-    set_error(self, "Only 64 bit integers supported");
+    ut_cstring_ref description = ut_cstring_new_printf(
+        "%s greater than 64 bits not supported", type_name);
+    set_error(self, description);
     return 0;
   }
   if (self->constructed) {
-    set_error(self, "INTEGER does not have constructed form");
+    ut_cstring_ref description =
+        ut_cstring_new_printf("%s does not have constructed form", type_name);
+    set_error(self, description);
     return 0;
   }
   size_t offset = 0;
@@ -425,13 +431,7 @@ static double decode_real(UtAsn1BerDecoder *self) {
 }
 
 static int64_t decode_enumerated(UtAsn1BerDecoder *self) {
-  if (self->constructed) {
-    set_error(self, "ENUMERATED does not have constructed form");
-    return 0;
-  }
-
-  // FIXME: Errors will refer to integer
-  return decode_integer(self);
+  return decode_integer(self, "ENUMERATED");
 }
 
 static UtObject *decode_utf8_string(UtAsn1BerDecoder *self) {
@@ -489,7 +489,7 @@ static UtObject *decode_integer_value(UtAsn1BerDecoder *self, bool decode_tag) {
                                 UT_ASN1_TAG_UNIVERSAL_INTEGER)) {
     return ut_int64_new(0);
   }
-  return ut_int64_new(decode_integer(self));
+  return ut_int64_new(decode_integer(self, "INTEGER"));
 }
 
 static UtObject *decode_bit_string_value(UtAsn1BerDecoder *self,
@@ -534,6 +534,28 @@ static UtObject *decode_real_value(UtAsn1BerDecoder *self, bool decode_tag) {
     return ut_float64_new(0.0);
   }
   return ut_float64_new(decode_real(self));
+}
+
+static UtObject *decode_enumerated_value(UtAsn1BerDecoder *self, UtObject *type,
+                                         bool decode_tag) {
+  if (decode_tag && !expect_tag(self, UT_ASN1_TAG_CLASS_UNIVERSAL,
+                                UT_ASN1_TAG_UNIVERSAL_ENUMERATED)) {
+    return ut_string_new("");
+  }
+
+  int64_t value = decode_enumerated(self);
+  const char *name = ut_asn1_enumerated_type_get_name(type, value);
+  if (name == NULL) {
+    if (ut_asn1_enumerated_type_get_extensible(type)) {
+      return ut_string_new_printf("%li", value);
+    } else {
+      ut_cstring_ref description =
+          ut_cstring_new_printf("Unknown enumeration value %li", value);
+      set_error(self, description);
+      return ut_string_new("");
+    }
+  }
+  return ut_string_new(name);
 }
 
 static UtObject *decode_utf8_string_value(UtAsn1BerDecoder *self,
@@ -790,6 +812,8 @@ static UtObject *decode_value(UtAsn1BerDecoder *self, UtObject *type,
     return decode_object_identifier_value(self, decode_tag);
   } else if (ut_object_is_asn1_real_type(type)) {
     return decode_real_value(self, decode_tag);
+  } else if (ut_object_is_asn1_enumerated_type(type)) {
+    return decode_enumerated_value(self, type, decode_tag);
   } else if (ut_object_is_asn1_utf8_string_type(type)) {
     return decode_utf8_string_value(self, decode_tag);
   } else if (ut_object_is_asn1_relative_oid_type(type)) {
@@ -972,7 +996,7 @@ bool ut_asn1_ber_decoder_decode_boolean(UtObject *object) {
 int64_t ut_asn1_ber_decoder_decode_integer(UtObject *object) {
   assert(ut_object_is_asn1_ber_decoder(object));
   UtAsn1BerDecoder *self = (UtAsn1BerDecoder *)object;
-  return decode_integer(self);
+  return decode_integer(self, "INTEGER");
 }
 
 UtObject *ut_asn1_ber_decoder_decode_bit_string(UtObject *object) {

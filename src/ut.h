@@ -4,6 +4,7 @@
 #include "asn1/ut-asn1-boolean-type.h"
 #include "asn1/ut-asn1-decoder.h"
 #include "asn1/ut-asn1-encoder.h"
+#include "asn1/ut-asn1-enumerated-type.h"
 #include "asn1/ut-asn1-error.h"
 #include "asn1/ut-asn1-integer-type.h"
 #include "asn1/ut-asn1-null-type.h"

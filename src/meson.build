@@ -5,6 +5,7 @@ ut_sources = [
   'asn1/ut-asn1-boolean-type.c',
   'asn1/ut-asn1-decoder.c',
   'asn1/ut-asn1-encoder.c',
+  'asn1/ut-asn1-enumerated-type.c',
   'asn1/ut-asn1-error.c',
   'asn1/ut-asn1-integer-type.c',
   'asn1/ut-asn1-null-type.c',

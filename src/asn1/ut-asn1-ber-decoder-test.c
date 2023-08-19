@@ -186,8 +186,9 @@ static void test_integer() {
       ut_uint8_list_new_from_hex_string("0210ffffffffffffffffffffffffffffffff");
   UtObjectRef decoder11 = ut_asn1_ber_decoder_new(data11);
   ut_asn1_ber_decoder_decode_integer(decoder11);
-  ut_assert_is_error_with_description(ut_asn1_decoder_get_error(decoder11),
-                                      "Only 64 bit integers supported");
+  ut_assert_is_error_with_description(
+      ut_asn1_decoder_get_error(decoder11),
+      "INTEGER greater than 64 bits not supported");
 
   // Empty data.
   UtObjectRef data12 = ut_uint8_list_new_from_hex_string("0200");
@@ -660,14 +661,50 @@ static void test_enumerated() {
   ut_assert_int_equal(ut_asn1_ber_decoder_decode_enumerated(decoder1), 42);
   ut_assert_null_object(ut_asn1_decoder_get_error(decoder1));
 
-  // FIXME: Decoded as object with type.
+  // Decoded as object with type.
+  UtObjectRef data2 = ut_uint8_list_new_from_hex_string("0a0102");
+  UtObjectRef decoder2 = ut_asn1_ber_decoder_new(data2);
+  UtObjectRef type2_items = ut_map_new();
+  ut_map_insert_take(type2_items, ut_string_new("red"), ut_uint64_new(1));
+  ut_map_insert_take(type2_items, ut_string_new("green"), ut_uint64_new(2));
+  ut_map_insert_take(type2_items, ut_string_new("blue"), ut_uint64_new(3));
+  UtObjectRef type2 = ut_asn1_enumerated_type_new(type2_items, false);
+  UtObjectRef value2 = ut_asn1_decoder_decode_value(decoder2, type2);
+  ut_assert_null_object(ut_asn1_decoder_get_error(decoder2));
+  ut_assert_true(ut_object_implements_string(value2));
+  ut_assert_cstring_equal(ut_string_get_text(value2), "green");
+
+  // Unknown enumeration item (extensible).
+  UtObjectRef data3 = ut_uint8_list_new_from_hex_string("0a0104");
+  UtObjectRef decoder3 = ut_asn1_ber_decoder_new(data3);
+  UtObjectRef type3_items = ut_map_new();
+  ut_map_insert_take(type3_items, ut_string_new("red"), ut_uint64_new(1));
+  ut_map_insert_take(type3_items, ut_string_new("green"), ut_uint64_new(2));
+  ut_map_insert_take(type3_items, ut_string_new("blue"), ut_uint64_new(3));
+  UtObjectRef type3 = ut_asn1_enumerated_type_new(type3_items, true);
+  UtObjectRef value3 = ut_asn1_decoder_decode_value(decoder3, type3);
+  ut_assert_null_object(ut_asn1_decoder_get_error(decoder3));
+  ut_assert_true(ut_object_implements_string(value3));
+  ut_assert_cstring_equal(ut_string_get_text(value3), "4");
+
+  // Unknown enumeration item (not extensible).
+  UtObjectRef data4 = ut_uint8_list_new_from_hex_string("0a0104");
+  UtObjectRef decoder4 = ut_asn1_ber_decoder_new(data4);
+  UtObjectRef type4_items = ut_map_new();
+  ut_map_insert_take(type4_items, ut_string_new("red"), ut_uint64_new(1));
+  ut_map_insert_take(type4_items, ut_string_new("green"), ut_uint64_new(2));
+  ut_map_insert_take(type4_items, ut_string_new("blue"), ut_uint64_new(3));
+  UtObjectRef type4 = ut_asn1_enumerated_type_new(type4_items, false);
+  UtObjectRef value4 = ut_asn1_decoder_decode_value(decoder4, type4);
+  ut_assert_is_error_with_description(ut_asn1_decoder_get_error(decoder4),
+                                      "Unknown enumeration value 4");
 
   // Constructed form.
-  UtObjectRef data3 = ut_uint8_list_new_from_hex_string("2a012a");
-  UtObjectRef decoder3 = ut_asn1_ber_decoder_new(data3);
-  ut_asn1_ber_decoder_decode_enumerated(decoder3);
+  UtObjectRef data10 = ut_uint8_list_new_from_hex_string("2a012a");
+  UtObjectRef decoder10 = ut_asn1_ber_decoder_new(data10);
+  ut_asn1_ber_decoder_decode_enumerated(decoder10);
   ut_assert_is_error_with_description(
-      ut_asn1_decoder_get_error(decoder3),
+      ut_asn1_decoder_get_error(decoder10),
       "ENUMERATED does not have constructed form");
 }
 

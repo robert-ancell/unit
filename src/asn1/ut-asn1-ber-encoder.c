@@ -491,6 +491,31 @@ static size_t encode_real_value(UtAsn1BerEncoder *self, UtObject *value,
   return length;
 }
 
+static size_t encode_enumerated_value(UtAsn1BerEncoder *self, UtObject *type,
+                                      UtObject *value, bool encode_tag,
+                                      bool *is_constructed) {
+  if (!ut_object_implements_string(value)) {
+    set_type_error(self, "ENUMERATED", value);
+    return 0;
+  }
+  int64_t number =
+      ut_asn1_enumerated_type_get_value(type, ut_string_get_text(value));
+  if (number < 0) {
+    ut_cstring_ref description = ut_cstring_new_printf(
+        "Unknown enumeration item %s", ut_string_get_text(value));
+    set_error(self, description);
+    return 0;
+  }
+  size_t length = encode_enumerated(self, number);
+  if (encode_tag) {
+    length += encode_definite_length(self, length);
+    length += encode_identifier(self, UT_ASN1_TAG_CLASS_UNIVERSAL, false,
+                                UT_ASN1_TAG_UNIVERSAL_ENUMERATED);
+  }
+  *is_constructed = encode_tag;
+  return length;
+}
+
 static size_t encode_utf8_string_value(UtAsn1BerEncoder *self, UtObject *value,
                                        bool encode_tag, bool *is_constructed) {
   if (!ut_object_implements_string(value)) {
@@ -662,6 +687,9 @@ static size_t encode_value(UtAsn1BerEncoder *self, UtObject *type,
                                           is_constructed);
   } else if (ut_object_is_asn1_real_type(type)) {
     return encode_real_value(self, value, encode_tag, is_constructed);
+  } else if (ut_object_is_asn1_enumerated_type(type)) {
+    return encode_enumerated_value(self, type, value, encode_tag,
+                                   is_constructed);
   } else if (ut_object_is_asn1_utf8_string_type(type)) {
     return encode_utf8_string_value(self, value, encode_tag, is_constructed);
   } else if (ut_object_is_asn1_relative_oid_type(type)) {
