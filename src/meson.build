@@ -11,6 +11,7 @@ ut_sources = [
   'asn1/ut-asn1-null-type.c',
   'asn1/ut-asn1-object-identifier-type.c',
   'asn1/ut-asn1-octet-string-type.c',
+  'asn1/ut-asn1-optional-type.c',
   'asn1/ut-asn1-real-type.c',
   'asn1/ut-asn1-relative-oid-type.c',
   'asn1/ut-asn1-sequence-of-type.c',

@@ -565,6 +565,13 @@ static size_t encode_components(UtAsn1BerEncoder *self, const char *type_name,
         ut_map_lookup_string(components, identifier_text);
     UtObject *component_value = ut_map_lookup_string(value, identifier_text);
 
+    if (ut_object_is_asn1_optional_type(component_type)) {
+      if (component_value == NULL) {
+        continue;
+      }
+      component_type = ut_asn1_optional_type_get_type(component_type);
+    }
+
     if (component_value == NULL) {
       ut_cstring_ref description = ut_cstring_new_printf(
           "Missing %s value %s", type_name, identifier_text);
@@ -669,6 +676,18 @@ static size_t encode_set_of_value(UtAsn1BerEncoder *self, UtObject *type,
   return length;
 }
 
+static size_t encode_optional_value(UtAsn1BerEncoder *self, UtObject *type,
+                                    UtObject *value, bool encode_tag,
+                                    bool *is_constructed) {
+  if (value == NULL) {
+    *is_constructed = false;
+    return 0;
+  }
+
+  return encode_value(self, ut_asn1_optional_type_get_type(type), value,
+                      encode_tag, is_constructed);
+}
+
 static size_t encode_value(UtAsn1BerEncoder *self, UtObject *type,
                            UtObject *value, bool encode_tag,
                            bool *is_constructed) {
@@ -703,6 +722,8 @@ static size_t encode_value(UtAsn1BerEncoder *self, UtObject *type,
     return encode_set_value(self, type, value, encode_tag, is_constructed);
   } else if (ut_object_is_asn1_set_of_type(type)) {
     return encode_set_of_value(self, type, value, encode_tag, is_constructed);
+  } else if (ut_object_is_asn1_optional_type(type)) {
+    return encode_optional_value(self, type, value, encode_tag, is_constructed);
   } else {
     ut_cstring_ref description = ut_cstring_new_printf(
         "Unknown ASN.1 type %s", ut_object_get_type_name(type));

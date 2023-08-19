@@ -10,6 +10,7 @@
 #include "asn1/ut-asn1-null-type.h"
 #include "asn1/ut-asn1-object-identifier-type.h"
 #include "asn1/ut-asn1-octet-string-type.h"
+#include "asn1/ut-asn1-optional-type.h"
 #include "asn1/ut-asn1-real-type.h"
 #include "asn1/ut-asn1-relative-oid-type.h"
 #include "asn1/ut-asn1-sequence-of-type.h"
