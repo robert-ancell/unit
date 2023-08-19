@@ -708,6 +708,19 @@ static void test_sequence() {
   // FIXME: Default components
   // FIXME: Tagged components
   // FIXME: Extensible
+
+  // Missing required component.
+  UtObjectRef encoder10 = ut_asn1_ber_encoder_new();
+  UtObjectRef components10 = ut_map_new_ordered();
+  ut_map_insert_string_take(components10, "name",
+                            ut_asn1_utf8_string_type_new());
+  ut_map_insert_string_take(components10, "age", ut_asn1_integer_type_new());
+  UtObjectRef type10 = ut_asn1_sequence_type_new(components10, false);
+  UtObjectRef value10 = ut_map_new();
+  ut_map_insert_string_take(value10, "name", ut_string_new("Arthur Dent"));
+  ut_asn1_encoder_encode_value(encoder10, type10, value10);
+  ut_assert_is_error_with_description(ut_asn1_encoder_get_error(encoder10),
+                                      "Missing SEQUENCE component age");
 }
 
 static void test_sequence_of() {
@@ -801,6 +814,19 @@ static void test_set() {
   // FIXME: Default components
   // FIXME: Tagged components
   // FIXME: Extensible
+
+  // Missing required component.
+  UtObjectRef encoder10 = ut_asn1_ber_encoder_new();
+  UtObjectRef components10 = ut_map_new_ordered();
+  ut_map_insert_string_take(components10, "name",
+                            ut_asn1_utf8_string_type_new());
+  ut_map_insert_string_take(components10, "age", ut_asn1_integer_type_new());
+  UtObjectRef type10 = ut_asn1_set_type_new(components10, false);
+  UtObjectRef value10 = ut_map_new();
+  ut_map_insert_string_take(value10, "name", ut_string_new("Arthur Dent"));
+  ut_asn1_encoder_encode_value(encoder10, type10, value10);
+  ut_assert_is_error_with_description(ut_asn1_encoder_get_error(encoder10),
+                                      "Missing SET component age");
 }
 
 static void test_set_of() {

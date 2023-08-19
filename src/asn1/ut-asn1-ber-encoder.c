@@ -574,7 +574,7 @@ static size_t encode_components(UtAsn1BerEncoder *self, const char *type_name,
 
     if (component_value == NULL) {
       ut_cstring_ref description = ut_cstring_new_printf(
-          "Missing %s value %s", type_name, identifier_text);
+          "Missing %s component %s", type_name, identifier_text);
       set_error(self, description);
       return 0;
     }
