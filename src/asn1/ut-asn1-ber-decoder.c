@@ -575,23 +575,6 @@ static UtObject *decode_relative_oid_value(UtAsn1BerDecoder *self,
   return decode_relative_oid(self);
 }
 
-static bool match_type(UtObject *decoder, UtObject *type) {
-  UtAsn1BerDecoder *self = (UtAsn1BerDecoder *)decoder;
-
-  // FIXME: Inefficient - most types will be a single tag.
-  // Make ut_asn1_type_matches_tag?
-  UtObjectRef tags = ut_asn1_type_get_tags(type);
-  size_t tags_length = ut_list_get_length(tags);
-  for (size_t i = 0; i < tags_length; i++) {
-    UtObject *tag = ut_object_list_get_element(tags, i);
-    if (ut_object_equal(tag, self->tag)) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
 static UtObject *decode_sequence_value(UtAsn1BerDecoder *self, UtObject *type,
                                        bool decode_tag) {
   if (decode_tag && !expect_tag(self, UT_ASN1_TAG_CLASS_UNIVERSAL,
@@ -630,7 +613,8 @@ static UtObject *decode_sequence_value(UtAsn1BerDecoder *self, UtObject *type,
     UtObjectRef item = ut_list_get_element(component_items, next_component);
     UtObjectRef component_name = ut_map_item_get_key(item);
     UtObjectRef component_type = ut_map_item_get_value(item);
-    if (!match_type(decoder, component_type)) {
+    if (!ut_asn1_type_matches_tag(component_type,
+                                  ut_asn1_ber_decoder_get_tag(decoder))) {
       ut_cstring_ref description =
           ut_cstring_new_printf("Required SEQUENCE component %s missing",
                                 ut_string_get_text(component_name));
@@ -712,7 +696,8 @@ static UtObject *match_component(UtObject *decoder, UtObject *components) {
   for (size_t i = 0; i < components_length; i++) {
     UtObject *item = ut_object_list_get_element(items, i);
     UtObjectRef item_type = ut_map_item_get_value(item);
-    if (match_type(decoder, item_type)) {
+    if (ut_asn1_type_matches_tag(item_type,
+                                 ut_asn1_ber_decoder_get_tag(decoder))) {
       return ut_map_item_get_key(item);
     }
   }

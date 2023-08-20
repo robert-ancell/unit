@@ -12,8 +12,14 @@ static UtObject *ut_asn1_optional_type_get_tags(UtObject *object) {
   return ut_asn1_type_get_tags(self->type);
 }
 
+static bool ut_asn1_optional_type_matches_tag(UtObject *object, UtObject *tag) {
+  UtAsn1OptionalType *self = (UtAsn1OptionalType *)object;
+  return ut_asn1_type_matches_tag(self->type, tag);
+}
+
 static UtAsn1TypeInterface asn1_type_interface = {
-    .get_tags = ut_asn1_optional_type_get_tags};
+    .get_tags = ut_asn1_optional_type_get_tags,
+    .matches_tag = ut_asn1_optional_type_matches_tag};
 
 static char *ut_asn1_optional_type_to_string(UtObject *object) {
   UtAsn1OptionalType *self = (UtAsn1OptionalType *)object;
