@@ -1,7 +1,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "ut-asn1-tag.h"
 #include "ut-object.h"
 
 #pragma once
@@ -11,9 +10,7 @@
 /// !return-ref
 UtObject *ut_asn1_ber_decoder_new(UtObject *data);
 
-uint32_t ut_asn1_ber_decoder_get_identifier_number(UtObject *object);
-
-UtAsn1TagClass ut_asn1_ber_decoder_get_tag_class(UtObject *object);
+UtObject *ut_asn1_ber_decoder_get_tag(UtObject *object);
 
 bool ut_asn1_ber_decoder_get_constructed(UtObject *object);
 

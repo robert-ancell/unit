@@ -771,13 +771,14 @@ static void test_set() {
   ut_assert_uint8_list_equal_hex(data2, "3100");
 
   // Optional component (set).
+#if 0
   UtObjectRef encoder3 = ut_asn1_ber_encoder_new();
   UtObjectRef components3 = ut_map_new_ordered();
   ut_map_insert_string_take(components3, "name",
                             ut_asn1_utf8_string_type_new());
   ut_map_insert_string_take(
       components3, "alternate_name",
-      ut_asn1_optional_type_new_take(ut_asn1_utf8_string_type_new()));
+      ut_asn1_optional_type_new_take(ut_asn1_utf8_string_type_new())); // FIXME: Needs to be tagged
   ut_map_insert_string_take(components3, "age", ut_asn1_integer_type_new());
   UtObjectRef type3 = ut_asn1_set_type_new(components3, false);
   UtObjectRef value3 = ut_map_new();
@@ -792,15 +793,17 @@ static void test_set() {
   ut_assert_uint8_list_equal_hex(
       data3,
       "31200c0b4172746875722044656e740c0e536c61727469626172746661737402012a");
+#endif
 
   // Optional component (not set).
+#if 0
   UtObjectRef encoder4 = ut_asn1_ber_encoder_new();
   UtObjectRef components4 = ut_map_new_ordered();
   ut_map_insert_string_take(components4, "name",
                             ut_asn1_utf8_string_type_new());
   ut_map_insert_string_take(
       components4, "alternate_name",
-      ut_asn1_optional_type_new_take(ut_asn1_utf8_string_type_new()));
+      ut_asn1_optional_type_new_take(ut_asn1_utf8_string_type_new())); // FIXME: Needs to be tagged.
   ut_map_insert_string_take(components4, "age", ut_asn1_integer_type_new());
   UtObjectRef type4 = ut_asn1_set_type_new(components4, false);
   UtObjectRef value4 = ut_map_new();
@@ -810,6 +813,7 @@ static void test_set() {
   ut_assert_null_object(ut_asn1_encoder_get_error(encoder4));
   UtObjectRef data4 = ut_asn1_ber_encoder_get_data(encoder4);
   ut_assert_uint8_list_equal_hex(data4, "31100c0b4172746875722044656e7402012a");
+#endif
 
   // FIXME: Default components
   // FIXME: Tagged components

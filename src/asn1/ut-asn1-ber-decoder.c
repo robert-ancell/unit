@@ -7,9 +7,10 @@
 typedef struct {
   UtObject object;
 
-  // Identifier fields.
-  UtAsn1TagClass class;
-  uint32_t number;
+  // Tag on this contents.
+  UtObject *tag;
+
+  // True if contents are more tagged values.
   bool constructed;
 
   // Contents of this value.
@@ -150,8 +151,7 @@ static UtObject *decode_constructed_bit_string(UtAsn1BerDecoder *self) {
     UtObjectRef decoder = ut_asn1_ber_decoder_new(data);
     offset += ut_asn1_ber_decoder_get_length(decoder);
 
-    if (ut_asn1_ber_decoder_get_tag_class(decoder) != self->class ||
-        ut_asn1_ber_decoder_get_identifier_number(decoder) != self->number) {
+    if (!ut_object_equal(self->tag, ut_asn1_ber_decoder_get_tag(decoder))) {
       set_error(self, "Invalid tag inside constructed BIT STRING");
       return ut_bit_list_new_msb();
     }
@@ -196,8 +196,7 @@ static UtObject *decode_constructed_octet_string(UtAsn1BerDecoder *self,
     UtObjectRef decoder = ut_asn1_ber_decoder_new(data);
     offset += ut_asn1_ber_decoder_get_length(decoder);
 
-    if (ut_asn1_ber_decoder_get_tag_class(decoder) != self->class ||
-        ut_asn1_ber_decoder_get_identifier_number(decoder) != self->number) {
+    if (!ut_object_equal(self->tag, ut_asn1_ber_decoder_get_tag(decoder))) {
       ut_cstring_ref description =
           ut_cstring_new_printf("Invalid tag inside constructed %s", type_name);
       set_error(self, description);
@@ -468,7 +467,7 @@ static UtObject *decode_relative_oid(UtAsn1BerDecoder *self) {
 
 static bool expect_tag(UtAsn1BerDecoder *self, UtAsn1TagClass class,
                        uint32_t number) {
-  if (self->class != class || self->number != number) {
+  if (!ut_asn1_tag_matches(self->tag, class, number)) {
     set_error(self, "Unexpected tag");
     return false;
   }
@@ -585,8 +584,7 @@ static bool match_type(UtObject *decoder, UtObject *type) {
   size_t tags_length = ut_list_get_length(tags);
   for (size_t i = 0; i < tags_length; i++) {
     UtObject *tag = ut_object_list_get_element(tags, i);
-    if (ut_asn1_tag_get_class(tag) == self->class &&
-        ut_asn1_tag_get_number(tag) == self->number) {
+    if (ut_object_equal(tag, self->tag)) {
       return true;
     }
   }
@@ -861,6 +859,7 @@ static char *ut_asn1_ber_decoder_to_string(UtObject *object) {
 
 static void ut_asn1_ber_decoder_cleanup(UtObject *object) {
   UtAsn1BerDecoder *self = (UtAsn1BerDecoder *)object;
+  ut_object_unref(self->tag);
   ut_object_unref(self->contents);
   ut_object_unref(self->error);
 }
@@ -890,33 +889,32 @@ UtObject *ut_asn1_ber_decoder_new(UtObject *data) {
   size_t offset = 0;
   uint8_t identifier = ut_uint8_list_get_element(data, offset);
   offset++;
+  UtAsn1TagClass class;
   switch (identifier & 0xc0) {
   case 0x00:
-    self->class = UT_ASN1_TAG_CLASS_UNIVERSAL;
+    class = UT_ASN1_TAG_CLASS_UNIVERSAL;
     break;
   case 0x40:
-    self->class = UT_ASN1_TAG_CLASS_CONTEXT_SPECIFIC;
+    class = UT_ASN1_TAG_CLASS_CONTEXT_SPECIFIC;
     break;
   case 0x80:
-    self->class = UT_ASN1_TAG_CLASS_APPLICATION;
+    class = UT_ASN1_TAG_CLASS_APPLICATION;
     break;
   case 0xc0:
-    self->class = UT_ASN1_TAG_CLASS_PRIVATE;
+    class = UT_ASN1_TAG_CLASS_PRIVATE;
     break;
   }
   self->constructed = (identifier & 0x20) != 0;
 
   uint32_t number = identifier & 0x1f;
-  if (number < 0x1f) {
-    self->number = number;
-  } else {
+  if (number >= 0x1f) {
     if (!decode_compressed_integer(data, &offset, &number)) {
       set_error(self, "Insufficient data for ASN.1 BER identifier number");
       self->contents = ut_uint8_list_new();
       return ut_object_ref(object);
     }
-    self->number = number;
   }
+  self->tag = ut_asn1_tag_new(class, number);
 
   if (offset >= data_length) {
     set_error(self, "Insufficient data for ASN.1 BER length");
@@ -965,16 +963,10 @@ UtObject *ut_asn1_ber_decoder_new(UtObject *data) {
   return ut_object_ref(object);
 }
 
-uint32_t ut_asn1_ber_decoder_get_identifier_number(UtObject *object) {
+UtObject *ut_asn1_ber_decoder_get_tag(UtObject *object) {
   assert(ut_object_is_asn1_ber_decoder(object));
   UtAsn1BerDecoder *self = (UtAsn1BerDecoder *)object;
-  return self->number;
-}
-
-UtAsn1TagClass ut_asn1_ber_decoder_get_tag_class(UtObject *object) {
-  assert(ut_object_is_asn1_ber_decoder(object));
-  UtAsn1BerDecoder *self = (UtAsn1BerDecoder *)object;
-  return self->class;
+  return self->tag;
 }
 
 bool ut_asn1_ber_decoder_get_constructed(UtObject *object) {

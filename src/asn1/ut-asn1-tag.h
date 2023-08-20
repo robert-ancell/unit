@@ -52,5 +52,8 @@ UtAsn1TagClass ut_asn1_tag_get_class(UtObject *object);
 
 uint32_t ut_asn1_tag_get_number(UtObject *object);
 
+bool ut_asn1_tag_matches(UtObject *object, UtAsn1TagClass class,
+                         uint32_t number);
+
 /// Returns [true] if [object] is a [UtAsn1Tag].
 bool ut_object_is_asn1_tag(UtObject *object);

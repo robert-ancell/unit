@@ -8,10 +8,9 @@ static void test_boolean() {
   // False is zero.
   UtObjectRef data1 = ut_uint8_list_new_from_hex_string("010100");
   UtObjectRef decoder1 = ut_asn1_ber_decoder_new(data1);
-  ut_assert_int_equal(ut_asn1_ber_decoder_get_tag_class(decoder1),
-                      UT_ASN1_TAG_CLASS_UNIVERSAL);
-  ut_assert_int_equal(ut_asn1_ber_decoder_get_identifier_number(decoder1),
-                      UT_ASN1_TAG_UNIVERSAL_BOOLEAN);
+  ut_assert_true(ut_asn1_tag_matches(ut_asn1_ber_decoder_get_tag(decoder1),
+                                     UT_ASN1_TAG_CLASS_UNIVERSAL,
+                                     UT_ASN1_TAG_UNIVERSAL_BOOLEAN));
   ut_assert_false(ut_asn1_ber_decoder_decode_boolean(decoder1));
   ut_assert_null_object(ut_asn1_decoder_get_error(decoder1));
 
@@ -60,10 +59,9 @@ static void test_boolean() {
 static void test_integer() {
   UtObjectRef data1a = ut_uint8_list_new_from_hex_string("020100");
   UtObjectRef decoder1a = ut_asn1_ber_decoder_new(data1a);
-  ut_assert_int_equal(ut_asn1_ber_decoder_get_tag_class(decoder1a),
-                      UT_ASN1_TAG_CLASS_UNIVERSAL);
-  ut_assert_int_equal(ut_asn1_ber_decoder_get_identifier_number(decoder1a),
-                      UT_ASN1_TAG_UNIVERSAL_INTEGER);
+  ut_assert_true(ut_asn1_tag_matches(ut_asn1_ber_decoder_get_tag(decoder1a),
+                                     UT_ASN1_TAG_CLASS_UNIVERSAL,
+                                     UT_ASN1_TAG_UNIVERSAL_INTEGER));
   ut_assert_int_equal(ut_asn1_ber_decoder_decode_integer(decoder1a), 0);
   ut_assert_null_object(ut_asn1_decoder_get_error(decoder1a));
 
@@ -208,10 +206,9 @@ static void test_integer() {
 static void test_bit_string() {
   UtObjectRef data1 = ut_uint8_list_new_from_hex_string("030100");
   UtObjectRef decoder1 = ut_asn1_ber_decoder_new(data1);
-  ut_assert_int_equal(ut_asn1_ber_decoder_get_tag_class(decoder1),
-                      UT_ASN1_TAG_CLASS_UNIVERSAL);
-  ut_assert_int_equal(ut_asn1_ber_decoder_get_identifier_number(decoder1),
-                      UT_ASN1_TAG_UNIVERSAL_BIT_STRING);
+  ut_assert_true(ut_asn1_tag_matches(ut_asn1_ber_decoder_get_tag(decoder1),
+                                     UT_ASN1_TAG_CLASS_UNIVERSAL,
+                                     UT_ASN1_TAG_UNIVERSAL_BIT_STRING));
   UtObjectRef string1 = ut_asn1_ber_decoder_decode_bit_string(decoder1);
   ut_assert_null_object(ut_asn1_decoder_get_error(decoder1));
   ut_assert_bit_list_equal_bin(string1, "");
@@ -292,10 +289,9 @@ static void test_bit_string() {
 static void test_octet_string() {
   UtObjectRef data1 = ut_uint8_list_new_from_hex_string("0400");
   UtObjectRef decoder1 = ut_asn1_ber_decoder_new(data1);
-  ut_assert_int_equal(ut_asn1_ber_decoder_get_tag_class(decoder1),
-                      UT_ASN1_TAG_CLASS_UNIVERSAL);
-  ut_assert_int_equal(ut_asn1_ber_decoder_get_identifier_number(decoder1),
-                      UT_ASN1_TAG_UNIVERSAL_OCTET_STRING);
+  ut_assert_true(ut_asn1_tag_matches(ut_asn1_ber_decoder_get_tag(decoder1),
+                                     UT_ASN1_TAG_CLASS_UNIVERSAL,
+                                     UT_ASN1_TAG_UNIVERSAL_OCTET_STRING));
   UtObjectRef string1 = ut_asn1_ber_decoder_decode_octet_string(decoder1);
   ut_assert_uint8_list_equal_hex(string1, "");
   ut_assert_null_object(ut_asn1_decoder_get_error(decoder1));
@@ -412,10 +408,9 @@ static void test_octet_string() {
 static void test_null() {
   UtObjectRef data1 = ut_uint8_list_new_from_hex_string("0500");
   UtObjectRef decoder1 = ut_asn1_ber_decoder_new(data1);
-  ut_assert_int_equal(ut_asn1_ber_decoder_get_tag_class(decoder1),
-                      UT_ASN1_TAG_CLASS_UNIVERSAL);
-  ut_assert_int_equal(ut_asn1_ber_decoder_get_identifier_number(decoder1),
-                      UT_ASN1_TAG_UNIVERSAL_NULL);
+  ut_assert_true(ut_asn1_tag_matches(ut_asn1_ber_decoder_get_tag(decoder1),
+                                     UT_ASN1_TAG_CLASS_UNIVERSAL,
+                                     UT_ASN1_TAG_UNIVERSAL_NULL));
   ut_asn1_ber_decoder_decode_null(decoder1);
   ut_assert_null_object(ut_asn1_decoder_get_error(decoder1));
 
@@ -445,10 +440,9 @@ static void test_null() {
 static void test_object_identifier() {
   UtObjectRef data1 = ut_uint8_list_new_from_hex_string("0603883703");
   UtObjectRef decoder1 = ut_asn1_ber_decoder_new(data1);
-  ut_assert_int_equal(ut_asn1_ber_decoder_get_tag_class(decoder1),
-                      UT_ASN1_TAG_CLASS_UNIVERSAL);
-  ut_assert_int_equal(ut_asn1_ber_decoder_get_identifier_number(decoder1),
-                      UT_ASN1_TAG_UNIVERSAL_OBJECT_IDENTIFIER);
+  ut_assert_true(ut_asn1_tag_matches(ut_asn1_ber_decoder_get_tag(decoder1),
+                                     UT_ASN1_TAG_CLASS_UNIVERSAL,
+                                     UT_ASN1_TAG_UNIVERSAL_OBJECT_IDENTIFIER));
   UtObjectRef id1 = ut_asn1_ber_decoder_decode_object_identifier(decoder1);
   ut_assert_null_object(ut_asn1_decoder_get_error(decoder1));
   uint32_t expected_id1[] = {2, 999, 3};
@@ -491,10 +485,9 @@ static void test_real() {
   // Zero.
   UtObjectRef data1 = ut_uint8_list_new_from_hex_string("0900");
   UtObjectRef decoder1 = ut_asn1_ber_decoder_new(data1);
-  ut_assert_int_equal(ut_asn1_ber_decoder_get_tag_class(decoder1),
-                      UT_ASN1_TAG_CLASS_UNIVERSAL);
-  ut_assert_int_equal(ut_asn1_ber_decoder_get_identifier_number(decoder1),
-                      UT_ASN1_TAG_UNIVERSAL_REAL);
+  ut_assert_true(ut_asn1_tag_matches(ut_asn1_ber_decoder_get_tag(decoder1),
+                                     UT_ASN1_TAG_CLASS_UNIVERSAL,
+                                     UT_ASN1_TAG_UNIVERSAL_REAL));
   ut_assert_float_equal(ut_asn1_ber_decoder_decode_real(decoder1), 0.0);
 
   // Integer.
@@ -654,10 +647,9 @@ static void test_real() {
 static void test_enumerated() {
   UtObjectRef data1 = ut_uint8_list_new_from_hex_string("0a012a");
   UtObjectRef decoder1 = ut_asn1_ber_decoder_new(data1);
-  ut_assert_int_equal(ut_asn1_ber_decoder_get_tag_class(decoder1),
-                      UT_ASN1_TAG_CLASS_UNIVERSAL);
-  ut_assert_int_equal(ut_asn1_ber_decoder_get_identifier_number(decoder1),
-                      UT_ASN1_TAG_UNIVERSAL_ENUMERATED);
+  ut_assert_true(ut_asn1_tag_matches(ut_asn1_ber_decoder_get_tag(decoder1),
+                                     UT_ASN1_TAG_CLASS_UNIVERSAL,
+                                     UT_ASN1_TAG_UNIVERSAL_ENUMERATED));
   ut_assert_int_equal(ut_asn1_ber_decoder_decode_enumerated(decoder1), 42);
   ut_assert_null_object(ut_asn1_decoder_get_error(decoder1));
 
@@ -712,10 +704,9 @@ static void test_utf8_string() {
   UtObjectRef data1 =
       ut_uint8_list_new_from_hex_string("0c0a48656c6c6f20f09f9880");
   UtObjectRef decoder1 = ut_asn1_ber_decoder_new(data1);
-  ut_assert_int_equal(ut_asn1_ber_decoder_get_tag_class(decoder1),
-                      UT_ASN1_TAG_CLASS_UNIVERSAL);
-  ut_assert_int_equal(ut_asn1_ber_decoder_get_identifier_number(decoder1),
-                      UT_ASN1_TAG_UNIVERSAL_UTF8_STRING);
+  ut_assert_true(ut_asn1_tag_matches(ut_asn1_ber_decoder_get_tag(decoder1),
+                                     UT_ASN1_TAG_CLASS_UNIVERSAL,
+                                     UT_ASN1_TAG_UNIVERSAL_UTF8_STRING));
   ut_cstring_ref string1 = ut_asn1_ber_decoder_decode_utf8_string(decoder1);
   ut_assert_cstring_equal(string1, "Hello 😀");
   ut_assert_null_object(ut_asn1_decoder_get_error(decoder1));
@@ -743,10 +734,9 @@ static void test_utf8_string() {
 static void test_relative_oid() {
   UtObjectRef data1 = ut_uint8_list_new_from_hex_string("0d04c27b0302");
   UtObjectRef decoder1 = ut_asn1_ber_decoder_new(data1);
-  ut_assert_int_equal(ut_asn1_ber_decoder_get_tag_class(decoder1),
-                      UT_ASN1_TAG_CLASS_UNIVERSAL);
-  ut_assert_int_equal(ut_asn1_ber_decoder_get_identifier_number(decoder1),
-                      UT_ASN1_TAG_UNIVERSAL_RELATIVE_OID);
+  ut_assert_true(ut_asn1_tag_matches(ut_asn1_ber_decoder_get_tag(decoder1),
+                                     UT_ASN1_TAG_CLASS_UNIVERSAL,
+                                     UT_ASN1_TAG_UNIVERSAL_RELATIVE_OID));
   UtObjectRef id1 = ut_asn1_ber_decoder_decode_relative_oid(decoder1);
   uint32_t expected_id1[] = {8571, 3, 2};
   ut_assert_uint32_list_equal(id1, expected_id1, 3);
@@ -789,10 +779,9 @@ static void test_relative_oid() {
 static void test_sequence() {
   UtObjectRef data1 = ut_uint8_list_new_from_hex_string("30060101ff02012a");
   UtObjectRef decoder1 = ut_asn1_ber_decoder_new(data1);
-  ut_assert_int_equal(ut_asn1_ber_decoder_get_tag_class(decoder1),
-                      UT_ASN1_TAG_CLASS_UNIVERSAL);
-  ut_assert_int_equal(ut_asn1_ber_decoder_get_identifier_number(decoder1),
-                      UT_ASN1_TAG_UNIVERSAL_SEQUENCE);
+  ut_assert_true(ut_asn1_tag_matches(ut_asn1_ber_decoder_get_tag(decoder1),
+                                     UT_ASN1_TAG_CLASS_UNIVERSAL,
+                                     UT_ASN1_TAG_UNIVERSAL_SEQUENCE));
   UtObjectRef sequence1 = ut_asn1_ber_decoder_decode_sequence(decoder1);
   ut_assert_int_equal(ut_list_get_length(sequence1), 2);
   ut_assert_true(ut_asn1_ber_decoder_decode_boolean(
@@ -943,10 +932,9 @@ static void test_sequence_of() {
 static void test_set() {
   UtObjectRef data1 = ut_uint8_list_new_from_hex_string("31060101ff02012a");
   UtObjectRef decoder1 = ut_asn1_ber_decoder_new(data1);
-  ut_assert_int_equal(ut_asn1_ber_decoder_get_tag_class(decoder1),
-                      UT_ASN1_TAG_CLASS_UNIVERSAL);
-  ut_assert_int_equal(ut_asn1_ber_decoder_get_identifier_number(decoder1),
-                      UT_ASN1_TAG_UNIVERSAL_SET);
+  ut_assert_true(ut_asn1_tag_matches(ut_asn1_ber_decoder_get_tag(decoder1),
+                                     UT_ASN1_TAG_CLASS_UNIVERSAL,
+                                     UT_ASN1_TAG_UNIVERSAL_SET));
   UtObjectRef set1 = ut_asn1_ber_decoder_decode_set(decoder1);
   ut_assert_int_equal(ut_list_get_length(set1), 2);
   ut_assert_true(
@@ -1100,10 +1088,9 @@ static void test_numeric_string() {
   UtObjectRef data1 =
       ut_uint8_list_new_from_hex_string("120b3132333435203637383930");
   UtObjectRef decoder1 = ut_asn1_ber_decoder_new(data1);
-  ut_assert_int_equal(ut_asn1_ber_decoder_get_tag_class(decoder1),
-                      UT_ASN1_TAG_CLASS_UNIVERSAL);
-  ut_assert_int_equal(ut_asn1_ber_decoder_get_identifier_number(decoder1),
-                      UT_ASN1_TAG_UNIVERSAL_NUMERIC_STRING);
+  ut_assert_true(ut_asn1_tag_matches(ut_asn1_ber_decoder_get_tag(decoder1),
+                                     UT_ASN1_TAG_CLASS_UNIVERSAL,
+                                     UT_ASN1_TAG_UNIVERSAL_NUMERIC_STRING));
   ut_cstring_ref string1 = ut_asn1_ber_decoder_decode_numeric_string(decoder1);
   ut_assert_cstring_equal(string1, "12345 67890");
   ut_assert_null_object(ut_asn1_decoder_get_error(decoder1));
@@ -1140,10 +1127,9 @@ static void test_printable_string() {
   UtObjectRef data1 =
       ut_uint8_list_new_from_hex_string("130b48656c6c6f20576f726c64");
   UtObjectRef decoder1 = ut_asn1_ber_decoder_new(data1);
-  ut_assert_int_equal(ut_asn1_ber_decoder_get_tag_class(decoder1),
-                      UT_ASN1_TAG_CLASS_UNIVERSAL);
-  ut_assert_int_equal(ut_asn1_ber_decoder_get_identifier_number(decoder1),
-                      UT_ASN1_TAG_UNIVERSAL_PRINTABLE_STRING);
+  ut_assert_true(ut_asn1_tag_matches(ut_asn1_ber_decoder_get_tag(decoder1),
+                                     UT_ASN1_TAG_CLASS_UNIVERSAL,
+                                     UT_ASN1_TAG_UNIVERSAL_PRINTABLE_STRING));
   ut_cstring_ref string1 =
       ut_asn1_ber_decoder_decode_printable_string(decoder1);
   ut_assert_cstring_equal(string1, "Hello World");
@@ -1184,10 +1170,9 @@ static void test_ia5_string() {
   UtObjectRef data1 =
       ut_uint8_list_new_from_hex_string("160b48656c6c6f20576f726c64");
   UtObjectRef decoder1 = ut_asn1_ber_decoder_new(data1);
-  ut_assert_int_equal(ut_asn1_ber_decoder_get_tag_class(decoder1),
-                      UT_ASN1_TAG_CLASS_UNIVERSAL);
-  ut_assert_int_equal(ut_asn1_ber_decoder_get_identifier_number(decoder1),
-                      UT_ASN1_TAG_UNIVERSAL_IA5_STRING);
+  ut_assert_true(ut_asn1_tag_matches(ut_asn1_ber_decoder_get_tag(decoder1),
+                                     UT_ASN1_TAG_CLASS_UNIVERSAL,
+                                     UT_ASN1_TAG_UNIVERSAL_IA5_STRING));
   UtObjectRef string1 = ut_asn1_ber_decoder_decode_ia5_string(decoder1);
   ut_assert_cstring_equal(ut_string_get_text(string1), "Hello World");
   ut_assert_null_object(ut_asn1_decoder_get_error(decoder1));
@@ -1221,10 +1206,9 @@ static void test_visible_string() {
   UtObjectRef data1 =
       ut_uint8_list_new_from_hex_string("1a0b48656c6c6f20576f726c64");
   UtObjectRef decoder1 = ut_asn1_ber_decoder_new(data1);
-  ut_assert_int_equal(ut_asn1_ber_decoder_get_tag_class(decoder1),
-                      UT_ASN1_TAG_CLASS_UNIVERSAL);
-  ut_assert_int_equal(ut_asn1_ber_decoder_get_identifier_number(decoder1),
-                      UT_ASN1_TAG_UNIVERSAL_VISIBLE_STRING);
+  ut_assert_true(ut_asn1_tag_matches(ut_asn1_ber_decoder_get_tag(decoder1),
+                                     UT_ASN1_TAG_CLASS_UNIVERSAL,
+                                     UT_ASN1_TAG_UNIVERSAL_VISIBLE_STRING));
   ut_cstring_ref string1 = ut_asn1_ber_decoder_decode_visible_string(decoder1);
   ut_assert_cstring_equal(string1, "Hello World");
   ut_assert_null_object(ut_asn1_decoder_get_error(decoder1));
