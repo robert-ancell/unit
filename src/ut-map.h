@@ -17,9 +17,10 @@ typedef struct {
 
 extern int ut_map_id;
 
+/// Ordered by default.
 UtObject *ut_map_new();
 
-UtObject *ut_map_new_ordered();
+UtObject *ut_map_new_unordered();
 
 size_t ut_map_get_length(UtObject *object);
 

@@ -7,7 +7,10 @@ int ut_map_id = 0;
 
 UtObject *ut_map_new() { return ut_ordered_hash_table_new(); }
 
-UtObject *ut_map_new_ordered() { return ut_ordered_hash_table_new(); }
+UtObject *ut_map_new_unordered() {
+  // FIXME: Change we have an unordered type.
+  return ut_ordered_hash_table_new();
+}
 
 size_t ut_map_get_length(UtObject *object) {
   UtMapInterface *map_interface = ut_object_get_interface(object, &ut_map_id);

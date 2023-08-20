@@ -802,7 +802,7 @@ static void test_sequence() {
   UtObjectRef data3 =
       ut_uint8_list_new_from_hex_string("30100c0b4172746875722044656e7402012a");
   UtObjectRef decoder3 = ut_asn1_ber_decoder_new(data3);
-  UtObjectRef components3 = ut_map_new_ordered();
+  UtObjectRef components3 = ut_map_new();
   ut_map_insert_string_take(components3, "name",
                             ut_asn1_utf8_string_type_new());
   ut_map_insert_string_take(components3, "age", ut_asn1_integer_type_new());
@@ -821,8 +821,7 @@ static void test_sequence() {
   // Decoded as object with type (empty sequence).
   UtObjectRef data4 = ut_uint8_list_new_from_hex_string("3000");
   UtObjectRef decoder4 = ut_asn1_ber_decoder_new(data4);
-  UtObjectRef type4 =
-      ut_asn1_sequence_type_new_take(ut_map_new_ordered(), false);
+  UtObjectRef type4 = ut_asn1_sequence_type_new_take(ut_map_new(), false);
   UtObjectRef value4 = ut_asn1_decoder_decode_value(decoder4, type4);
   ut_assert_null_object(ut_asn1_decoder_get_error(decoder4));
   ut_assert_true(ut_object_implements_map(value4));
@@ -832,7 +831,7 @@ static void test_sequence() {
   UtObjectRef data5 = ut_uint8_list_new_from_hex_string(
       "30130c0b4172746875722044656e7402012a0101ff");
   UtObjectRef decoder5 = ut_asn1_ber_decoder_new(data5);
-  UtObjectRef components5 = ut_map_new_ordered();
+  UtObjectRef components5 = ut_map_new();
   ut_map_insert_string_take(components5, "name",
                             ut_asn1_utf8_string_type_new());
   ut_map_insert_string_take(components5, "age", ut_asn1_integer_type_new());
@@ -851,7 +850,7 @@ static void test_sequence() {
   UtObjectRef data6 = ut_uint8_list_new_from_hex_string(
       "30200c0b4172746875722044656e740c0e536c61727469626172746661737402012a");
   UtObjectRef decoder6 = ut_asn1_ber_decoder_new(data6);
-  UtObjectRef components6 = ut_map_new_ordered();
+  UtObjectRef components6 = ut_map_new();
   ut_map_insert_string_take(components6, "name",
                             ut_asn1_utf8_string_type_new());
   ut_map_insert_string_take(
@@ -877,7 +876,7 @@ static void test_sequence() {
   UtObjectRef data7 =
       ut_uint8_list_new_from_hex_string("30100c0b4172746875722044656e7402012a");
   UtObjectRef decoder7 = ut_asn1_ber_decoder_new(data7);
-  UtObjectRef components7 = ut_map_new_ordered();
+  UtObjectRef components7 = ut_map_new();
   ut_map_insert_string_take(components7, "name",
                             ut_asn1_utf8_string_type_new());
   ut_map_insert_string_take(
@@ -911,7 +910,7 @@ static void test_sequence() {
   UtObjectRef data11 =
       ut_uint8_list_new_from_hex_string("300d0c0b4172746875722044656e74");
   UtObjectRef decoder11 = ut_asn1_ber_decoder_new(data11);
-  UtObjectRef components11 = ut_map_new_ordered();
+  UtObjectRef components11 = ut_map_new();
   ut_map_insert_string_take(components11, "name",
                             ut_asn1_utf8_string_type_new());
   ut_map_insert_string_take(components11, "age", ut_asn1_integer_type_new());
@@ -924,7 +923,7 @@ static void test_sequence() {
   UtObjectRef data12 =
       ut_uint8_list_new_from_hex_string("301002012a0c0b4172746875722044656e74");
   UtObjectRef decoder12 = ut_asn1_ber_decoder_new(data12);
-  UtObjectRef components12 = ut_map_new_ordered();
+  UtObjectRef components12 = ut_map_new();
   ut_map_insert_string_take(components12, "name",
                             ut_asn1_utf8_string_type_new());
   ut_map_insert_string_take(components12, "age", ut_asn1_integer_type_new());
@@ -938,7 +937,7 @@ static void test_sequence() {
   UtObjectRef data13 = ut_uint8_list_new_from_hex_string(
       "30130c0b4172746875722044656e7402012a0101ff");
   UtObjectRef decoder13 = ut_asn1_ber_decoder_new(data13);
-  UtObjectRef components13 = ut_map_new_ordered();
+  UtObjectRef components13 = ut_map_new();
   ut_map_insert_string_take(components13, "name",
                             ut_asn1_utf8_string_type_new());
   ut_map_insert_string_take(components13, "age", ut_asn1_integer_type_new());
@@ -1005,7 +1004,7 @@ static void test_set() {
   UtObjectRef data3 =
       ut_uint8_list_new_from_hex_string("31100c0b4172746875722044656e7402012a");
   UtObjectRef decoder3 = ut_asn1_ber_decoder_new(data3);
-  UtObjectRef components3 = ut_map_new_ordered();
+  UtObjectRef components3 = ut_map_new();
   ut_map_insert_string_take(components3, "name",
                             ut_asn1_utf8_string_type_new());
   ut_map_insert_string_take(components3, "age", ut_asn1_integer_type_new());
@@ -1024,7 +1023,7 @@ static void test_set() {
   // Decoded as object with type (empty set).
   UtObjectRef data4 = ut_uint8_list_new_from_hex_string("3100");
   UtObjectRef decoder4 = ut_asn1_ber_decoder_new(data4);
-  UtObjectRef type4 = ut_asn1_set_type_new_take(ut_map_new_ordered(), false);
+  UtObjectRef type4 = ut_asn1_set_type_new_take(ut_map_new(), false);
   UtObjectRef value4 = ut_asn1_decoder_decode_value(decoder4, type4);
   ut_assert_null_object(ut_asn1_decoder_get_error(decoder4));
   ut_assert_true(ut_object_implements_map(value4));
@@ -1034,7 +1033,7 @@ static void test_set() {
   UtObjectRef data5 =
       ut_uint8_list_new_from_hex_string("311002012a0c0b4172746875722044656e74");
   UtObjectRef decoder5 = ut_asn1_ber_decoder_new(data5);
-  UtObjectRef components5 = ut_map_new_ordered();
+  UtObjectRef components5 = ut_map_new();
   ut_map_insert_string_take(components5, "name",
                             ut_asn1_utf8_string_type_new());
   ut_map_insert_string_take(components5, "age", ut_asn1_integer_type_new());
@@ -1054,7 +1053,7 @@ static void test_set() {
   UtObjectRef data6 = ut_uint8_list_new_from_hex_string(
       "31130c0b4172746875722044656e7402012a0101ff");
   UtObjectRef decoder6 = ut_asn1_ber_decoder_new(data6);
-  UtObjectRef components6 = ut_map_new_ordered();
+  UtObjectRef components6 = ut_map_new();
   ut_map_insert_string_take(components6, "name",
                             ut_asn1_utf8_string_type_new());
   ut_map_insert_string_take(components6, "age", ut_asn1_integer_type_new());
@@ -1073,7 +1072,7 @@ static void test_set() {
   UtObjectRef data7 = ut_uint8_list_new_from_hex_string(
       "31200c0b4172746875722044656e74800e536c61727469626172746661737402012a");
   UtObjectRef decoder7 = ut_asn1_ber_decoder_new(data7);
-  UtObjectRef components7 = ut_map_new_ordered();
+  UtObjectRef components7 = ut_map_new();
   ut_map_insert_string_take(components7, "name",
                             ut_asn1_utf8_string_type_new());
   ut_map_insert_string_take(
@@ -1101,7 +1100,7 @@ static void test_set() {
   UtObjectRef data8 =
       ut_uint8_list_new_from_hex_string("31100c0b4172746875722044656e7402012a");
   UtObjectRef decoder8 = ut_asn1_ber_decoder_new(data8);
-  UtObjectRef components8 = ut_map_new_ordered();
+  UtObjectRef components8 = ut_map_new();
   ut_map_insert_string_take(components8, "name",
                             ut_asn1_utf8_string_type_new());
   ut_map_insert_string_take(
@@ -1135,7 +1134,7 @@ static void test_set() {
   UtObjectRef data11 =
       ut_uint8_list_new_from_hex_string("310d0c0b4172746875722044656e74");
   UtObjectRef decoder11 = ut_asn1_ber_decoder_new(data11);
-  UtObjectRef components11 = ut_map_new_ordered();
+  UtObjectRef components11 = ut_map_new();
   ut_map_insert_string_take(components11, "name",
                             ut_asn1_utf8_string_type_new());
   ut_map_insert_string_take(components11, "age", ut_asn1_integer_type_new());
@@ -1148,7 +1147,7 @@ static void test_set() {
   UtObjectRef data13 = ut_uint8_list_new_from_hex_string(
       "31130c0b4172746875722044656e7402012a0101ff");
   UtObjectRef decoder13 = ut_asn1_ber_decoder_new(data13);
-  UtObjectRef components13 = ut_map_new_ordered();
+  UtObjectRef components13 = ut_map_new();
   ut_map_insert_string_take(components13, "name",
                             ut_asn1_utf8_string_type_new());
   ut_map_insert_string_take(components13, "age", ut_asn1_integer_type_new());
@@ -1349,7 +1348,7 @@ static void test_choice() {
   UtObjectRef data1 =
       ut_uint8_list_new_from_hex_string("0c0b48656c6c6f20576f726c64");
   UtObjectRef decoder1 = ut_asn1_ber_decoder_new(data1);
-  UtObjectRef components1 = ut_map_new_ordered();
+  UtObjectRef components1 = ut_map_new();
   ut_map_insert_string_take(components1, "text",
                             ut_asn1_utf8_string_type_new());
   ut_map_insert_string_take(components1, "number", ut_asn1_integer_type_new());
@@ -1365,7 +1364,7 @@ static void test_choice() {
   // Second choice.
   UtObjectRef data2 = ut_uint8_list_new_from_hex_string("02012a");
   UtObjectRef decoder2 = ut_asn1_ber_decoder_new(data2);
-  UtObjectRef components2 = ut_map_new_ordered();
+  UtObjectRef components2 = ut_map_new();
   ut_map_insert_string_take(components2, "text",
                             ut_asn1_utf8_string_type_new());
   ut_map_insert_string_take(components2, "number", ut_asn1_integer_type_new());
@@ -1382,7 +1381,7 @@ static void test_choice() {
   // Unknown value (extensible).
   UtObjectRef data3 = ut_uint8_list_new_from_hex_string("0101ff");
   UtObjectRef decoder3 = ut_asn1_ber_decoder_new(data3);
-  UtObjectRef components3 = ut_map_new_ordered();
+  UtObjectRef components3 = ut_map_new();
   ut_map_insert_string_take(components3, "text",
                             ut_asn1_utf8_string_type_new());
   ut_map_insert_string_take(components3, "number", ut_asn1_integer_type_new());
@@ -1397,7 +1396,7 @@ static void test_choice() {
   // Unknown value (not extensible).
   UtObjectRef data4 = ut_uint8_list_new_from_hex_string("0101ff");
   UtObjectRef decoder4 = ut_asn1_ber_decoder_new(data4);
-  UtObjectRef components4 = ut_map_new_ordered();
+  UtObjectRef components4 = ut_map_new();
   ut_map_insert_string_take(components4, "text",
                             ut_asn1_utf8_string_type_new());
   ut_map_insert_string_take(components4, "number", ut_asn1_integer_type_new());
