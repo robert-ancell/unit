@@ -600,6 +600,7 @@ static UtObject *decode_sequence_value(UtAsn1BerDecoder *self, UtObject *type,
   UtObjectRef value = ut_map_new();
   size_t contents_length = ut_list_get_length(self->contents);
   size_t offset = 0;
+  size_t required_component_count = 0;
   while (offset < contents_length) {
     UtObjectRef data =
         ut_list_get_sublist(self->contents, offset, contents_length - offset);
@@ -623,6 +624,7 @@ static UtObject *decode_sequence_value(UtAsn1BerDecoder *self, UtObject *type,
           ut_object_set(&component_type, ut_asn1_optional_type_get_type(type));
         } else {
           ut_object_set(&component_type, type);
+          required_component_count++;
         }
         break;
       }
@@ -663,9 +665,19 @@ static UtObject *decode_sequence_value(UtAsn1BerDecoder *self, UtObject *type,
                          component_value);
   }
 
-  if (next_component < components_length) {
-    // FIXME: List missing components
-    // FIXME: Ignore if only optional components remain
+  UtObjectRef component_types = ut_map_get_values(components);
+  size_t component_types_length = ut_list_get_length(component_types);
+  size_t total_required_components = 0;
+  for (size_t i = 0; i < component_types_length; i++) {
+    UtObject *component_type = ut_object_list_get_element(component_types, i);
+    if (ut_object_is_asn1_optional_type(component_type)) {
+      continue;
+    }
+    total_required_components++;
+  }
+
+  if (required_component_count < total_required_components) {
+    // FIXME: List missing components.
     set_error(self, "Required SEQUENCE components missing");
     return ut_map_new();
   }
@@ -804,6 +816,7 @@ static UtObject *decode_set_value(UtAsn1BerDecoder *self, UtObject *type,
   }
 
   if (required_component_count < total_required_components) {
+    // FIXME: List missing components.
     set_error(self, "Required SET components missing");
     return ut_map_new();
   }

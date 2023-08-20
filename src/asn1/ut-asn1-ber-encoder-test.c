@@ -664,33 +664,28 @@ static void test_sequence() {
   // Optional component (present).
   UtObjectRef encoder3 = ut_asn1_ber_encoder_new();
   UtObjectRef components3 = ut_map_new_string_from_elements_take(
-      "name", ut_asn1_utf8_string_type_new(), "alternate_name",
-      ut_asn1_optional_type_new_take(ut_asn1_utf8_string_type_new()), "age",
-      ut_asn1_integer_type_new(), NULL);
+      "name", ut_asn1_utf8_string_type_new(), "age",
+      ut_asn1_optional_type_new_take(ut_asn1_integer_type_new()), NULL);
   UtObjectRef type3 = ut_asn1_sequence_type_new(components3, false);
   UtObjectRef value3 = ut_map_new_string_from_elements_take(
-      "name", ut_string_new("Arthur Dent"), "alternate_name",
-      ut_string_new("Slartibartfast"), "age", ut_int64_new(42), NULL);
+      "name", ut_string_new("Arthur Dent"), "age", ut_int64_new(42), NULL);
   ut_asn1_encoder_encode_value(encoder3, type3, value3);
   ut_assert_null_object(ut_asn1_encoder_get_error(encoder3));
   UtObjectRef data3 = ut_asn1_ber_encoder_get_data(encoder3);
-  ut_assert_uint8_list_equal_hex(
-      data3,
-      "30200c0b4172746875722044656e740c0e536c61727469626172746661737402012a");
+  ut_assert_uint8_list_equal_hex(data3, "30100c0b4172746875722044656e7402012a");
 
   // Optional component (not present).
   UtObjectRef encoder4 = ut_asn1_ber_encoder_new();
   UtObjectRef components4 = ut_map_new_string_from_elements_take(
-      "name", ut_asn1_utf8_string_type_new(), "alternate_name",
-      ut_asn1_optional_type_new_take(ut_asn1_utf8_string_type_new()), "age",
-      ut_asn1_integer_type_new(), NULL);
+      "name", ut_asn1_utf8_string_type_new(), "age",
+      ut_asn1_optional_type_new_take(ut_asn1_integer_type_new()), NULL);
   UtObjectRef type4 = ut_asn1_sequence_type_new(components4, false);
   UtObjectRef value4 = ut_map_new_string_from_elements_take(
-      "name", ut_string_new("Arthur Dent"), "age", ut_int64_new(42), NULL);
+      "name", ut_string_new("Arthur Dent"), NULL);
   ut_asn1_encoder_encode_value(encoder4, type4, value4);
   ut_assert_null_object(ut_asn1_encoder_get_error(encoder4));
   UtObjectRef data4 = ut_asn1_ber_encoder_get_data(encoder4);
-  ut_assert_uint8_list_equal_hex(data4, "30100c0b4172746875722044656e7402012a");
+  ut_assert_uint8_list_equal_hex(data4, "300d0c0b4172746875722044656e74");
 
   // FIXME: Default components
   // FIXME: Tagged components
@@ -757,37 +752,28 @@ static void test_set() {
   // Optional component (present).
   UtObjectRef encoder3 = ut_asn1_ber_encoder_new();
   UtObjectRef components3 = ut_map_new_string_from_elements_take(
-      "name", ut_asn1_utf8_string_type_new(), "alternate_name",
-      ut_asn1_optional_type_new_take(
-          ut_asn1_tagged_type_new_take(UT_ASN1_TAG_CLASS_CONTEXT_SPECIFIC, 0,
-                                       false, ut_asn1_utf8_string_type_new())),
-      "age", ut_asn1_integer_type_new(), NULL);
+      "name", ut_asn1_utf8_string_type_new(), "age",
+      ut_asn1_optional_type_new_take(ut_asn1_integer_type_new()), NULL);
   UtObjectRef type3 = ut_asn1_set_type_new(components3, false);
   UtObjectRef value3 = ut_map_new_string_from_elements_take(
-      "name", ut_string_new("Arthur Dent"), "alternate_name",
-      ut_string_new("Slartibartfast"), "age", ut_int64_new(42), NULL);
+      "name", ut_string_new("Arthur Dent"), "age", ut_int64_new(42), NULL);
   ut_asn1_encoder_encode_value(encoder3, type3, value3);
   ut_assert_null_object(ut_asn1_encoder_get_error(encoder3));
   UtObjectRef data3 = ut_asn1_ber_encoder_get_data(encoder3);
-  ut_assert_uint8_list_equal_hex(
-      data3,
-      "31200c0b4172746875722044656e74800e536c61727469626172746661737402012a");
+  ut_assert_uint8_list_equal_hex(data3, "31100c0b4172746875722044656e7402012a");
 
   // Optional component (not present).
   UtObjectRef encoder4 = ut_asn1_ber_encoder_new();
   UtObjectRef components4 = ut_map_new_string_from_elements_take(
-      "name", ut_asn1_utf8_string_type_new(), "alternate_name",
-      ut_asn1_optional_type_new_take(
-          ut_asn1_tagged_type_new_take(UT_ASN1_TAG_CLASS_CONTEXT_SPECIFIC, 0,
-                                       false, ut_asn1_utf8_string_type_new())),
-      "age", ut_asn1_integer_type_new(), NULL);
+      "name", ut_asn1_utf8_string_type_new(), "age",
+      ut_asn1_optional_type_new_take(ut_asn1_integer_type_new()), NULL);
   UtObjectRef type4 = ut_asn1_set_type_new(components4, false);
   UtObjectRef value4 = ut_map_new_string_from_elements_take(
-      "name", ut_string_new("Arthur Dent"), "age", ut_int64_new(42), NULL);
+      "name", ut_string_new("Arthur Dent"), NULL);
   ut_asn1_encoder_encode_value(encoder4, type4, value4);
   ut_assert_null_object(ut_asn1_encoder_get_error(encoder4));
   UtObjectRef data4 = ut_asn1_ber_encoder_get_data(encoder4);
-  ut_assert_uint8_list_equal_hex(data4, "31100c0b4172746875722044656e7402012a");
+  ut_assert_uint8_list_equal_hex(data4, "310d0c0b4172746875722044656e74");
 
   // FIXME: Default components
   // FIXME: Tagged components
