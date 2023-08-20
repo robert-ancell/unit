@@ -1244,7 +1244,49 @@ static void test_choice() {
 }
 
 static void test_tagged_type() {
-  // FIXME
+  // Explicit tag ([1] INTEGER).
+  UtObjectRef data1 = ut_uint8_list_new_from_hex_string("a10302012a");
+  UtObjectRef decoder1 = ut_asn1_ber_decoder_new(data1);
+  UtObjectRef type1 = ut_asn1_tagged_type_new_take(
+      UT_ASN1_TAG_CLASS_CONTEXT_SPECIFIC, 1, true, ut_asn1_integer_type_new());
+  UtObjectRef value1 = ut_asn1_decoder_decode_value(decoder1, type1);
+  ut_assert_null_object(ut_asn1_decoder_get_error(decoder1));
+  ut_assert_true(ut_object_is_int64(value1));
+  ut_assert_int_equal(ut_int64_get_value(value1), 42);
+
+  // Implicit tag ([1] IMPLICIT INTEGER).
+  UtObjectRef data2 = ut_uint8_list_new_from_hex_string("81012a");
+  UtObjectRef decoder2 = ut_asn1_ber_decoder_new(data2);
+  UtObjectRef type2 = ut_asn1_tagged_type_new_take(
+      UT_ASN1_TAG_CLASS_CONTEXT_SPECIFIC, 1, false, ut_asn1_integer_type_new());
+  UtObjectRef value2 = ut_asn1_decoder_decode_value(decoder2, type2);
+  ut_assert_null_object(ut_asn1_decoder_get_error(decoder2));
+  ut_assert_true(ut_object_is_int64(value2));
+  ut_assert_int_equal(ut_int64_get_value(value2), 42);
+
+  // Nested explicit tags ([1] [2] INTEGER).
+  UtObjectRef data3 = ut_uint8_list_new_from_hex_string("a105a20302012a");
+  UtObjectRef decoder3 = ut_asn1_ber_decoder_new(data3);
+  UtObjectRef type3 = ut_asn1_tagged_type_new_take(
+      UT_ASN1_TAG_CLASS_CONTEXT_SPECIFIC, 1, true,
+      ut_asn1_tagged_type_new_take(UT_ASN1_TAG_CLASS_CONTEXT_SPECIFIC, 2, true,
+                                   ut_asn1_integer_type_new()));
+  UtObjectRef value3 = ut_asn1_decoder_decode_value(decoder3, type3);
+  ut_assert_null_object(ut_asn1_decoder_get_error(decoder3));
+  ut_assert_true(ut_object_is_int64(value3));
+  ut_assert_int_equal(ut_int64_get_value(value3), 42);
+
+  // Nested implicit tags ([1] IMPLICIT [2] IMPLICIT INTEGER).
+  UtObjectRef data4 = ut_uint8_list_new_from_hex_string("81012a");
+  UtObjectRef decoder4 = ut_asn1_ber_decoder_new(data4);
+  UtObjectRef type4 = ut_asn1_tagged_type_new_take(
+      UT_ASN1_TAG_CLASS_CONTEXT_SPECIFIC, 1, false,
+      ut_asn1_tagged_type_new_take(UT_ASN1_TAG_CLASS_CONTEXT_SPECIFIC, 2, false,
+                                   ut_asn1_integer_type_new()));
+  UtObjectRef value4 = ut_asn1_decoder_decode_value(decoder4, type4);
+  ut_assert_null_object(ut_asn1_decoder_get_error(decoder4));
+  ut_assert_true(ut_object_is_int64(value4));
+  ut_assert_int_equal(ut_int64_get_value(value4), 42);
 }
 
 int main(int argc, char **argv) {

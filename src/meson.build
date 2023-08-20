@@ -20,6 +20,7 @@ ut_sources = [
   'asn1/ut-asn1-set-type.c',
   'asn1/ut-asn1-string.c',
   'asn1/ut-asn1-tag.c',
+  'asn1/ut-asn1-tagged-type.c',
   'asn1/ut-asn1-type.c',
   'asn1/ut-asn1-utf8-string-type.c',
   'dbus/ut-dbus-array.c',

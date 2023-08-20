@@ -793,6 +793,25 @@ static UtObject *decode_set_of_value(UtAsn1BerDecoder *self, UtObject *type,
 }
 
 static UtObject *decode_value(UtAsn1BerDecoder *self, UtObject *type,
+                              bool decode_tag);
+
+static UtObject *decode_tagged_value(UtAsn1BerDecoder *self, UtObject *type,
+                                     bool decode_tag) {
+  if (decode_tag && !expect_tag(self, ut_asn1_tagged_type_get_class(type),
+                                ut_asn1_tagged_type_get_number(type))) {
+    return NULL; // FIXME: Will this cause problems? Perhap UtNull?
+  }
+
+  if (ut_asn1_tagged_type_get_is_explicit(type)) {
+    UtObjectRef decoder = ut_asn1_ber_decoder_new(self->contents);
+    return ut_asn1_decoder_decode_value(decoder,
+                                        ut_asn1_tagged_type_get_type(type));
+  } else {
+    return decode_value(self, ut_asn1_tagged_type_get_type(type), false);
+  }
+}
+
+static UtObject *decode_value(UtAsn1BerDecoder *self, UtObject *type,
                               bool decode_tag) {
   if (ut_object_is_asn1_boolean_type(type)) {
     return decode_boolean_value(self, decode_tag);
@@ -822,6 +841,8 @@ static UtObject *decode_value(UtAsn1BerDecoder *self, UtObject *type,
     return decode_set_value(self, type, decode_tag);
   } else if (ut_object_is_asn1_set_of_type(type)) {
     return decode_set_of_value(self, type, decode_tag);
+  } else if (ut_object_is_asn1_tagged_type(type)) {
+    return decode_tagged_value(self, type, decode_tag);
   } else {
     ut_cstring_ref description = ut_cstring_new_printf(
         "Unknown ASN.1 type %s", ut_object_get_type_name(type));
@@ -885,10 +906,10 @@ UtObject *ut_asn1_ber_decoder_new(UtObject *data) {
     class = UT_ASN1_TAG_CLASS_UNIVERSAL;
     break;
   case 0x40:
-    class = UT_ASN1_TAG_CLASS_CONTEXT_SPECIFIC;
+    class = UT_ASN1_TAG_CLASS_APPLICATION;
     break;
   case 0x80:
-    class = UT_ASN1_TAG_CLASS_APPLICATION;
+    class = UT_ASN1_TAG_CLASS_CONTEXT_SPECIFIC;
     break;
   case 0xc0:
     class = UT_ASN1_TAG_CLASS_PRIVATE;

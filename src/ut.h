@@ -18,6 +18,7 @@
 #include "asn1/ut-asn1-set-of-type.h"
 #include "asn1/ut-asn1-set-type.h"
 #include "asn1/ut-asn1-tag.h"
+#include "asn1/ut-asn1-tagged-type.h"
 #include "asn1/ut-asn1-type.h"
 #include "asn1/ut-asn1-utf8-string-type.h"
 #include "dbus/ut-dbus-array.h"
