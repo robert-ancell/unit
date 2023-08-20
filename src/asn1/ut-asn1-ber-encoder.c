@@ -676,6 +676,28 @@ static size_t encode_set_of_value(UtAsn1BerEncoder *self, UtObject *type,
   return length;
 }
 
+static size_t encode_choice_value(UtAsn1BerEncoder *self, UtObject *type,
+                                  UtObject *value, bool encode_tag,
+                                  bool *is_constructed) {
+  if (!ut_object_is_asn1_choice_value(value)) {
+    set_type_error(self, "CHOICE", value);
+    return 0;
+  }
+
+  const char *identifier = ut_asn1_choice_value_get_identifier(value);
+  UtObject *choice_type = ut_asn1_choice_type_get_component(type, identifier);
+  if (choice_type == NULL) {
+    ut_cstring_ref description =
+        ut_cstring_new_printf("Invalid choice component %s", identifier);
+    set_error(self, description);
+    *is_constructed = false;
+    return 0;
+  }
+
+  return encode_value(self, choice_type, ut_asn1_choice_value_get_value(value),
+                      encode_tag, is_constructed);
+}
+
 static size_t encode_tagged_value(UtAsn1BerEncoder *self, UtObject *type,
                                   UtObject *value, bool encode_tag,
                                   bool *is_constructed) {
@@ -727,6 +749,8 @@ static size_t encode_value(UtAsn1BerEncoder *self, UtObject *type,
     return encode_set_value(self, type, value, encode_tag, is_constructed);
   } else if (ut_object_is_asn1_set_of_type(type)) {
     return encode_set_of_value(self, type, value, encode_tag, is_constructed);
+  } else if (ut_object_is_asn1_choice_type(type)) {
+    return encode_choice_value(self, type, value, encode_tag, is_constructed);
   } else if (ut_object_is_asn1_tagged_type(type)) {
     return encode_tagged_value(self, type, value, encode_tag, is_constructed);
   } else {

@@ -3,6 +3,8 @@ ut_sources = [
   'asn1/ut-asn1-ber-encoder.c',
   'asn1/ut-asn1-bit-string-type.c',
   'asn1/ut-asn1-boolean-type.c',
+  'asn1/ut-asn1-choice-type.c',
+  'asn1/ut-asn1-choice-value.c',
   'asn1/ut-asn1-decoder.c',
   'asn1/ut-asn1-encoder.c',
   'asn1/ut-asn1-enumerated-type.c',

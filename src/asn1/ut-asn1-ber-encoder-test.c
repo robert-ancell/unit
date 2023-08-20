@@ -932,7 +932,60 @@ static void test_visible_string() {
 }
 
 static void test_choice() {
-  // FIXME
+  // First choice.
+  UtObjectRef encoder1 = ut_asn1_ber_encoder_new();
+  UtObjectRef components1 = ut_map_new_ordered();
+  ut_map_insert_string_take(components1, "text",
+                            ut_asn1_utf8_string_type_new());
+  ut_map_insert_string_take(components1, "number", ut_asn1_integer_type_new());
+  UtObjectRef type1 = ut_asn1_choice_type_new(components1, false);
+  UtObjectRef value1 =
+      ut_asn1_choice_value_new_take("text", ut_string_new("Hello World"));
+  ut_asn1_encoder_encode_value(encoder1, type1, value1);
+  ut_assert_null_object(ut_asn1_encoder_get_error(encoder1));
+  UtObjectRef data1 = ut_asn1_ber_encoder_get_data(encoder1);
+  ut_assert_uint8_list_equal_hex(data1, "0c0b48656c6c6f20576f726c64");
+
+  // Second choice.
+  UtObjectRef encoder2 = ut_asn1_ber_encoder_new();
+  UtObjectRef components2 = ut_map_new_ordered();
+  ut_map_insert_string_take(components2, "text",
+                            ut_asn1_utf8_string_type_new());
+  ut_map_insert_string_take(components2, "number", ut_asn1_integer_type_new());
+  UtObjectRef type2 = ut_asn1_choice_type_new(components2, false);
+  UtObjectRef value2 =
+      ut_asn1_choice_value_new_take("number", ut_int64_new(42));
+  ut_asn1_encoder_encode_value(encoder2, type2, value2);
+  ut_assert_null_object(ut_asn1_encoder_get_error(encoder2));
+  UtObjectRef data2 = ut_asn1_ber_encoder_get_data(encoder2);
+  ut_assert_uint8_list_equal_hex(data2, "02012a");
+
+  // Unknown choice.
+  UtObjectRef encoder3 = ut_asn1_ber_encoder_new();
+  UtObjectRef components3 = ut_map_new_ordered();
+  ut_map_insert_string_take(components3, "text",
+                            ut_asn1_utf8_string_type_new());
+  ut_map_insert_string_take(components3, "number", ut_asn1_integer_type_new());
+  UtObjectRef type3 = ut_asn1_choice_type_new(components3, false);
+  UtObjectRef value3 =
+      ut_asn1_choice_value_new_take("invalid", ut_string_new("Oops"));
+  ut_asn1_encoder_encode_value(encoder3, type3, value3);
+  ut_assert_is_error_with_description(ut_asn1_encoder_get_error(encoder3),
+                                      "Invalid choice component invalid");
+
+  // Wrong value for choice.
+  UtObjectRef encoder4 = ut_asn1_ber_encoder_new();
+  UtObjectRef components4 = ut_map_new_ordered();
+  ut_map_insert_string_take(components4, "text",
+                            ut_asn1_utf8_string_type_new());
+  ut_map_insert_string_take(components4, "number", ut_asn1_integer_type_new());
+  UtObjectRef type4 = ut_asn1_choice_type_new(components4, false);
+  UtObjectRef value4 =
+      ut_asn1_choice_value_new_take("number", ut_string_new("Oops"));
+  ut_asn1_encoder_encode_value(encoder4, type4, value4);
+  ut_assert_is_error_with_description(
+      ut_asn1_encoder_get_error(encoder4),
+      "Unknown type UtUtf8String provided for INTEGER");
 }
 
 static void test_tagged_type() {

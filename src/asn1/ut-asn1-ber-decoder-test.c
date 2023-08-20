@@ -1345,7 +1345,66 @@ static void test_visible_string() {
 }
 
 static void test_choice() {
-  // FIXME
+  // First choice.
+  UtObjectRef data1 =
+      ut_uint8_list_new_from_hex_string("0c0b48656c6c6f20576f726c64");
+  UtObjectRef decoder1 = ut_asn1_ber_decoder_new(data1);
+  UtObjectRef components1 = ut_map_new_ordered();
+  ut_map_insert_string_take(components1, "text",
+                            ut_asn1_utf8_string_type_new());
+  ut_map_insert_string_take(components1, "number", ut_asn1_integer_type_new());
+  UtObjectRef type1 = ut_asn1_choice_type_new(components1, false);
+  UtObjectRef value1 = ut_asn1_decoder_decode_value(decoder1, type1);
+  ut_assert_null_object(ut_asn1_decoder_get_error(decoder1));
+  ut_assert_true(ut_object_is_asn1_choice_value(value1));
+  ut_assert_cstring_equal(ut_asn1_choice_value_get_identifier(value1), "text");
+  UtObject *value1i = ut_asn1_choice_value_get_value(value1);
+  ut_assert_true(ut_object_implements_string(value1i));
+  ut_assert_cstring_equal(ut_string_get_text(value1i), "Hello World");
+
+  // Second choice.
+  UtObjectRef data2 = ut_uint8_list_new_from_hex_string("02012a");
+  UtObjectRef decoder2 = ut_asn1_ber_decoder_new(data2);
+  UtObjectRef components2 = ut_map_new_ordered();
+  ut_map_insert_string_take(components2, "text",
+                            ut_asn1_utf8_string_type_new());
+  ut_map_insert_string_take(components2, "number", ut_asn1_integer_type_new());
+  UtObjectRef type2 = ut_asn1_choice_type_new(components2, false);
+  UtObjectRef value2 = ut_asn1_decoder_decode_value(decoder2, type2);
+  ut_assert_null_object(ut_asn1_decoder_get_error(decoder2));
+  ut_assert_true(ut_object_is_asn1_choice_value(value2));
+  ut_assert_cstring_equal(ut_asn1_choice_value_get_identifier(value2),
+                          "number");
+  UtObject *value2i = ut_asn1_choice_value_get_value(value2);
+  ut_assert_true(ut_object_is_int64(value2i));
+  ut_assert_int_equal(ut_int64_get_value(value2i), 42);
+
+  // Unknown value (extensible).
+  UtObjectRef data3 = ut_uint8_list_new_from_hex_string("0101ff");
+  UtObjectRef decoder3 = ut_asn1_ber_decoder_new(data3);
+  UtObjectRef components3 = ut_map_new_ordered();
+  ut_map_insert_string_take(components3, "text",
+                            ut_asn1_utf8_string_type_new());
+  ut_map_insert_string_take(components3, "number", ut_asn1_integer_type_new());
+  UtObjectRef type3 = ut_asn1_choice_type_new(components3, true);
+  UtObjectRef value3 = ut_asn1_decoder_decode_value(decoder3, type3);
+  ut_assert_null_object(ut_asn1_decoder_get_error(decoder3));
+  ut_assert_true(ut_object_is_asn1_choice_value(value3));
+  ut_assert_cstring_equal(ut_asn1_choice_value_get_identifier(value3),
+                          "<extension>");
+  ut_assert_null_object(ut_asn1_choice_value_get_value(value3));
+
+  // Unknown value (not extensible).
+  UtObjectRef data4 = ut_uint8_list_new_from_hex_string("0101ff");
+  UtObjectRef decoder4 = ut_asn1_ber_decoder_new(data4);
+  UtObjectRef components4 = ut_map_new_ordered();
+  ut_map_insert_string_take(components4, "text",
+                            ut_asn1_utf8_string_type_new());
+  ut_map_insert_string_take(components4, "number", ut_asn1_integer_type_new());
+  UtObjectRef type4 = ut_asn1_choice_type_new(components4, false);
+  UtObjectRef value4 = ut_asn1_decoder_decode_value(decoder4, type4);
+  ut_assert_is_error_with_description(ut_asn1_decoder_get_error(decoder4),
+                                      "Unknown CHOICE value");
 }
 
 static void test_tagged_type() {

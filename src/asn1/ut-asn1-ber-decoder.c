@@ -828,11 +828,38 @@ static UtObject *decode_set_of_value(UtAsn1BerDecoder *self, UtObject *type,
 static UtObject *decode_value(UtAsn1BerDecoder *self, UtObject *type,
                               bool decode_tag);
 
+static UtObject *decode_choice_value(UtAsn1BerDecoder *self, UtObject *type,
+                                     bool decode_tag) {
+  UtObject *components = ut_asn1_choice_type_get_components(type);
+
+  // FIXME: decode_tag must be true - throw an error?
+
+  UtObjectRef items = ut_map_get_items(components);
+  size_t items_length = ut_list_get_length(items);
+  for (size_t i = 0; i < items_length; i++) {
+    UtObject *item = ut_object_list_get_element(items, i);
+    UtObjectRef item_type = ut_map_item_get_value(item);
+    if (ut_asn1_type_matches_tag(item_type, self->tag)) {
+      UtObjectRef identifier = ut_map_item_get_key(item);
+      UtObjectRef value = decode_value(self, item_type, true);
+      return ut_asn1_choice_value_new(ut_string_get_text(identifier), value);
+    }
+  }
+
+  // Can have unknown values if extensible.
+  if (ut_asn1_choice_type_get_extensible(type)) {
+    return ut_asn1_choice_value_new("<extension>", NULL);
+  }
+
+  set_error(self, "Unknown CHOICE value");
+  return ut_asn1_choice_value_new_take("", NULL);
+}
+
 static UtObject *decode_tagged_value(UtAsn1BerDecoder *self, UtObject *type,
                                      bool decode_tag) {
   if (decode_tag && !expect_tag(self, ut_asn1_tagged_type_get_class(type),
                                 ut_asn1_tagged_type_get_number(type))) {
-    return NULL; // FIXME: Will this cause problems? Perhap UtNull?
+    return NULL;
   }
 
   if (ut_asn1_tagged_type_get_is_explicit(type)) {
@@ -874,6 +901,8 @@ static UtObject *decode_value(UtAsn1BerDecoder *self, UtObject *type,
     return decode_set_value(self, type, decode_tag);
   } else if (ut_object_is_asn1_set_of_type(type)) {
     return decode_set_of_value(self, type, decode_tag);
+  } else if (ut_object_is_asn1_choice_type(type)) {
+    return decode_choice_value(self, type, decode_tag);
   } else if (ut_object_is_asn1_tagged_type(type)) {
     return decode_tagged_value(self, type, decode_tag);
   } else {
