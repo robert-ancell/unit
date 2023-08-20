@@ -14,7 +14,7 @@ static bool tag_matches(UtAsn1Tag *self, UtAsn1TagClass class,
   return self->class == class && self->number == number;
 }
 
-static char *ut_asn1_tag_to_string(UtObject *object) {
+static char *ut_asn1_tag_to_object_string(UtObject *object) {
   UtAsn1Tag *self = (UtAsn1Tag *)object;
   return ut_cstring_new_printf("<UtAsn1Tag>(%d, %d)", self->class,
                                self->number);
@@ -28,7 +28,8 @@ static bool ut_asn1_tag_equal(UtObject *object, UtObject *other) {
 }
 
 static UtObjectInterface object_interface = {.type_name = "UtAsn1Tag",
-                                             .to_string = ut_asn1_tag_to_string,
+                                             .to_string =
+                                                 ut_asn1_tag_to_object_string,
                                              .equal = ut_asn1_tag_equal};
 
 UtObject *ut_asn1_tag_new(UtAsn1TagClass class, uint32_t number) {
@@ -60,6 +61,23 @@ bool ut_asn1_tag_matches(UtObject *object, UtAsn1TagClass class,
   assert(ut_object_is_asn1_tag(object));
   UtAsn1Tag *self = (UtAsn1Tag *)object;
   return tag_matches(self, class, number);
+}
+
+char *ut_asn1_tag_to_string(UtObject *object) {
+  assert(ut_object_is_asn1_tag(object));
+  UtAsn1Tag *self = (UtAsn1Tag *)object;
+  switch (self->class) {
+  case UT_ASN1_TAG_CLASS_UNIVERSAL:
+    return ut_cstring_new_printf("[UNIVERSAL %d]", self->number);
+  case UT_ASN1_TAG_CLASS_APPLICATION:
+    return ut_cstring_new_printf("[APPLICATION %d]", self->number);
+  case UT_ASN1_TAG_CLASS_CONTEXT_SPECIFIC:
+    return ut_cstring_new_printf("[%d]", self->number);
+  case UT_ASN1_TAG_CLASS_PRIVATE:
+    return ut_cstring_new_printf("[PRIVATE %d]", self->number);
+  default:
+    assert(false);
+  }
 }
 
 /// Returns [true] if [object] is a [UtAsn1Tag].

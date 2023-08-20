@@ -55,5 +55,7 @@ uint32_t ut_asn1_tag_get_number(UtObject *object);
 bool ut_asn1_tag_matches(UtObject *object, UtAsn1TagClass class,
                          uint32_t number);
 
+char *ut_asn1_tag_to_string(UtObject *object);
+
 /// Returns [true] if [object] is a [UtAsn1Tag].
 bool ut_object_is_asn1_tag(UtObject *object);

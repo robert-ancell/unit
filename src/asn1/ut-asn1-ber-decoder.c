@@ -468,7 +468,12 @@ static UtObject *decode_relative_oid(UtAsn1BerDecoder *self) {
 static bool expect_tag(UtAsn1BerDecoder *self, UtAsn1TagClass class,
                        uint32_t number) {
   if (!ut_asn1_tag_matches(self->tag, class, number)) {
-    set_error(self, "Unexpected tag");
+    UtObjectRef expected_tag = ut_asn1_tag_new(class, number);
+    ut_cstring_ref expected_tag_string = ut_asn1_tag_to_string(expected_tag);
+    ut_cstring_ref received_tag_string = ut_asn1_tag_to_string(self->tag);
+    ut_cstring_ref description = ut_cstring_new_printf(
+        "Expected tag %s, got %s", expected_tag_string, received_tag_string);
+    set_error(self, description);
     return false;
   }
 
