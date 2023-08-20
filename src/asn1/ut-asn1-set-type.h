@@ -9,6 +9,11 @@
 /// !return-ref
 UtObject *ut_asn1_set_type_new(UtObject *components, bool extensible);
 
+/// Creates a new [UtAsn1SetType] object.
+///
+/// !return-ref
+UtObject *ut_asn1_set_type_new_take(UtObject *components, bool extensible);
+
 UtObject *ut_asn1_set_type_get_components(UtObject *object);
 
 bool ut_asn1_set_type_get_extensible(UtObject *object);

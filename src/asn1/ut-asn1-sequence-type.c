@@ -44,6 +44,13 @@ UtObject *ut_asn1_sequence_type_new(UtObject *components, bool extensible) {
   return object;
 }
 
+UtObject *ut_asn1_sequence_type_new_take(UtObject *components,
+                                         bool extensible) {
+  UtObject *object = ut_asn1_sequence_type_new(components, extensible);
+  ut_object_unref(components);
+  return object;
+}
+
 UtObject *ut_asn1_sequence_type_get_components(UtObject *object) {
   assert(ut_object_is_asn1_sequence_type(object));
   UtAsn1SequenceType *self = (UtAsn1SequenceType *)object;

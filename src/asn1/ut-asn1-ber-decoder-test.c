@@ -832,8 +832,8 @@ static void test_sequence() {
   // Decoded as object with type (empty sequence).
   UtObjectRef data4 = ut_uint8_list_new_from_hex_string("3000");
   UtObjectRef decoder4 = ut_asn1_ber_decoder_new(data4);
-  UtObjectRef components4 = ut_map_new_ordered();
-  UtObjectRef type4 = ut_asn1_sequence_type_new(components4, false);
+  UtObjectRef type4 =
+      ut_asn1_sequence_type_new_take(ut_map_new_ordered(), false);
   UtObjectRef value4 = ut_asn1_decoder_decode_value(decoder4, type4);
   ut_assert_null_object(ut_asn1_decoder_get_error(decoder4));
   ut_assert_true(ut_object_implements_map(value4));
@@ -954,8 +954,7 @@ static void test_set() {
   // Decoded as object with type (empty set).
   UtObjectRef data4 = ut_uint8_list_new_from_hex_string("3100");
   UtObjectRef decoder4 = ut_asn1_ber_decoder_new(data4);
-  UtObjectRef components4 = ut_map_new_ordered();
-  UtObjectRef type4 = ut_asn1_set_type_new(components4, false);
+  UtObjectRef type4 = ut_asn1_set_type_new_take(ut_map_new_ordered(), false);
   UtObjectRef value4 = ut_asn1_decoder_decode_value(decoder4, type4);
   ut_assert_null_object(ut_asn1_decoder_get_error(decoder4));
   ut_assert_true(ut_object_implements_map(value4));
