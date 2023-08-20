@@ -605,6 +605,7 @@ static UtObject *decode_sequence_value(UtAsn1BerDecoder *self, UtObject *type,
     return ut_map_new();
   }
 
+  bool extensible = ut_asn1_sequence_type_get_extensible(type);
   UtObject *components = ut_asn1_sequence_type_get_components(type);
   size_t components_length = ut_map_get_length(components);
   UtObjectRef component_items = ut_map_get_items(components);
@@ -620,8 +621,11 @@ static UtObject *decode_sequence_value(UtAsn1BerDecoder *self, UtObject *type,
     offset += ut_asn1_ber_decoder_get_length(decoder);
 
     if (next_component >= components_length) {
-      // FIXME: Ignore if sequence extensible
-      set_error(self, "Required SEQUENCE components missing");
+      // If extensible, ignore all additional components.
+      if (extensible) {
+        continue;
+      }
+      set_error(self, "Too many SEQUENCE components");
       return ut_map_new();
     }
 
@@ -729,6 +733,7 @@ static UtObject *decode_set_value(UtAsn1BerDecoder *self, UtObject *type,
     return ut_map_new();
   }
 
+  bool extensible = ut_asn1_set_type_get_extensible(type);
   UtObject *components = ut_asn1_set_type_get_components(type);
   size_t components_length = ut_map_get_length(components);
 
@@ -743,7 +748,10 @@ static UtObject *decode_set_value(UtAsn1BerDecoder *self, UtObject *type,
 
     UtObjectRef component_name = match_component(decoder, components);
     if (component_name == NULL) {
-      // FIXME: Allowed if extensible.
+      // If extensible, ignore all unknown components.
+      if (extensible) {
+        continue;
+      }
       set_error(self, "Unknown SET component");
       return ut_map_new();
     }

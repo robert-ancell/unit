@@ -839,9 +839,27 @@ static void test_sequence() {
   ut_assert_true(ut_object_implements_map(value4));
   ut_assert_int_equal(ut_map_get_length(value4), 0);
 
+  // Additional component (extensible).
+  UtObjectRef data5 = ut_uint8_list_new_from_hex_string(
+      "30130c0b4172746875722044656e7402012a0101ff");
+  UtObjectRef decoder5 = ut_asn1_ber_decoder_new(data5);
+  UtObjectRef components5 = ut_map_new_ordered();
+  ut_map_insert_string_take(components5, "name",
+                            ut_asn1_utf8_string_type_new());
+  ut_map_insert_string_take(components5, "age", ut_asn1_integer_type_new());
+  UtObjectRef type5 = ut_asn1_sequence_type_new(components5, true);
+  UtObjectRef value5 = ut_asn1_decoder_decode_value(decoder5, type5);
+  ut_assert_null_object(ut_asn1_decoder_get_error(decoder5));
+  ut_assert_int_equal(ut_map_get_length(value5), 2);
+  UtObject *value5a = ut_map_lookup_string(value5, "name");
+  ut_assert_true(ut_object_implements_string(value5a));
+  ut_assert_cstring_equal(ut_string_get_text(value5a), "Arthur Dent");
+  UtObject *value5b = ut_map_lookup_string(value5, "age");
+  ut_assert_true(ut_object_is_int64(value5b));
+  ut_assert_int_equal(ut_int64_get_value(value5b), 42);
+
   // FIXME: Optional components.
   // FIXME: Default components.
-  // FIXME: Extended type with additional components.
 
   // Non-constructed form.
   UtObjectRef data10 = ut_uint8_list_new_from_hex_string("1000");
@@ -865,7 +883,7 @@ static void test_sequence() {
 
   // Components in reverse order.
   UtObjectRef data12 =
-      ut_uint8_list_new_from_hex_string("311002012a0c0b4172746875722044656e74");
+      ut_uint8_list_new_from_hex_string("301002012a0c0b4172746875722044656e74");
   UtObjectRef decoder12 = ut_asn1_ber_decoder_new(data12);
   UtObjectRef components12 = ut_map_new_ordered();
   ut_map_insert_string_take(components12, "name",
@@ -873,8 +891,22 @@ static void test_sequence() {
   ut_map_insert_string_take(components12, "age", ut_asn1_integer_type_new());
   UtObjectRef type12 = ut_asn1_sequence_type_new(components12, false);
   UtObjectRef value12 = ut_asn1_decoder_decode_value(decoder12, type12);
-  ut_assert_is_error_with_description(ut_asn1_decoder_get_error(decoder12),
-                                      "Unexpected tag");
+  ut_assert_is_error_with_description(
+      ut_asn1_decoder_get_error(decoder12),
+      "Required SEQUENCE component name missing");
+
+  // Additional component (not extensible).
+  UtObjectRef data13 = ut_uint8_list_new_from_hex_string(
+      "30130c0b4172746875722044656e7402012a0101ff");
+  UtObjectRef decoder13 = ut_asn1_ber_decoder_new(data13);
+  UtObjectRef components13 = ut_map_new_ordered();
+  ut_map_insert_string_take(components13, "name",
+                            ut_asn1_utf8_string_type_new());
+  ut_map_insert_string_take(components13, "age", ut_asn1_integer_type_new());
+  UtObjectRef type13 = ut_asn1_sequence_type_new(components13, false);
+  UtObjectRef value13 = ut_asn1_decoder_decode_value(decoder13, type13);
+  ut_assert_is_error_with_description(ut_asn1_decoder_get_error(decoder13),
+                                      "Too many SEQUENCE components");
 }
 
 static void test_sequence_of() {
@@ -980,6 +1012,25 @@ static void test_set() {
   ut_assert_true(ut_object_is_int64(value5b));
   ut_assert_int_equal(ut_int64_get_value(value5b), 42);
 
+  // Additional component (extensible).
+  UtObjectRef data6 = ut_uint8_list_new_from_hex_string(
+      "31130c0b4172746875722044656e7402012a0101ff");
+  UtObjectRef decoder6 = ut_asn1_ber_decoder_new(data6);
+  UtObjectRef components6 = ut_map_new_ordered();
+  ut_map_insert_string_take(components6, "name",
+                            ut_asn1_utf8_string_type_new());
+  ut_map_insert_string_take(components6, "age", ut_asn1_integer_type_new());
+  UtObjectRef type6 = ut_asn1_set_type_new(components6, true);
+  UtObjectRef value6 = ut_asn1_decoder_decode_value(decoder6, type6);
+  ut_assert_null_object(ut_asn1_decoder_get_error(decoder6));
+  ut_assert_int_equal(ut_map_get_length(value6), 2);
+  UtObject *value6a = ut_map_lookup_string(value6, "name");
+  ut_assert_true(ut_object_implements_string(value6a));
+  ut_assert_cstring_equal(ut_string_get_text(value6a), "Arthur Dent");
+  UtObject *value6b = ut_map_lookup_string(value6, "age");
+  ut_assert_true(ut_object_is_int64(value6b));
+  ut_assert_int_equal(ut_int64_get_value(value6b), 42);
+
   // Non-constructed form.
   UtObjectRef data10 = ut_uint8_list_new_from_hex_string("1100");
   UtObjectRef decoder10 = ut_asn1_ber_decoder_new(data10);
@@ -999,6 +1050,19 @@ static void test_set() {
   UtObjectRef value11 = ut_asn1_decoder_decode_value(decoder11, type11);
   ut_assert_is_error_with_description(ut_asn1_decoder_get_error(decoder11),
                                       "Required SET components missing");
+
+  // Additional component (not extensible).
+  UtObjectRef data13 = ut_uint8_list_new_from_hex_string(
+      "31130c0b4172746875722044656e7402012a0101ff");
+  UtObjectRef decoder13 = ut_asn1_ber_decoder_new(data13);
+  UtObjectRef components13 = ut_map_new_ordered();
+  ut_map_insert_string_take(components13, "name",
+                            ut_asn1_utf8_string_type_new());
+  ut_map_insert_string_take(components13, "age", ut_asn1_integer_type_new());
+  UtObjectRef type13 = ut_asn1_set_type_new(components13, false);
+  UtObjectRef value13 = ut_asn1_decoder_decode_value(decoder13, type13);
+  ut_assert_is_error_with_description(ut_asn1_decoder_get_error(decoder13),
+                                      "Unknown SET component");
 }
 
 static void test_set_of() {
