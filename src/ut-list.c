@@ -14,9 +14,9 @@ UtObject *ut_list_new_from_elements(UtObject *item0, ...) {
     return object;
   }
 
+  ut_list_append(object, item0);
   va_list ap;
   va_start(ap, item0);
-  ut_list_append(object, item0);
   while (true) {
     UtObject *value = va_arg(ap, UtObject *);
     if (value == NULL) {

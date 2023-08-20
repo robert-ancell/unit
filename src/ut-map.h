@@ -1,3 +1,4 @@
+#include <stdarg.h>
 #include <stdbool.h>
 #include <stddef.h>
 
@@ -18,9 +19,15 @@ typedef struct {
 extern int ut_map_id;
 
 /// Ordered by default.
+/// !return-ref
 UtObject *ut_map_new();
 
+/// !return-ref
 UtObject *ut_map_new_unordered();
+
+/// !return-ref
+UtObject *ut_map_new_string_from_elements_take(const char *key, UtObject *value,
+                                               ...);
 
 size_t ut_map_get_length(UtObject *object);
 
@@ -39,13 +46,13 @@ UtObject *ut_map_lookup_string(UtObject *object, const char *key);
 
 void ut_map_remove(UtObject *object, UtObject *key);
 
-// Returns a reference.
+/// !return-ref
 UtObject *ut_map_get_items(UtObject *object);
 
-// Returns a reference.
+/// !return-ref
 UtObject *ut_map_get_keys(UtObject *object);
 
-// Returns a reference.
+/// !return-ref
 UtObject *ut_map_get_values(UtObject *object);
 
 char *ut_map_to_string(UtObject *object);

@@ -105,21 +105,17 @@ static void test_encode() {
       ut_json_encoder_encode(encoder, empty_object);
   ut_assert_cstring_equal(empty_object_text, "{}");
 
-  UtObjectRef number_object = ut_map_new();
-  ut_map_insert_take(number_object, ut_string_new("one"), ut_int64_new(1));
-  ut_map_insert_take(number_object, ut_string_new("two"), ut_int64_new(2));
-  ut_map_insert_take(number_object, ut_string_new("three"), ut_int64_new(3));
+  UtObjectRef number_object = ut_map_new_string_from_elements_take(
+      "one", ut_int64_new(1), "two", ut_int64_new(2), "three", ut_int64_new(3),
+      NULL);
   ut_cstring_ref number_object_text =
       ut_json_encoder_encode(encoder, number_object);
   ut_assert_cstring_equal(number_object_text,
                           "{\"one\":1,\"two\":2,\"three\":3}");
 
-  UtObjectRef mixed_object = ut_map_new();
-  ut_map_insert_take(mixed_object, ut_string_new("boolean"),
-                     ut_boolean_new(true));
-  ut_map_insert_take(mixed_object, ut_string_new("number"), ut_int64_new(42));
-  ut_map_insert_take(mixed_object, ut_string_new("string"),
-                     ut_string_new("foo"));
+  UtObjectRef mixed_object = ut_map_new_string_from_elements_take(
+      "boolean", ut_boolean_new(true), "number", ut_int64_new(42), "string",
+      ut_string_new("foo"), NULL);
   ut_cstring_ref mixed_object_text =
       ut_json_encoder_encode(encoder, mixed_object);
   ut_assert_cstring_equal(

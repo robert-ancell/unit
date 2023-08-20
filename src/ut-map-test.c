@@ -3,6 +3,8 @@
 
 #include "ut.h"
 
+// FIXME: Write tests.
+
 int main(int argc, char **argv) {
   UtObjectRef map = ut_map_new();
   ut_map_insert_string_take(map, "one", ut_uint8_new(1));

@@ -573,10 +573,9 @@ static void test_enumerated() {
 
   // Encoded as object with type.
   UtObjectRef encoder2 = ut_asn1_ber_encoder_new();
-  UtObjectRef type2_items = ut_map_new();
-  ut_map_insert_take(type2_items, ut_string_new("red"), ut_uint64_new(1));
-  ut_map_insert_take(type2_items, ut_string_new("green"), ut_uint64_new(2));
-  ut_map_insert_take(type2_items, ut_string_new("blue"), ut_uint64_new(3));
+  UtObjectRef type2_items = ut_map_new_string_from_elements_take(
+      "red", ut_uint64_new(1), "green", ut_uint64_new(2), "blue",
+      ut_uint64_new(3), NULL);
   UtObjectRef type2 = ut_asn1_enumerated_type_new(type2_items, false);
   UtObjectRef value2 = ut_string_new("green");
   ut_asn1_encoder_encode_value(encoder2, type2, value2);
@@ -641,14 +640,12 @@ static void test_relative_oid() {
 
 static void test_sequence() {
   UtObjectRef encoder1 = ut_asn1_ber_encoder_new();
-  UtObjectRef components1 = ut_map_new();
-  ut_map_insert_string_take(components1, "name",
-                            ut_asn1_utf8_string_type_new());
-  ut_map_insert_string_take(components1, "age", ut_asn1_integer_type_new());
+  UtObjectRef components1 = ut_map_new_string_from_elements_take(
+      "name", ut_asn1_utf8_string_type_new(), "age", ut_asn1_integer_type_new(),
+      NULL);
   UtObjectRef type1 = ut_asn1_sequence_type_new(components1, false);
-  UtObjectRef value1 = ut_map_new();
-  ut_map_insert_string_take(value1, "name", ut_string_new("Arthur Dent"));
-  ut_map_insert_string_take(value1, "age", ut_int64_new(42));
+  UtObjectRef value1 = ut_map_new_string_from_elements_take(
+      "name", ut_string_new("Arthur Dent"), "age", ut_int64_new(42), NULL);
   ut_asn1_encoder_encode_value(encoder1, type1, value1);
   ut_assert_null_object(ut_asn1_encoder_get_error(encoder1));
   UtObjectRef data1 = ut_asn1_ber_encoder_get_data(encoder1);
@@ -666,19 +663,14 @@ static void test_sequence() {
 
   // Optional component (present).
   UtObjectRef encoder3 = ut_asn1_ber_encoder_new();
-  UtObjectRef components3 = ut_map_new();
-  ut_map_insert_string_take(components3, "name",
-                            ut_asn1_utf8_string_type_new());
-  ut_map_insert_string_take(
-      components3, "alternate_name",
-      ut_asn1_optional_type_new_take(ut_asn1_utf8_string_type_new()));
-  ut_map_insert_string_take(components3, "age", ut_asn1_integer_type_new());
+  UtObjectRef components3 = ut_map_new_string_from_elements_take(
+      "name", ut_asn1_utf8_string_type_new(), "alternate_name",
+      ut_asn1_optional_type_new_take(ut_asn1_utf8_string_type_new()), "age",
+      ut_asn1_integer_type_new(), NULL);
   UtObjectRef type3 = ut_asn1_sequence_type_new(components3, false);
-  UtObjectRef value3 = ut_map_new();
-  ut_map_insert_string_take(value3, "name", ut_string_new("Arthur Dent"));
-  ut_map_insert_string_take(value3, "alternate_name",
-                            ut_string_new("Slartibartfast"));
-  ut_map_insert_string_take(value3, "age", ut_int64_new(42));
+  UtObjectRef value3 = ut_map_new_string_from_elements_take(
+      "name", ut_string_new("Arthur Dent"), "alternate_name",
+      ut_string_new("Slartibartfast"), "age", ut_int64_new(42), NULL);
   ut_asn1_encoder_encode_value(encoder3, type3, value3);
   ut_assert_null_object(ut_asn1_encoder_get_error(encoder3));
   UtObjectRef data3 = ut_asn1_ber_encoder_get_data(encoder3);
@@ -688,17 +680,13 @@ static void test_sequence() {
 
   // Optional component (not present).
   UtObjectRef encoder4 = ut_asn1_ber_encoder_new();
-  UtObjectRef components4 = ut_map_new();
-  ut_map_insert_string_take(components4, "name",
-                            ut_asn1_utf8_string_type_new());
-  ut_map_insert_string_take(
-      components4, "alternate_name",
-      ut_asn1_optional_type_new_take(ut_asn1_utf8_string_type_new()));
-  ut_map_insert_string_take(components4, "age", ut_asn1_integer_type_new());
+  UtObjectRef components4 = ut_map_new_string_from_elements_take(
+      "name", ut_asn1_utf8_string_type_new(), "alternate_name",
+      ut_asn1_optional_type_new_take(ut_asn1_utf8_string_type_new()), "age",
+      ut_asn1_integer_type_new(), NULL);
   UtObjectRef type4 = ut_asn1_sequence_type_new(components4, false);
-  UtObjectRef value4 = ut_map_new();
-  ut_map_insert_string_take(value4, "name", ut_string_new("Arthur Dent"));
-  ut_map_insert_string_take(value4, "age", ut_int64_new(42));
+  UtObjectRef value4 = ut_map_new_string_from_elements_take(
+      "name", ut_string_new("Arthur Dent"), "age", ut_int64_new(42), NULL);
   ut_asn1_encoder_encode_value(encoder4, type4, value4);
   ut_assert_null_object(ut_asn1_encoder_get_error(encoder4));
   UtObjectRef data4 = ut_asn1_ber_encoder_get_data(encoder4);
@@ -710,13 +698,12 @@ static void test_sequence() {
 
   // Missing required component.
   UtObjectRef encoder10 = ut_asn1_ber_encoder_new();
-  UtObjectRef components10 = ut_map_new();
-  ut_map_insert_string_take(components10, "name",
-                            ut_asn1_utf8_string_type_new());
-  ut_map_insert_string_take(components10, "age", ut_asn1_integer_type_new());
+  UtObjectRef components10 = ut_map_new_string_from_elements_take(
+      "name", ut_asn1_utf8_string_type_new(), "age", ut_asn1_integer_type_new(),
+      NULL);
   UtObjectRef type10 = ut_asn1_sequence_type_new(components10, false);
-  UtObjectRef value10 = ut_map_new();
-  ut_map_insert_string_take(value10, "name", ut_string_new("Arthur Dent"));
+  UtObjectRef value10 = ut_map_new_string_from_elements_take(
+      "name", ut_string_new("Arthur Dent"), NULL);
   ut_asn1_encoder_encode_value(encoder10, type10, value10);
   ut_assert_is_error_with_description(ut_asn1_encoder_get_error(encoder10),
                                       "Missing SEQUENCE component age");
@@ -746,14 +733,12 @@ static void test_sequence_of() {
 
 static void test_set() {
   UtObjectRef encoder1 = ut_asn1_ber_encoder_new();
-  UtObjectRef components1 = ut_map_new();
-  ut_map_insert_string_take(components1, "name",
-                            ut_asn1_utf8_string_type_new());
-  ut_map_insert_string_take(components1, "age", ut_asn1_integer_type_new());
+  UtObjectRef components1 = ut_map_new_string_from_elements_take(
+      "name", ut_asn1_utf8_string_type_new(), "age", ut_asn1_integer_type_new(),
+      NULL);
   UtObjectRef type1 = ut_asn1_set_type_new(components1, false);
-  UtObjectRef value1 = ut_map_new();
-  ut_map_insert_string_take(value1, "name", ut_string_new("Arthur Dent"));
-  ut_map_insert_string_take(value1, "age", ut_int64_new(42));
+  UtObjectRef value1 = ut_map_new_string_from_elements_take(
+      "name", ut_string_new("Arthur Dent"), "age", ut_int64_new(42), NULL);
   ut_asn1_encoder_encode_value(encoder1, type1, value1);
   ut_assert_null_object(ut_asn1_encoder_get_error(encoder1));
   UtObjectRef data1 = ut_asn1_ber_encoder_get_data(encoder1);
@@ -771,21 +756,16 @@ static void test_set() {
 
   // Optional component (present).
   UtObjectRef encoder3 = ut_asn1_ber_encoder_new();
-  UtObjectRef components3 = ut_map_new();
-  ut_map_insert_string_take(components3, "name",
-                            ut_asn1_utf8_string_type_new());
-  ut_map_insert_string_take(
-      components3, "alternate_name",
+  UtObjectRef components3 = ut_map_new_string_from_elements_take(
+      "name", ut_asn1_utf8_string_type_new(), "alternate_name",
       ut_asn1_optional_type_new_take(
           ut_asn1_tagged_type_new_take(UT_ASN1_TAG_CLASS_CONTEXT_SPECIFIC, 0,
-                                       false, ut_asn1_utf8_string_type_new())));
-  ut_map_insert_string_take(components3, "age", ut_asn1_integer_type_new());
+                                       false, ut_asn1_utf8_string_type_new())),
+      "age", ut_asn1_integer_type_new(), NULL);
   UtObjectRef type3 = ut_asn1_set_type_new(components3, false);
-  UtObjectRef value3 = ut_map_new();
-  ut_map_insert_string_take(value3, "name", ut_string_new("Arthur Dent"));
-  ut_map_insert_string_take(value3, "alternate_name",
-                            ut_string_new("Slartibartfast"));
-  ut_map_insert_string_take(value3, "age", ut_int64_new(42));
+  UtObjectRef value3 = ut_map_new_string_from_elements_take(
+      "name", ut_string_new("Arthur Dent"), "alternate_name",
+      ut_string_new("Slartibartfast"), "age", ut_int64_new(42), NULL);
   ut_asn1_encoder_encode_value(encoder3, type3, value3);
   ut_assert_null_object(ut_asn1_encoder_get_error(encoder3));
   UtObjectRef data3 = ut_asn1_ber_encoder_get_data(encoder3);
@@ -795,19 +775,15 @@ static void test_set() {
 
   // Optional component (not present).
   UtObjectRef encoder4 = ut_asn1_ber_encoder_new();
-  UtObjectRef components4 = ut_map_new();
-  ut_map_insert_string_take(components4, "name",
-                            ut_asn1_utf8_string_type_new());
-  ut_map_insert_string_take(
-      components4, "alternate_name",
+  UtObjectRef components4 = ut_map_new_string_from_elements_take(
+      "name", ut_asn1_utf8_string_type_new(), "alternate_name",
       ut_asn1_optional_type_new_take(
           ut_asn1_tagged_type_new_take(UT_ASN1_TAG_CLASS_CONTEXT_SPECIFIC, 0,
-                                       false, ut_asn1_utf8_string_type_new())));
-  ut_map_insert_string_take(components4, "age", ut_asn1_integer_type_new());
+                                       false, ut_asn1_utf8_string_type_new())),
+      "age", ut_asn1_integer_type_new(), NULL);
   UtObjectRef type4 = ut_asn1_set_type_new(components4, false);
-  UtObjectRef value4 = ut_map_new();
-  ut_map_insert_string_take(value4, "name", ut_string_new("Arthur Dent"));
-  ut_map_insert_string_take(value4, "age", ut_int64_new(42));
+  UtObjectRef value4 = ut_map_new_string_from_elements_take(
+      "name", ut_string_new("Arthur Dent"), "age", ut_int64_new(42), NULL);
   ut_asn1_encoder_encode_value(encoder4, type4, value4);
   ut_assert_null_object(ut_asn1_encoder_get_error(encoder4));
   UtObjectRef data4 = ut_asn1_ber_encoder_get_data(encoder4);
@@ -819,13 +795,12 @@ static void test_set() {
 
   // Missing required component.
   UtObjectRef encoder10 = ut_asn1_ber_encoder_new();
-  UtObjectRef components10 = ut_map_new();
-  ut_map_insert_string_take(components10, "name",
-                            ut_asn1_utf8_string_type_new());
-  ut_map_insert_string_take(components10, "age", ut_asn1_integer_type_new());
+  UtObjectRef components10 = ut_map_new_string_from_elements_take(
+      "name", ut_asn1_utf8_string_type_new(), "age", ut_asn1_integer_type_new(),
+      NULL);
   UtObjectRef type10 = ut_asn1_set_type_new(components10, false);
-  UtObjectRef value10 = ut_map_new();
-  ut_map_insert_string_take(value10, "name", ut_string_new("Arthur Dent"));
+  UtObjectRef value10 = ut_map_new_string_from_elements_take(
+      "name", ut_string_new("Arthur Dent"), NULL);
   ut_asn1_encoder_encode_value(encoder10, type10, value10);
   ut_assert_is_error_with_description(ut_asn1_encoder_get_error(encoder10),
                                       "Missing SET component age");
@@ -934,10 +909,9 @@ static void test_visible_string() {
 static void test_choice() {
   // First choice.
   UtObjectRef encoder1 = ut_asn1_ber_encoder_new();
-  UtObjectRef components1 = ut_map_new();
-  ut_map_insert_string_take(components1, "text",
-                            ut_asn1_utf8_string_type_new());
-  ut_map_insert_string_take(components1, "number", ut_asn1_integer_type_new());
+  UtObjectRef components1 = ut_map_new_string_from_elements_take(
+      "text", ut_asn1_utf8_string_type_new(), "number",
+      ut_asn1_integer_type_new(), NULL);
   UtObjectRef type1 = ut_asn1_choice_type_new(components1, false);
   UtObjectRef value1 =
       ut_asn1_choice_value_new_take("text", ut_string_new("Hello World"));
@@ -948,10 +922,9 @@ static void test_choice() {
 
   // Second choice.
   UtObjectRef encoder2 = ut_asn1_ber_encoder_new();
-  UtObjectRef components2 = ut_map_new();
-  ut_map_insert_string_take(components2, "text",
-                            ut_asn1_utf8_string_type_new());
-  ut_map_insert_string_take(components2, "number", ut_asn1_integer_type_new());
+  UtObjectRef components2 = ut_map_new_string_from_elements_take(
+      "text", ut_asn1_utf8_string_type_new(), "number",
+      ut_asn1_integer_type_new(), NULL);
   UtObjectRef type2 = ut_asn1_choice_type_new(components2, false);
   UtObjectRef value2 =
       ut_asn1_choice_value_new_take("number", ut_int64_new(42));
@@ -962,10 +935,9 @@ static void test_choice() {
 
   // Unknown choice.
   UtObjectRef encoder3 = ut_asn1_ber_encoder_new();
-  UtObjectRef components3 = ut_map_new();
-  ut_map_insert_string_take(components3, "text",
-                            ut_asn1_utf8_string_type_new());
-  ut_map_insert_string_take(components3, "number", ut_asn1_integer_type_new());
+  UtObjectRef components3 = ut_map_new_string_from_elements_take(
+      "text", ut_asn1_utf8_string_type_new(), "number",
+      ut_asn1_integer_type_new(), NULL);
   UtObjectRef type3 = ut_asn1_choice_type_new(components3, false);
   UtObjectRef value3 =
       ut_asn1_choice_value_new_take("invalid", ut_string_new("Oops"));
@@ -975,9 +947,8 @@ static void test_choice() {
 
   // Wrong value for choice.
   UtObjectRef encoder4 = ut_asn1_ber_encoder_new();
-  UtObjectRef components4 = ut_map_new();
-  ut_map_insert_string_take(components4, "text",
-                            ut_asn1_utf8_string_type_new());
+  UtObjectRef components4 = ut_map_new_string_from_elements_take(
+      "text", ut_asn1_utf8_string_type_new(), NULL);
   ut_map_insert_string_take(components4, "number", ut_asn1_integer_type_new());
   UtObjectRef type4 = ut_asn1_choice_type_new(components4, false);
   UtObjectRef value4 =

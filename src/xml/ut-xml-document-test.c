@@ -10,20 +10,18 @@ static void test_encode() {
       ut_xml_document_to_text(empty_element_document);
   ut_assert_cstring_equal(empty_element_text, "<tag/>");
 
-  UtObjectRef attribute_attributes = ut_map_new();
-  ut_map_insert_string_take(attribute_attributes, "name",
-                            ut_string_new("value"));
+  UtObjectRef attribute_attributes = ut_map_new_string_from_elements_take(
+      "name", ut_string_new("value"), NULL);
   UtObjectRef attribute_root =
       ut_xml_element_new("tag", attribute_attributes, NULL);
   UtObjectRef attribute_document = ut_xml_document_new(attribute_root);
   ut_cstring_ref attribute_text = ut_xml_document_to_text(attribute_document);
   ut_assert_cstring_equal(attribute_text, "<tag name=\"value\"/>");
 
-  UtObjectRef multiple_attribute_attributes = ut_map_new();
-  ut_map_insert_string_take(multiple_attribute_attributes, "name1",
-                            ut_string_new("'value1'"));
-  ut_map_insert_string_take(multiple_attribute_attributes, "name2",
-                            ut_string_new("\"value2\""));
+  UtObjectRef multiple_attribute_attributes =
+      ut_map_new_string_from_elements_take("name1", ut_string_new("'value1'"),
+                                           "name2", ut_string_new("\"value2\""),
+                                           NULL);
   UtObjectRef multiple_attribute_root =
       ut_xml_element_new("tag", multiple_attribute_attributes, NULL);
   UtObjectRef multiple_attribute_document =
