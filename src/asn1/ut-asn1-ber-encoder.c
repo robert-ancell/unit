@@ -706,6 +706,23 @@ static size_t encode_choice_value(UtAsn1BerEncoder *self, UtObject *type,
                       encode_tag, is_constructed);
 }
 
+static size_t encode_numeric_string_value(UtAsn1BerEncoder *self,
+                                          UtObject *value, bool encode_tag,
+                                          bool *is_constructed) {
+  if (!ut_object_implements_string(value)) {
+    set_type_error(self, "NumericString", value);
+    return 0;
+  }
+  size_t length = encode_numeric_string(self, ut_string_get_text(value));
+  if (encode_tag) {
+    length += encode_definite_length(self, length);
+    length += encode_identifier(self, UT_ASN1_TAG_CLASS_UNIVERSAL, false,
+                                UT_ASN1_TAG_UNIVERSAL_NUMERIC_STRING);
+  }
+  *is_constructed = encode_tag;
+  return length;
+}
+
 static size_t encode_tagged_value(UtAsn1BerEncoder *self, UtObject *type,
                                   UtObject *value, bool encode_tag,
                                   bool *is_constructed) {
@@ -759,6 +776,8 @@ static size_t encode_value(UtAsn1BerEncoder *self, UtObject *type,
     return encode_set_of_value(self, type, value, encode_tag, is_constructed);
   } else if (ut_object_is_asn1_choice_type(type)) {
     return encode_choice_value(self, type, value, encode_tag, is_constructed);
+  } else if (ut_object_is_asn1_numeric_string_type(type)) {
+    return encode_numeric_string_value(self, value, encode_tag, is_constructed);
   } else if (ut_object_is_asn1_tagged_type(type)) {
     return encode_tagged_value(self, type, value, encode_tag, is_constructed);
   } else {

@@ -723,7 +723,15 @@ static void test_utf8_string() {
   ut_assert_null_object(ut_asn1_decoder_get_error(decoder3));
   ut_assert_cstring_equal(string3, "Hello 😀");
 
-  // FIXME: Decoded as object with type.
+  // Decoded as object with type.
+  UtObjectRef data4 =
+      ut_uint8_list_new_from_hex_string("0c0a48656c6c6f20f09f9880");
+  UtObjectRef decoder4 = ut_asn1_ber_decoder_new(data4);
+  UtObjectRef type4 = ut_asn1_utf8_string_type_new();
+  UtObjectRef value4 = ut_asn1_decoder_decode_value(decoder4, type4);
+  ut_assert_null_object(ut_asn1_decoder_get_error(decoder4));
+  ut_assert_true(ut_object_implements_string(value4));
+  ut_assert_cstring_equal(ut_string_get_text(value4), "Hello 😀");
 
   // FIXME: Invalid UTF8
 }
@@ -1369,35 +1377,42 @@ static void test_numeric_string() {
                                      UT_ASN1_TAG_CLASS_UNIVERSAL,
                                      UT_ASN1_TAG_UNIVERSAL_NUMERIC_STRING));
   ut_cstring_ref string1 = ut_asn1_ber_decoder_decode_numeric_string(decoder1);
-  ut_assert_cstring_equal(string1, "12345 67890");
   ut_assert_null_object(ut_asn1_decoder_get_error(decoder1));
+  ut_assert_cstring_equal(string1, "12345 67890");
 
   // Empty string.
   UtObjectRef data2 = ut_uint8_list_new_from_hex_string("1200");
   UtObjectRef decoder2 = ut_asn1_ber_decoder_new(data2);
   ut_cstring_ref string2 = ut_asn1_ber_decoder_decode_numeric_string(decoder2);
-  ut_assert_cstring_equal(string2, "");
   ut_assert_null_object(ut_asn1_decoder_get_error(decoder2));
+  ut_assert_cstring_equal(string2, "");
 
-  // FIXME: Decoded as object with type.
-
-  // Invalid characters - "Hello World"
+  // Constructed form.
   UtObjectRef data3 =
-      ut_uint8_list_new_from_hex_string("120b48656c6c6f20576f726c64");
+      ut_uint8_list_new_from_hex_string("320f120631323334352012053637383930");
   UtObjectRef decoder3 = ut_asn1_ber_decoder_new(data3);
   ut_cstring_ref string3 = ut_asn1_ber_decoder_decode_numeric_string(decoder3);
-  ut_assert_is_error_with_description(ut_asn1_decoder_get_error(decoder3),
-                                      "Invalid numeric string");
+  ut_assert_null_object(ut_asn1_decoder_get_error(decoder3));
+  ut_assert_cstring_equal(string3, "12345 67890");
 
-  // Constructed form (not currently supported).
+  // Decoded as object with type.
   UtObjectRef data4 =
-      ut_uint8_list_new_from_hex_string("320f120631323334352012053637383930");
+      ut_uint8_list_new_from_hex_string("120b3132333435203637383930");
   UtObjectRef decoder4 = ut_asn1_ber_decoder_new(data4);
-  ut_cstring_ref string4 = ut_asn1_ber_decoder_decode_numeric_string(decoder4);
-  // ut_assert_cstring_equal(string4, "12345 67890");
-  ut_assert_is_error_with_description(
-      ut_asn1_decoder_get_error(decoder4),
-      "Constructed numeric string not supported");
+  UtObjectRef type4 = ut_asn1_numeric_string_type_new();
+  UtObjectRef value4 = ut_asn1_decoder_decode_value(decoder4, type4);
+  ut_assert_null_object(ut_asn1_decoder_get_error(decoder4));
+  ut_assert_true(ut_object_implements_string(value4));
+  ut_assert_cstring_equal(ut_string_get_text(value4), "12345 67890");
+
+  // Invalid characters - "Hello World"
+  UtObjectRef data10 =
+      ut_uint8_list_new_from_hex_string("120b48656c6c6f20576f726c64");
+  UtObjectRef decoder10 = ut_asn1_ber_decoder_new(data10);
+  ut_cstring_ref string10 =
+      ut_asn1_ber_decoder_decode_numeric_string(decoder10);
+  ut_assert_is_error_with_description(ut_asn1_decoder_get_error(decoder10),
+                                      "Invalid character in NumericString");
 }
 
 static void test_printable_string() {

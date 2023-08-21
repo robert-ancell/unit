@@ -11,6 +11,7 @@
 #include "asn1/ut-asn1-error.h"
 #include "asn1/ut-asn1-integer-type.h"
 #include "asn1/ut-asn1-null-type.h"
+#include "asn1/ut-asn1-numeric-string-type.h"
 #include "asn1/ut-asn1-object-identifier-type.h"
 #include "asn1/ut-asn1-octet-string-type.h"
 #include "asn1/ut-asn1-optional-type.h"
