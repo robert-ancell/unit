@@ -1412,7 +1412,7 @@ static void test_numeric_string() {
   ut_cstring_ref string10 =
       ut_asn1_ber_decoder_decode_numeric_string(decoder10);
   ut_assert_is_error_with_description(ut_asn1_decoder_get_error(decoder10),
-                                      "Invalid character in NumericString");
+                                      "Invalid NumericString");
 }
 
 static void test_printable_string() {
@@ -1424,38 +1424,44 @@ static void test_printable_string() {
                                      UT_ASN1_TAG_UNIVERSAL_PRINTABLE_STRING));
   ut_cstring_ref string1 =
       ut_asn1_ber_decoder_decode_printable_string(decoder1);
-  ut_assert_cstring_equal(string1, "Hello World");
   ut_assert_null_object(ut_asn1_decoder_get_error(decoder1));
+  ut_assert_cstring_equal(string1, "Hello World");
 
   // Empty string.
   UtObjectRef data2 = ut_uint8_list_new_from_hex_string("1300");
   UtObjectRef decoder2 = ut_asn1_ber_decoder_new(data2);
   ut_cstring_ref string2 =
       ut_asn1_ber_decoder_decode_printable_string(decoder2);
-  ut_assert_cstring_equal(string2, "");
   ut_assert_null_object(ut_asn1_decoder_get_error(decoder2));
+  ut_assert_cstring_equal(string2, "");
 
-  // FIXME: Decoded as object with type.
-
-  // Invalid characters - "#invalid"
+  // Constructed form.
   UtObjectRef data3 =
-      ut_uint8_list_new_from_hex_string("130823696e76616c696423");
+      ut_uint8_list_new_from_hex_string("330f130648656c6c6f201305576f726c64");
   UtObjectRef decoder3 = ut_asn1_ber_decoder_new(data3);
   ut_cstring_ref string3 =
       ut_asn1_ber_decoder_decode_printable_string(decoder3);
-  ut_assert_is_error_with_description(ut_asn1_decoder_get_error(decoder3),
-                                      "Invalid printable string");
+  ut_assert_null_object(ut_asn1_decoder_get_error(decoder3));
+  ut_assert_cstring_equal(string3, "Hello World");
 
-  // Constructed form (not currently supported).
+  // Decoded as object with type.
   UtObjectRef data4 =
-      ut_uint8_list_new_from_hex_string("330f130648656c6c6f201306576f726c64");
+      ut_uint8_list_new_from_hex_string("130b48656c6c6f20576f726c64");
   UtObjectRef decoder4 = ut_asn1_ber_decoder_new(data4);
-  ut_cstring_ref string4 =
-      ut_asn1_ber_decoder_decode_printable_string(decoder4);
-  // ut_assert_cstring_equal(string4, "Hello World");
-  ut_assert_is_error_with_description(
-      ut_asn1_decoder_get_error(decoder4),
-      "Constructed printable string not supported");
+  UtObjectRef type4 = ut_asn1_printable_string_type_new();
+  UtObjectRef value4 = ut_asn1_decoder_decode_value(decoder4, type4);
+  ut_assert_null_object(ut_asn1_decoder_get_error(decoder4));
+  ut_assert_true(ut_object_implements_string(value4));
+  ut_assert_cstring_equal(ut_string_get_text(value4), "Hello World");
+
+  // Invalid characters - "#invalid"
+  UtObjectRef data10 =
+      ut_uint8_list_new_from_hex_string("130823696e76616c696423");
+  UtObjectRef decoder10 = ut_asn1_ber_decoder_new(data10);
+  ut_cstring_ref string10 =
+      ut_asn1_ber_decoder_decode_printable_string(decoder10);
+  ut_assert_is_error_with_description(ut_asn1_decoder_get_error(decoder10),
+                                      "Invalid PrintableString");
 }
 
 static void test_ia5_string() {

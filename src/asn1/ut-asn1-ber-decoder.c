@@ -446,16 +446,20 @@ static UtObject *decode_utf8_string(UtAsn1BerDecoder *self) {
 
 static UtObject *decode_numeric_string(UtAsn1BerDecoder *self) {
   UtObjectRef data = decode_octet_string(self, "NumericString");
-  UtObjectRef value = ut_string_new_from_utf8(data);
-  if (ut_object_implements_error(value)) {
+  UtObjectRef value = ut_asn1_decode_numeric_string(data);
+  if (value == NULL) {
     set_error(self, "Invalid NumericString");
     return ut_string_new("");
   }
-  UtObjectRef type = ut_asn1_numeric_string_type_new();
-  UtObjectRef error = ut_asn1_type_check_value(type, value);
-  if (error != NULL) {
-    ut_cstring_ref error_description = ut_error_get_description(error);
-    set_error(self, error_description);
+
+  return ut_object_ref(value);
+}
+
+static UtObject *decode_printable_string(UtAsn1BerDecoder *self) {
+  UtObjectRef data = decode_octet_string(self, "PrintableString");
+  UtObjectRef value = ut_asn1_decode_printable_string(data);
+  if (value == NULL) {
+    set_error(self, "Invalid PrintableString");
     return ut_string_new("");
   }
 
@@ -923,6 +927,15 @@ static UtObject *decode_numeric_string_value(UtAsn1BerDecoder *self,
   return decode_numeric_string(self);
 }
 
+static UtObject *decode_printable_string_value(UtAsn1BerDecoder *self,
+                                               bool decode_tag) {
+  if (decode_tag && !expect_tag(self, UT_ASN1_TAG_CLASS_UNIVERSAL,
+                                UT_ASN1_TAG_UNIVERSAL_PRINTABLE_STRING)) {
+    return ut_string_new("");
+  }
+  return decode_printable_string(self);
+}
+
 static UtObject *decode_tagged_value(UtAsn1BerDecoder *self, UtObject *type,
                                      bool decode_tag) {
   if (decode_tag && !expect_tag(self, ut_asn1_tagged_type_get_class(type),
@@ -973,6 +986,8 @@ static UtObject *decode_value(UtAsn1BerDecoder *self, UtObject *type,
     return decode_choice_value(self, type, decode_tag);
   } else if (ut_object_is_asn1_numeric_string_type(type)) {
     return decode_numeric_string_value(self, decode_tag);
+  } else if (ut_object_is_asn1_printable_string_type(type)) {
+    return decode_printable_string_value(self, decode_tag);
   } else if (ut_object_is_asn1_tagged_type(type)) {
     return decode_tagged_value(self, type, decode_tag);
   } else {
@@ -1227,18 +1242,8 @@ char *ut_asn1_ber_decoder_decode_numeric_string(UtObject *object) {
 char *ut_asn1_ber_decoder_decode_printable_string(UtObject *object) {
   assert(ut_object_is_asn1_ber_decoder(object));
   UtAsn1BerDecoder *self = (UtAsn1BerDecoder *)object;
-
-  if (self->constructed) {
-    set_error(self, "Constructed printable string not supported");
-    return ut_cstring_new("");
-  }
-
-  UtObjectRef string = ut_asn1_decode_printable_string(self->contents);
-  if (string == NULL) {
-    set_error(self, "Invalid printable string");
-    return ut_cstring_new("");
-  }
-  return ut_string_take_text(string);
+  UtObjectRef value = decode_printable_string(self);
+  return ut_string_take_text(value);
 }
 
 UtObject *ut_asn1_ber_decoder_decode_ia5_string(UtObject *object) {
