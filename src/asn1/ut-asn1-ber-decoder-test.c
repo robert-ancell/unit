@@ -878,50 +878,99 @@ static void test_sequence() {
   UtObject *value7b = ut_map_lookup_string(value7, "age");
   ut_assert_null_object(value7b);
 
+  // Optional components (none present).
+  UtObjectRef data8 =
+      ut_uint8_list_new_from_hex_string("3000");
+  UtObjectRef decoder8 = ut_asn1_ber_decoder_new(data8);
+  UtObjectRef components8 = ut_map_new_string_from_elements_take(
+      "name", ut_asn1_optional_type_new_take(ut_asn1_utf8_string_type_new()), "age",
+      ut_asn1_optional_type_new_take(ut_asn1_integer_type_new()), NULL);
+  UtObjectRef type8 = ut_asn1_sequence_type_new(components8, false);
+  UtObjectRef value8 = ut_asn1_decoder_decode_value(decoder8, type8);
+  ut_assert_null_object(ut_asn1_decoder_get_error(decoder8));
+  ut_assert_true(ut_object_implements_map(value8));
+  ut_assert_int_equal(ut_map_get_length(value8), 0);
+
+  // Optional component (first present).
+  UtObjectRef data9 =
+      ut_uint8_list_new_from_hex_string("300d0c0b4172746875722044656e74");
+  UtObjectRef decoder9 = ut_asn1_ber_decoder_new(data9);
+  UtObjectRef components9 = ut_map_new_string_from_elements_take(
+      "name", ut_asn1_optional_type_new_take(ut_asn1_utf8_string_type_new()), "age",
+      ut_asn1_optional_type_new_take(ut_asn1_integer_type_new()), NULL);
+  UtObjectRef type9 = ut_asn1_sequence_type_new(components9, false);
+  UtObjectRef value9 = ut_asn1_decoder_decode_value(decoder9, type9);
+  ut_assert_null_object(ut_asn1_decoder_get_error(decoder9));
+  ut_assert_true(ut_object_implements_map(value9));
+  ut_assert_int_equal(ut_map_get_length(value9), 1);
+  UtObject *value9a = ut_map_lookup_string(value9, "name");
+  ut_assert_true(ut_object_implements_string(value9a));
+  ut_assert_cstring_equal(ut_string_get_text(value9a), "Arthur Dent");
+  UtObject *value9b = ut_map_lookup_string(value9, "age");
+  ut_assert_null_object(value9b);
+
+  // Optional component (second present).
+  UtObjectRef data10 =
+      ut_uint8_list_new_from_hex_string("300302012a");
+  UtObjectRef decoder10 = ut_asn1_ber_decoder_new(data10);
+  UtObjectRef components10 = ut_map_new_string_from_elements_take(
+      "name", ut_asn1_optional_type_new_take(ut_asn1_utf8_string_type_new()), "age",
+      ut_asn1_optional_type_new_take(ut_asn1_integer_type_new()), NULL);
+  UtObjectRef type10 = ut_asn1_sequence_type_new(components10, false);
+  UtObjectRef value10 = ut_asn1_decoder_decode_value(decoder10, type10);
+  ut_assert_null_object(ut_asn1_decoder_get_error(decoder10));
+  ut_assert_true(ut_object_implements_map(value10));
+  ut_assert_int_equal(ut_map_get_length(value10), 1);
+  UtObject *value10a = ut_map_lookup_string(value10, "name");
+  ut_assert_null_object(value10a);
+  UtObject *value10b = ut_map_lookup_string(value10, "age");
+  ut_assert_true(ut_object_is_int64(value10b));
+  ut_assert_int_equal(ut_int64_get_value(value10b), 42);
+
   // FIXME: Default components.
 
   // Non-constructed form.
-  UtObjectRef data10 = ut_uint8_list_new_from_hex_string("1000");
-  UtObjectRef decoder10 = ut_asn1_ber_decoder_new(data10);
-  UtObjectRef sequence10 = ut_asn1_ber_decoder_decode_sequence(decoder10);
-  ut_assert_is_error_with_description(ut_asn1_decoder_get_error(decoder10),
+  UtObjectRef data20 = ut_uint8_list_new_from_hex_string("1000");
+  UtObjectRef decoder20 = ut_asn1_ber_decoder_new(data20);
+  UtObjectRef sequence20 = ut_asn1_ber_decoder_decode_sequence(decoder20);
+  ut_assert_is_error_with_description(ut_asn1_decoder_get_error(decoder20),
                                       "Sequence must be constructed");
 
   // Missing component (age).
-  UtObjectRef data11 =
+  UtObjectRef data21 =
       ut_uint8_list_new_from_hex_string("300d0c0b4172746875722044656e74");
-  UtObjectRef decoder11 = ut_asn1_ber_decoder_new(data11);
-  UtObjectRef components11 = ut_map_new_string_from_elements_take(
+  UtObjectRef decoder21 = ut_asn1_ber_decoder_new(data21);
+  UtObjectRef components21 = ut_map_new_string_from_elements_take(
       "name", ut_asn1_utf8_string_type_new(), "age", ut_asn1_integer_type_new(),
       NULL);
-  UtObjectRef type11 = ut_asn1_sequence_type_new(components11, false);
-  UtObjectRef value11 = ut_asn1_decoder_decode_value(decoder11, type11);
-  ut_assert_is_error_with_description(ut_asn1_decoder_get_error(decoder11),
+  UtObjectRef type21 = ut_asn1_sequence_type_new(components21, false);
+  UtObjectRef value21 = ut_asn1_decoder_decode_value(decoder21, type21);
+  ut_assert_is_error_with_description(ut_asn1_decoder_get_error(decoder21),
                                       "Required SEQUENCE components missing");
 
   // Components in reverse order.
-  UtObjectRef data12 =
+  UtObjectRef data22 =
       ut_uint8_list_new_from_hex_string("301002012a0c0b4172746875722044656e74");
-  UtObjectRef decoder12 = ut_asn1_ber_decoder_new(data12);
-  UtObjectRef components12 = ut_map_new_string_from_elements_take(
+  UtObjectRef decoder22 = ut_asn1_ber_decoder_new(data22);
+  UtObjectRef components22 = ut_map_new_string_from_elements_take(
       "name", ut_asn1_utf8_string_type_new(), "age", ut_asn1_integer_type_new(),
       NULL);
-  UtObjectRef type12 = ut_asn1_sequence_type_new(components12, false);
-  UtObjectRef value12 = ut_asn1_decoder_decode_value(decoder12, type12);
+  UtObjectRef type22 = ut_asn1_sequence_type_new(components22, false);
+  UtObjectRef value22 = ut_asn1_decoder_decode_value(decoder22, type22);
   ut_assert_is_error_with_description(
-      ut_asn1_decoder_get_error(decoder12),
+      ut_asn1_decoder_get_error(decoder22),
       "Required SEQUENCE component name missing");
 
   // Additional component (not extensible).
-  UtObjectRef data13 = ut_uint8_list_new_from_hex_string(
+  UtObjectRef data23 = ut_uint8_list_new_from_hex_string(
       "30130c0b4172746875722044656e7402012a0101ff");
-  UtObjectRef decoder13 = ut_asn1_ber_decoder_new(data13);
-  UtObjectRef components13 = ut_map_new_string_from_elements_take(
+  UtObjectRef decoder23 = ut_asn1_ber_decoder_new(data23);
+  UtObjectRef components23 = ut_map_new_string_from_elements_take(
       "name", ut_asn1_utf8_string_type_new(), "age", ut_asn1_integer_type_new(),
       NULL);
-  UtObjectRef type13 = ut_asn1_sequence_type_new(components13, false);
-  UtObjectRef value13 = ut_asn1_decoder_decode_value(decoder13, type13);
-  ut_assert_is_error_with_description(ut_asn1_decoder_get_error(decoder13),
+  UtObjectRef type23 = ut_asn1_sequence_type_new(components23, false);
+  UtObjectRef value23 = ut_asn1_decoder_decode_value(decoder23, type23);
+  ut_assert_is_error_with_description(ut_asn1_decoder_get_error(decoder23),
                                       "Too many SEQUENCE components");
 }
 
