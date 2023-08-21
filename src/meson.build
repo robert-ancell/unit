@@ -6,6 +6,7 @@ ut_sources = [
   'asn1/ut-asn1-choice-type.c',
   'asn1/ut-asn1-choice-value.c',
   'asn1/ut-asn1-decoder.c',
+  'asn1/ut-asn1-default-type.c',
   'asn1/ut-asn1-encoder.c',
   'asn1/ut-asn1-enumerated-type.c',
   'asn1/ut-asn1-error.c',

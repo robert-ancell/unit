@@ -622,6 +622,8 @@ static UtObject *decode_sequence_value(UtAsn1BerDecoder *self, UtObject *type,
         ut_object_set(&component_name, name);
         if (ut_object_is_asn1_optional_type(type)) {
           ut_object_set(&component_type, ut_asn1_optional_type_get_type(type));
+        } else if (ut_object_is_asn1_default_type(type)) {
+          ut_object_set(&component_type, ut_asn1_default_type_get_type(type));
         } else {
           ut_object_set(&component_type, type);
           required_component_count++;
@@ -629,8 +631,12 @@ static UtObject *decode_sequence_value(UtAsn1BerDecoder *self, UtObject *type,
         break;
       }
 
-      // Optional components are allowed to be missing.
+      // Optional and default components are allowed to be missing.
       if (ut_object_is_asn1_optional_type(type)) {
+        continue;
+      } else if (ut_object_is_asn1_default_type(type)) {
+        ut_map_insert_string(value, ut_string_get_text(component_name),
+                             ut_asn1_default_type_get_default_value(type));
         continue;
       }
 
@@ -665,12 +671,24 @@ static UtObject *decode_sequence_value(UtAsn1BerDecoder *self, UtObject *type,
                          component_value);
   }
 
+  // Set any remaining default components.
+  for (size_t i = next_component; i < components_length; i++) {
+    UtObject *item = ut_object_list_get_element(component_items, i);
+    UtObjectRef type = ut_map_item_get_value(item);
+    if (ut_object_is_asn1_default_type(type)) {
+      UtObjectRef name = ut_map_item_get_key(item);
+      ut_map_insert_string(value, ut_string_get_text(name),
+                           ut_asn1_default_type_get_default_value(type));
+      continue;
+    }
+  }
+
   UtObjectRef component_types = ut_map_get_values(components);
-  size_t component_types_length = ut_list_get_length(component_types);
   size_t total_required_components = 0;
-  for (size_t i = 0; i < component_types_length; i++) {
+  for (size_t i = 0; i < components_length; i++) {
     UtObject *component_type = ut_object_list_get_element(component_types, i);
-    if (ut_object_is_asn1_optional_type(component_type)) {
+    if (ut_object_is_asn1_optional_type(component_type) ||
+        ut_object_is_asn1_default_type(component_type)) {
       continue;
     }
     total_required_components++;
@@ -754,6 +772,7 @@ static UtObject *decode_set_value(UtAsn1BerDecoder *self, UtObject *type,
 
   bool extensible = ut_asn1_set_type_get_extensible(type);
   UtObject *components = ut_asn1_set_type_get_components(type);
+  size_t components_length = ut_map_get_length(components);
 
   UtObjectRef value = ut_map_new();
   size_t contents_length = ut_list_get_length(self->contents);
@@ -785,6 +804,8 @@ static UtObject *decode_set_value(UtAsn1BerDecoder *self, UtObject *type,
     UtObject *component_type = ut_map_lookup(components, component_name);
     if (ut_object_is_asn1_optional_type(component_type)) {
       component_type = ut_asn1_optional_type_get_type(component_type);
+    } else if (ut_object_is_asn1_default_type(component_type)) {
+      component_type = ut_asn1_default_type_get_type(component_type);
     } else {
       required_component_count++;
     }
@@ -804,15 +825,22 @@ static UtObject *decode_set_value(UtAsn1BerDecoder *self, UtObject *type,
                          component_value);
   }
 
-  UtObjectRef component_types = ut_map_get_values(components);
-  size_t component_types_length = ut_list_get_length(component_types);
+  // Set any missing default components and check if we have all required
+  // components.
+  UtObjectRef component_items = ut_map_get_items(components);
   size_t total_required_components = 0;
-  for (size_t i = 0; i < component_types_length; i++) {
-    UtObject *component_type = ut_object_list_get_element(component_types, i);
-    if (ut_object_is_asn1_optional_type(component_type)) {
-      continue;
+  for (size_t i = 0; i < components_length; i++) {
+    UtObject *item = ut_object_list_get_element(component_items, i);
+    UtObjectRef type = ut_map_item_get_value(item);
+    if (ut_object_is_asn1_default_type(type)) {
+      UtObjectRef name = ut_map_item_get_key(item);
+      if (ut_map_lookup_string(value, ut_string_get_text(name)) == NULL) {
+        ut_map_insert_string(value, ut_string_get_text(name),
+                             ut_asn1_default_type_get_default_value(type));
+      }
+    } else if (!ut_object_is_asn1_optional_type(type)) {
+      total_required_components++;
     }
-    total_required_components++;
   }
 
   if (required_component_count < total_required_components) {

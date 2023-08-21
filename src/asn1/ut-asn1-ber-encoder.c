@@ -570,6 +570,14 @@ static size_t encode_components(UtAsn1BerEncoder *self, const char *type_name,
         continue;
       }
       component_type = ut_asn1_optional_type_get_type(component_type);
+    } else if (ut_object_is_asn1_default_type(component_type)) {
+      if (component_value == NULL ||
+          ut_object_equal(
+              component_value,
+              ut_asn1_default_type_get_default_value(component_type))) {
+        continue;
+      }
+      component_type = ut_asn1_default_type_get_type(component_type);
     }
 
     if (component_value == NULL) {

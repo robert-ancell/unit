@@ -5,6 +5,7 @@
 #include "asn1/ut-asn1-choice-type.h"
 #include "asn1/ut-asn1-choice-value.h"
 #include "asn1/ut-asn1-decoder.h"
+#include "asn1/ut-asn1-default-type.h"
 #include "asn1/ut-asn1-encoder.h"
 #include "asn1/ut-asn1-enumerated-type.h"
 #include "asn1/ut-asn1-error.h"
