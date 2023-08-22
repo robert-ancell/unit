@@ -222,6 +222,7 @@ static size_t encode_bit_string(UtAsn1BerEncoder *self, UtObject *value) {
 
 static size_t encode_octet_string(UtAsn1BerEncoder *self, UtObject *value) {
   // FIXME: If > 1000 bytes then split into constructed form (DER).
+  // https://github.com/robert-ancell/unit/issues/108
   return encode_uint8_list(self, value);
 }
 
