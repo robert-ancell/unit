@@ -145,6 +145,32 @@ static void test_boolean_type_assignment() {
   ut_assert_true(ut_object_is_asn1_referenced_type(type2));
   ut_assert_true(
       ut_object_is_asn1_boolean_type(ut_asn1_referenced_type_get_type(type2)));
+
+  // Constrained to single value.
+  UtObjectRef module3 = ut_asn1_module_definition_new_from_text(
+      "Test DEFINITIONS ::= BEGIN\n"
+      "    BooleanType ::= BOOLEAN (TRUE)\n"
+      "END");
+  ut_assert_is_not_error(module3);
+  UtObject *type3 =
+      ut_asn1_module_definition_get_assignment(module3, "BooleanType");
+  ut_assert_non_null_object(type3);
+  ut_assert_true(ut_object_is_asn1_constrained_type(type3));
+  ut_assert_true(
+      ut_object_is_asn1_boolean_type(ut_asn1_constrained_type_get_type(type3)));
+  UtObject *constraint3 = ut_asn1_constrained_type_get_constraint(type3);
+  ut_assert_true(ut_object_is_asn1_value_constraint(constraint3));
+  UtObject *constraint_value3 = ut_asn1_value_constraint_get_value(constraint3);
+  ut_assert_true(ut_object_is_boolean(constraint_value3));
+  ut_assert_true(ut_boolean_get_value(constraint_value3));
+
+  // Invalid type in constraint.
+  UtObjectRef module10 = ut_asn1_module_definition_new_from_text(
+      "Test DEFINITIONS ::= BEGIN\n"
+      "    BooleanType ::= BOOLEAN (NULL)\n"
+      "END");
+  ut_assert_is_error_with_description(module10,
+                                      "Expected TRUE or FALSE, got NULL");
 }
 
 static void test_boolean_value_assignment() {
@@ -210,6 +236,7 @@ static void test_boolean_value_assignment() {
   ut_assert_true(ut_object_is_boolean(value4));
   ut_assert_true(ut_boolean_get_value(value4));
 
+  // Invalid value type.
   UtObjectRef module5 = ut_asn1_module_definition_new_from_text(
       "Test DEFINITIONS ::= BEGIN\n"
       "    booleanValue1 BOOLEAN ::= \"Hello World\"\n"
@@ -255,6 +282,115 @@ static void test_integer_type_assignment() {
   ut_assert_true(ut_object_is_asn1_referenced_type(type2));
   ut_assert_true(
       ut_object_is_asn1_integer_type(ut_asn1_referenced_type_get_type(type2)));
+
+  // Constrained to single value.
+  UtObjectRef module3 = ut_asn1_module_definition_new_from_text(
+      "Test DEFINITIONS ::= BEGIN\n"
+      "    IntegerType ::= INTEGER (42)\n"
+      "END");
+  ut_assert_is_not_error(module3);
+  UtObject *type3 =
+      ut_asn1_module_definition_get_assignment(module3, "IntegerType");
+  ut_assert_non_null_object(type3);
+  ut_assert_true(ut_object_is_asn1_constrained_type(type3));
+  ut_assert_true(
+      ut_object_is_asn1_integer_type(ut_asn1_constrained_type_get_type(type3)));
+  UtObject *constraint3 = ut_asn1_constrained_type_get_constraint(type3);
+  ut_assert_true(ut_object_is_asn1_value_constraint(constraint3));
+  UtObject *constraint_value3 = ut_asn1_value_constraint_get_value(constraint3);
+  ut_assert_true(ut_object_is_int64(constraint_value3));
+  ut_assert_int_equal(ut_int64_get_value(constraint_value3), 42);
+
+  // Constrained to value range.
+  UtObjectRef module4 = ut_asn1_module_definition_new_from_text(
+      "Test DEFINITIONS ::= BEGIN\n"
+      "    IntegerType ::= INTEGER (0..255)\n"
+      "END");
+  ut_assert_is_not_error(module4);
+  UtObject *type4 =
+      ut_asn1_module_definition_get_assignment(module4, "IntegerType");
+  ut_assert_non_null_object(type4);
+  ut_assert_true(ut_object_is_asn1_constrained_type(type4));
+  ut_assert_true(
+      ut_object_is_asn1_integer_type(ut_asn1_constrained_type_get_type(type4)));
+  UtObject *constraint4 = ut_asn1_constrained_type_get_constraint(type4);
+  ut_assert_true(ut_object_is_asn1_range_constraint(constraint4));
+  ut_assert_int_equal(ut_asn1_range_constraint_get_lower(constraint4), 0);
+  ut_assert_int_equal(ut_asn1_range_constraint_get_upper(constraint4), 255);
+
+  // Constrained to negative values.
+  UtObjectRef module5 = ut_asn1_module_definition_new_from_text(
+      "Test DEFINITIONS ::= BEGIN\n"
+      "    IntegerType ::= INTEGER (MIN..0)\n"
+      "END");
+  ut_assert_is_not_error(module5);
+  UtObject *type5 =
+      ut_asn1_module_definition_get_assignment(module5, "IntegerType");
+  ut_assert_non_null_object(type5);
+  ut_assert_true(ut_object_is_asn1_constrained_type(type5));
+  ut_assert_true(
+      ut_object_is_asn1_integer_type(ut_asn1_constrained_type_get_type(type5)));
+  UtObject *constraint5 = ut_asn1_constrained_type_get_constraint(type5);
+  ut_assert_true(ut_object_is_asn1_range_constraint(constraint5));
+  ut_assert_int_equal(ut_asn1_range_constraint_get_lower(constraint5),
+                      INT64_MIN);
+  ut_assert_int_equal(ut_asn1_range_constraint_get_upper(constraint5), 0);
+
+  // Constrained to positive values.
+  UtObjectRef module6 = ut_asn1_module_definition_new_from_text(
+      "Test DEFINITIONS ::= BEGIN\n"
+      "    IntegerType ::= INTEGER (0..MAX)\n"
+      "END");
+  ut_assert_is_not_error(module6);
+  UtObject *type6 =
+      ut_asn1_module_definition_get_assignment(module6, "IntegerType");
+  ut_assert_non_null_object(type6);
+  ut_assert_true(ut_object_is_asn1_constrained_type(type6));
+  ut_assert_true(
+      ut_object_is_asn1_integer_type(ut_asn1_constrained_type_get_type(type6)));
+  UtObject *constraint6 = ut_asn1_constrained_type_get_constraint(type6);
+  ut_assert_true(ut_object_is_asn1_range_constraint(constraint6));
+  ut_assert_int_equal(ut_asn1_range_constraint_get_lower(constraint6), 0);
+  ut_assert_int_equal(ut_asn1_range_constraint_get_upper(constraint6),
+                      INT64_MAX);
+
+  // Constraint made of value references.
+  UtObjectRef module7 = ut_asn1_module_definition_new_from_text(
+      "Test DEFINITIONS ::= BEGIN\n"
+      "    minValue INTEGER ::= 0\n"
+      "    maxValue INTEGER ::= 255\n"
+      "    IntegerType ::= INTEGER (minValue..maxValue)\n"
+      "END");
+  ut_assert_is_not_error(module7);
+  UtObject *type7 =
+      ut_asn1_module_definition_get_assignment(module7, "IntegerType");
+  ut_assert_non_null_object(type7);
+  ut_assert_true(ut_object_is_asn1_constrained_type(type7));
+  ut_assert_true(
+      ut_object_is_asn1_integer_type(ut_asn1_constrained_type_get_type(type7)));
+  UtObject *constraint7 = ut_asn1_constrained_type_get_constraint(type7);
+  ut_assert_true(ut_object_is_asn1_range_constraint(constraint7));
+  ut_assert_int_equal(ut_asn1_range_constraint_get_lower(constraint7), 0);
+  ut_assert_int_equal(ut_asn1_range_constraint_get_upper(constraint7), 255);
+
+  // Invalid type in constraint.
+  UtObjectRef module9 = ut_asn1_module_definition_new_from_text(
+      "Test DEFINITIONS ::= BEGIN\n"
+      "    IntegerType ::= INTEGER (FALSE)\n"
+      "END");
+  ut_assert_is_error_with_description(module9, "Expected integer, got FALSE");
+
+  // Invalid type in range constraint.
+  UtObjectRef module10 = ut_asn1_module_definition_new_from_text(
+      "Test DEFINITIONS ::= BEGIN\n"
+      "    IntegerType ::= INTEGER (0..FALSE)\n"
+      "END");
+  ut_assert_is_error_with_description(module10, "Expected integer, got FALSE");
+  UtObjectRef module11 = ut_asn1_module_definition_new_from_text(
+      "Test DEFINITIONS ::= BEGIN\n"
+      "    IntegerType ::= INTEGER (FALSE..0)\n"
+      "END");
+  ut_assert_is_error_with_description(module11, "Expected integer, got FALSE");
 }
 
 static void test_integer_value_assignment() {
@@ -345,6 +481,31 @@ static void test_bit_string_type_assignment() {
   ut_assert_true(ut_object_is_asn1_referenced_type(type2));
   ut_assert_true(ut_object_is_asn1_bit_string_type(
       ut_asn1_referenced_type_get_type(type2)));
+
+  // Constrained to single value.
+  UtObjectRef module3 = ut_asn1_module_definition_new_from_text(
+      "Test DEFINITIONS ::= BEGIN\n"
+      "    BitStringType ::= BIT STRING ('10101100110001'B)\n"
+      "END");
+  ut_assert_is_not_error(module3);
+  UtObject *type3 =
+      ut_asn1_module_definition_get_assignment(module3, "BitStringType");
+  ut_assert_non_null_object(type3);
+  ut_assert_true(ut_object_is_asn1_constrained_type(type3));
+  ut_assert_true(ut_object_is_asn1_bit_string_type(
+      ut_asn1_constrained_type_get_type(type3)));
+  UtObject *constraint3 = ut_asn1_constrained_type_get_constraint(type3);
+  ut_assert_true(ut_object_is_asn1_value_constraint(constraint3));
+  UtObject *constraint_value3 = ut_asn1_value_constraint_get_value(constraint3);
+  ut_assert_true(ut_object_is_bit_list(constraint_value3));
+  ut_assert_bit_list_equal_bin(constraint_value3, "10101100110001");
+
+  // Invalid type in constraint.
+  UtObjectRef module10 = ut_asn1_module_definition_new_from_text(
+      "Test DEFINITIONS ::= BEGIN\n"
+      "    BitStringType ::= BIT STRING (NULL)\n"
+      "END");
+  ut_assert_is_error_with_description(module10, "Expected bstring, got NULL");
 }
 
 static void test_bit_string_value_assignment() {
@@ -453,6 +614,32 @@ static void test_octet_string_type_assignment() {
   ut_assert_true(ut_object_is_asn1_referenced_type(type2));
   ut_assert_true(ut_object_is_asn1_octet_string_type(
       ut_asn1_referenced_type_get_type(type2)));
+
+  // Constrained to single value.
+  UtObjectRef module3 = ut_asn1_module_definition_new_from_text(
+      "Test DEFINITIONS ::= BEGIN\n"
+      "    OctetStringType ::= OCTET STRING ('DEADBEEF'H)\n"
+      "END");
+  ut_assert_is_not_error(module3);
+  UtObject *type3 =
+      ut_asn1_module_definition_get_assignment(module3, "OctetStringType");
+  ut_assert_non_null_object(type3);
+  ut_assert_true(ut_object_is_asn1_constrained_type(type3));
+  ut_assert_true(ut_object_is_asn1_octet_string_type(
+      ut_asn1_constrained_type_get_type(type3)));
+  UtObject *constraint3 = ut_asn1_constrained_type_get_constraint(type3);
+  ut_assert_true(ut_object_is_asn1_value_constraint(constraint3));
+  UtObject *constraint_value3 = ut_asn1_value_constraint_get_value(constraint3);
+  ut_assert_true(ut_object_implements_uint8_list(constraint_value3));
+  ut_assert_uint8_list_equal_hex(constraint_value3, "DEADBEEF");
+
+  // Invalid type in constraint.
+  UtObjectRef module10 = ut_asn1_module_definition_new_from_text(
+      "Test DEFINITIONS ::= BEGIN\n"
+      "    OctetStringType ::= OCTET STRING (NULL)\n"
+      "END");
+  ut_assert_is_error_with_description(module10,
+                                      "Expected hstring or bstring, got NULL");
 }
 
 static void test_octet_string_value_assignment() {
@@ -634,6 +821,30 @@ static void test_null_type_assignment() {
   ut_assert_true(ut_object_is_asn1_referenced_type(type2));
   ut_assert_true(
       ut_object_is_asn1_null_type(ut_asn1_referenced_type_get_type(type2)));
+
+  // Constrained to single value.
+  UtObjectRef module3 =
+      ut_asn1_module_definition_new_from_text("Test DEFINITIONS ::= BEGIN\n"
+                                              "    NullType ::= NULL (NULL)\n"
+                                              "END");
+  ut_assert_is_not_error(module3);
+  UtObject *type3 =
+      ut_asn1_module_definition_get_assignment(module3, "NullType");
+  ut_assert_non_null_object(type3);
+  ut_assert_true(ut_object_is_asn1_constrained_type(type3));
+  ut_assert_true(
+      ut_object_is_asn1_null_type(ut_asn1_constrained_type_get_type(type3)));
+  UtObject *constraint3 = ut_asn1_constrained_type_get_constraint(type3);
+  ut_assert_true(ut_object_is_asn1_value_constraint(constraint3));
+  UtObject *constraint_value3 = ut_asn1_value_constraint_get_value(constraint3);
+  ut_assert_true(ut_object_is_null(constraint_value3));
+
+  // Invalid type in constraint.
+  UtObjectRef module10 =
+      ut_asn1_module_definition_new_from_text("Test DEFINITIONS ::= BEGIN\n"
+                                              "    NullType ::= NULL (FALSE)\n"
+                                              "END");
+  ut_assert_is_error_with_description(module10, "Expected NULL, got FALSE");
 }
 
 static void test_null_value_assignment() {
@@ -707,6 +918,32 @@ static void test_object_identifier_type_assignment() {
   ut_assert_true(ut_object_is_asn1_referenced_type(type2));
   ut_assert_true(ut_object_is_asn1_object_identifier_type(
       ut_asn1_referenced_type_get_type(type2)));
+
+  // Constrained to single value.
+  UtObjectRef module3 = ut_asn1_module_definition_new_from_text(
+      "Test DEFINITIONS ::= BEGIN\n"
+      "    ObjectIdentifierType ::= OBJECT IDENTIFIER ({ 1 0 8571 1})\n"
+      "END");
+  ut_assert_is_not_error(module3);
+  UtObject *type3 =
+      ut_asn1_module_definition_get_assignment(module3, "ObjectIdentifierType");
+  ut_assert_non_null_object(type3);
+  ut_assert_true(ut_object_is_asn1_constrained_type(type3));
+  ut_assert_true(ut_object_is_asn1_object_identifier_type(
+      ut_asn1_constrained_type_get_type(type3)));
+  UtObject *constraint3 = ut_asn1_constrained_type_get_constraint(type3);
+  ut_assert_true(ut_object_is_asn1_value_constraint(constraint3));
+  UtObject *constraint_value3 = ut_asn1_value_constraint_get_value(constraint3);
+  ut_assert_true(ut_object_implements_uint32_list(constraint_value3));
+  uint32_t expected_values3[4] = {1, 0, 8571, 1};
+  ut_assert_uint32_list_equal(constraint_value3, expected_values3, 4);
+
+  // Invalid type in constraint.
+  UtObjectRef module10 = ut_asn1_module_definition_new_from_text(
+      "Test DEFINITIONS ::= BEGIN\n"
+      "    ObjectIdentifierType ::= OBJECT IDENTIFIER (NULL)\n"
+      "END");
+  ut_assert_is_error_with_description(module10, "Expected {, got NULL");
 }
 
 static void test_object_identifier_value_assignment() {
@@ -857,6 +1094,8 @@ static void test_object_descriptor_type_assignment() {
   ut_assert_true(ut_object_is_asn1_referenced_type(type2));
   ut_assert_true(ut_object_is_asn1_object_descriptor_type(
       ut_asn1_referenced_type_get_type(type2)));
+
+  // FIXME: Constrained to single value.
 }
 
 static void test_object_descriptor_value_assignment() {
@@ -933,6 +1172,33 @@ static void test_real_type_assignment() {
   ut_assert_true(ut_object_is_asn1_referenced_type(type2));
   ut_assert_true(
       ut_object_is_asn1_real_type(ut_asn1_referenced_type_get_type(type2)));
+
+  // Constrained to single value.
+  UtObjectRef module3 = ut_asn1_module_definition_new_from_text(
+      "Test DEFINITIONS ::= BEGIN\n"
+      "    RealType ::= REAL (3.14159)\n"
+      "END");
+  ut_assert_is_not_error(module3);
+  UtObject *type3 =
+      ut_asn1_module_definition_get_assignment(module3, "RealType");
+  ut_assert_non_null_object(type3);
+  ut_assert_true(ut_object_is_asn1_constrained_type(type3));
+  ut_assert_true(
+      ut_object_is_asn1_real_type(ut_asn1_constrained_type_get_type(type3)));
+  UtObject *constraint3 = ut_asn1_constrained_type_get_constraint(type3);
+  ut_assert_true(ut_object_is_asn1_value_constraint(constraint3));
+  UtObject *constraint_value3 = ut_asn1_value_constraint_get_value(constraint3);
+  ut_assert_true(ut_object_is_float64(constraint_value3));
+  ut_assert_float_equal(ut_float64_get_value(constraint_value3), 3.14159);
+
+  // Invalid type in constraint.
+  UtObjectRef module10 =
+      ut_asn1_module_definition_new_from_text("Test DEFINITIONS ::= BEGIN\n"
+                                              "    RealType ::= REAL (NULL)\n"
+                                              "END");
+  ut_assert_is_error_with_description(
+      module10, "Expected real value, PLUS-INFINITY, MINUS-INFINITY or "
+                "NOT-A-NUMBER, got NULL");
 }
 
 static void test_real_value_assignment() {
@@ -1146,12 +1412,38 @@ static void test_enumerated_type_assignment() {
   ut_assert_int_equal(ut_asn1_enumerated_type_get_value(type1, "green"), 1);
   ut_assert_int_equal(ut_asn1_enumerated_type_get_value(type1, "blue"), 2);
 
+  // Constrained to single value.
+  UtObjectRef module4 = ut_asn1_module_definition_new_from_text(
+      "Test DEFINITIONS ::= BEGIN\n"
+      "    EnumeratedType ::= ENUMERATED { red, green, blue } (green)\n"
+      "END");
+  ut_assert_is_not_error(module4);
+  UtObject *type4 =
+      ut_asn1_module_definition_get_assignment(module4, "EnumeratedType");
+  ut_assert_non_null_object(type4);
+  ut_assert_true(ut_object_is_asn1_constrained_type(type4));
+  ut_assert_true(ut_object_is_asn1_enumerated_type(
+      ut_asn1_constrained_type_get_type(type4)));
+  UtObject *constraint4 = ut_asn1_constrained_type_get_constraint(type4);
+  ut_assert_true(ut_object_is_asn1_value_constraint(constraint4));
+  UtObject *constraint_value4 = ut_asn1_value_constraint_get_value(constraint4);
+  ut_assert_true(ut_object_implements_string(constraint_value4));
+  ut_assert_cstring_equal(ut_string_get_text(constraint_value4), "green");
+
   // Empty enumeration.
-  UtObjectRef module5 = ut_asn1_module_definition_new_from_text(
+  UtObjectRef module10 = ut_asn1_module_definition_new_from_text(
       "Test DEFINITIONS ::= BEGIN\n"
       "    EnumeratedType ::= ENUMERATED { }\n"
       "END");
-  ut_assert_is_error_with_description(module5, "Expected identifier, got }");
+  ut_assert_is_error_with_description(module10, "Expected identifier, got }");
+
+  // Invalid type in constraint.
+  UtObjectRef module11 = ut_asn1_module_definition_new_from_text(
+      "Test DEFINITIONS ::= BEGIN\n"
+      "    EnumeratedType ::= ENUMERATED { red, green, blue } (NULL)\n"
+      "END");
+  ut_assert_is_error_with_description(module11,
+                                      "Expected enumerated value, got NULL");
 }
 
 static void test_enumerated_value_assignment() {
@@ -1239,6 +1531,31 @@ static void test_utf8_string_type_assignment() {
   ut_assert_true(ut_object_is_asn1_referenced_type(type2));
   ut_assert_true(ut_object_is_asn1_utf8_string_type(
       ut_asn1_referenced_type_get_type(type2)));
+
+  // Constrained to single value.
+  UtObjectRef module3 = ut_asn1_module_definition_new_from_text(
+      "Test DEFINITIONS ::= BEGIN\n"
+      "    UTF8StringType ::= UTF8String (\"Hello World\")\n"
+      "END");
+  ut_assert_is_not_error(module3);
+  UtObject *type3 =
+      ut_asn1_module_definition_get_assignment(module3, "UTF8StringType");
+  ut_assert_non_null_object(type3);
+  ut_assert_true(ut_object_is_asn1_constrained_type(type3));
+  ut_assert_true(ut_object_is_asn1_utf8_string_type(
+      ut_asn1_constrained_type_get_type(type3)));
+  UtObject *constraint3 = ut_asn1_constrained_type_get_constraint(type3);
+  ut_assert_true(ut_object_is_asn1_value_constraint(constraint3));
+  UtObject *constraint_value3 = ut_asn1_value_constraint_get_value(constraint3);
+  ut_assert_true(ut_object_implements_string(constraint_value3));
+  ut_assert_cstring_equal(ut_string_get_text(constraint_value3), "Hello World");
+
+  // Invalid type in constraint.
+  UtObjectRef module10 = ut_asn1_module_definition_new_from_text(
+      "Test DEFINITIONS ::= BEGIN\n"
+      "    UTF8StringType ::= UTF8String (NULL)\n"
+      "END");
+  ut_assert_is_error_with_description(module10, "Expected cstring, got NULL");
 }
 
 static void test_utf8_string_value_assignment() {
@@ -1345,6 +1662,8 @@ static void test_relative_oid_type_assignment() {
   ut_assert_true(ut_object_is_asn1_referenced_type(type2));
   ut_assert_true(ut_object_is_asn1_relative_oid_type(
       ut_asn1_referenced_type_get_type(type2)));
+
+  // FIXME: Constrained to single value.
 }
 
 static void test_relative_oid_value_assignment() {
@@ -1548,6 +1867,8 @@ static void test_sequence_type_assignment() {
   ut_assert_true(ut_object_is_asn1_sequence_type(type7));
   ut_assert_true(ut_asn1_sequence_type_get_extensible(type7));
 
+  // FIXME: Constrained to single value.
+
   // Missing comma.
   UtObjectRef module10 = ut_asn1_module_definition_new_from_text(
       "Test DEFINITIONS ::= BEGIN\n"
@@ -1601,6 +1922,8 @@ static void test_sequence_type_assignment() {
       "    }\n"
       "END");
   ut_assert_is_error_with_description(module14, "Duplicate extensible marker");
+
+  // FIXME: Constrained to single value.
 }
 
 static void test_sequence_value_assignment() {
@@ -1659,6 +1982,9 @@ static void test_sequence_of_type_assignment() {
   ut_assert_true(ut_object_is_asn1_integer_type(
       ut_asn1_sequence_of_type_get_type(type2i)));
 
+  // FIXME: Constrained to single value.
+
+  // Missing child type.
   UtObjectRef module3 =
       ut_asn1_module_definition_new_from_text("Test DEFINITIONS ::= BEGIN\n"
                                               "    SetOfType ::= SEQUENCE OF \n"
@@ -1873,6 +2199,8 @@ static void test_set_type_assignment() {
   ut_assert_true(ut_object_is_asn1_set_type(type7));
   ut_assert_true(ut_asn1_set_type_get_extensible(type7));
 
+  // FIXME: Constrained to single value.
+
   // Missing comma.
   UtObjectRef module10 =
       ut_asn1_module_definition_new_from_text("Test DEFINITIONS ::= BEGIN\n"
@@ -1984,6 +2312,9 @@ static void test_set_of_type_assignment() {
   ut_assert_true(
       ut_object_is_asn1_integer_type(ut_asn1_set_of_type_get_type(type2i)));
 
+  // FIXME: Constrained to single value.
+
+  // Missing child type.
   UtObjectRef module3 =
       ut_asn1_module_definition_new_from_text("Test DEFINITIONS ::= BEGIN\n"
                                               "    SetOfType ::= SET OF \n"
@@ -2924,6 +3255,8 @@ static void test_tagged_type_assignment() {
   ut_assert_non_null_object(type5c);
   ut_assert_true(ut_object_is_asn1_tagged_type(type5c));
   ut_assert_false(ut_asn1_tagged_type_get_is_explicit(type5c));
+
+  // FIXME: Constrained to single value.
 }
 
 static void test_tagged_value_assignment() {

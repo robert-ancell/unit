@@ -1691,6 +1691,76 @@ static bool parse_choice_type(UtAsn1ModuleDefinitionParser *self,
   return true;
 }
 
+static bool parse_constraint(UtAsn1ModuleDefinitionParser *self, UtObject *type,
+                             UtObject **constraint);
+
+static bool parse_value_or_value_range(UtAsn1ModuleDefinitionParser *self,
+                                       UtObject *type, UtObject **constraint) {
+  UtObjectRef lower_value = NULL;
+  int64_t lower;
+  if (maybe_parse_text(self, "MIN")) {
+    if (!ut_object_is_asn1_integer_type(type)) {
+      set_error(self, "MIN only supported for integer type");
+      return false;
+    }
+    lower = INT64_MIN;
+  } else if (!parse_value(self, type, &lower_value)) {
+    return false;
+  }
+
+  if (!maybe_parse_text(self, "..")) {
+    if (lower_value == NULL) {
+      set_expected_error(self, "value range");
+      return false;
+    }
+
+    *constraint = ut_asn1_value_constraint_new(lower_value);
+    return true;
+  }
+
+  if (lower_value != NULL) {
+    if (!ut_object_is_int64(lower_value)) {
+      set_error(self, "Range must contain integers");
+      return false;
+    }
+    lower = ut_int64_get_value(lower_value);
+  }
+
+  int64_t upper;
+  if (maybe_parse_text(self, "MAX")) {
+    upper = INT64_MAX;
+  } else {
+    UtObjectRef upper_value = NULL;
+    if (!parse_value(self, type, &upper_value)) {
+      return false;
+    }
+    upper = ut_int64_get_value(upper_value);
+  }
+
+  *constraint = ut_asn1_range_constraint_new(lower, upper);
+  return true;
+}
+
+static bool parse_constraint(UtAsn1ModuleDefinitionParser *self, UtObject *type,
+                             UtObject **constraint) {
+  if (!maybe_parse_text(self, "(")) {
+    *constraint = NULL;
+    return true;
+  }
+
+  UtObjectRef constraint_ = NULL;
+  if (!parse_value_or_value_range(self, type, &constraint_)) {
+    return false;
+  }
+
+  if (!parse_text(self, ")")) {
+    return false;
+  }
+
+  *constraint = ut_object_ref(constraint_);
+  return true;
+}
+
 static bool parse_type(UtAsn1ModuleDefinitionParser *self, UtObject **type) {
   UtObjectRef type_ = NULL;
   if (maybe_parse_text(self, "BOOLEAN")) {
@@ -1845,7 +1915,16 @@ static bool parse_type(UtAsn1ModuleDefinitionParser *self, UtObject **type) {
     type_ = ut_asn1_referenced_type_new(referenced_type);
   }
 
-  *type = ut_object_ref(type_);
+  UtObjectRef constraint = NULL;
+  if (!parse_constraint(self, type_, &constraint)) {
+    return false;
+  }
+
+  if (constraint != NULL) {
+    *type = ut_asn1_constrained_type_new(type_, constraint);
+  } else {
+    *type = ut_object_ref(type_);
+  }
   return true;
 }
 
