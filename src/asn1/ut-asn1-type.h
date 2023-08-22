@@ -7,7 +7,7 @@
 typedef struct {
   UtObject *(*get_tags)(UtObject *object);
   bool (*matches_tag)(UtObject *object, UtObject *tag);
-  UtObject *(*check_value)(UtObject *object, UtObject *value);
+  UtObject *(*get_base_type)(UtObject *object);
 } UtAsn1TypeInterface;
 
 extern int ut_asn1_type_id;
@@ -20,6 +20,8 @@ bool ut_asn1_type_matches_tag(UtObject *object, UtObject *tag);
 /// if it is not valid.
 ///!return-ref
 UtObject *ut_asn1_type_check_value(UtObject *object, UtObject *value);
+
+UtObject *ut_asn1_type_get_base_type(UtObject *object);
 
 /// Returns [true] if [object] implements [UtAsn1Type].
 bool ut_object_implements_asn1_type(UtObject *object);

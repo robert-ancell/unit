@@ -18,11 +18,15 @@ bool ut_asn1_type_matches_tag(UtObject *object, UtObject *tag) {
   return asn1_type_interface->matches_tag(object, tag);
 }
 
-UtObject *ut_asn1_type_check_value(UtObject *object, UtObject *value) {
+UtObject *ut_asn1_type_get_base_type(UtObject *object) {
   UtAsn1TypeInterface *asn1_type_interface =
       ut_object_get_interface(object, &ut_asn1_type_id);
   assert(asn1_type_interface != NULL);
-  return asn1_type_interface->check_value(object, value);
+  if (asn1_type_interface->get_base_type) {
+    return asn1_type_interface->get_base_type(object);
+  } else {
+    return object;
+  }
 }
 
 bool ut_object_implements_asn1_type(UtObject *object) {

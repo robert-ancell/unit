@@ -14,6 +14,8 @@ ut_sources = [
   'asn1/ut-asn1-graphic-string-type.c',
   'asn1/ut-asn1-ia5-string-type.c',
   'asn1/ut-asn1-integer-type.c',
+  'asn1/ut-asn1-module-definition.c',
+  'asn1/ut-asn1-module-definition-parser.c',
   'asn1/ut-asn1-null-type.c',
   'asn1/ut-asn1-numeric-string-type.c',
   'asn1/ut-asn1-object-descriptor-type.c',
@@ -22,6 +24,7 @@ ut_sources = [
   'asn1/ut-asn1-optional-type.c',
   'asn1/ut-asn1-printable-string-type.c',
   'asn1/ut-asn1-real-type.c',
+  'asn1/ut-asn1-referenced-type.c',
   'asn1/ut-asn1-relative-oid-type.c',
   'asn1/ut-asn1-sequence-of-type.c',
   'asn1/ut-asn1-sequence-type.c',
@@ -30,6 +33,7 @@ ut_sources = [
   'asn1/ut-asn1-string.c',
   'asn1/ut-asn1-tag.c',
   'asn1/ut-asn1-tagged-type.c',
+  'asn1/ut-asn1-type-value.c',
   'asn1/ut-asn1-type.c',
   'asn1/ut-asn1-utf8-string-type.c',
   'asn1/ut-asn1-visible-string-type.c',
@@ -366,6 +370,11 @@ json_test = executable('ut-json-test',
                        'json/ut-json-test.c',
                        link_with: ut_lib)
 test('JSON', json_test)
+
+asn1_module_definition_parser_test = executable('ut-asn1-module-definition-parser-test',
+                                                'asn1/ut-asn1-module-definition-parser-test.c',
+                                                link_with: ut_lib)
+test('ASN.1 Module Definition Parser', asn1_module_definition_parser_test)
 
 asn1_ber_encoder_test = executable('ut-asn1-ber-encoder-test',
                                    'asn1/ut-asn1-ber-encoder-test.c',

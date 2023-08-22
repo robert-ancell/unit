@@ -18,9 +18,15 @@ static bool ut_asn1_default_type_matches_tag(UtObject *object, UtObject *tag) {
   return ut_asn1_type_matches_tag(self->type, tag);
 }
 
+static UtObject *ut_asn1_default_type_get_base_type(UtObject *object) {
+  UtAsn1DefaultType *self = (UtAsn1DefaultType *)object;
+  return self->type;
+}
+
 static UtAsn1TypeInterface asn1_type_interface = {
     .get_tags = ut_asn1_default_type_get_tags,
-    .matches_tag = ut_asn1_default_type_matches_tag};
+    .matches_tag = ut_asn1_default_type_matches_tag,
+    .get_base_type = ut_asn1_default_type_get_base_type};
 
 static char *ut_asn1_default_type_to_string(UtObject *object) {
   UtAsn1DefaultType *self = (UtAsn1DefaultType *)object;

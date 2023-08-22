@@ -17,12 +17,18 @@ static bool ut_asn1_numeric_string_type_matches_tag(UtObject *object,
                              UT_ASN1_TAG_UNIVERSAL_NUMERIC_STRING);
 }
 
+static bool ut_asn1_numeric_string_type_equal(UtObject *object,
+                                              UtObject *other) {
+  return ut_object_is_asn1_numeric_string_type(other);
+}
+
 static UtAsn1TypeInterface asn1_type_interface = {
     .get_tags = ut_asn1_numeric_string_type_get_tags,
     .matches_tag = ut_asn1_numeric_string_type_matches_tag};
 
 static UtObjectInterface object_interface = {
     .type_name = "UtAsn1NumericStringType",
+    .equal = ut_asn1_numeric_string_type_equal,
     .interfaces = {{&ut_asn1_type_id, &asn1_type_interface}, {NULL, NULL}}};
 
 UtObject *ut_asn1_numeric_string_type_new() {

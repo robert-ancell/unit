@@ -55,7 +55,6 @@ static UtObject *ut_asn1_choice_type_get_tags(UtObject *object) {
   UtObjectRef identifiers = ut_map_get_keys(self->components);
   size_t identifiers_length = ut_list_get_length(identifiers);
   for (size_t i = 0; i < identifiers_length; i++) {
-
     UtObjectRef identifier = ut_list_get_element(identifiers, i);
     UtObject *type =
         ut_map_lookup_string(self->components, ut_string_get_text(identifier));
