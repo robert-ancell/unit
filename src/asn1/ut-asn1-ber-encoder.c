@@ -221,6 +221,7 @@ static size_t encode_bit_string(UtAsn1BerEncoder *self, UtObject *value) {
 }
 
 static size_t encode_octet_string(UtAsn1BerEncoder *self, UtObject *value) {
+  // FIXME: If > 1000 bytes then split into constructed form (DER).
   return encode_uint8_list(self, value);
 }
 
@@ -342,7 +343,7 @@ static size_t encode_enumerated(UtAsn1BerEncoder *self, int64_t value) {
 
 static size_t encode_utf8_string(UtAsn1BerEncoder *self, UtObject *value) {
   UtObjectRef utf8 = ut_string_get_utf8(value);
-  return encode_uint8_list(self, utf8);
+  return encode_octet_string(self, utf8);
 }
 
 static size_t encode_relative_oid(UtAsn1BerEncoder *self,
@@ -359,23 +360,23 @@ static size_t encode_relative_oid(UtAsn1BerEncoder *self,
 
 static size_t encode_numeric_string(UtAsn1BerEncoder *self, const char *value) {
   UtObjectRef numeric_string = ut_asn1_encode_numeric_string(value);
-  return encode_uint8_list(self, numeric_string);
+  return encode_octet_string(self, numeric_string);
 }
 
 static size_t encode_printable_string(UtAsn1BerEncoder *self,
                                       const char *value) {
   UtObjectRef printable_string = ut_asn1_encode_printable_string(value);
-  return encode_uint8_list(self, printable_string);
+  return encode_octet_string(self, printable_string);
 }
 
 static size_t encode_ia5_string(UtAsn1BerEncoder *self, UtObject *value) {
   UtObjectRef ia5_string = ut_asn1_encode_ia5_string(value);
-  return encode_uint8_list(self, ia5_string);
+  return encode_octet_string(self, ia5_string);
 }
 
 static size_t encode_visible_string(UtAsn1BerEncoder *self, const char *value) {
   UtObjectRef visible_string = ut_asn1_encode_visible_string(value);
-  return encode_uint8_list(self, visible_string);
+  return encode_octet_string(self, visible_string);
 }
 
 static size_t encode_boolean_value(UtAsn1BerEncoder *self, UtObject *value,
