@@ -914,9 +914,22 @@ static void test_numeric_string() {
   UtObjectRef data2 = ut_asn1_ber_encoder_get_data(encoder2);
   ut_assert_uint8_list_equal_hex(data2, "");
 
-  // FIXME: Encoded as object with type.
+  // Encoded as object with type.
+  UtObjectRef encoder3 = ut_asn1_ber_encoder_new();
+  UtObjectRef type3 = ut_asn1_numeric_string_type_new();
+  UtObjectRef value3 = ut_string_new("12345 67890");
+  ut_asn1_encoder_encode_value(encoder3, type3, value3);
+  ut_assert_null_object(ut_asn1_encoder_get_error(encoder3));
+  UtObjectRef data3 = ut_asn1_ber_encoder_get_data(encoder3);
+  ut_assert_uint8_list_equal_hex(data3, "120b3132333435203637383930");
 
-  // FIXME: Invalid characters
+  // Invalid characters
+  UtObjectRef encoder4 = ut_asn1_ber_encoder_new();
+  UtObjectRef type4 = ut_asn1_numeric_string_type_new();
+  UtObjectRef value4 = ut_string_new("Hello World");
+  ut_asn1_encoder_encode_value(encoder4, type4, value4);
+  ut_assert_is_error_with_description(ut_asn1_encoder_get_error(encoder4),
+                                      "Invalid NumericString");
 }
 
 static void test_printable_string() {
@@ -933,30 +946,80 @@ static void test_printable_string() {
   UtObjectRef data2 = ut_asn1_ber_encoder_get_data(encoder2);
   ut_assert_uint8_list_equal_hex(data2, "");
 
-  // FIXME: Encoded as object with type.
+  // Encoded as object with type.
+  UtObjectRef encoder3 = ut_asn1_ber_encoder_new();
+  UtObjectRef type3 = ut_asn1_printable_string_type_new();
+  UtObjectRef value3 = ut_string_new("Hello World");
+  ut_asn1_encoder_encode_value(encoder3, type3, value3);
+  ut_assert_null_object(ut_asn1_encoder_get_error(encoder3));
+  UtObjectRef data3 = ut_asn1_ber_encoder_get_data(encoder3);
+  ut_assert_uint8_list_equal_hex(data3, "130b48656c6c6f20576f726c64");
 
-  // FIXME: Invalid characters
+  // Invalid characters
+  UtObjectRef encoder4 = ut_asn1_ber_encoder_new();
+  UtObjectRef type4 = ut_asn1_printable_string_type_new();
+  UtObjectRef value4 = ut_string_new("#invalid");
+  ut_asn1_encoder_encode_value(encoder4, type4, value4);
+  ut_assert_is_error_with_description(ut_asn1_encoder_get_error(encoder4),
+                                      "Invalid PrintableString");
 }
 
 static void test_ia5_string() {
   UtObjectRef encoder1 = ut_asn1_ber_encoder_new();
-  UtObjectRef string1 = ut_string_new("Hello World");
-  ut_asn1_ber_encoder_encode_ia5_string(encoder1, string1);
+  ut_asn1_ber_encoder_encode_ia5_string(encoder1, "Hello World");
   ut_assert_null_object(ut_asn1_encoder_get_error(encoder1));
   UtObjectRef data1 = ut_asn1_ber_encoder_get_data(encoder1);
   ut_assert_uint8_list_equal_hex(data1, "48656c6c6f20576f726c64");
 
   // Empty string.
   UtObjectRef encoder2 = ut_asn1_ber_encoder_new();
-  UtObjectRef string2 = ut_string_new("");
-  ut_asn1_ber_encoder_encode_ia5_string(encoder2, string2);
+  ut_asn1_ber_encoder_encode_ia5_string(encoder2, "");
   ut_assert_null_object(ut_asn1_encoder_get_error(encoder2));
   UtObjectRef data2 = ut_asn1_ber_encoder_get_data(encoder2);
   ut_assert_uint8_list_equal_hex(data2, "");
 
-  // FIXME: Encoded as object with type.
+  // Encoded as object with type.
+  UtObjectRef encoder3 = ut_asn1_ber_encoder_new();
+  UtObjectRef type3 = ut_asn1_ia5_string_type_new();
+  UtObjectRef value3 = ut_string_new("Hello World");
+  ut_asn1_encoder_encode_value(encoder3, type3, value3);
+  ut_assert_null_object(ut_asn1_encoder_get_error(encoder3));
+  UtObjectRef data3 = ut_asn1_ber_encoder_get_data(encoder3);
+  ut_assert_uint8_list_equal_hex(data3, "160b48656c6c6f20576f726c64");
 
-  // FIXME: Invalid characters
+  // FIXME: Invalid characters - 8 bits?
+}
+
+static void test_graphic_string() {
+  UtObjectRef encoder1 = ut_asn1_ber_encoder_new();
+  ut_asn1_ber_encoder_encode_graphic_string(encoder1, "Hello World");
+  ut_assert_null_object(ut_asn1_encoder_get_error(encoder1));
+  UtObjectRef data1 = ut_asn1_ber_encoder_get_data(encoder1);
+  ut_assert_uint8_list_equal_hex(data1, "48656c6c6f20576f726c64");
+
+  // Empty string.
+  UtObjectRef encoder2 = ut_asn1_ber_encoder_new();
+  ut_asn1_ber_encoder_encode_graphic_string(encoder2, "");
+  ut_assert_null_object(ut_asn1_encoder_get_error(encoder2));
+  UtObjectRef data2 = ut_asn1_ber_encoder_get_data(encoder2);
+  ut_assert_uint8_list_equal_hex(data2, "");
+
+  // Encoded as object with type.
+  UtObjectRef encoder3 = ut_asn1_ber_encoder_new();
+  UtObjectRef type3 = ut_asn1_graphic_string_type_new();
+  UtObjectRef value3 = ut_string_new("Hello World");
+  ut_asn1_encoder_encode_value(encoder3, type3, value3);
+  ut_assert_null_object(ut_asn1_encoder_get_error(encoder3));
+  UtObjectRef data3 = ut_asn1_ber_encoder_get_data(encoder3);
+  ut_assert_uint8_list_equal_hex(data3, "190b48656c6c6f20576f726c64");
+
+  // Invalid characters.
+  UtObjectRef encoder4 = ut_asn1_ber_encoder_new();
+  UtObjectRef type4 = ut_asn1_graphic_string_type_new();
+  UtObjectRef value4 = ut_string_new("Hello\tWorld");
+  ut_asn1_encoder_encode_value(encoder4, type4, value4);
+  ut_assert_is_error_with_description(ut_asn1_encoder_get_error(encoder4),
+                                      "Invalid GraphicString");
 }
 
 static void test_visible_string() {
@@ -973,9 +1036,46 @@ static void test_visible_string() {
   UtObjectRef data2 = ut_asn1_ber_encoder_get_data(encoder2);
   ut_assert_uint8_list_equal_hex(data2, "");
 
-  // FIXME: Encoded as object with type.
+  // Encoded as object with type.
+  UtObjectRef encoder3 = ut_asn1_ber_encoder_new();
+  UtObjectRef type3 = ut_asn1_visible_string_type_new();
+  UtObjectRef value3 = ut_string_new("Hello World");
+  ut_asn1_encoder_encode_value(encoder3, type3, value3);
+  ut_assert_null_object(ut_asn1_encoder_get_error(encoder3));
+  UtObjectRef data3 = ut_asn1_ber_encoder_get_data(encoder3);
+  ut_assert_uint8_list_equal_hex(data3, "1a0b48656c6c6f20576f726c64");
 
-  // FIXME: Invalid characters
+  // Invalid characters.
+  UtObjectRef encoder4 = ut_asn1_ber_encoder_new();
+  UtObjectRef type4 = ut_asn1_visible_string_type_new();
+  UtObjectRef value4 = ut_string_new("Hello\tWorld");
+  ut_asn1_encoder_encode_value(encoder4, type4, value4);
+  ut_assert_is_error_with_description(ut_asn1_encoder_get_error(encoder4),
+                                      "Invalid VisibleString");
+}
+
+static void test_general_string() {
+  UtObjectRef encoder1 = ut_asn1_ber_encoder_new();
+  ut_asn1_ber_encoder_encode_general_string(encoder1, "Hello\tWorld");
+  ut_assert_null_object(ut_asn1_encoder_get_error(encoder1));
+  UtObjectRef data1 = ut_asn1_ber_encoder_get_data(encoder1);
+  ut_assert_uint8_list_equal_hex(data1, "48656c6c6f09576f726c64");
+
+  // Empty string.
+  UtObjectRef encoder2 = ut_asn1_ber_encoder_new();
+  ut_asn1_ber_encoder_encode_general_string(encoder2, "");
+  ut_assert_null_object(ut_asn1_encoder_get_error(encoder2));
+  UtObjectRef data2 = ut_asn1_ber_encoder_get_data(encoder2);
+  ut_assert_uint8_list_equal_hex(data2, "");
+
+  // Encoded as object with type.
+  UtObjectRef encoder3 = ut_asn1_ber_encoder_new();
+  UtObjectRef type3 = ut_asn1_general_string_type_new();
+  UtObjectRef value3 = ut_string_new("Hello\tWorld");
+  ut_asn1_encoder_encode_value(encoder3, type3, value3);
+  ut_assert_null_object(ut_asn1_encoder_get_error(encoder3));
+  UtObjectRef data3 = ut_asn1_ber_encoder_get_data(encoder3);
+  ut_assert_uint8_list_equal_hex(data3, "1b0b48656c6c6f09576f726c64");
 }
 
 static void test_choice() {
@@ -1097,7 +1197,9 @@ int main(int argc, char **argv) {
   test_numeric_string();
   test_printable_string();
   test_ia5_string();
+  test_graphic_string();
   test_visible_string();
+  test_general_string();
   test_choice();
   test_tagged_type();
 

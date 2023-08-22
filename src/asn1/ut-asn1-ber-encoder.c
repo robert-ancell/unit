@@ -360,23 +360,62 @@ static size_t encode_relative_oid(UtAsn1BerEncoder *self,
 
 static size_t encode_numeric_string(UtAsn1BerEncoder *self, const char *value) {
   UtObjectRef numeric_string = ut_asn1_encode_numeric_string(value);
+  if (numeric_string == NULL) {
+    set_error(self, "Invalid NumericString");
+    return 0;
+  }
   return encode_octet_string(self, numeric_string);
 }
 
 static size_t encode_printable_string(UtAsn1BerEncoder *self,
                                       const char *value) {
   UtObjectRef printable_string = ut_asn1_encode_printable_string(value);
+  if (printable_string == NULL) {
+    set_error(self, "Invalid PrintableString");
+    return 0;
+  }
   return encode_octet_string(self, printable_string);
 }
 
-static size_t encode_ia5_string(UtAsn1BerEncoder *self, UtObject *value) {
+static size_t encode_ia5_string(UtAsn1BerEncoder *self, const char *value) {
   UtObjectRef ia5_string = ut_asn1_encode_ia5_string(value);
+  if (ia5_string == NULL) {
+    set_error(self, "Invalid IA5String");
+    return 0;
+  }
   return encode_octet_string(self, ia5_string);
+}
+
+static size_t encode_graphic_string(UtAsn1BerEncoder *self, const char *value) {
+  UtObjectRef graphic_string = ut_asn1_encode_graphic_string(value);
+  if (graphic_string == NULL) {
+    set_error(self, "Invalid GraphicString");
+    return 0;
+  }
+  return encode_octet_string(self, graphic_string);
+}
+
+static size_t encode_object_descriptor(UtAsn1BerEncoder *self,
+                                       const char *descriptor) {
+  return encode_graphic_string(self, descriptor);
 }
 
 static size_t encode_visible_string(UtAsn1BerEncoder *self, const char *value) {
   UtObjectRef visible_string = ut_asn1_encode_visible_string(value);
+  if (visible_string == NULL) {
+    set_error(self, "Invalid VisibleString");
+    return 0;
+  }
   return encode_octet_string(self, visible_string);
+}
+
+static size_t encode_general_string(UtAsn1BerEncoder *self, const char *value) {
+  UtObjectRef general_string = ut_asn1_encode_general_string(value);
+  if (general_string == NULL) {
+    set_error(self, "Invalid GeneralString");
+    return 0;
+  }
+  return encode_octet_string(self, general_string);
 }
 
 static size_t encode_boolean_value(UtAsn1BerEncoder *self, UtObject *value,
@@ -471,6 +510,23 @@ static size_t encode_object_identifier_value(UtAsn1BerEncoder *self,
     length += encode_definite_length(self, length);
     length += encode_identifier(self, UT_ASN1_TAG_CLASS_UNIVERSAL, false,
                                 UT_ASN1_TAG_UNIVERSAL_OBJECT_IDENTIFIER);
+  }
+  *is_constructed = encode_tag;
+  return length;
+}
+
+static size_t encode_object_descriptor_value(UtAsn1BerEncoder *self,
+                                             UtObject *value, bool encode_tag,
+                                             bool *is_constructed) {
+  if (!ut_object_implements_string(value)) {
+    set_type_error(self, "ObjectDescriptor", value);
+    return 0;
+  }
+  size_t length = encode_object_descriptor(self, ut_string_get_text(value));
+  if (encode_tag) {
+    length += encode_definite_length(self, length);
+    length += encode_identifier(self, UT_ASN1_TAG_CLASS_UNIVERSAL, false,
+                                UT_ASN1_TAG_UNIVERSAL_OBJECT_DESCRIPTOR);
   }
   *is_constructed = encode_tag;
   return length;
@@ -724,6 +780,90 @@ static size_t encode_numeric_string_value(UtAsn1BerEncoder *self,
   return length;
 }
 
+static size_t encode_printable_string_value(UtAsn1BerEncoder *self,
+                                            UtObject *value, bool encode_tag,
+                                            bool *is_constructed) {
+  if (!ut_object_implements_string(value)) {
+    set_type_error(self, "PrintableString", value);
+    return 0;
+  }
+  size_t length = encode_printable_string(self, ut_string_get_text(value));
+  if (encode_tag) {
+    length += encode_definite_length(self, length);
+    length += encode_identifier(self, UT_ASN1_TAG_CLASS_UNIVERSAL, false,
+                                UT_ASN1_TAG_UNIVERSAL_PRINTABLE_STRING);
+  }
+  *is_constructed = encode_tag;
+  return length;
+}
+
+static size_t encode_ia5_string_value(UtAsn1BerEncoder *self, UtObject *value,
+                                      bool encode_tag, bool *is_constructed) {
+  if (!ut_object_implements_string(value)) {
+    set_type_error(self, "IA5String", value);
+    return 0;
+  }
+  size_t length = encode_ia5_string(self, ut_string_get_text(value));
+  if (encode_tag) {
+    length += encode_definite_length(self, length);
+    length += encode_identifier(self, UT_ASN1_TAG_CLASS_UNIVERSAL, false,
+                                UT_ASN1_TAG_UNIVERSAL_IA5_STRING);
+  }
+  *is_constructed = encode_tag;
+  return length;
+}
+
+static size_t encode_graphic_string_value(UtAsn1BerEncoder *self,
+                                          UtObject *value, bool encode_tag,
+                                          bool *is_constructed) {
+  if (!ut_object_implements_string(value)) {
+    set_type_error(self, "GraphicString", value);
+    return 0;
+  }
+  size_t length = encode_graphic_string(self, ut_string_get_text(value));
+  if (encode_tag) {
+    length += encode_definite_length(self, length);
+    length += encode_identifier(self, UT_ASN1_TAG_CLASS_UNIVERSAL, false,
+                                UT_ASN1_TAG_UNIVERSAL_GRAPHIC_STRING);
+  }
+  *is_constructed = encode_tag;
+  return length;
+}
+
+static size_t encode_visible_string_value(UtAsn1BerEncoder *self,
+                                          UtObject *value, bool encode_tag,
+                                          bool *is_constructed) {
+  if (!ut_object_implements_string(value)) {
+    set_type_error(self, "VisibleString", value);
+    return 0;
+  }
+  size_t length = encode_visible_string(self, ut_string_get_text(value));
+  if (encode_tag) {
+    length += encode_definite_length(self, length);
+    length += encode_identifier(self, UT_ASN1_TAG_CLASS_UNIVERSAL, false,
+                                UT_ASN1_TAG_UNIVERSAL_VISIBLE_STRING);
+  }
+  *is_constructed = encode_tag;
+  return length;
+}
+
+static size_t encode_general_string_value(UtAsn1BerEncoder *self,
+                                          UtObject *value, bool encode_tag,
+                                          bool *is_constructed) {
+  if (!ut_object_implements_string(value)) {
+    set_type_error(self, "GeneralString", value);
+    return 0;
+  }
+  size_t length = encode_general_string(self, ut_string_get_text(value));
+  if (encode_tag) {
+    length += encode_definite_length(self, length);
+    length += encode_identifier(self, UT_ASN1_TAG_CLASS_UNIVERSAL, false,
+                                UT_ASN1_TAG_UNIVERSAL_GENERAL_STRING);
+  }
+  *is_constructed = encode_tag;
+  return length;
+}
+
 static size_t encode_tagged_value(UtAsn1BerEncoder *self, UtObject *type,
                                   UtObject *value, bool encode_tag,
                                   bool *is_constructed) {
@@ -757,6 +897,9 @@ static size_t encode_value(UtAsn1BerEncoder *self, UtObject *type,
   } else if (ut_object_is_asn1_object_identifier_type(type)) {
     return encode_object_identifier_value(self, value, encode_tag,
                                           is_constructed);
+  } else if (ut_object_is_asn1_object_descriptor_type(type)) {
+    return encode_object_descriptor_value(self, value, encode_tag,
+                                          is_constructed);
   } else if (ut_object_is_asn1_real_type(type)) {
     return encode_real_value(self, value, encode_tag, is_constructed);
   } else if (ut_object_is_asn1_enumerated_type(type)) {
@@ -779,6 +922,17 @@ static size_t encode_value(UtAsn1BerEncoder *self, UtObject *type,
     return encode_choice_value(self, type, value, encode_tag, is_constructed);
   } else if (ut_object_is_asn1_numeric_string_type(type)) {
     return encode_numeric_string_value(self, value, encode_tag, is_constructed);
+  } else if (ut_object_is_asn1_printable_string_type(type)) {
+    return encode_printable_string_value(self, value, encode_tag,
+                                         is_constructed);
+  } else if (ut_object_is_asn1_ia5_string_type(type)) {
+    return encode_ia5_string_value(self, value, encode_tag, is_constructed);
+  } else if (ut_object_is_asn1_graphic_string_type(type)) {
+    return encode_graphic_string_value(self, value, encode_tag, is_constructed);
+  } else if (ut_object_is_asn1_visible_string_type(type)) {
+    return encode_visible_string_value(self, value, encode_tag, is_constructed);
+  } else if (ut_object_is_asn1_general_string_type(type)) {
+    return encode_general_string_value(self, value, encode_tag, is_constructed);
   } else if (ut_object_is_asn1_tagged_type(type)) {
     return encode_tagged_value(self, type, value, encode_tag, is_constructed);
   } else {
@@ -893,6 +1047,13 @@ size_t ut_asn1_ber_encoder_encode_object_identifier(UtObject *object,
   return encode_object_identifier(self, identifier);
 }
 
+size_t ut_asn1_ber_encoder_encode_object_descriptor(UtObject *object,
+                                                    const char *descriptor) {
+  assert(ut_object_is_asn1_ber_encoder(object));
+  UtAsn1BerEncoder *self = (UtAsn1BerEncoder *)object;
+  return encode_object_descriptor(self, descriptor);
+}
+
 size_t ut_asn1_ber_encoder_encode_real(UtObject *object, double value) {
   assert(ut_object_is_asn1_ber_encoder(object));
   UtAsn1BerEncoder *self = (UtAsn1BerEncoder *)object;
@@ -935,10 +1096,17 @@ size_t ut_asn1_ber_encoder_encode_printable_string(UtObject *object,
 }
 
 size_t ut_asn1_ber_encoder_encode_ia5_string(UtObject *object,
-                                             UtObject *value) {
+                                             const char *value) {
   assert(ut_object_is_asn1_ber_encoder(object));
   UtAsn1BerEncoder *self = (UtAsn1BerEncoder *)object;
   return encode_ia5_string(self, value);
+}
+
+size_t ut_asn1_ber_encoder_encode_graphic_string(UtObject *object,
+                                                 const char *value) {
+  assert(ut_object_is_asn1_ber_encoder(object));
+  UtAsn1BerEncoder *self = (UtAsn1BerEncoder *)object;
+  return encode_graphic_string(self, value);
 }
 
 size_t ut_asn1_ber_encoder_encode_visible_string(UtObject *object,
@@ -946,6 +1114,13 @@ size_t ut_asn1_ber_encoder_encode_visible_string(UtObject *object,
   assert(ut_object_is_asn1_ber_encoder(object));
   UtAsn1BerEncoder *self = (UtAsn1BerEncoder *)object;
   return encode_visible_string(self, value);
+}
+
+size_t ut_asn1_ber_encoder_encode_general_string(UtObject *object,
+                                                 const char *value) {
+  assert(ut_object_is_asn1_ber_encoder(object));
+  UtAsn1BerEncoder *self = (UtAsn1BerEncoder *)object;
+  return encode_general_string(self, value);
 }
 
 UtObject *ut_asn1_ber_encoder_get_data(UtObject *object) {

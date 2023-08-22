@@ -30,6 +30,8 @@ void ut_asn1_ber_decoder_decode_null(UtObject *object);
 
 UtObject *ut_asn1_ber_decoder_decode_object_identifier(UtObject *object);
 
+char *ut_asn1_ber_decoder_decode_object_descriptor(UtObject *object);
+
 double ut_asn1_ber_decoder_decode_real(UtObject *object);
 
 int64_t ut_asn1_ber_decoder_decode_enumerated(UtObject *object);
@@ -46,11 +48,15 @@ char *ut_asn1_ber_decoder_decode_numeric_string(UtObject *object);
 
 char *ut_asn1_ber_decoder_decode_printable_string(UtObject *object);
 
-UtObject *ut_asn1_ber_decoder_decode_ia5_string(UtObject *object);
+char *ut_asn1_ber_decoder_decode_ia5_string(UtObject *object);
 
 UtObject *ut_asn1_ber_decoder_decode_utc_time(UtObject *object);
 
+char *ut_asn1_ber_decoder_decode_graphic_string(UtObject *object);
+
 char *ut_asn1_ber_decoder_decode_visible_string(UtObject *object);
+
+char *ut_asn1_ber_decoder_decode_general_string(UtObject *object);
 
 /// Returns [true] if [object] is a [UtAsn1BerDecoder].
 bool ut_object_is_asn1_ber_decoder(UtObject *object);

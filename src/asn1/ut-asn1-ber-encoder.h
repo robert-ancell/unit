@@ -36,6 +36,9 @@ size_t ut_asn1_ber_encoder_encode_null(UtObject *object);
 size_t ut_asn1_ber_encoder_encode_object_identifier(UtObject *object,
                                                     UtObject *identifier);
 
+size_t ut_asn1_ber_encoder_encode_object_descriptor(UtObject *object,
+                                                    const char *descriptor);
+
 size_t ut_asn1_ber_encoder_encode_real(UtObject *object, double value);
 
 size_t ut_asn1_ber_encoder_encode_enumerated(UtObject *object, int64_t value);
@@ -52,9 +55,16 @@ size_t ut_asn1_ber_encoder_encode_numeric_string(UtObject *object,
 size_t ut_asn1_ber_encoder_encode_printable_string(UtObject *object,
                                                    const char *value);
 
-size_t ut_asn1_ber_encoder_encode_ia5_string(UtObject *object, UtObject *value);
+size_t ut_asn1_ber_encoder_encode_ia5_string(UtObject *object,
+                                             const char *value);
+
+size_t ut_asn1_ber_encoder_encode_graphic_string(UtObject *object,
+                                                 const char *value);
 
 size_t ut_asn1_ber_encoder_encode_visible_string(UtObject *object,
+                                                 const char *value);
+
+size_t ut_asn1_ber_encoder_encode_general_string(UtObject *object,
                                                  const char *value);
 
 /// Valid until something else is encoded.
