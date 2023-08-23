@@ -58,5 +58,7 @@ char *ut_asn1_ber_decoder_decode_visible_string(UtObject *object);
 
 char *ut_asn1_ber_decoder_decode_general_string(UtObject *object);
 
+char *ut_asn1_ber_decoder_decode_bmp_string(UtObject *object);
+
 /// Returns [true] if [object] is a [UtAsn1BerDecoder].
 bool ut_object_is_asn1_ber_decoder(UtObject *object);

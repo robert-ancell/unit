@@ -25,3 +25,7 @@ UtObject *ut_asn1_decode_visible_string(UtObject *visible_string);
 UtObject *ut_asn1_encode_general_string(const char *string);
 
 UtObject *ut_asn1_decode_general_string(UtObject *general_string);
+
+UtObject *ut_asn1_encode_bmp_string(const char *string);
+
+UtObject *ut_asn1_decode_bmp_string(UtObject *bmp_string);

@@ -1078,6 +1078,32 @@ static void test_general_string() {
   ut_assert_uint8_list_equal_hex(data3, "1b0b48656c6c6f09576f726c64");
 }
 
+static void test_bmp_string() {
+  UtObjectRef encoder1 = ut_asn1_ber_encoder_new();
+  ut_asn1_ber_encoder_encode_bmp_string(encoder1, "Hello World");
+  ut_assert_null_object(ut_asn1_encoder_get_error(encoder1));
+  UtObjectRef data1 = ut_asn1_ber_encoder_get_data(encoder1);
+  ut_assert_uint8_list_equal_hex(
+      data1, "00480065006c006c006f00200057006f0072006c0064");
+
+  // Empty string.
+  UtObjectRef encoder2 = ut_asn1_ber_encoder_new();
+  ut_asn1_ber_encoder_encode_bmp_string(encoder2, "");
+  ut_assert_null_object(ut_asn1_encoder_get_error(encoder2));
+  UtObjectRef data2 = ut_asn1_ber_encoder_get_data(encoder2);
+  ut_assert_uint8_list_equal_hex(data2, "");
+
+  // Encoded as object with type.
+  UtObjectRef encoder3 = ut_asn1_ber_encoder_new();
+  UtObjectRef type3 = ut_asn1_bmp_string_type_new();
+  UtObjectRef value3 = ut_string_new("Hello World");
+  ut_asn1_encoder_encode_value(encoder3, type3, value3);
+  ut_assert_null_object(ut_asn1_encoder_get_error(encoder3));
+  UtObjectRef data3 = ut_asn1_ber_encoder_get_data(encoder3);
+  ut_assert_uint8_list_equal_hex(
+      data3, "1e1600480065006c006c006f00200057006f0072006c0064");
+}
+
 static void test_choice() {
   // First choice.
   UtObjectRef encoder1 = ut_asn1_ber_encoder_new();
@@ -1200,6 +1226,7 @@ int main(int argc, char **argv) {
   test_graphic_string();
   test_visible_string();
   test_general_string();
+  test_bmp_string();
   test_choice();
   test_tagged_type();
 

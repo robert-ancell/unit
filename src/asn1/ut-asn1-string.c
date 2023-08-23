@@ -104,3 +104,33 @@ UtObject *ut_asn1_encode_general_string(const char *string) {
 UtObject *ut_asn1_decode_general_string(UtObject *general_string) {
   return decode_utf8_string(general_string, is_valid_general_string_char);
 }
+
+UtObject *ut_asn1_encode_bmp_string(const char *string) {
+  UtObjectRef encoded_string = ut_uint8_list_new();
+  UtObjectRef s = ut_string_new(string);
+  UtObjectRef code_points = ut_string_get_code_points(s);
+  size_t code_points_length = ut_list_get_length(code_points);
+  for (size_t i = 0; i < code_points_length; i++) {
+    uint32_t code_point = ut_uint32_list_get_element(code_points, i);
+    if (code_point >= 0xffff) {
+      return NULL;
+    }
+    ut_uint8_list_append(encoded_string, code_point >> 8);
+    ut_uint8_list_append(encoded_string, code_point & 0xff);
+  }
+  return ut_object_ref(encoded_string);
+}
+
+UtObject *ut_asn1_decode_bmp_string(UtObject *bmp_string) {
+  size_t bmp_string_length = ut_list_get_length(bmp_string);
+  if (bmp_string_length % 2 != 0) {
+    return NULL;
+  }
+  UtObjectRef decoded_string = ut_string_new("");
+  for (size_t i = 0; i < bmp_string_length; i += 2) {
+    ut_string_append_code_point(
+        decoded_string, ut_uint8_list_get_element(bmp_string, i) << 8 |
+                            ut_uint8_list_get_element(bmp_string, i + 1));
+  }
+  return ut_object_ref(decoded_string);
+}

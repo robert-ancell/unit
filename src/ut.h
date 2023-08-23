@@ -1,6 +1,7 @@
 #include "asn1/ut-asn1-ber-decoder.h"
 #include "asn1/ut-asn1-ber-encoder.h"
 #include "asn1/ut-asn1-bit-string-type.h"
+#include "asn1/ut-asn1-bmp-string-type.h"
 #include "asn1/ut-asn1-boolean-type.h"
 #include "asn1/ut-asn1-choice-type.h"
 #include "asn1/ut-asn1-choice-value.h"

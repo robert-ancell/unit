@@ -1614,7 +1614,7 @@ static void test_general_string() {
   ut_assert_null_object(ut_asn1_decoder_get_error(decoder2));
   ut_assert_cstring_equal(string2, "");
 
-  // Constructed form
+  // Constructed form.
   UtObjectRef data3 =
       ut_uint8_list_new_from_hex_string("3b0f1b0648656c6c6f201b05576f726c64");
   UtObjectRef decoder3 = ut_asn1_ber_decoder_new(data3);
@@ -1631,6 +1631,51 @@ static void test_general_string() {
   ut_assert_null_object(ut_asn1_decoder_get_error(decoder4));
   ut_assert_true(ut_object_implements_string(value4));
   ut_assert_cstring_equal(ut_string_get_text(value4), "Hello World");
+}
+
+static void test_bmp_string() {
+  UtObjectRef data1 = ut_uint8_list_new_from_hex_string(
+      "1e1600480065006c006c006f00200057006f0072006c0064");
+  UtObjectRef decoder1 = ut_asn1_ber_decoder_new(data1);
+  ut_assert_true(ut_asn1_tag_matches(ut_asn1_ber_decoder_get_tag(decoder1),
+                                     UT_ASN1_TAG_CLASS_UNIVERSAL,
+                                     UT_ASN1_TAG_UNIVERSAL_BMP_STRING));
+  ut_cstring_ref string1 = ut_asn1_ber_decoder_decode_bmp_string(decoder1);
+  ut_assert_null_object(ut_asn1_decoder_get_error(decoder1));
+  ut_assert_cstring_equal(string1, "Hello World");
+
+  // Empty string.
+  UtObjectRef data2 = ut_uint8_list_new_from_hex_string("1e00");
+  UtObjectRef decoder2 = ut_asn1_ber_decoder_new(data2);
+  ut_cstring_ref string2 = ut_asn1_ber_decoder_decode_bmp_string(decoder2);
+  ut_assert_null_object(ut_asn1_decoder_get_error(decoder2));
+  ut_assert_cstring_equal(string2, "");
+
+  // Constructed form.
+  UtObjectRef data3 = ut_uint8_list_new_from_hex_string(
+      "3e1a1e0c00480065006c006c006f00201e0a0057006f0072006c0064");
+  UtObjectRef decoder3 = ut_asn1_ber_decoder_new(data3);
+  ut_cstring_ref string3 = ut_asn1_ber_decoder_decode_bmp_string(decoder3);
+  ut_assert_null_object(ut_asn1_decoder_get_error(decoder3));
+  ut_assert_cstring_equal(string3, "Hello World");
+
+  // Decoded as object with type.
+  UtObjectRef data4 = ut_uint8_list_new_from_hex_string(
+      "1e1600480065006c006c006f00200057006f0072006c0064");
+  UtObjectRef decoder4 = ut_asn1_ber_decoder_new(data4);
+  UtObjectRef type4 = ut_asn1_bmp_string_type_new();
+  UtObjectRef value4 = ut_asn1_decoder_decode_value(decoder4, type4);
+  ut_assert_null_object(ut_asn1_decoder_get_error(decoder4));
+  ut_assert_true(ut_object_implements_string(value4));
+  ut_assert_cstring_equal(ut_string_get_text(value4), "Hello World");
+
+  // Containing half a 16 bit value.
+  UtObjectRef data5 = ut_uint8_list_new_from_hex_string(
+      "1e1500480065006c006c006f00200057006f0072006c64");
+  UtObjectRef decoder5 = ut_asn1_ber_decoder_new(data5);
+  ut_cstring_ref string5 = ut_asn1_ber_decoder_decode_bmp_string(decoder5);
+  ut_assert_is_error_with_description(ut_asn1_decoder_get_error(decoder5),
+                                      "Invalid BMPString");
 }
 
 static void test_choice() {
@@ -1759,6 +1804,7 @@ int main(int argc, char **argv) {
   test_graphic_string();
   test_visible_string();
   test_general_string();
+  test_bmp_string();
   test_choice();
   test_tagged_type();
 

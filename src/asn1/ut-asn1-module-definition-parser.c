@@ -1411,6 +1411,8 @@ static bool parse_value(UtAsn1ModuleDefinitionParser *self, UtObject *type,
     return parse_character_string_value(self, value);
   } else if (ut_object_is_asn1_general_string_type(type)) {
     return parse_character_string_value(self, value);
+  } else if (ut_object_is_asn1_bmp_string_type(type)) {
+    return parse_character_string_value(self, value);
   }
 
   set_expected_error(self, "value");
@@ -2037,8 +2039,7 @@ static bool parse_type(UtAsn1ModuleDefinitionParser *self, UtObject **type) {
     set_error(self, "CHARACTER not supported");
     return false;
   } else if (maybe_parse_text(self, "BMPString")) {
-    set_error(self, "BMPString not supported");
-    return false;
+    type_ = ut_asn1_bmp_string_type_new();
   } else {
     ut_cstring_ref reference = NULL;
     if (!parse_type_reference(self, &reference)) {

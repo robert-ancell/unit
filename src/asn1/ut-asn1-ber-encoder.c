@@ -419,6 +419,15 @@ static size_t encode_general_string(UtAsn1BerEncoder *self, const char *value) {
   return encode_octet_string(self, general_string);
 }
 
+static size_t encode_bmp_string(UtAsn1BerEncoder *self, const char *value) {
+  UtObjectRef bmp_string = ut_asn1_encode_bmp_string(value);
+  if (bmp_string == NULL) {
+    set_error(self, "Invalid BMPString");
+    return 0;
+  }
+  return encode_octet_string(self, bmp_string);
+}
+
 static size_t encode_boolean_value(UtAsn1BerEncoder *self, UtObject *value,
                                    bool encode_tag, bool *is_constructed) {
   if (!ut_object_is_boolean(value)) {
@@ -865,6 +874,22 @@ static size_t encode_general_string_value(UtAsn1BerEncoder *self,
   return length;
 }
 
+static size_t encode_bmp_string_value(UtAsn1BerEncoder *self, UtObject *value,
+                                      bool encode_tag, bool *is_constructed) {
+  if (!ut_object_implements_string(value)) {
+    set_type_error(self, "BMPString", value);
+    return 0;
+  }
+  size_t length = encode_bmp_string(self, ut_string_get_text(value));
+  if (encode_tag) {
+    length += encode_definite_length(self, length);
+    length += encode_identifier(self, UT_ASN1_TAG_CLASS_UNIVERSAL, false,
+                                UT_ASN1_TAG_UNIVERSAL_BMP_STRING);
+  }
+  *is_constructed = encode_tag;
+  return length;
+}
+
 static size_t encode_tagged_value(UtAsn1BerEncoder *self, UtObject *type,
                                   UtObject *value, bool encode_tag,
                                   bool *is_constructed) {
@@ -934,6 +959,8 @@ static size_t encode_value(UtAsn1BerEncoder *self, UtObject *type,
     return encode_visible_string_value(self, value, encode_tag, is_constructed);
   } else if (ut_object_is_asn1_general_string_type(type)) {
     return encode_general_string_value(self, value, encode_tag, is_constructed);
+  } else if (ut_object_is_asn1_bmp_string_type(type)) {
+    return encode_bmp_string_value(self, value, encode_tag, is_constructed);
   } else if (ut_object_is_asn1_tagged_type(type)) {
     return encode_tagged_value(self, type, value, encode_tag, is_constructed);
   } else {
@@ -1122,6 +1149,13 @@ size_t ut_asn1_ber_encoder_encode_general_string(UtObject *object,
   assert(ut_object_is_asn1_ber_encoder(object));
   UtAsn1BerEncoder *self = (UtAsn1BerEncoder *)object;
   return encode_general_string(self, value);
+}
+
+size_t ut_asn1_ber_encoder_encode_bmp_string(UtObject *object,
+                                             const char *value) {
+  assert(ut_object_is_asn1_ber_encoder(object));
+  UtAsn1BerEncoder *self = (UtAsn1BerEncoder *)object;
+  return encode_bmp_string(self, value);
 }
 
 UtObject *ut_asn1_ber_encoder_get_data(UtObject *object) {

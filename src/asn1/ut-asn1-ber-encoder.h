@@ -67,6 +67,9 @@ size_t ut_asn1_ber_encoder_encode_visible_string(UtObject *object,
 size_t ut_asn1_ber_encoder_encode_general_string(UtObject *object,
                                                  const char *value);
 
+size_t ut_asn1_ber_encoder_encode_bmp_string(UtObject *object,
+                                             const char *value);
+
 /// Valid until something else is encoded.
 /// !return-ref
 UtObject *ut_asn1_ber_encoder_get_data(UtObject *object);

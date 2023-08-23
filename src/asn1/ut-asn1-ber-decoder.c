@@ -516,6 +516,17 @@ static UtObject *decode_general_string(UtAsn1BerDecoder *self) {
   return ut_object_ref(value);
 }
 
+static UtObject *decode_bmp_string(UtAsn1BerDecoder *self) {
+  UtObjectRef data = decode_octet_string(self, "BMPString");
+  UtObjectRef value = ut_asn1_decode_bmp_string(data);
+  if (value == NULL) {
+    set_error(self, "Invalid BMPString");
+    return ut_string_new("");
+  }
+
+  return ut_object_ref(value);
+}
+
 static UtObject *decode_relative_oid(UtAsn1BerDecoder *self) {
   size_t data_length = ut_list_get_length(self->contents);
   UtObjectRef identifier = ut_uint32_list_new();
@@ -1031,6 +1042,15 @@ static UtObject *decode_general_string_value(UtAsn1BerDecoder *self,
   return decode_general_string(self);
 }
 
+static UtObject *decode_bmp_string_value(UtAsn1BerDecoder *self,
+                                         bool decode_tag) {
+  if (decode_tag && !expect_tag(self, UT_ASN1_TAG_CLASS_UNIVERSAL,
+                                UT_ASN1_TAG_UNIVERSAL_BMP_STRING)) {
+    return ut_string_new("");
+  }
+  return decode_bmp_string(self);
+}
+
 static UtObject *decode_tagged_value(UtAsn1BerDecoder *self, UtObject *type,
                                      bool decode_tag) {
   if (decode_tag && !expect_tag(self, ut_asn1_tagged_type_get_class(type),
@@ -1093,6 +1113,8 @@ static UtObject *decode_value(UtAsn1BerDecoder *self, UtObject *type,
     return decode_visible_string_value(self, decode_tag);
   } else if (ut_object_is_asn1_general_string_type(type)) {
     return decode_general_string_value(self, decode_tag);
+  } else if (ut_object_is_asn1_bmp_string_type(type)) {
+    return decode_bmp_string_value(self, decode_tag);
   } else if (ut_object_is_asn1_tagged_type(type)) {
     return decode_tagged_value(self, type, decode_tag);
   } else {
@@ -1383,6 +1405,13 @@ char *ut_asn1_ber_decoder_decode_general_string(UtObject *object) {
   assert(ut_object_is_asn1_ber_decoder(object));
   UtAsn1BerDecoder *self = (UtAsn1BerDecoder *)object;
   UtObjectRef value = decode_general_string(self);
+  return ut_string_take_text(value);
+}
+
+char *ut_asn1_ber_decoder_decode_bmp_string(UtObject *object) {
+  assert(ut_object_is_asn1_ber_decoder(object));
+  UtAsn1BerDecoder *self = (UtAsn1BerDecoder *)object;
+  UtObjectRef value = decode_bmp_string(self);
   return ut_string_take_text(value);
 }
 
