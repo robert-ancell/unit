@@ -386,12 +386,12 @@ test('ASN.1 Module Definition Parser', asn1_module_definition_parser_test)
 asn1_ber_encoder_test = executable('ut-asn1-ber-encoder-test',
                                    'asn1/ut-asn1-ber-encoder-test.c',
                                    link_with: ut_lib)
-test('ASN.1 BER encoder', asn1_ber_encoder_test)
+test('ASN.1 BER Encoder', asn1_ber_encoder_test)
 
 asn1_ber_decoder_test = executable('ut-asn1-ber-decoder-test',
                                    'asn1/ut-asn1-ber-decoder-test.c',
                                    link_with: ut_lib)
-test('ASN.1 BER decoder', asn1_ber_decoder_test)
+test('ASN.1 BER Decoder', asn1_ber_decoder_test)
 
 huffman_decoder_test = executable('ut-huffman-decoder-test',
                                   'huffman/ut-huffman-decoder-test.c',
