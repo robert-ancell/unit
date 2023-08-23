@@ -379,24 +379,84 @@ static void test_integer_type_assignment() {
   ut_assert_int_equal(ut_asn1_integer_range_constraint_get_upper(constraint7),
                       255);
 
-  // Invalid type in constraint.
+  // Union of constraints.
+  UtObjectRef module8 = ut_asn1_module_definition_new_from_text(
+      "Test DEFINITIONS ::= BEGIN\n"
+      "    IntegerType ::= INTEGER (42|99)\n"
+      "END");
+  ut_assert_is_not_error(module8);
+  UtObject *type8 =
+      ut_asn1_module_definition_get_assignment(module8, "IntegerType");
+  ut_assert_non_null_object(type8);
+  ut_assert_true(ut_object_is_asn1_constrained_type(type8));
+  ut_assert_true(
+      ut_object_is_asn1_integer_type(ut_asn1_constrained_type_get_type(type8)));
+  UtObject *constraint8 = ut_asn1_constrained_type_get_constraint(type8);
+  ut_assert_true(ut_object_is_asn1_union_constraint(constraint8));
+  UtObject *constraints8 =
+      ut_asn1_union_constraint_get_constraints(constraint8);
+  ut_assert_int_equal(ut_list_get_length(constraints8), 2);
+  UtObject *constraint8a = ut_object_list_get_element(constraints8, 0);
+  ut_assert_true(ut_object_is_asn1_value_constraint(constraint8a));
+  UtObject *constraint_value8a =
+      ut_asn1_value_constraint_get_value(constraint8a);
+  ut_assert_true(ut_object_is_int64(constraint_value8a));
+  ut_assert_int_equal(ut_int64_get_value(constraint_value8a), 42);
+  UtObject *constraint8b = ut_object_list_get_element(constraints8, 1);
+  ut_assert_true(ut_object_is_asn1_value_constraint(constraint8b));
+  UtObject *constraint_value8b =
+      ut_asn1_value_constraint_get_value(constraint8b);
+  ut_assert_true(ut_object_is_int64(constraint_value8b));
+  ut_assert_int_equal(ut_int64_get_value(constraint_value8b), 99);
+
+  // Union of constraints (alternate form).
   UtObjectRef module9 = ut_asn1_module_definition_new_from_text(
+      "Test DEFINITIONS ::= BEGIN\n"
+      "    IntegerType ::= INTEGER (42 UNION 99)\n"
+      "END");
+  ut_assert_is_not_error(module9);
+  UtObject *type9 =
+      ut_asn1_module_definition_get_assignment(module9, "IntegerType");
+  ut_assert_non_null_object(type9);
+  ut_assert_true(ut_object_is_asn1_constrained_type(type9));
+  ut_assert_true(
+      ut_object_is_asn1_integer_type(ut_asn1_constrained_type_get_type(type9)));
+  UtObject *constraint9 = ut_asn1_constrained_type_get_constraint(type9);
+  ut_assert_true(ut_object_is_asn1_union_constraint(constraint9));
+  UtObject *constraints9 =
+      ut_asn1_union_constraint_get_constraints(constraint9);
+  ut_assert_int_equal(ut_list_get_length(constraints9), 2);
+  UtObject *constraint9a = ut_object_list_get_element(constraints9, 0);
+  ut_assert_true(ut_object_is_asn1_value_constraint(constraint9a));
+  UtObject *constraint_value9a =
+      ut_asn1_value_constraint_get_value(constraint9a);
+  ut_assert_true(ut_object_is_int64(constraint_value9a));
+  ut_assert_int_equal(ut_int64_get_value(constraint_value9a), 42);
+  UtObject *constraint9b = ut_object_list_get_element(constraints9, 1);
+  ut_assert_true(ut_object_is_asn1_value_constraint(constraint9b));
+  UtObject *constraint_value9b =
+      ut_asn1_value_constraint_get_value(constraint9b);
+  ut_assert_true(ut_object_is_int64(constraint_value9b));
+  ut_assert_int_equal(ut_int64_get_value(constraint_value9b), 99);
+
+  // Invalid type in constraint.
+  UtObjectRef module20 = ut_asn1_module_definition_new_from_text(
       "Test DEFINITIONS ::= BEGIN\n"
       "    IntegerType ::= INTEGER (FALSE)\n"
       "END");
-  ut_assert_is_error_with_description(module9, "Expected integer, got FALSE");
+  ut_assert_is_error_with_description(module20, "Expected integer, got FALSE");
 
   // Invalid type in range constraint.
-  UtObjectRef module10 = ut_asn1_module_definition_new_from_text(
+  UtObjectRef module21 = ut_asn1_module_definition_new_from_text(
       "Test DEFINITIONS ::= BEGIN\n"
       "    IntegerType ::= INTEGER (0..FALSE)\n"
       "END");
-  ut_assert_is_error_with_description(module10, "Expected integer, got FALSE");
-  UtObjectRef module11 = ut_asn1_module_definition_new_from_text(
+  ut_assert_is_error_with_description(module21, "Expected integer, got FALSE");
+  UtObjectRef module22 = ut_asn1_module_definition_new_from_text(
       "Test DEFINITIONS ::= BEGIN\n"
       "    IntegerType ::= INTEGER (FALSE..0)\n"
       "END");
-  ut_assert_is_error_with_description(module11, "Expected integer, got FALSE");
+  ut_assert_is_error_with_description(module22, "Expected integer, got FALSE");
 }
 
 static void test_integer_value_assignment() {

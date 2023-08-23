@@ -1750,6 +1750,69 @@ static bool parse_value_or_value_range(UtAsn1ModuleDefinitionParser *self,
   return true;
 }
 
+static bool maybe_parse_union_mark(UtAsn1ModuleDefinitionParser *self) {
+  return maybe_parse_text(self, "|") || maybe_parse_text(self, "UNION");
+}
+
+static bool maybe_parse_intersection_mark(UtAsn1ModuleDefinitionParser *self) {
+  return maybe_parse_text(self, "^") || maybe_parse_text(self, "INTERSECTION");
+}
+
+static bool parse_intersections(UtAsn1ModuleDefinitionParser *self,
+                                UtObject *type, UtObject *constraint0,
+                                UtObject **constraint);
+
+static bool parse_unions(UtAsn1ModuleDefinitionParser *self, UtObject *type,
+                         UtObject *constraint0, UtObject **constraint) {
+  UtObjectRef constraints = ut_list_new();
+  ut_list_append(constraints, constraint0);
+  while (true) {
+    UtObjectRef c = NULL;
+    if (!parse_value_or_value_range(self, type, &c)) {
+      return false;
+    }
+
+    if (maybe_parse_intersection_mark(self)) {
+      UtObjectRef c2 = NULL;
+      if (!parse_intersections(self, type, c, &c2)) {
+        return false;
+      }
+      ut_list_append(constraints, c2);
+    } else {
+      ut_list_append(constraints, c);
+    }
+
+    if (!maybe_parse_union_mark(self)) {
+      *constraint = ut_asn1_union_constraint_new(constraints);
+      return true;
+    }
+  }
+}
+
+static bool parse_intersections(UtAsn1ModuleDefinitionParser *self,
+                                UtObject *type, UtObject *constraint0,
+                                UtObject **constraint) {
+  UtObjectRef constraints = ut_list_new();
+  ut_list_append(constraints, constraint0);
+  while (true) {
+    UtObjectRef c = NULL;
+    if (!parse_value_or_value_range(self, type, &c)) {
+      return false;
+    }
+    ut_list_append(constraints, c);
+
+    if (maybe_parse_union_mark(self)) {
+      UtObjectRef c2 = ut_asn1_intersection_constraint_new(constraints);
+      return parse_unions(self, type, c2, constraint);
+    }
+
+    if (!maybe_parse_intersection_mark(self)) {
+      *constraint = ut_asn1_intersection_constraint_new(constraints);
+      return true;
+    }
+  }
+}
+
 static bool parse_constraint(UtAsn1ModuleDefinitionParser *self, UtObject *type,
                              UtObject **constraint) {
   if (!maybe_parse_text(self, "(")) {
@@ -1757,9 +1820,18 @@ static bool parse_constraint(UtAsn1ModuleDefinitionParser *self, UtObject *type,
     return true;
   }
 
-  UtObjectRef constraint_ = NULL;
-  if (!parse_value_or_value_range(self, type, &constraint_)) {
+  UtObjectRef constraint0 = NULL;
+  if (!parse_value_or_value_range(self, type, &constraint0)) {
     return false;
+  }
+
+  UtObjectRef constraint_ = NULL;
+  if (maybe_parse_union_mark(self)) {
+    parse_unions(self, type, constraint0, &constraint_);
+  } else if (maybe_parse_intersection_mark(self)) {
+    parse_intersections(self, type, constraint0, &constraint_);
+  } else {
+    constraint_ = ut_object_ref(constraint0);
   }
 
   if (!parse_text(self, ")")) {
