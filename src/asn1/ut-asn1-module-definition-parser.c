@@ -1417,6 +1417,175 @@ static bool parse_value(UtAsn1ModuleDefinitionParser *self, UtObject *type,
   return false;
 }
 
+static bool parse_constraint(UtAsn1ModuleDefinitionParser *self, UtObject *type,
+                             UtObject **constraint);
+
+static bool parse_size_constraint(UtAsn1ModuleDefinitionParser *self,
+                                  UtObject **constraint) {
+  UtObjectRef size_constraint_type = ut_asn1_integer_type_new();
+  UtObjectRef size_constraint = NULL;
+  if (!parse_constraint(self, size_constraint_type, &size_constraint) ||
+      size_constraint == NULL) {
+    return false;
+  }
+
+  // FIXME: Check for negative values.
+
+  *constraint = ut_asn1_size_constraint_new(size_constraint);
+  return true;
+}
+
+static bool parse_constraint_element(UtAsn1ModuleDefinitionParser *self,
+                                     UtObject *type, UtObject **constraint) {
+  bool is_integer = ut_object_is_asn1_integer_type(type);
+  bool is_real = ut_object_is_asn1_real_type(type);
+
+  UtObjectRef lower_value = NULL;
+  bool lower_is_min = false;
+  if (maybe_parse_text(self, "MIN")) {
+    lower_is_min = true;
+    if (is_integer) {
+      lower_value = ut_int64_new(INT64_MIN);
+    } else if (is_real) {
+      lower_value = ut_float64_new(DBL_MIN);
+    }
+  } else if (maybe_parse_text(self, "SIZE")) {
+    return parse_size_constraint(self, constraint);
+  } else if (!parse_value(self, type, &lower_value)) {
+    return false;
+  }
+
+  if (!maybe_parse_text(self, "..")) {
+    if (lower_is_min) {
+      set_expected_error(self, "value range");
+      return false;
+    }
+
+    *constraint = ut_asn1_value_constraint_new(lower_value);
+    return true;
+  }
+
+  if (!is_integer && !is_real) {
+    set_error(self, "Range constraint only supported for INTEGER and REAL");
+    return false;
+  }
+
+  UtObjectRef upper_value = NULL;
+  if (maybe_parse_text(self, "MAX")) {
+    if (is_integer) {
+      upper_value = ut_int64_new(INT64_MAX);
+    } else if (is_real) {
+      upper_value = ut_float64_new(DBL_MAX);
+    }
+  } else if (!parse_value(self, type, &upper_value)) {
+    return false;
+  }
+
+  // FIXME: Check upper value >= lower value
+
+  if (is_integer) {
+    *constraint = ut_asn1_integer_range_constraint_new(
+        ut_int64_get_value(lower_value), ut_int64_get_value(upper_value));
+  } else if (is_real) {
+    *constraint = ut_asn1_real_range_constraint_new(
+        ut_float64_get_value(lower_value), ut_float64_get_value(upper_value));
+  }
+
+  return true;
+}
+
+static bool maybe_parse_union_mark(UtAsn1ModuleDefinitionParser *self) {
+  return maybe_parse_text(self, "|") || maybe_parse_text(self, "UNION");
+}
+
+static bool maybe_parse_intersection_mark(UtAsn1ModuleDefinitionParser *self) {
+  return maybe_parse_text(self, "^") || maybe_parse_text(self, "INTERSECTION");
+}
+
+static bool parse_intersections(UtAsn1ModuleDefinitionParser *self,
+                                UtObject *type, UtObject *constraint0,
+                                UtObject **constraint);
+
+static bool parse_unions(UtAsn1ModuleDefinitionParser *self, UtObject *type,
+                         UtObject *constraint0, UtObject **constraint) {
+  UtObjectRef constraints = ut_list_new();
+  ut_list_append(constraints, constraint0);
+  while (true) {
+    UtObjectRef c = NULL;
+    if (!parse_constraint_element(self, type, &c)) {
+      return false;
+    }
+
+    if (maybe_parse_intersection_mark(self)) {
+      UtObjectRef c2 = NULL;
+      if (!parse_intersections(self, type, c, &c2)) {
+        return false;
+      }
+      ut_list_append(constraints, c2);
+    } else {
+      ut_list_append(constraints, c);
+    }
+
+    if (!maybe_parse_union_mark(self)) {
+      *constraint = ut_asn1_union_constraint_new(constraints);
+      return true;
+    }
+  }
+}
+
+static bool parse_intersections(UtAsn1ModuleDefinitionParser *self,
+                                UtObject *type, UtObject *constraint0,
+                                UtObject **constraint) {
+  UtObjectRef constraints = ut_list_new();
+  ut_list_append(constraints, constraint0);
+  while (true) {
+    UtObjectRef c = NULL;
+    if (!parse_constraint_element(self, type, &c)) {
+      return false;
+    }
+    ut_list_append(constraints, c);
+
+    if (maybe_parse_union_mark(self)) {
+      UtObjectRef c2 = ut_asn1_intersection_constraint_new(constraints);
+      return parse_unions(self, type, c2, constraint);
+    }
+
+    if (!maybe_parse_intersection_mark(self)) {
+      *constraint = ut_asn1_intersection_constraint_new(constraints);
+      return true;
+    }
+  }
+}
+
+static bool parse_constraint(UtAsn1ModuleDefinitionParser *self, UtObject *type,
+                             UtObject **constraint) {
+  if (!maybe_parse_text(self, "(")) {
+    *constraint = NULL;
+    return true;
+  }
+
+  UtObjectRef constraint0 = NULL;
+  if (!parse_constraint_element(self, type, &constraint0)) {
+    return false;
+  }
+
+  UtObjectRef constraint_ = NULL;
+  if (maybe_parse_union_mark(self)) {
+    parse_unions(self, type, constraint0, &constraint_);
+  } else if (maybe_parse_intersection_mark(self)) {
+    parse_intersections(self, type, constraint0, &constraint_);
+  } else {
+    constraint_ = ut_object_ref(constraint0);
+  }
+
+  if (!parse_text(self, ")")) {
+    return false;
+  }
+
+  *constraint = ut_object_ref(constraint_);
+  return true;
+}
+
 static bool parse_enumeration_item(UtAsn1ModuleDefinitionParser *self,
                                    char **name, uint64_t *number) {
   ut_cstring_ref name_ = NULL;
@@ -1577,13 +1746,30 @@ static bool parse_type(UtAsn1ModuleDefinitionParser *self, UtObject **type);
 
 static bool parse_sequence_type(UtAsn1ModuleDefinitionParser *self,
                                 UtObject **type) {
-  if (maybe_parse_text(self, "OF")) {
+  UtObjectRef size_constraint = NULL;
+  bool is_list = false;
+  if (maybe_parse_text(self, "SIZE")) {
+    if (!parse_size_constraint(self, &size_constraint) ||
+        !parse_text(self, "OF")) {
+      return false;
+    }
+    is_list = true;
+  } else {
+    is_list = maybe_parse_text(self, "OF");
+  }
+
+  if (is_list) {
     UtObjectRef child_type = NULL;
     if (!parse_type(self, &child_type)) {
       set_error(self, "Missing type for SEQUENCE OF");
       return false;
     }
-    *type = ut_asn1_sequence_of_type_new(child_type);
+    UtObjectRef list_type = ut_asn1_sequence_of_type_new(child_type);
+    if (size_constraint != NULL) {
+      *type = ut_asn1_constrained_type_new(list_type, size_constraint);
+    } else {
+      *type = ut_object_ref(list_type);
+    }
     return true;
   }
 
@@ -1613,13 +1799,30 @@ static bool parse_sequence_type(UtAsn1ModuleDefinitionParser *self,
 
 static bool parse_set_type(UtAsn1ModuleDefinitionParser *self,
                            UtObject **type) {
-  if (maybe_parse_text(self, "OF")) {
+  UtObjectRef size_constraint = NULL;
+  bool is_list = false;
+  if (maybe_parse_text(self, "SIZE")) {
+    if (!parse_size_constraint(self, &size_constraint) ||
+        !parse_text(self, "OF")) {
+      return false;
+    }
+    is_list = true;
+  } else {
+    is_list = maybe_parse_text(self, "OF");
+  }
+
+  if (is_list) {
     UtObjectRef child_type = NULL;
     if (!parse_type(self, &child_type)) {
       set_error(self, "Missing type for SET OF");
       return false;
     }
-    *type = ut_asn1_set_of_type_new(child_type);
+    UtObjectRef list_type = ut_asn1_set_of_type_new(child_type);
+    if (size_constraint != NULL) {
+      *type = ut_asn1_constrained_type_new(list_type, size_constraint);
+    } else {
+      *type = ut_object_ref(list_type);
+    }
     return true;
   }
 
@@ -1711,156 +1914,6 @@ static bool parse_choice_type(UtAsn1ModuleDefinitionParser *self,
   }
 
   *type = ut_object_ref(type_);
-  return true;
-}
-
-static bool parse_constraint(UtAsn1ModuleDefinitionParser *self, UtObject *type,
-                             UtObject **constraint);
-
-static bool parse_value_or_value_range(UtAsn1ModuleDefinitionParser *self,
-                                       UtObject *type, UtObject **constraint) {
-  bool is_integer = ut_object_is_asn1_integer_type(type);
-  bool is_real = ut_object_is_asn1_real_type(type);
-
-  UtObjectRef lower_value = NULL;
-  bool lower_is_min = false;
-  if (maybe_parse_text(self, "MIN")) {
-    lower_is_min = true;
-    if (is_integer) {
-      lower_value = ut_int64_new(INT64_MIN);
-    } else if (is_real) {
-      lower_value = ut_float64_new(DBL_MIN);
-    }
-  } else if (!parse_value(self, type, &lower_value)) {
-    return false;
-  }
-
-  if (!maybe_parse_text(self, "..")) {
-    if (lower_is_min) {
-      set_expected_error(self, "value range");
-      return false;
-    }
-
-    *constraint = ut_asn1_value_constraint_new(lower_value);
-    return true;
-  }
-
-  if (!is_integer && !is_real) {
-    set_error(self, "Range constraint only supported for INTEGER and REAL");
-    return false;
-  }
-
-  UtObjectRef upper_value = NULL;
-  if (maybe_parse_text(self, "MAX")) {
-    if (is_integer) {
-      upper_value = ut_int64_new(INT64_MAX);
-    } else if (is_real) {
-      upper_value = ut_float64_new(DBL_MAX);
-    }
-  } else if (!parse_value(self, type, &upper_value)) {
-    return false;
-  }
-
-  if (is_integer) {
-    *constraint = ut_asn1_integer_range_constraint_new(
-        ut_int64_get_value(lower_value), ut_int64_get_value(upper_value));
-  } else if (is_real) {
-    *constraint = ut_asn1_real_range_constraint_new(
-        ut_float64_get_value(lower_value), ut_float64_get_value(upper_value));
-  }
-
-  return true;
-}
-
-static bool maybe_parse_union_mark(UtAsn1ModuleDefinitionParser *self) {
-  return maybe_parse_text(self, "|") || maybe_parse_text(self, "UNION");
-}
-
-static bool maybe_parse_intersection_mark(UtAsn1ModuleDefinitionParser *self) {
-  return maybe_parse_text(self, "^") || maybe_parse_text(self, "INTERSECTION");
-}
-
-static bool parse_intersections(UtAsn1ModuleDefinitionParser *self,
-                                UtObject *type, UtObject *constraint0,
-                                UtObject **constraint);
-
-static bool parse_unions(UtAsn1ModuleDefinitionParser *self, UtObject *type,
-                         UtObject *constraint0, UtObject **constraint) {
-  UtObjectRef constraints = ut_list_new();
-  ut_list_append(constraints, constraint0);
-  while (true) {
-    UtObjectRef c = NULL;
-    if (!parse_value_or_value_range(self, type, &c)) {
-      return false;
-    }
-
-    if (maybe_parse_intersection_mark(self)) {
-      UtObjectRef c2 = NULL;
-      if (!parse_intersections(self, type, c, &c2)) {
-        return false;
-      }
-      ut_list_append(constraints, c2);
-    } else {
-      ut_list_append(constraints, c);
-    }
-
-    if (!maybe_parse_union_mark(self)) {
-      *constraint = ut_asn1_union_constraint_new(constraints);
-      return true;
-    }
-  }
-}
-
-static bool parse_intersections(UtAsn1ModuleDefinitionParser *self,
-                                UtObject *type, UtObject *constraint0,
-                                UtObject **constraint) {
-  UtObjectRef constraints = ut_list_new();
-  ut_list_append(constraints, constraint0);
-  while (true) {
-    UtObjectRef c = NULL;
-    if (!parse_value_or_value_range(self, type, &c)) {
-      return false;
-    }
-    ut_list_append(constraints, c);
-
-    if (maybe_parse_union_mark(self)) {
-      UtObjectRef c2 = ut_asn1_intersection_constraint_new(constraints);
-      return parse_unions(self, type, c2, constraint);
-    }
-
-    if (!maybe_parse_intersection_mark(self)) {
-      *constraint = ut_asn1_intersection_constraint_new(constraints);
-      return true;
-    }
-  }
-}
-
-static bool parse_constraint(UtAsn1ModuleDefinitionParser *self, UtObject *type,
-                             UtObject **constraint) {
-  if (!maybe_parse_text(self, "(")) {
-    *constraint = NULL;
-    return true;
-  }
-
-  UtObjectRef constraint0 = NULL;
-  if (!parse_value_or_value_range(self, type, &constraint0)) {
-    return false;
-  }
-
-  UtObjectRef constraint_ = NULL;
-  if (maybe_parse_union_mark(self)) {
-    parse_unions(self, type, constraint0, &constraint_);
-  } else if (maybe_parse_intersection_mark(self)) {
-    parse_intersections(self, type, constraint0, &constraint_);
-  } else {
-    constraint_ = ut_object_ref(constraint0);
-  }
-
-  if (!parse_text(self, ")")) {
-    return false;
-  }
-
-  *constraint = ut_object_ref(constraint_);
   return true;
 }
 

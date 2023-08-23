@@ -33,6 +33,7 @@
 #include "asn1/ut-asn1-sequence-type.h"
 #include "asn1/ut-asn1-set-of-type.h"
 #include "asn1/ut-asn1-set-type.h"
+#include "asn1/ut-asn1-size-constraint.h"
 #include "asn1/ut-asn1-tag.h"
 #include "asn1/ut-asn1-tagged-type.h"
 #include "asn1/ut-asn1-type-value.h"

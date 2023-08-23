@@ -1658,6 +1658,26 @@ static void test_utf8_string_type_assignment() {
   ut_assert_true(ut_object_implements_string(constraint_value3));
   ut_assert_cstring_equal(ut_string_get_text(constraint_value3), "Hello World");
 
+  // FIXME: Size constraint.
+  UtObjectRef module4 = ut_asn1_module_definition_new_from_text(
+      "Test DEFINITIONS ::= BEGIN\n"
+      "    UTF8StringType ::= UTF8String (SIZE (100))\n"
+      "END");
+  ut_assert_is_not_error(module4);
+  UtObject *type4 =
+      ut_asn1_module_definition_get_assignment(module4, "UTF8StringType");
+  ut_assert_non_null_object(type4);
+  ut_assert_true(ut_object_is_asn1_constrained_type(type4));
+  ut_assert_true(ut_object_is_asn1_utf8_string_type(
+      ut_asn1_constrained_type_get_type(type4)));
+  UtObject *constraint4 = ut_asn1_constrained_type_get_constraint(type4);
+  ut_assert_true(ut_object_is_asn1_size_constraint(constraint4));
+  UtObject *constraint4i = ut_asn1_size_constraint_get_constraint(constraint4);
+  UtObject *constraint_value4i =
+      ut_asn1_value_constraint_get_value(constraint4i);
+  ut_assert_true(ut_object_is_int64(constraint_value4i));
+  ut_assert_int_equal(ut_int64_get_value(constraint_value4i), 100);
+
   // Invalid type in constraint.
   UtObjectRef module10 = ut_asn1_module_definition_new_from_text(
       "Test DEFINITIONS ::= BEGIN\n"
@@ -2114,14 +2134,36 @@ static void test_sequence_of_type_assignment() {
   ut_assert_true(ut_object_is_asn1_integer_type(
       ut_asn1_sequence_of_type_get_type(type2i)));
 
+  // Size constraint.
+  UtObjectRef module3 = ut_asn1_module_definition_new_from_text(
+      "Test DEFINITIONS ::= BEGIN\n"
+      "    SequenceOfType ::= SEQUENCE SIZE (5) OF INTEGER\n"
+      "END");
+  ut_assert_is_not_error(module3);
+  UtObject *type3 =
+      ut_asn1_module_definition_get_assignment(module3, "SequenceOfType");
+  ut_assert_non_null_object(type3);
+  ut_assert_true(ut_object_is_asn1_constrained_type(type3));
+  UtObject *constraint3 = ut_asn1_constrained_type_get_constraint(type3);
+  ut_assert_true(ut_object_is_asn1_size_constraint(constraint3));
+  UtObject *constraint3i = ut_asn1_size_constraint_get_constraint(constraint3);
+  UtObject *constraint_value3i =
+      ut_asn1_value_constraint_get_value(constraint3i);
+  ut_assert_true(ut_object_is_int64(constraint_value3i));
+  ut_assert_int_equal(ut_int64_get_value(constraint_value3i), 5);
+  UtObject *type3i = ut_asn1_constrained_type_get_type(type3);
+  ut_assert_true(ut_object_is_asn1_sequence_of_type(type3i));
+  ut_assert_true(ut_object_is_asn1_integer_type(
+      ut_asn1_sequence_of_type_get_type(type3i)));
+
   // FIXME: Constrained to single value.
 
   // Missing child type.
-  UtObjectRef module3 =
+  UtObjectRef module4 =
       ut_asn1_module_definition_new_from_text("Test DEFINITIONS ::= BEGIN\n"
                                               "    SetOfType ::= SEQUENCE OF \n"
                                               "END");
-  ut_assert_is_error_with_description(module3,
+  ut_assert_is_error_with_description(module4,
                                       "Expected typereference, got END");
 }
 
@@ -2444,14 +2486,36 @@ static void test_set_of_type_assignment() {
   ut_assert_true(
       ut_object_is_asn1_integer_type(ut_asn1_set_of_type_get_type(type2i)));
 
+  // Size constraint.
+  UtObjectRef module3 = ut_asn1_module_definition_new_from_text(
+      "Test DEFINITIONS ::= BEGIN\n"
+      "    SetOfType ::= SET SIZE (5) OF INTEGER\n"
+      "END");
+  ut_assert_is_not_error(module3);
+  UtObject *type3 =
+      ut_asn1_module_definition_get_assignment(module3, "SetOfType");
+  ut_assert_non_null_object(type3);
+  ut_assert_true(ut_object_is_asn1_constrained_type(type3));
+  UtObject *constraint3 = ut_asn1_constrained_type_get_constraint(type3);
+  ut_assert_true(ut_object_is_asn1_size_constraint(constraint3));
+  UtObject *constraint3i = ut_asn1_size_constraint_get_constraint(constraint3);
+  UtObject *constraint_value3i =
+      ut_asn1_value_constraint_get_value(constraint3i);
+  ut_assert_true(ut_object_is_int64(constraint_value3i));
+  ut_assert_int_equal(ut_int64_get_value(constraint_value3i), 5);
+  UtObject *type3i = ut_asn1_constrained_type_get_type(type3);
+  ut_assert_true(ut_object_is_asn1_set_of_type(type3i));
+  ut_assert_true(
+      ut_object_is_asn1_integer_type(ut_asn1_set_of_type_get_type(type3i)));
+
   // FIXME: Constrained to single value.
 
   // Missing child type.
-  UtObjectRef module3 =
+  UtObjectRef module4 =
       ut_asn1_module_definition_new_from_text("Test DEFINITIONS ::= BEGIN\n"
                                               "    SetOfType ::= SET OF \n"
                                               "END");
-  ut_assert_is_error_with_description(module3,
+  ut_assert_is_error_with_description(module4,
                                       "Expected typereference, got END");
 }
 

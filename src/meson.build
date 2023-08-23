@@ -34,6 +34,7 @@ ut_sources = [
   'asn1/ut-asn1-sequence-type.c',
   'asn1/ut-asn1-set-of-type.c',
   'asn1/ut-asn1-set-type.c',
+  'asn1/ut-asn1-size-constraint.c',
   'asn1/ut-asn1-string.c',
   'asn1/ut-asn1-tag.c',
   'asn1/ut-asn1-tagged-type.c',
