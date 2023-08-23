@@ -1573,8 +1573,20 @@ static UtObject *apply_automatic_tagging(UtAsn1ModuleDefinitionParser *self,
   return ut_object_ref(tagged_components);
 }
 
+static bool parse_type(UtAsn1ModuleDefinitionParser *self, UtObject **type);
+
 static bool parse_sequence_type(UtAsn1ModuleDefinitionParser *self,
                                 UtObject **type) {
+  if (maybe_parse_text(self, "OF")) {
+    UtObjectRef child_type = NULL;
+    if (!parse_type(self, &child_type)) {
+      set_error(self, "Missing type for SEQUENCE OF");
+      return false;
+    }
+    *type = ut_asn1_sequence_of_type_new(child_type);
+    return true;
+  }
+
   if (!parse_text(self, "{")) {
     return false;
   }
@@ -1601,6 +1613,16 @@ static bool parse_sequence_type(UtAsn1ModuleDefinitionParser *self,
 
 static bool parse_set_type(UtAsn1ModuleDefinitionParser *self,
                            UtObject **type) {
+  if (maybe_parse_text(self, "OF")) {
+    UtObjectRef child_type = NULL;
+    if (!parse_type(self, &child_type)) {
+      set_error(self, "Missing type for SET OF");
+      return false;
+    }
+    *type = ut_asn1_set_of_type_new(child_type);
+    return true;
+  }
+
   if (!parse_text(self, "{")) {
     return false;
   }
@@ -1887,25 +1909,11 @@ static bool parse_type(UtAsn1ModuleDefinitionParser *self, UtObject **type) {
   } else if (maybe_parse_text(self, "RELATIVE-OID")) {
     type_ = ut_asn1_relative_oid_type_new();
   } else if (maybe_parse_text(self, "SEQUENCE")) {
-    if (maybe_parse_text(self, "OF")) {
-      UtObjectRef child_type = NULL;
-      if (!parse_type(self, &child_type)) {
-        set_error(self, "Missing type for SEQUENCE OF");
-        return false;
-      }
-      type_ = ut_asn1_sequence_of_type_new(child_type);
-    } else if (!parse_sequence_type(self, &type_)) {
+    if (!parse_sequence_type(self, &type_)) {
       return false;
     }
   } else if (maybe_parse_text(self, "SET")) {
-    if (maybe_parse_text(self, "OF")) {
-      UtObjectRef child_type = NULL;
-      if (!parse_type(self, &child_type)) {
-        set_error(self, "Missing type for SEQUENCE OF");
-        return false;
-      }
-      type_ = ut_asn1_set_of_type_new(child_type);
-    } else if (!parse_set_type(self, &type_)) {
+    if (!parse_set_type(self, &type_)) {
       return false;
     }
   } else if (maybe_parse_text(self, "CHOICE")) {
