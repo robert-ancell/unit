@@ -255,6 +255,9 @@ ut_sources = [
   'x11/ut-x11-visual.c',
   'x11/ut-x11-xfixes-extension.c',
   'x11/ut-x11-xinput-extension.c',
+  'x509/ut-x509-certificate-decoder.c',
+  'x509/ut-x509-certificate-encoder.c',
+  'x509/ut-x509-certificate.c',
   'xml/ut-xml-document.c',
   'xml/ut-xml-element.c',
   'zlib/ut-zlib-decoder.c',
@@ -575,6 +578,11 @@ udp_socket_test = executable('ut-udp-socket-test',
                              'ut-udp-socket-test.c',
                              link_with: ut_lib)
 test('UDP Socket', udp_socket_test)
+
+x509_certificate_decoder_test = executable('ut-x509-certificate-decoder-test',
+                                           'x509/ut-x509-certificate-decoder-test.c',
+                                           link_with: ut_lib)
+test('X.509 Certificate Decoder', x509_certificate_decoder_test)
 
 dbus_message_encoder_test = executable('ut-dbus-message-encoder-test',
                                        'dbus/ut-dbus-message-encoder-test.c',
