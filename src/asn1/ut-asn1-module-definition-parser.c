@@ -2018,8 +2018,7 @@ static bool parse_type(UtAsn1ModuleDefinitionParser *self, UtObject **type) {
   } else if (maybe_parse_text(self, "IA5String")) {
     type_ = ut_asn1_ia5_string_type_new();
   } else if (maybe_parse_text(self, "UTCTime")) {
-    set_error(self, "UTCTime not supported");
-    return false;
+    type_ = ut_asn1_utc_time_type_new();
   } else if (maybe_parse_text(self, "GeneralizedTime")) {
     set_error(self, "GeneralizedTime not supported");
     return false;

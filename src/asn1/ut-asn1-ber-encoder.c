@@ -401,13 +401,52 @@ static size_t encode_object_descriptor(UtAsn1BerEncoder *self,
   return encode_graphic_string(self, descriptor);
 }
 
-static size_t encode_visible_string(UtAsn1BerEncoder *self, const char *value) {
+static size_t encode_visible_string(UtAsn1BerEncoder *self, const char *value,
+                                    const char *type_name) {
   UtObjectRef visible_string = ut_asn1_encode_visible_string(value);
   if (visible_string == NULL) {
-    set_error(self, "Invalid VisibleString");
+    ut_cstring_ref description = ut_cstring_new_printf("Invalid %s", type_name);
+    set_error(self, description);
     return 0;
   }
   return encode_octet_string(self, visible_string);
+}
+
+static size_t encode_utc_time(UtAsn1BerEncoder *self, UtObject *value) {
+  UtObjectRef value_string = ut_string_new("");
+
+  // FIXME: Convert to UTC
+  unsigned int year = ut_date_time_get_year(value);
+  if (year < 1950 || year > 2049) {
+    ut_cstring_ref description = ut_cstring_new_printf(
+        "Year %d not able to be represented in UTCTime", year);
+    set_error(self, description);
+    return 0;
+  }
+  year = year % 100;
+
+  ut_string_append_printf(
+      value_string, "%02d%02d%02d%02d%02d%02d", year,
+      ut_date_time_get_month(value), ut_date_time_get_day(value),
+      ut_date_time_get_hour(value), ut_date_time_get_minutes(value),
+      ut_date_time_get_seconds(value));
+  int utc_offset = ut_date_time_get_utc_offset(value);
+  if (utc_offset == 0) {
+    ut_string_append(value_string, "Z");
+  } else {
+    char sign;
+    if (utc_offset < 0) {
+      utc_offset = -utc_offset;
+      sign = '-';
+    } else {
+      sign = '+';
+    }
+    ut_string_append_printf(value_string, "%c%02d%02d", sign, utc_offset / 60,
+                            utc_offset % 60);
+  }
+
+  return encode_visible_string(self, ut_string_get_text(value_string),
+                               "UTCTime");
 }
 
 static size_t encode_general_string(UtAsn1BerEncoder *self, const char *value) {
@@ -823,6 +862,22 @@ static size_t encode_ia5_string_value(UtAsn1BerEncoder *self, UtObject *value,
   return length;
 }
 
+static size_t encode_utc_time_value(UtAsn1BerEncoder *self, UtObject *value,
+                                    bool encode_tag, bool *is_constructed) {
+  if (!ut_object_is_date_time(value)) {
+    set_type_error(self, "UTCTime", value);
+    return 0;
+  }
+  size_t length = encode_utc_time(self, value);
+  if (encode_tag) {
+    length += encode_definite_length(self, length);
+    length += encode_identifier(self, UT_ASN1_TAG_CLASS_UNIVERSAL, false,
+                                UT_ASN1_TAG_UNIVERSAL_UTC_TIME);
+  }
+  *is_constructed = encode_tag;
+  return length;
+}
+
 static size_t encode_graphic_string_value(UtAsn1BerEncoder *self,
                                           UtObject *value, bool encode_tag,
                                           bool *is_constructed) {
@@ -847,7 +902,8 @@ static size_t encode_visible_string_value(UtAsn1BerEncoder *self,
     set_type_error(self, "VisibleString", value);
     return 0;
   }
-  size_t length = encode_visible_string(self, ut_string_get_text(value));
+  size_t length =
+      encode_visible_string(self, ut_string_get_text(value), "VisibleString");
   if (encode_tag) {
     length += encode_definite_length(self, length);
     length += encode_identifier(self, UT_ASN1_TAG_CLASS_UNIVERSAL, false,
@@ -953,6 +1009,8 @@ static size_t encode_value(UtAsn1BerEncoder *self, UtObject *type,
                                          is_constructed);
   } else if (ut_object_is_asn1_ia5_string_type(type)) {
     return encode_ia5_string_value(self, value, encode_tag, is_constructed);
+  } else if (ut_object_is_asn1_utc_time_type(type)) {
+    return encode_utc_time_value(self, value, encode_tag, is_constructed);
   } else if (ut_object_is_asn1_graphic_string_type(type)) {
     return encode_graphic_string_value(self, value, encode_tag, is_constructed);
   } else if (ut_object_is_asn1_visible_string_type(type)) {
@@ -1130,6 +1188,12 @@ size_t ut_asn1_ber_encoder_encode_ia5_string(UtObject *object,
   return encode_ia5_string(self, value);
 }
 
+size_t ut_asn1_ber_encoder_encode_utc_time(UtObject *object, UtObject *value) {
+  assert(ut_object_is_asn1_ber_encoder(object));
+  UtAsn1BerEncoder *self = (UtAsn1BerEncoder *)object;
+  return encode_utc_time(self, value);
+}
+
 size_t ut_asn1_ber_encoder_encode_graphic_string(UtObject *object,
                                                  const char *value) {
   assert(ut_object_is_asn1_ber_encoder(object));
@@ -1141,7 +1205,7 @@ size_t ut_asn1_ber_encoder_encode_visible_string(UtObject *object,
                                                  const char *value) {
   assert(ut_object_is_asn1_ber_encoder(object));
   UtAsn1BerEncoder *self = (UtAsn1BerEncoder *)object;
-  return encode_visible_string(self, value);
+  return encode_visible_string(self, value, "VisibleString");
 }
 
 size_t ut_asn1_ber_encoder_encode_general_string(UtObject *object,

@@ -58,6 +58,8 @@ size_t ut_asn1_ber_encoder_encode_printable_string(UtObject *object,
 size_t ut_asn1_ber_encoder_encode_ia5_string(UtObject *object,
                                              const char *value);
 
+size_t ut_asn1_ber_encoder_encode_utc_time(UtObject *object, UtObject *value);
+
 size_t ut_asn1_ber_encoder_encode_graphic_string(UtObject *object,
                                                  const char *value);
 

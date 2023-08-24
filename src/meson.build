@@ -42,6 +42,7 @@ ut_sources = [
   'asn1/ut-asn1-type-value.c',
   'asn1/ut-asn1-type.c',
   'asn1/ut-asn1-union-constraint.c',
+  'asn1/ut-asn1-utc-time-type.c',
   'asn1/ut-asn1-utf8-string-type.c',
   'asn1/ut-asn1-value-constraint.c',
   'asn1/ut-asn1-visible-string-type.c',

@@ -494,15 +494,96 @@ static UtObject *decode_object_descriptor(UtAsn1BerDecoder *self) {
   return decode_graphic_string(self, "ObjectDescriptor");
 }
 
-static UtObject *decode_visible_string(UtAsn1BerDecoder *self) {
-  UtObjectRef data = decode_octet_string(self, "VisibleString");
+static UtObject *decode_visible_string(UtAsn1BerDecoder *self,
+                                       const char *type_name) {
+  UtObjectRef data = decode_octet_string(self, type_name);
   UtObjectRef value = ut_asn1_decode_visible_string(data);
   if (value == NULL) {
-    set_error(self, "Invalid VisibleString");
+    ut_cstring_ref description = ut_cstring_new_printf("Invalid %s", type_name);
+    set_error(self, description);
     return ut_string_new("");
   }
 
   return ut_object_ref(value);
+}
+
+static bool is_utc_digit(const char c) { return c >= '0' && c <= '9'; }
+
+static int utc_digit(const char c) { return c - '0'; }
+
+static bool get_utc_time_value(const char *c, size_t *offset,
+                               unsigned int *value) {
+  if (!is_utc_digit(c[*offset]) || !is_utc_digit(c[*offset + 1])) {
+    return false;
+  }
+  *value = utc_digit(c[*offset]) * 10 + utc_digit(c[*offset + 1]);
+  *offset += 2;
+  return true;
+}
+
+static bool maybe_get_utc_time_value(const char *c, size_t *offset,
+                                     unsigned int *value) {
+  if (!is_utc_digit(c[*offset])) {
+    *value = 0;
+    return true;
+  }
+  return get_utc_time_value(c, offset, value);
+}
+
+static bool get_utc_time_offset(const char *c, size_t *offset, int *value) {
+  if (c[*offset] == 'Z') {
+    (*offset)++;
+    *value = 0;
+    return true;
+  }
+
+  int sign;
+  if (c[*offset] == '+') {
+    sign = 1;
+  } else if (c[*offset] == '-') {
+    sign = -1;
+  } else {
+    return false;
+  }
+  (*offset)++;
+
+  unsigned int offset_hours, offset_minutes;
+  if (!get_utc_time_value(c, offset, &offset_hours) ||
+      !get_utc_time_value(c, offset, &offset_minutes) || offset_hours > 13 ||
+      offset_minutes > 60) {
+    return false;
+  }
+
+  *value = sign * (offset_hours * 60 + offset_minutes);
+  return true;
+}
+
+static UtObject *decode_utc_time(UtAsn1BerDecoder *self) {
+  UtObjectRef value = decode_visible_string(self, "UTCTime");
+
+  const char *text = ut_string_get_text(value);
+  size_t offset = 0;
+  unsigned int year, month, day, hour, minutes, seconds;
+  int utc_offset;
+  if (!get_utc_time_value(text, &offset, &year) ||
+      !get_utc_time_value(text, &offset, &month) ||
+      !get_utc_time_value(text, &offset, &day) ||
+      !get_utc_time_value(text, &offset, &hour) ||
+      !get_utc_time_value(text, &offset, &minutes) ||
+      !maybe_get_utc_time_value(text, &offset, &seconds) ||
+      !get_utc_time_offset(text, &offset, &utc_offset) ||
+      text[offset] != '\0' || month < 1 || month > 12 || day < 1 || day > 31) {
+    set_error(self, "Invalid UTCTime");
+    return ut_date_time_new_utc(1900, 1, 1, 0, 0, 0);
+  }
+
+  if (year >= 50) {
+    year += 1900;
+  } else {
+    year += 2000;
+  }
+
+  return ut_date_time_new(year, month, day, hour, minutes, seconds, utc_offset);
 }
 
 static UtObject *decode_general_string(UtAsn1BerDecoder *self) {
@@ -1015,6 +1096,15 @@ static UtObject *decode_ia5_string_value(UtAsn1BerDecoder *self,
   return decode_ia5_string(self);
 }
 
+static UtObject *decode_utc_time_value(UtAsn1BerDecoder *self,
+                                       bool decode_tag) {
+  if (decode_tag && !expect_tag(self, UT_ASN1_TAG_CLASS_UNIVERSAL,
+                                UT_ASN1_TAG_UNIVERSAL_UTC_TIME)) {
+    return ut_date_time_new_utc(1900, 1, 1, 0, 0, 0);
+  }
+  return decode_utc_time(self);
+}
+
 static UtObject *decode_graphic_string_value(UtAsn1BerDecoder *self,
                                              bool decode_tag) {
   if (decode_tag && !expect_tag(self, UT_ASN1_TAG_CLASS_UNIVERSAL,
@@ -1030,7 +1120,7 @@ static UtObject *decode_visible_string_value(UtAsn1BerDecoder *self,
                                 UT_ASN1_TAG_UNIVERSAL_VISIBLE_STRING)) {
     return ut_string_new("");
   }
-  return decode_visible_string(self);
+  return decode_visible_string(self, "VisibleString");
 }
 
 static UtObject *decode_general_string_value(UtAsn1BerDecoder *self,
@@ -1107,6 +1197,8 @@ static UtObject *decode_value(UtAsn1BerDecoder *self, UtObject *type,
     return decode_printable_string_value(self, decode_tag);
   } else if (ut_object_is_asn1_ia5_string_type(type)) {
     return decode_ia5_string_value(self, decode_tag);
+  } else if (ut_object_is_asn1_utc_time_type(type)) {
+    return decode_utc_time_value(self, decode_tag);
   } else if (ut_object_is_asn1_graphic_string_type(type)) {
     return decode_graphic_string_value(self, decode_tag);
   } else if (ut_object_is_asn1_visible_string_type(type)) {
@@ -1387,6 +1479,12 @@ char *ut_asn1_ber_decoder_decode_ia5_string(UtObject *object) {
   return ut_string_take_text(value);
 }
 
+UtObject *ut_asn1_ber_decoder_decode_utc_time(UtObject *object) {
+  assert(ut_object_is_asn1_ber_decoder(object));
+  UtAsn1BerDecoder *self = (UtAsn1BerDecoder *)object;
+  return decode_utc_time(self);
+}
+
 char *ut_asn1_ber_decoder_decode_graphic_string(UtObject *object) {
   assert(ut_object_is_asn1_ber_decoder(object));
   UtAsn1BerDecoder *self = (UtAsn1BerDecoder *)object;
@@ -1397,7 +1495,7 @@ char *ut_asn1_ber_decoder_decode_graphic_string(UtObject *object) {
 char *ut_asn1_ber_decoder_decode_visible_string(UtObject *object) {
   assert(ut_object_is_asn1_ber_decoder(object));
   UtAsn1BerDecoder *self = (UtAsn1BerDecoder *)object;
-  UtObjectRef value = decode_visible_string(self);
+  UtObjectRef value = decode_visible_string(self, "VisibleString");
   return ut_string_take_text(value);
 }
 

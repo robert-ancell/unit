@@ -40,6 +40,7 @@
 #include "asn1/ut-asn1-type-value.h"
 #include "asn1/ut-asn1-type.h"
 #include "asn1/ut-asn1-union-constraint.h"
+#include "asn1/ut-asn1-utc-time-type.h"
 #include "asn1/ut-asn1-utf8-string-type.h"
 #include "asn1/ut-asn1-value-constraint.h"
 #include "asn1/ut-asn1-visible-string-type.h"

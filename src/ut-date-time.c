@@ -11,6 +11,7 @@ typedef struct {
   unsigned int hour;
   unsigned int minutes;
   unsigned int seconds;
+  int utc_offset;
 } UtDateTime;
 
 static char *ut_date_time_to_string(UtObject *object) {
@@ -39,7 +40,8 @@ static UtObjectInterface object_interface = {.type_name = "UtDateTime",
 
 UtObject *ut_date_time_new(unsigned int year, unsigned int month,
                            unsigned int day, unsigned int hour,
-                           unsigned int minutes, unsigned int seconds) {
+                           unsigned int minutes, unsigned int seconds,
+                           int utc_offset) {
   UtObject *object = ut_object_new(sizeof(UtDateTime), &object_interface);
   UtDateTime *self = (UtDateTime *)object;
   assert(month >= 1 && month <= 12);
@@ -50,7 +52,14 @@ UtObject *ut_date_time_new(unsigned int year, unsigned int month,
   self->hour = hour;
   self->minutes = minutes;
   self->seconds = seconds;
+  self->utc_offset = utc_offset;
   return object;
+}
+
+UtObject *ut_date_time_new_utc(unsigned int year, unsigned int month,
+                               unsigned int day, unsigned int hour,
+                               unsigned int minutes, unsigned int seconds) {
+  return ut_date_time_new(year, month, day, hour, minutes, seconds, 0);
 }
 
 unsigned int ut_date_time_get_year(UtObject *object) {
@@ -87,6 +96,12 @@ unsigned int ut_date_time_get_seconds(UtObject *object) {
   assert(ut_object_is_date_time(object));
   UtDateTime *self = (UtDateTime *)object;
   return self->seconds;
+}
+
+int ut_date_time_get_utc_offset(UtObject *object) {
+  assert(ut_object_is_date_time(object));
+  UtDateTime *self = (UtDateTime *)object;
+  return self->utc_offset;
 }
 
 bool ut_object_is_date_time(UtObject *object) {

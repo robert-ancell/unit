@@ -1508,6 +1508,118 @@ static void test_ia5_string() {
                                       "Invalid IA5String");
 }
 
+static void test_utc_time() {
+  // UTC date time - "230823205806Z".
+  UtObjectRef data1 =
+      ut_uint8_list_new_from_hex_string("170d3233303832343230353830365a");
+  UtObjectRef decoder1 = ut_asn1_ber_decoder_new(data1);
+  ut_assert_true(ut_asn1_tag_matches(ut_asn1_ber_decoder_get_tag(decoder1),
+                                     UT_ASN1_TAG_CLASS_UNIVERSAL,
+                                     UT_ASN1_TAG_UNIVERSAL_UTC_TIME));
+  UtObjectRef value1 = ut_asn1_ber_decoder_decode_utc_time(decoder1);
+  ut_assert_null_object(ut_asn1_decoder_get_error(decoder1));
+  ut_assert_int_equal(ut_date_time_get_year(value1), 2023);
+  ut_assert_int_equal(ut_date_time_get_month(value1), 8);
+  ut_assert_int_equal(ut_date_time_get_day(value1), 24);
+  ut_assert_int_equal(ut_date_time_get_hour(value1), 20);
+  ut_assert_int_equal(ut_date_time_get_minutes(value1), 58);
+  ut_assert_int_equal(ut_date_time_get_seconds(value1), 6);
+  ut_assert_int_equal(ut_date_time_get_utc_offset(value1), 0);
+
+  // With UTC offset - "230823205806+1200".
+  UtObjectRef data2 = ut_uint8_list_new_from_hex_string(
+      "17113233303832343230353830362b31323030");
+  UtObjectRef decoder2 = ut_asn1_ber_decoder_new(data2);
+  ut_assert_true(ut_asn1_tag_matches(ut_asn1_ber_decoder_get_tag(decoder2),
+                                     UT_ASN1_TAG_CLASS_UNIVERSAL,
+                                     UT_ASN1_TAG_UNIVERSAL_UTC_TIME));
+  UtObjectRef value2 = ut_asn1_ber_decoder_decode_utc_time(decoder2);
+  ut_assert_null_object(ut_asn1_decoder_get_error(decoder2));
+  ut_assert_int_equal(ut_date_time_get_year(value2), 2023);
+  ut_assert_int_equal(ut_date_time_get_month(value2), 8);
+  ut_assert_int_equal(ut_date_time_get_day(value2), 24);
+  ut_assert_int_equal(ut_date_time_get_hour(value2), 20);
+  ut_assert_int_equal(ut_date_time_get_minutes(value2), 58);
+  ut_assert_int_equal(ut_date_time_get_seconds(value2), 6);
+  ut_assert_int_equal(ut_date_time_get_utc_offset(value2), 720);
+
+  // Constructed form - "230823" "205806" "+1200".
+  UtObjectRef data3 = ut_uint8_list_new_from_hex_string(
+      "37171706323330383234170632303538303617052b31323030");
+  UtObjectRef decoder3 = ut_asn1_ber_decoder_new(data3);
+  UtObjectRef value3 = ut_asn1_ber_decoder_decode_utc_time(decoder3);
+  ut_assert_null_object(ut_asn1_decoder_get_error(decoder3));
+  ut_assert_int_equal(ut_date_time_get_year(value3), 2023);
+  ut_assert_int_equal(ut_date_time_get_month(value3), 8);
+  ut_assert_int_equal(ut_date_time_get_day(value3), 24);
+  ut_assert_int_equal(ut_date_time_get_hour(value3), 20);
+  ut_assert_int_equal(ut_date_time_get_minutes(value3), 58);
+  ut_assert_int_equal(ut_date_time_get_seconds(value3), 6);
+  ut_assert_int_equal(ut_date_time_get_utc_offset(value3), 720);
+
+  // Decoded as object with type.
+  UtObjectRef data4 = ut_uint8_list_new_from_hex_string(
+      "17113233303832343230353830362b31323030");
+  UtObjectRef decoder4 = ut_asn1_ber_decoder_new(data4);
+  UtObjectRef type4 = ut_asn1_utc_time_type_new();
+  UtObjectRef value4 = ut_asn1_decoder_decode_value(decoder4, type4);
+  ut_assert_null_object(ut_asn1_decoder_get_error(decoder4));
+  ut_assert_true(ut_object_is_date_time(value4));
+  ut_assert_int_equal(ut_date_time_get_year(value4), 2023);
+  ut_assert_int_equal(ut_date_time_get_month(value4), 8);
+  ut_assert_int_equal(ut_date_time_get_day(value4), 24);
+  ut_assert_int_equal(ut_date_time_get_hour(value4), 20);
+  ut_assert_int_equal(ut_date_time_get_minutes(value4), 58);
+  ut_assert_int_equal(ut_date_time_get_seconds(value4), 6);
+  ut_assert_int_equal(ut_date_time_get_utc_offset(value4), 720);
+
+  // Empty string not valid.
+  UtObjectRef data5 = ut_uint8_list_new_from_hex_string("1700");
+  UtObjectRef decoder5 = ut_asn1_ber_decoder_new(data5);
+  UtObjectRef value5 = ut_asn1_ber_decoder_decode_utc_time(decoder5);
+  ut_assert_is_error_with_description(ut_asn1_decoder_get_error(decoder5),
+                                      "Invalid UTCTime");
+
+  // Just date, missing time - "230823".
+  UtObjectRef data6 = ut_uint8_list_new_from_hex_string("1706323330383234");
+  UtObjectRef decoder6 = ut_asn1_ber_decoder_new(data6);
+  UtObjectRef value6 = ut_asn1_ber_decoder_decode_utc_time(decoder6);
+  ut_assert_is_error_with_description(ut_asn1_decoder_get_error(decoder6),
+                                      "Invalid UTCTime");
+
+  // Date and time, missing UTC offset - "230823205806".
+  UtObjectRef data7 =
+      ut_uint8_list_new_from_hex_string("170c32333038323432303538303617");
+  UtObjectRef decoder7 = ut_asn1_ber_decoder_new(data7);
+  UtObjectRef value7 = ut_asn1_ber_decoder_decode_utc_time(decoder7);
+  ut_assert_is_error_with_description(ut_asn1_decoder_get_error(decoder7),
+                                      "Invalid UTCTime");
+
+  // Missing leading zeros - "2382320586Z".
+  UtObjectRef data8 =
+      ut_uint8_list_new_from_hex_string("170b323338323432303538365a");
+  UtObjectRef decoder8 = ut_asn1_ber_decoder_new(data8);
+  UtObjectRef value8 = ut_asn1_ber_decoder_decode_utc_time(decoder8);
+  ut_assert_is_error_with_description(ut_asn1_decoder_get_error(decoder8),
+                                      "Invalid UTCTime");
+
+  // Four digit year - "20230823205806Z".
+  UtObjectRef data9 =
+      ut_uint8_list_new_from_hex_string("170f32303233303832343230353830365a");
+  UtObjectRef decoder9 = ut_asn1_ber_decoder_new(data9);
+  UtObjectRef value9 = ut_asn1_ber_decoder_decode_utc_time(decoder9);
+  ut_assert_is_error_with_description(ut_asn1_decoder_get_error(decoder9),
+                                      "Invalid UTCTime");
+
+  // Invalid character in date "2b0823205806Z".
+  UtObjectRef data10 =
+      ut_uint8_list_new_from_hex_string("170d3262303832343230353830365a");
+  UtObjectRef decoder10 = ut_asn1_ber_decoder_new(data10);
+  UtObjectRef value10 = ut_asn1_ber_decoder_decode_utc_time(decoder10);
+  ut_assert_is_error_with_description(ut_asn1_decoder_get_error(decoder10),
+                                      "Invalid UTCTime");
+}
+
 static void test_graphic_string() {
   UtObjectRef data1 =
       ut_uint8_list_new_from_hex_string("190b48656c6c6f20576f726c64");
@@ -1801,6 +1913,7 @@ int main(int argc, char **argv) {
   test_numeric_string();
   test_printable_string();
   test_ia5_string();
+  test_utc_time();
   test_graphic_string();
   test_visible_string();
   test_general_string();

@@ -990,6 +990,34 @@ static void test_ia5_string() {
   // FIXME: Invalid characters - 8 bits?
 }
 
+static void test_utc_time() {
+  UtObjectRef encoder1 = ut_asn1_ber_encoder_new();
+  UtObjectRef value1 = ut_date_time_new(2023, 8, 24, 20, 58, 6, 720);
+  ut_asn1_ber_encoder_encode_utc_time(encoder1, value1);
+  ut_assert_null_object(ut_asn1_encoder_get_error(encoder1));
+  UtObjectRef data1 = ut_asn1_ber_encoder_get_data(encoder1);
+  ut_assert_uint8_list_equal_hex(data1, "3233303832343230353830362b31323030");
+
+  // Encoded as object with type.
+  UtObjectRef encoder3 = ut_asn1_ber_encoder_new();
+  UtObjectRef type3 = ut_asn1_utc_time_type_new();
+  UtObjectRef value3 = ut_date_time_new(2023, 8, 24, 20, 58, 6, 720);
+  ut_asn1_encoder_encode_value(encoder3, type3, value3);
+  ut_assert_null_object(ut_asn1_encoder_get_error(encoder3));
+  UtObjectRef data3 = ut_asn1_ber_encoder_get_data(encoder3);
+  ut_assert_uint8_list_equal_hex(data3,
+                                 "17113233303832343230353830362b31323030");
+
+  // Year outside range 1950-2049.
+  UtObjectRef encoder4 = ut_asn1_ber_encoder_new();
+  UtObjectRef type4 = ut_asn1_utc_time_type_new();
+  UtObjectRef value4 = ut_date_time_new(1900, 8, 24, 20, 58, 6, 720);
+  ut_asn1_encoder_encode_value(encoder4, type4, value4);
+  ut_assert_is_error_with_description(
+      ut_asn1_encoder_get_error(encoder4),
+      "Year 1900 not able to be represented in UTCTime");
+}
+
 static void test_graphic_string() {
   UtObjectRef encoder1 = ut_asn1_ber_encoder_new();
   ut_asn1_ber_encoder_encode_graphic_string(encoder1, "Hello World");
@@ -1223,6 +1251,7 @@ int main(int argc, char **argv) {
   test_numeric_string();
   test_printable_string();
   test_ia5_string();
+  test_utc_time();
   test_graphic_string();
   test_visible_string();
   test_general_string();
