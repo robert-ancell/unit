@@ -133,6 +133,7 @@
 #include "ut-memory-mapped-file.h"
 #include "ut-null.h"
 #include "ut-object-array.h"
+#include "ut-object-identifier.h"
 #include "ut-object-list.h"
 #include "ut-object.h"
 #include "ut-ordered-hash-table.h"

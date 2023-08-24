@@ -153,6 +153,7 @@ ut_sources = [
   'ut-null.c',
   'ut-object.c',
   'ut-object-array.c',
+  'ut-object-identifier.c',
   'ut-object-list.c',
   'ut-object-subarray.c',
   'ut-ordered-hash-table.c',
@@ -345,6 +346,11 @@ shared_memory_array_test = executable('ut-shared-memory-array-test',
                               'ut-shared-memory-array-test.c',
                               link_with: ut_lib)
 test('Shared Memory Array', shared_memory_array_test)
+
+object_identifier_test = executable('ut-object-identifier-test',
+                                    'ut-object-identifier-test.c',
+                                    link_with: ut_lib)
+test('Object Identifier', object_identifier_test)
 
 base64_test = executable('ut-base64-test',
                          'ut-base64-test.c',
