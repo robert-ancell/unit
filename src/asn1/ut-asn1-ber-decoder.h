@@ -52,6 +52,8 @@ char *ut_asn1_ber_decoder_decode_ia5_string(UtObject *object);
 
 UtObject *ut_asn1_ber_decoder_decode_utc_time(UtObject *object);
 
+UtObject *ut_asn1_ber_decoder_decode_generalized_time(UtObject *object);
+
 char *ut_asn1_ber_decoder_decode_graphic_string(UtObject *object);
 
 char *ut_asn1_ber_decoder_decode_visible_string(UtObject *object);

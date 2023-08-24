@@ -3074,6 +3074,194 @@ static void test_ia5_string_value_assignment() {
   ut_assert_cstring_equal(ut_string_get_text(value3), "Hello World");
 }
 
+static void test_utc_time_type_assignment() {
+  UtObjectRef module1 =
+      ut_asn1_module_definition_new_from_text("Test DEFINITIONS ::= BEGIN\n"
+                                              "    UTCTimeType ::= UTCTime\n"
+                                              "END");
+  ut_assert_is_not_error(module1);
+  UtObject *type1 =
+      ut_asn1_module_definition_get_assignment(module1, "UTCTimeType");
+  ut_assert_non_null_object(type1);
+  ut_assert_true(ut_object_is_asn1_utc_time_type(type1));
+
+  // Referenced type.
+  UtObjectRef module2 = ut_asn1_module_definition_new_from_text(
+      "Test DEFINITIONS ::= BEGIN\n"
+      "    UTCTimeType1 ::= UTCTime\n"
+      "    UTCTimeType2 ::= UTCTimeType1\n"
+      "END");
+  ut_assert_is_not_error(module2);
+  UtObject *type2 =
+      ut_asn1_module_definition_get_assignment(module2, "UTCTimeType2");
+  ut_assert_non_null_object(type2);
+  ut_assert_true(ut_object_is_asn1_referenced_type(type2));
+  ut_assert_true(
+      ut_object_is_asn1_utc_time_type(ut_asn1_referenced_type_get_type(type2)));
+}
+
+static void test_utc_time_value_assignment() {
+  UtObjectRef module1 = ut_asn1_module_definition_new_from_text(
+      "Test DEFINITIONS ::= BEGIN\n"
+      "    utcTimeValue UTCTime ::= \"230824205806Z\"\n"
+      "END");
+  ut_assert_is_not_error(module1);
+  UtObject *assignment1 =
+      ut_asn1_module_definition_get_assignment(module1, "utcTimeValue");
+  ut_assert_non_null_object(assignment1);
+  ut_assert_true(ut_object_is_asn1_utc_time_type(
+      ut_asn1_type_value_get_type(assignment1)));
+  UtObject *value1 = ut_asn1_type_value_get_value(assignment1);
+  ut_assert_true(ut_object_is_date_time(value1));
+  ut_assert_int_equal(ut_date_time_get_year(value1), 2023);
+  ut_assert_int_equal(ut_date_time_get_month(value1), 8);
+  ut_assert_int_equal(ut_date_time_get_day(value1), 24);
+  ut_assert_int_equal(ut_date_time_get_hour(value1), 20);
+  ut_assert_int_equal(ut_date_time_get_minutes(value1), 58);
+  ut_assert_int_equal(ut_date_time_get_seconds(value1), 6);
+  ut_assert_int_equal(ut_date_time_get_utc_offset(value1), 0);
+
+  // Referenced type.
+  UtObjectRef module2 = ut_asn1_module_definition_new_from_text(
+      "Test DEFINITIONS ::= BEGIN\n"
+      "    UTCTimeType ::= UTCTime\n"
+      "    utcTimeValue UTCTimeType ::= \"230824205806Z\"\n"
+      "END");
+  ut_assert_is_not_error(module2);
+  UtObject *assignment2 =
+      ut_asn1_module_definition_get_assignment(module2, "utcTimeValue");
+  ut_assert_non_null_object(assignment2);
+  UtObject *type2 = ut_asn1_type_value_get_type(assignment2);
+  ut_assert_true(ut_object_is_asn1_referenced_type(type2));
+  ut_assert_true(
+      ut_object_is_asn1_utc_time_type(ut_asn1_referenced_type_get_type(type2)));
+  UtObject *value2 = ut_asn1_type_value_get_value(assignment2);
+  ut_assert_true(ut_object_is_date_time(value2));
+  ut_assert_int_equal(ut_date_time_get_year(value2), 2023);
+  ut_assert_int_equal(ut_date_time_get_month(value2), 8);
+  ut_assert_int_equal(ut_date_time_get_day(value2), 24);
+  ut_assert_int_equal(ut_date_time_get_hour(value2), 20);
+  ut_assert_int_equal(ut_date_time_get_minutes(value2), 58);
+  ut_assert_int_equal(ut_date_time_get_seconds(value2), 6);
+  ut_assert_int_equal(ut_date_time_get_utc_offset(value2), 0);
+
+  // Referenced value.
+  UtObjectRef module3 = ut_asn1_module_definition_new_from_text(
+      "Test DEFINITIONS ::= BEGIN\n"
+      "    utcTimeValue1 UTCTime ::= \"230824205806Z\"\n"
+      "    utcTimeValue2 UTCTime ::= utcTimeValue1\n"
+      "END");
+  ut_assert_is_not_error(module3);
+  UtObject *assignment3 =
+      ut_asn1_module_definition_get_assignment(module3, "utcTimeValue2");
+  ut_assert_non_null_object(assignment3);
+  ut_assert_true(ut_object_is_asn1_utc_time_type(
+      ut_asn1_type_value_get_type(assignment3)));
+  UtObject *value3 = ut_asn1_type_value_get_value(assignment3);
+  ut_assert_true(ut_object_is_date_time(value3));
+  ut_assert_int_equal(ut_date_time_get_year(value3), 2023);
+  ut_assert_int_equal(ut_date_time_get_month(value3), 8);
+  ut_assert_int_equal(ut_date_time_get_day(value3), 24);
+  ut_assert_int_equal(ut_date_time_get_hour(value3), 20);
+  ut_assert_int_equal(ut_date_time_get_minutes(value3), 58);
+  ut_assert_int_equal(ut_date_time_get_seconds(value3), 6);
+  ut_assert_int_equal(ut_date_time_get_utc_offset(value3), 0);
+}
+
+static void test_generalized_time_type_assignment() {
+  UtObjectRef module1 = ut_asn1_module_definition_new_from_text(
+      "Test DEFINITIONS ::= BEGIN\n"
+      "    GeneralizedTimeType ::= GeneralizedTime\n"
+      "END");
+  ut_assert_is_not_error(module1);
+  UtObject *type1 =
+      ut_asn1_module_definition_get_assignment(module1, "GeneralizedTimeType");
+  ut_assert_non_null_object(type1);
+  ut_assert_true(ut_object_is_asn1_generalized_time_type(type1));
+
+  // Referenced type.
+  UtObjectRef module2 = ut_asn1_module_definition_new_from_text(
+      "Test DEFINITIONS ::= BEGIN\n"
+      "    GeneralizedTimeType1 ::= GeneralizedTime\n"
+      "    GeneralizedTimeType2 ::= GeneralizedTimeType1\n"
+      "END");
+  ut_assert_is_not_error(module2);
+  UtObject *type2 =
+      ut_asn1_module_definition_get_assignment(module2, "GeneralizedTimeType2");
+  ut_assert_non_null_object(type2);
+  ut_assert_true(ut_object_is_asn1_referenced_type(type2));
+  ut_assert_true(ut_object_is_asn1_generalized_time_type(
+      ut_asn1_referenced_type_get_type(type2)));
+}
+
+static void test_generalized_time_value_assignment() {
+  UtObjectRef module1 = ut_asn1_module_definition_new_from_text(
+      "Test DEFINITIONS ::= BEGIN\n"
+      "    generalizedTimeValue GeneralizedTime ::= \"20230824205806Z\"\n"
+      "END");
+  ut_assert_is_not_error(module1);
+  UtObject *assignment1 =
+      ut_asn1_module_definition_get_assignment(module1, "generalizedTimeValue");
+  ut_assert_non_null_object(assignment1);
+  ut_assert_true(ut_object_is_asn1_generalized_time_type(
+      ut_asn1_type_value_get_type(assignment1)));
+  UtObject *value1 = ut_asn1_type_value_get_value(assignment1);
+  ut_assert_true(ut_object_is_date_time(value1));
+  ut_assert_int_equal(ut_date_time_get_year(value1), 2023);
+  ut_assert_int_equal(ut_date_time_get_month(value1), 8);
+  ut_assert_int_equal(ut_date_time_get_day(value1), 24);
+  ut_assert_int_equal(ut_date_time_get_hour(value1), 20);
+  ut_assert_int_equal(ut_date_time_get_minutes(value1), 58);
+  ut_assert_int_equal(ut_date_time_get_seconds(value1), 6);
+  ut_assert_int_equal(ut_date_time_get_utc_offset(value1), 0);
+
+  // Referenced type.
+  UtObjectRef module2 = ut_asn1_module_definition_new_from_text(
+      "Test DEFINITIONS ::= BEGIN\n"
+      "    GeneralizedTimeType ::= GeneralizedTime\n"
+      "    generalizedTimeValue GeneralizedTimeType ::= \"20230824205806Z\"\n"
+      "END");
+  ut_assert_is_not_error(module2);
+  UtObject *assignment2 =
+      ut_asn1_module_definition_get_assignment(module2, "generalizedTimeValue");
+  ut_assert_non_null_object(assignment2);
+  UtObject *type2 = ut_asn1_type_value_get_type(assignment2);
+  ut_assert_true(ut_object_is_asn1_referenced_type(type2));
+  ut_assert_true(ut_object_is_asn1_generalized_time_type(
+      ut_asn1_referenced_type_get_type(type2)));
+  UtObject *value2 = ut_asn1_type_value_get_value(assignment2);
+  ut_assert_true(ut_object_is_date_time(value2));
+  ut_assert_int_equal(ut_date_time_get_year(value2), 2023);
+  ut_assert_int_equal(ut_date_time_get_month(value2), 8);
+  ut_assert_int_equal(ut_date_time_get_day(value2), 24);
+  ut_assert_int_equal(ut_date_time_get_hour(value2), 20);
+  ut_assert_int_equal(ut_date_time_get_minutes(value2), 58);
+  ut_assert_int_equal(ut_date_time_get_seconds(value2), 6);
+  ut_assert_int_equal(ut_date_time_get_utc_offset(value2), 0);
+
+  // Referenced value.
+  UtObjectRef module3 = ut_asn1_module_definition_new_from_text(
+      "Test DEFINITIONS ::= BEGIN\n"
+      "    generalizedTimeValue1 GeneralizedTime ::= \"20230824205806Z\"\n"
+      "    generalizedTimeValue2 GeneralizedTime ::= generalizedTimeValue1\n"
+      "END");
+  ut_assert_is_not_error(module3);
+  UtObject *assignment3 = ut_asn1_module_definition_get_assignment(
+      module3, "generalizedTimeValue2");
+  ut_assert_non_null_object(assignment3);
+  ut_assert_true(ut_object_is_asn1_generalized_time_type(
+      ut_asn1_type_value_get_type(assignment3)));
+  UtObject *value3 = ut_asn1_type_value_get_value(assignment3);
+  ut_assert_true(ut_object_is_date_time(value3));
+  ut_assert_int_equal(ut_date_time_get_year(value3), 2023);
+  ut_assert_int_equal(ut_date_time_get_month(value3), 8);
+  ut_assert_int_equal(ut_date_time_get_day(value3), 24);
+  ut_assert_int_equal(ut_date_time_get_hour(value3), 20);
+  ut_assert_int_equal(ut_date_time_get_minutes(value3), 58);
+  ut_assert_int_equal(ut_date_time_get_seconds(value3), 6);
+  ut_assert_int_equal(ut_date_time_get_utc_offset(value3), 0);
+}
+
 static void test_graphic_string_type_assignment() {
   UtObjectRef module1 = ut_asn1_module_definition_new_from_text(
       "Test DEFINITIONS ::= BEGIN\n"
@@ -3554,6 +3742,10 @@ int main(int argc, char **argv) {
   test_printable_string_value_assignment();
   test_ia5_string_type_assignment();
   test_ia5_string_value_assignment();
+  test_utc_time_type_assignment();
+  test_utc_time_value_assignment();
+  test_generalized_time_type_assignment();
+  test_generalized_time_value_assignment();
   test_graphic_string_type_assignment();
   test_graphic_string_value_assignment();
   test_visible_string_type_assignment();

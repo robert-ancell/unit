@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <float.h>
 
+#include "ut-asn1-string.h"
 #include "ut.h"
 
 typedef enum {
@@ -1346,6 +1347,40 @@ static bool parse_character_string_value(UtAsn1ModuleDefinitionParser *self,
   return false;
 }
 
+static bool parse_utc_time_value(UtAsn1ModuleDefinitionParser *self,
+                                 UtObject **value) {
+  UtObjectRef string_value = NULL;
+  if (!parse_character_string_value(self, &string_value)) {
+    return false;
+  }
+
+  UtObjectRef value_ = ut_asn1_decode_utc_time(string_value);
+  if (value_ == NULL) {
+    set_error(self, "Invalid UTCTime");
+    return false;
+  }
+
+  *value = ut_object_ref(value_);
+  return true;
+}
+
+static bool parse_generalized_time_value(UtAsn1ModuleDefinitionParser *self,
+                                         UtObject **value) {
+  UtObjectRef string_value = NULL;
+  if (!parse_character_string_value(self, &string_value)) {
+    return false;
+  }
+
+  UtObjectRef value_ = ut_asn1_decode_generalized_time(string_value);
+  if (value_ == NULL) {
+    set_error(self, "Invalid GeneralizedTime");
+    return false;
+  }
+
+  *value = ut_object_ref(value_);
+  return true;
+}
+
 static bool parse_value(UtAsn1ModuleDefinitionParser *self, UtObject *type,
                         UtObject **value) {
   // Dereference types.
@@ -1405,6 +1440,10 @@ static bool parse_value(UtAsn1ModuleDefinitionParser *self, UtObject *type,
     return parse_character_string_value(self, value);
   } else if (ut_object_is_asn1_ia5_string_type(type)) {
     return parse_character_string_value(self, value);
+  } else if (ut_object_is_asn1_utc_time_type(type)) {
+    return parse_utc_time_value(self, value);
+  } else if (ut_object_is_asn1_generalized_time_type(type)) {
+    return parse_generalized_time_value(self, value);
   } else if (ut_object_is_asn1_graphic_string_type(type)) {
     return parse_character_string_value(self, value);
   } else if (ut_object_is_asn1_visible_string_type(type)) {
@@ -2020,8 +2059,7 @@ static bool parse_type(UtAsn1ModuleDefinitionParser *self, UtObject **type) {
   } else if (maybe_parse_text(self, "UTCTime")) {
     type_ = ut_asn1_utc_time_type_new();
   } else if (maybe_parse_text(self, "GeneralizedTime")) {
-    set_error(self, "GeneralizedTime not supported");
-    return false;
+    type_ = ut_asn1_generalized_time_type_new();
   } else if (maybe_parse_text(self, "GraphicString")) {
     type_ = ut_asn1_graphic_string_type_new();
   } else if (maybe_parse_text(self, "VisibleString")) {

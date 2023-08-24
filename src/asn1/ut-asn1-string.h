@@ -14,6 +14,14 @@ UtObject *ut_asn1_encode_ia5_string(const char *string);
 
 UtObject *ut_asn1_decode_ia5_string(UtObject *ia5_string);
 
+UtObject *ut_asn1_encode_utc_time(UtObject *value);
+
+UtObject *ut_asn1_decode_utc_time(UtObject *string);
+
+UtObject *ut_asn1_encode_generalized_time(UtObject *value);
+
+UtObject *ut_asn1_decode_generalized_time(UtObject *string);
+
 UtObject *ut_asn1_encode_graphic_string(const char *string);
 
 UtObject *ut_asn1_decode_graphic_string(UtObject *graphic_string);

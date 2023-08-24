@@ -12,6 +12,7 @@
 #include "asn1/ut-asn1-enumerated-type.h"
 #include "asn1/ut-asn1-error.h"
 #include "asn1/ut-asn1-general-string-type.h"
+#include "asn1/ut-asn1-generalized-time-type.h"
 #include "asn1/ut-asn1-graphic-string-type.h"
 #include "asn1/ut-asn1-ia5-string-type.h"
 #include "asn1/ut-asn1-integer-range-constraint.h"
