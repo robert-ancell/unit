@@ -1833,9 +1833,14 @@ static void test_choice() {
   UtObjectRef value3 = ut_asn1_decoder_decode_value(decoder3, type3);
   ut_assert_null_object(ut_asn1_decoder_get_error(decoder3));
   ut_assert_true(ut_object_is_asn1_choice_value(value3));
-  ut_assert_cstring_equal(ut_asn1_choice_value_get_identifier(value3),
-                          "<extension>");
-  ut_assert_null_object(ut_asn1_choice_value_get_value(value3));
+  ut_assert_cstring_equal(ut_asn1_choice_value_get_identifier(value3), "");
+  UtObject *value3i = ut_asn1_choice_value_get_value(value3);
+  ut_assert_true(ut_object_is_asn1_ber_decoder(value3i));
+  ut_assert_true(ut_asn1_tag_matches(ut_asn1_ber_decoder_get_tag(value3i),
+                                     UT_ASN1_TAG_CLASS_UNIVERSAL,
+                                     UT_ASN1_TAG_UNIVERSAL_BOOLEAN));
+  ut_assert_uint8_list_equal_hex(ut_asn1_ber_decoder_get_contents(value3i),
+                                 "ff");
 
   // Unknown value (not extensible).
   UtObjectRef data4 = ut_uint8_list_new_from_hex_string("0101ff");

@@ -1007,7 +1007,7 @@ static UtObject *decode_choice_value(UtAsn1BerDecoder *self, UtObject *type,
 
   // Can have unknown values if extensible.
   if (ut_asn1_choice_type_get_extensible(type)) {
-    return ut_asn1_choice_value_new("<extension>", NULL);
+    return ut_asn1_choice_value_new("", (UtObject *)self);
   }
 
   set_error(self, "Unknown CHOICE value");
