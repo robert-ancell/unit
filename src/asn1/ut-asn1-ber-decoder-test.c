@@ -445,8 +445,8 @@ static void test_object_identifier() {
                                      UT_ASN1_TAG_UNIVERSAL_OBJECT_IDENTIFIER));
   UtObjectRef id1 = ut_asn1_ber_decoder_decode_object_identifier(decoder1);
   ut_assert_null_object(ut_asn1_decoder_get_error(decoder1));
-  uint32_t expected_id1[] = {2, 999, 3};
-  ut_assert_uint32_list_equal(id1, expected_id1, 3);
+  ut_cstring_ref id_string1 = ut_object_identifier_to_string(id1);
+  ut_assert_cstring_equal(id_string1, "2.999.3");
 
   // Decoded as object with type.
   UtObjectRef data2 = ut_uint8_list_new_from_hex_string("0603883703");
@@ -454,9 +454,9 @@ static void test_object_identifier() {
   UtObjectRef type2 = ut_asn1_object_identifier_type_new();
   UtObjectRef value2 = ut_asn1_decoder_decode_value(decoder2, type2);
   ut_assert_null_object(ut_asn1_decoder_get_error(decoder2));
-  ut_assert_true(ut_object_implements_uint32_list(value2));
-  uint32_t expected_id2[] = {2, 999, 3};
-  ut_assert_uint32_list_equal(id1, expected_id2, 3);
+  ut_assert_true(ut_object_is_object_identifier(value2));
+  ut_cstring_ref value_string2 = ut_object_identifier_to_string(value2);
+  ut_assert_cstring_equal(value_string2, "2.999.3");
 
   // Empty.
   UtObjectRef data3 = ut_uint8_list_new_from_hex_string("0600");

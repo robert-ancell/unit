@@ -755,7 +755,7 @@ static bool parse_oid_name(UtObject *oid, const char *name, uint64_t *number) {
 
 static bool
 parse_definitive_object_identifier_component(UtAsn1ModuleDefinitionParser *self,
-                                             UtObject *value) {
+                                             UtObject *values) {
   ut_cstring_ref name = NULL;
   uint64_t number = 0;
   if (!maybe_parse_identifier(self, &name)) {
@@ -763,7 +763,7 @@ parse_definitive_object_identifier_component(UtAsn1ModuleDefinitionParser *self,
       set_expected_error(self, "identifier, number or }");
       return false;
     }
-    ut_uint32_list_append(value, number);
+    ut_uint32_list_append(values, number);
     return true;
   }
 
@@ -772,8 +772,8 @@ parse_definitive_object_identifier_component(UtAsn1ModuleDefinitionParser *self,
       return false;
     }
     uint64_t expected_number = 0;
-    if (ut_list_get_length(value) < 2) {
-      if (!parse_oid_name(value, name, &expected_number)) {
+    if (ut_list_get_length(values) < 2) {
+      if (!parse_oid_name(values, name, &expected_number)) {
         set_error(self, "Unknown object identifier name");
         return false;
       }
@@ -782,12 +782,12 @@ parse_definitive_object_identifier_component(UtAsn1ModuleDefinitionParser *self,
         return false;
       }
     }
-  } else if (!parse_oid_name(value, name, &number)) {
+  } else if (!parse_oid_name(values, name, &number)) {
     set_error(self, "Unknown object identifier name");
     return false;
   }
 
-  ut_uint32_list_append(value, number);
+  ut_uint32_list_append(values, number);
   return true;
 }
 
@@ -803,14 +803,14 @@ static bool parse_module_identifier(UtAsn1ModuleDefinitionParser *self,
     return true;
   }
 
-  UtObjectRef oid = ut_uint32_list_new();
+  UtObjectRef values = ut_uint32_list_new();
   while (true) {
-    if (!parse_definitive_object_identifier_component(self, oid)) {
+    if (!parse_definitive_object_identifier_component(self, values)) {
       return false;
     }
 
     if (maybe_parse_text(self, "}")) {
-      *object_identifier = ut_object_ref(oid);
+      *object_identifier = ut_object_identifier_new(values);
       return true;
     }
   }
@@ -1027,7 +1027,7 @@ static bool parse_null_value(UtAsn1ModuleDefinitionParser *self,
 
 static bool
 parse_object_identifier_component(UtAsn1ModuleDefinitionParser *self,
-                                  UtObject *value) {
+                                  UtObject *values) {
   ut_cstring_ref name = NULL;
   uint64_t number = 0;
   if (!maybe_parse_identifier(self, &name)) {
@@ -1035,7 +1035,7 @@ parse_object_identifier_component(UtAsn1ModuleDefinitionParser *self,
       set_expected_error(self, "identifier, number or }");
       return false;
     }
-    ut_uint32_list_append(value, number);
+    ut_uint32_list_append(values, number);
     return true;
   }
 
@@ -1044,8 +1044,8 @@ parse_object_identifier_component(UtAsn1ModuleDefinitionParser *self,
       return false;
     }
     uint64_t expected_number = 0;
-    if (ut_list_get_length(value) < 2) {
-      if (!parse_oid_name(value, name, &expected_number)) {
+    if (ut_list_get_length(values) < 2) {
+      if (!parse_oid_name(values, name, &expected_number)) {
         set_error(self, "Unknown object identifier name");
         return false;
       }
@@ -1054,7 +1054,7 @@ parse_object_identifier_component(UtAsn1ModuleDefinitionParser *self,
         return false;
       }
     }
-  } else if (!parse_oid_name(value, name, &number)) {
+  } else if (!parse_oid_name(values, name, &number)) {
     UtObject *referenced_type_value =
         ut_map_lookup_string(self->assignments, name);
     if (referenced_type_value == NULL ||
@@ -1063,7 +1063,7 @@ parse_object_identifier_component(UtAsn1ModuleDefinitionParser *self,
       return false;
     }
 
-    bool is_first = ut_list_get_length(value) == 0;
+    bool is_first = ut_list_get_length(values) == 0;
     UtObject *referenced_type =
         ut_asn1_type_value_get_type(referenced_type_value);
     if ((is_first &&
@@ -1073,12 +1073,18 @@ parse_object_identifier_component(UtAsn1ModuleDefinitionParser *self,
       return false;
     }
 
-    ut_list_append_list(value,
-                        ut_asn1_type_value_get_value(referenced_type_value));
+    UtObject *value = ut_asn1_type_value_get_value(referenced_type_value);
+    if (ut_object_is_asn1_object_identifier_type(referenced_type)) {
+      ut_list_append_list(values, ut_object_identifier_get_values(value));
+    } else if (ut_object_is_asn1_relative_oid_type(referenced_type)) {
+      ut_list_append_list(values, value);
+    } else {
+      assert(false);
+    }
     return true;
   }
 
-  ut_uint32_list_append(value, number);
+  ut_uint32_list_append(values, number);
   return true;
 }
 
@@ -1088,14 +1094,14 @@ static bool parse_object_identifier_value(UtAsn1ModuleDefinitionParser *self,
     return false;
   }
 
-  UtObjectRef value_ = ut_uint32_list_new();
+  UtObjectRef values = ut_uint32_list_new();
   while (true) {
     if (maybe_parse_text(self, "}")) {
-      *value = ut_object_ref(value_);
+      *value = ut_object_identifier_new(values);
       return true;
     }
 
-    if (!parse_object_identifier_component(self, value_)) {
+    if (!parse_object_identifier_component(self, values)) {
       return false;
     }
   }

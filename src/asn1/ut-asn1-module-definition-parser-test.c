@@ -1000,9 +1000,10 @@ static void test_object_identifier_type_assignment() {
   UtObject *constraint3 = ut_asn1_constrained_type_get_constraint(type3);
   ut_assert_true(ut_object_is_asn1_value_constraint(constraint3));
   UtObject *constraint_value3 = ut_asn1_value_constraint_get_value(constraint3);
-  ut_assert_true(ut_object_implements_uint32_list(constraint_value3));
-  uint32_t expected_values3[4] = {1, 0, 8571, 1};
-  ut_assert_uint32_list_equal(constraint_value3, expected_values3, 4);
+  ut_assert_true(ut_object_is_object_identifier(constraint_value3));
+  ut_cstring_ref constraint_value_string3 =
+      ut_object_identifier_to_string(constraint_value3);
+  ut_assert_cstring_equal(constraint_value_string3, "1.0.8571.1");
 
   // Invalid type in constraint.
   UtObjectRef module10 = ut_asn1_module_definition_new_from_text(
@@ -1026,9 +1027,9 @@ static void test_object_identifier_value_assignment() {
   ut_assert_true(ut_object_is_asn1_object_identifier_type(
       ut_asn1_type_value_get_type(assignment1)));
   UtObject *value1 = ut_asn1_type_value_get_value(assignment1);
-  ut_assert_true(ut_object_implements_uint32_list(value1));
-  uint32_t expected_values1[4] = {1, 0, 8571, 1};
-  ut_assert_uint32_list_equal(value1, expected_values1, 4);
+  ut_assert_true(ut_object_is_object_identifier(value1));
+  ut_cstring_ref value_string1 = ut_object_identifier_to_string(value1);
+  ut_assert_cstring_equal(value_string1, "1.0.8571.1");
 
   // Numbers.
   UtObjectRef module2 = ut_asn1_module_definition_new_from_text(
@@ -1042,9 +1043,9 @@ static void test_object_identifier_value_assignment() {
   ut_assert_true(ut_object_is_asn1_object_identifier_type(
       ut_asn1_type_value_get_type(assignment2)));
   UtObject *value2 = ut_asn1_type_value_get_value(assignment2);
-  ut_assert_true(ut_object_implements_uint32_list(value2));
-  uint32_t expected_values2[4] = {1, 0, 8571, 1};
-  ut_assert_uint32_list_equal(value2, expected_values2, 4);
+  ut_assert_true(ut_object_is_object_identifier(value2));
+  ut_cstring_ref value_string2 = ut_object_identifier_to_string(value2);
+  ut_assert_cstring_equal(value_string2, "1.0.8571.1");
 
   // Names and numbers.
   UtObjectRef module3 = ut_asn1_module_definition_new_from_text(
@@ -1059,9 +1060,9 @@ static void test_object_identifier_value_assignment() {
   ut_assert_true(ut_object_is_asn1_object_identifier_type(
       ut_asn1_type_value_get_type(assignment3)));
   UtObject *value3 = ut_asn1_type_value_get_value(assignment3);
-  ut_assert_true(ut_object_implements_uint32_list(value3));
-  uint32_t expected_values3[4] = {1, 0, 8571, 1};
-  ut_assert_uint32_list_equal(value3, expected_values3, 4);
+  ut_assert_true(ut_object_is_object_identifier(value3));
+  ut_cstring_ref value_string3 = ut_object_identifier_to_string(value3);
+  ut_assert_cstring_equal(value_string3, "1.0.8571.1");
 
   // Extend existing identifier.
   UtObjectRef module4 = ut_asn1_module_definition_new_from_text(
@@ -1076,9 +1077,9 @@ static void test_object_identifier_value_assignment() {
   ut_assert_true(ut_object_is_asn1_object_identifier_type(
       ut_asn1_type_value_get_type(assignment4)));
   UtObject *value4 = ut_asn1_type_value_get_value(assignment4);
-  ut_assert_true(ut_object_implements_uint32_list(value4));
-  uint32_t expected_values4[4] = {1, 0, 8571, 1};
-  ut_assert_uint32_list_equal(value4, expected_values4, 4);
+  ut_assert_true(ut_object_is_object_identifier(value4));
+  ut_cstring_ref value_string4 = ut_object_identifier_to_string(value4);
+  ut_assert_cstring_equal(value_string4, "1.0.8571.1");
 
   // Append relative OID.
   UtObjectRef module5 = ut_asn1_module_definition_new_from_text(
@@ -1094,9 +1095,9 @@ static void test_object_identifier_value_assignment() {
   ut_assert_true(ut_object_is_asn1_object_identifier_type(
       ut_asn1_type_value_get_type(assignment5)));
   UtObject *value5 = ut_asn1_type_value_get_value(assignment5);
-  ut_assert_true(ut_object_implements_uint32_list(value5));
-  uint32_t expected_values5[4] = {1, 0, 8571, 1};
-  ut_assert_uint32_list_equal(value5, expected_values5, 4);
+  ut_assert_true(ut_object_is_object_identifier(value5));
+  ut_cstring_ref value_string5 = ut_object_identifier_to_string(value5);
+  ut_assert_cstring_equal(value_string5, "1.0.8571.1");
 
   // Invalid root name.
   UtObjectRef module6 = ut_asn1_module_definition_new_from_text(

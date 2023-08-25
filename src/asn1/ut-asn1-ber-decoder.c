@@ -246,38 +246,38 @@ static void decode_null(UtAsn1BerDecoder *self) {
 
 static UtObject *decode_object_identifier(UtAsn1BerDecoder *self) {
   size_t data_length = ut_list_get_length(self->contents);
-  UtObjectRef identifier = ut_uint32_list_new();
+  UtObjectRef values = ut_uint32_list_new();
 
   if (self->constructed) {
     set_error(self, "OBJECT IDENTIFIER does not have constructed form");
-    return ut_object_ref(identifier);
+    return ut_object_identifier_new_from_string("0.0");
   }
 
   size_t offset = 0;
-  uint32_t subidentifier0;
-  if (!decode_compressed_integer(self->contents, &offset, &subidentifier0)) {
+  uint32_t value0;
+  if (!decode_compressed_integer(self->contents, &offset, &value0)) {
     set_error(self, "Invalid OBJECT IDENTIFIER");
-    return ut_object_ref(identifier);
+    return ut_object_identifier_new_from_string("0.0");
   }
-  if (subidentifier0 <= 39) {
-    ut_uint32_list_append(identifier, 0);
-    ut_uint32_list_append(identifier, subidentifier0);
-  } else if (subidentifier0 <= 79) {
-    ut_uint32_list_append(identifier, 1);
-    ut_uint32_list_append(identifier, subidentifier0 - 40);
+  if (value0 <= 39) {
+    ut_uint32_list_append(values, 0);
+    ut_uint32_list_append(values, value0);
+  } else if (value0 <= 79) {
+    ut_uint32_list_append(values, 1);
+    ut_uint32_list_append(values, value0 - 40);
   } else {
-    ut_uint32_list_append(identifier, 2);
-    ut_uint32_list_append(identifier, subidentifier0 - 80);
+    ut_uint32_list_append(values, 2);
+    ut_uint32_list_append(values, value0 - 80);
   }
   while (offset < data_length) {
-    uint32_t subidentifier;
-    if (!decode_compressed_integer(self->contents, &offset, &subidentifier)) {
+    uint32_t value;
+    if (!decode_compressed_integer(self->contents, &offset, &value)) {
       set_error(self, "Invalid OBJECT IDENTIFIER");
-      return ut_object_ref(identifier);
+      return ut_object_identifier_new_from_string("0.0");
     }
-    ut_uint32_list_append(identifier, subidentifier);
+    ut_uint32_list_append(values, value);
   }
-  return ut_object_ref(identifier);
+  return ut_object_identifier_new(values);
 }
 
 static double decode_binary_real(UtAsn1BerDecoder *self) {

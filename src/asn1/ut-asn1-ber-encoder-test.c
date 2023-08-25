@@ -449,7 +449,7 @@ static void test_null() {
 
 static void test_object_identifier() {
   UtObjectRef encoder1 = ut_asn1_ber_encoder_new();
-  UtObjectRef id1 = ut_uint32_list_new_from_elements(3, 2, 999, 3);
+  UtObjectRef id1 = ut_object_identifier_new_from_string("2.999.3");
   ut_asn1_ber_encoder_encode_object_identifier(encoder1, id1);
   ut_assert_null_object(ut_asn1_encoder_get_error(encoder1));
   UtObjectRef data1 = ut_asn1_ber_encoder_get_data(encoder1);
@@ -458,7 +458,7 @@ static void test_object_identifier() {
   // Encoded as object with type.
   UtObjectRef encoder2 = ut_asn1_ber_encoder_new();
   UtObjectRef type2 = ut_asn1_object_identifier_type_new();
-  UtObjectRef value2 = ut_uint32_list_new_from_elements(3, 2, 999, 3);
+  UtObjectRef value2 = ut_object_identifier_new_from_string("2.999.3");
   ut_asn1_encoder_encode_value(encoder2, type2, value2);
   ut_assert_null_object(ut_asn1_encoder_get_error(encoder2));
   UtObjectRef data2 = ut_asn1_ber_encoder_get_data(encoder2);

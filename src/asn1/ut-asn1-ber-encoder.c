@@ -229,17 +229,17 @@ static size_t encode_octet_string(UtAsn1BerEncoder *self, UtObject *value) {
 static size_t encode_null(UtAsn1BerEncoder *self) { return 0; }
 
 static size_t encode_object_identifier(UtAsn1BerEncoder *self,
-                                       UtObject *identifier) {
-  size_t identifier_length = ut_list_get_length(identifier);
-  assert(identifier_length >= 3);
+                                       UtObject *value) {
+  UtObject *values = ut_object_identifier_get_values(value);
+  size_t values_length = ut_list_get_length(values);
+  assert(values_length >= 3);
   size_t length = 0;
-  for (size_t i = 0; i < identifier_length - 2; i++) {
+  for (size_t i = 0; i < values_length - 2; i++) {
     length += encode_compressed_integer(
-        self,
-        ut_uint32_list_get_element(identifier, identifier_length - i - 1));
+        self, ut_uint32_list_get_element(values, values_length - i - 1));
   }
-  uint32_t subidentifier0 = ut_uint32_list_get_element(identifier, 0) * 40 +
-                            ut_uint32_list_get_element(identifier, 1);
+  uint32_t subidentifier0 = ut_uint32_list_get_element(values, 0) * 40 +
+                            ut_uint32_list_get_element(values, 1);
   length += encode_compressed_integer(self, subidentifier0);
 
   return length;
@@ -533,7 +533,7 @@ static size_t encode_null_value(UtAsn1BerEncoder *self, UtObject *value,
 static size_t encode_object_identifier_value(UtAsn1BerEncoder *self,
                                              UtObject *value, bool encode_tag,
                                              bool *is_constructed) {
-  if (!ut_object_implements_uint32_list(value)) {
+  if (!ut_object_is_object_identifier(value)) {
     set_type_error(self, "OBJECT IDENTIFIER", value);
     return 0;
   }
@@ -1131,7 +1131,7 @@ size_t ut_asn1_ber_encoder_encode_null(UtObject *object) {
 size_t ut_asn1_ber_encoder_encode_object_identifier(UtObject *object,
                                                     UtObject *identifier) {
   assert(ut_object_is_asn1_ber_encoder(object));
-  assert(ut_object_implements_uint32_list(identifier));
+  assert(ut_object_is_object_identifier(identifier));
   UtAsn1BerEncoder *self = (UtAsn1BerEncoder *)object;
   return encode_object_identifier(self, identifier);
 }
