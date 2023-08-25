@@ -78,6 +78,22 @@ static char *ut_shared_memory_array_to_string(UtObject *object) {
                                self->data_length);
 }
 
+static bool ut_shared_memory_array_equal(UtObject *object, UtObject *other) {
+  UtSharedMemoryArray *self = (UtSharedMemoryArray *)object;
+  if (!ut_object_implements_uint8_list(other)) {
+    return false;
+  }
+  if (self->data_length != ut_list_get_length(other)) {
+    return false;
+  }
+  for (size_t i = 0; i < self->data_length; i++) {
+    if (self->data[i] != ut_uint8_list_get_element(other, i)) {
+      return false;
+    }
+  }
+  return true;
+}
+
 static void ut_shared_memory_array_cleanup(UtObject *object) {
   UtSharedMemoryArray *self = (UtSharedMemoryArray *)object;
   ut_object_unref(self->fd);
@@ -98,6 +114,7 @@ static UtListInterface list_interface = {
 static UtObjectInterface object_interface = {
     .type_name = "UtSharedMemoryArray",
     .to_string = ut_shared_memory_array_to_string,
+    .equal = ut_shared_memory_array_equal,
     .cleanup = ut_shared_memory_array_cleanup,
     .interfaces = {{&ut_uint8_list_id, &uint8_list_interface},
                    {&ut_list_id, &list_interface},

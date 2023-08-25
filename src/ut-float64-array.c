@@ -116,6 +116,22 @@ static char *ut_float64_array_to_string(UtObject *object) {
   return ut_string_take_text(string);
 }
 
+static bool ut_float64_array_equal(UtObject *object, UtObject *other) {
+  UtFloat64Array *self = (UtFloat64Array *)object;
+  if (!ut_object_implements_float64_list(other)) {
+    return false;
+  }
+  if (self->data_length != ut_list_get_length(other)) {
+    return false;
+  }
+  for (size_t i = 0; i < self->data_length; i++) {
+    if (self->data[i] != ut_float64_list_get_element(other, i)) {
+      return false;
+    }
+  }
+  return true;
+}
+
 static void ut_float64_array_cleanup(UtObject *object) {
   UtFloat64Array *self = (UtFloat64Array *)object;
   free(self->data);
@@ -140,6 +156,7 @@ static UtListInterface list_interface = {
 static UtObjectInterface object_interface = {
     .type_name = "UtFloat64Array",
     .to_string = ut_float64_array_to_string,
+    .equal = ut_float64_array_equal,
     .cleanup = ut_float64_array_cleanup,
     .interfaces = {{&ut_float64_list_id, &float64_list_interface},
                    {&ut_list_id, &list_interface},

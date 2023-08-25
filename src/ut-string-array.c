@@ -104,6 +104,23 @@ static void ut_string_array_init(UtObject *object) {
   self->data = malloc(sizeof(char *) * 1);
 }
 
+static bool ut_string_array_equal(UtObject *object, UtObject *other) {
+  UtStringArray *self = (UtStringArray *)object;
+  if (!ut_object_implements_string_list(other)) {
+    return false;
+  }
+  if (self->data_length != ut_list_get_length(other)) {
+    return false;
+  }
+  for (size_t i = 0; i < self->data_length; i++) {
+    if (!ut_cstring_equal(self->data[i],
+                          ut_string_list_get_element(other, i))) {
+      return false;
+    }
+  }
+  return true;
+}
+
 static void ut_string_array_cleanup(UtObject *object) {
   UtStringArray *self = (UtStringArray *)object;
   for (size_t i = 0; i < self->data_length; i++) {
@@ -131,6 +148,7 @@ static UtObjectInterface object_interface = {
     .type_name = "UtStringArray",
     .init = ut_string_array_init,
     .to_string = _ut_list_to_string,
+    .equal = ut_string_array_equal,
     .cleanup = ut_string_array_cleanup,
     .interfaces = {{&ut_list_id, &list_interface},
                    {&ut_string_list_id, &string_list_interface},

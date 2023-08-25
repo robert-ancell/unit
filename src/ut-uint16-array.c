@@ -136,6 +136,22 @@ static char *ut_uint16_array_to_string(UtObject *object) {
   return ut_string_take_text(string);
 }
 
+static bool ut_uint16_array_equal(UtObject *object, UtObject *other) {
+  UtUint16Array *self = (UtUint16Array *)object;
+  if (!ut_object_implements_uint16_list(other)) {
+    return false;
+  }
+  if (self->data_length != ut_list_get_length(other)) {
+    return false;
+  }
+  for (size_t i = 0; i < self->data_length; i++) {
+    if (self->data[i] != ut_uint16_list_get_element(other, i)) {
+      return false;
+    }
+  }
+  return true;
+}
+
 static void ut_uint16_array_cleanup(UtObject *object) {
   UtUint16Array *self = (UtUint16Array *)object;
   free(self->data);
@@ -161,6 +177,7 @@ static UtListInterface list_interface = {
 static UtObjectInterface object_interface = {
     .type_name = "UtUint16Array",
     .to_string = ut_uint16_array_to_string,
+    .equal = ut_uint16_array_equal,
     .cleanup = ut_uint16_array_cleanup,
     .interfaces = {{&ut_uint16_list_id, &uint16_list_interface},
                    {&ut_list_id, &list_interface},

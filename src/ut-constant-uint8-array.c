@@ -63,6 +63,22 @@ static char *ut_constant_uint8_array_to_string(UtObject *object) {
   return ut_string_take_text(string);
 }
 
+static bool ut_constant_uint8_array_equal(UtObject *object, UtObject *other) {
+  UtConstantUint8Array *self = (UtConstantUint8Array *)object;
+  if (!ut_object_implements_uint8_list(other)) {
+    return false;
+  }
+  if (self->data_length != ut_list_get_length(other)) {
+    return false;
+  }
+  for (size_t i = 0; i < self->data_length; i++) {
+    if (self->data[i] != ut_uint8_list_get_element(other, i)) {
+      return false;
+    }
+  }
+  return true;
+}
+
 static UtUint8ListInterface uint8_list_interface = {
     .get_element = ut_constant_uint8_array_get_element,
     .get_data = ut_constant_uint8_array_get_data,
@@ -77,6 +93,7 @@ static UtListInterface list_interface = {
 static UtObjectInterface object_interface = {
     .type_name = "UtConstantUint8Array",
     .to_string = ut_constant_uint8_array_to_string,
+    .equal = ut_constant_uint8_array_equal,
     .interfaces = {{&ut_uint8_list_id, &uint8_list_interface},
                    {&ut_list_id, &list_interface},
                    {NULL, NULL}}};

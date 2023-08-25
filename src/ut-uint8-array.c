@@ -193,6 +193,22 @@ static char *ut_uint8_array_to_string(UtObject *object) {
   return ut_string_take_text(string);
 }
 
+static bool ut_uint8_array_equal(UtObject *object, UtObject *other) {
+  UtUint8Array *self = (UtUint8Array *)object;
+  if (!ut_object_implements_uint8_list(other)) {
+    return false;
+  }
+  if (self->data_length != ut_list_get_length(other)) {
+    return false;
+  }
+  for (size_t i = 0; i < self->data_length; i++) {
+    if (self->data[i] != ut_uint8_list_get_element(other, i)) {
+      return false;
+    }
+  }
+  return true;
+}
+
 static void ut_uint8_array_cleanup(UtObject *object) {
   UtUint8Array *self = (UtUint8Array *)object;
   free(self->data);
@@ -223,6 +239,7 @@ static UtOutputStreamInterface output_stream_interface = {
 static UtObjectInterface object_interface = {
     .type_name = "UtUint8Array",
     .to_string = ut_uint8_array_to_string,
+    .equal = ut_uint8_array_equal,
     .cleanup = ut_uint8_array_cleanup,
     .interfaces = {{&ut_uint8_list_id, &uint8_list_interface},
                    {&ut_list_id, &list_interface},

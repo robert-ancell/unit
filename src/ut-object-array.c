@@ -83,6 +83,23 @@ static UtObject *ut_object_array_copy(UtObject *object) {
   return (UtObject *)copy;
 }
 
+static bool ut_object_array_equal(UtObject *object, UtObject *other) {
+  UtObjectArray *self = (UtObjectArray *)object;
+  if (!ut_object_implements_list(other)) {
+    return false;
+  }
+  if (self->data_length != ut_list_get_length(other)) {
+    return false;
+  }
+  for (size_t i = 0; i < self->data_length; i++) {
+    UtObjectRef d = ut_list_get_element(other, i);
+    if (!ut_object_equal(self->data[i], d)) {
+      return false;
+    }
+  }
+  return true;
+}
+
 static void ut_object_array_cleanup(UtObject *object) {
   UtObjectArray *self = (UtObjectArray *)object;
   for (size_t i = 0; i < self->data_length; i++) {
@@ -108,6 +125,7 @@ static UtListInterface list_interface = {
 static UtObjectInterface object_interface = {
     .type_name = "UtObjectArray",
     .to_string = _ut_list_to_string,
+    .equal = ut_object_array_equal,
     .cleanup = ut_object_array_cleanup,
     .interfaces = {{&ut_object_list_id, &object_list_interface},
                    {&ut_list_id, &list_interface},
