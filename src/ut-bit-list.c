@@ -91,17 +91,8 @@ static bool append_bin_string(UtBitList *self, const char *bin) {
 }
 
 static char *ut_bit_list_to_string(UtObject *object) {
-  UtBitList *self = (UtBitList *)object;
-  UtObjectRef string = ut_string_new("<bool>[");
-  for (size_t i = 0; i < self->bit_count; i++) {
-    if (i != 0) {
-      ut_string_append(string, ", ");
-    }
-    ut_string_append(string, get_element(self, i) ? "true" : "false");
-  }
-  ut_string_append(string, "]");
-
-  return ut_string_take_text(string);
+  ut_cstring_ref bin_string = ut_bit_list_to_bin_string(object);
+  return ut_cstring_new_printf("<UtBitList>(\"%s\")", bin_string);
 }
 
 static void ut_bit_list_cleanup(UtObject *object) {
