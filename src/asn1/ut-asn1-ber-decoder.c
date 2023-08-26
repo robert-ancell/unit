@@ -757,7 +757,7 @@ static UtObject *decode_sequence_value(UtAsn1BerDecoder *self, UtObject *type,
       if (ut_object_is_asn1_optional_type(type)) {
         continue;
       } else if (ut_object_is_asn1_default_type(type)) {
-        ut_map_insert_string(value, ut_string_get_text(component_name),
+        ut_map_insert_string(value, ut_string_get_text(name),
                              ut_asn1_default_type_get_default_value(type));
         continue;
       }
