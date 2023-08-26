@@ -2079,7 +2079,7 @@ static bool parse_type(UtAsn1ModuleDefinitionParser *self, UtObject **type) {
     if (!parse_text(self, "STRING")) {
       return false;
     }
-    set_error(self, "CHARACTER not supported");
+    set_error(self, "CHARACTER STRING not supported");
     return false;
   } else if (maybe_parse_text(self, "BMPString")) {
     type_ = ut_asn1_bmp_string_type_new();
