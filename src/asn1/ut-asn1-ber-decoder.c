@@ -73,20 +73,29 @@ static UtObject *decode_constructed(UtAsn1BerDecoder *self) {
 }
 
 static bool decode_boolean(UtAsn1BerDecoder *self) {
+  if (self->constructed) {
+    set_error(self, "BOOLEAN does not have constructed form");
+    return false;
+  }
+
   size_t data_length = ut_list_get_length(self->contents);
   if (data_length != 1) {
     set_error(self, "Invalid BOOLEAN data length");
     return false;
   }
-  if (self->constructed) {
-    set_error(self, "BOOLEAN does not have constructed form");
-    return false;
-  }
+
   // FIXME: If in DER mode then generate error if invalid.
   return ut_uint8_list_get_element(self->contents, 0) != 0;
 }
 
 static int64_t decode_integer(UtAsn1BerDecoder *self, const char *type_name) {
+  if (self->constructed) {
+    ut_cstring_ref description =
+        ut_cstring_new_printf("%s does not have constructed form", type_name);
+    set_error(self, description);
+    return 0;
+  }
+
   size_t data_length = ut_list_get_length(self->contents);
   if (data_length == 0) {
     ut_cstring_ref description =
@@ -97,12 +106,6 @@ static int64_t decode_integer(UtAsn1BerDecoder *self, const char *type_name) {
   if (data_length > 8) {
     ut_cstring_ref description = ut_cstring_new_printf(
         "%s greater than 64 bits not supported", type_name);
-    set_error(self, description);
-    return 0;
-  }
-  if (self->constructed) {
-    ut_cstring_ref description =
-        ut_cstring_new_printf("%s does not have constructed form", type_name);
     set_error(self, description);
     return 0;
   }
@@ -233,25 +236,26 @@ static UtObject *decode_octet_string(UtAsn1BerDecoder *self,
 }
 
 static void decode_null(UtAsn1BerDecoder *self) {
+  if (self->constructed) {
+    set_error(self, "NULL does not have constructed form");
+    return;
+  }
+
   size_t data_length = ut_list_get_length(self->contents);
   if (data_length != 0) {
     set_error(self, "Invalid NULL data length");
     return;
   }
-  if (self->constructed) {
-    set_error(self, "NULL does not have constructed form");
-    return;
-  }
 }
 
 static UtObject *decode_object_identifier(UtAsn1BerDecoder *self) {
-  size_t data_length = ut_list_get_length(self->contents);
-  UtObjectRef values = ut_uint32_list_new();
-
   if (self->constructed) {
     set_error(self, "OBJECT IDENTIFIER does not have constructed form");
     return ut_object_identifier_new_from_string("0.0");
   }
+
+  size_t data_length = ut_list_get_length(self->contents);
+  UtObjectRef values = ut_uint32_list_new();
 
   size_t offset = 0;
   uint32_t value0;
@@ -554,13 +558,13 @@ static UtObject *decode_bmp_string(UtAsn1BerDecoder *self) {
 }
 
 static UtObject *decode_relative_oid(UtAsn1BerDecoder *self) {
-  size_t data_length = ut_list_get_length(self->contents);
-  UtObjectRef identifier = ut_uint32_list_new();
-
   if (self->constructed) {
     set_error(self, "RELATIVE-OID does not have constructed form");
-    return ut_object_ref(identifier);
+    return ut_uint32_list_new();
   }
+
+  size_t data_length = ut_list_get_length(self->contents);
+  UtObjectRef identifier = ut_uint32_list_new();
 
   size_t offset = 0;
   while (offset < data_length) {
