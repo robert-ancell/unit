@@ -36,6 +36,8 @@ double ut_asn1_ber_decoder_decode_real(UtObject *object);
 
 int64_t ut_asn1_ber_decoder_decode_enumerated(UtObject *object);
 
+UtObject *ut_asn1_ber_decoder_decode_embedded_pdv(UtObject *object);
+
 char *ut_asn1_ber_decoder_decode_utf8_string(UtObject *object);
 
 UtObject *ut_asn1_ber_decoder_decode_relative_oid(UtObject *object);

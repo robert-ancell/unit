@@ -23,6 +23,10 @@ typedef struct {
   UtObject *error;
 } UtAsn1BerEncoder;
 
+static size_t encode_value(UtAsn1BerEncoder *self, UtObject *type,
+                           UtObject *value, bool encode_tag,
+                           bool *is_constructed);
+
 static void set_error(UtAsn1BerEncoder *self, const char *description) {
   if (self->error == NULL) {
     self->error = ut_asn1_error_new(description);
@@ -342,6 +346,17 @@ static size_t encode_enumerated(UtAsn1BerEncoder *self, int64_t value) {
   return encode_integer(self, value);
 }
 
+static size_t encode_embedded_pdv(UtAsn1BerEncoder *self, UtObject *value) {
+  UtObjectRef type = ut_asn1_embedded_pdv_type_new();
+  UtObjectRef associated_type =
+      ut_asn1_embedded_pdv_type_get_associated_type(type);
+  UtObjectRef encoded_value =
+      ut_asn1_embedded_pdv_type_encode_value(type, value);
+  bool is_constructed;
+  return encode_value(self, associated_type, encoded_value, false,
+                      &is_constructed);
+}
+
 static size_t encode_utf8_string(UtAsn1BerEncoder *self, UtObject *value) {
   UtObjectRef utf8 = ut_string_get_utf8(value);
   return encode_octet_string(self, utf8);
@@ -605,6 +620,23 @@ static size_t encode_enumerated_value(UtAsn1BerEncoder *self, UtObject *type,
   return length;
 }
 
+static size_t encode_embedded_pdv_value(UtAsn1BerEncoder *self, UtObject *type,
+                                        UtObject *value, bool encode_tag,
+                                        bool *is_constructed) {
+  if (!ut_object_is_asn1_embedded_value(value)) {
+    set_type_error(self, "EMBEDDED PDV", value);
+    return 0;
+  }
+  size_t length = encode_embedded_pdv(self, value);
+  if (encode_tag) {
+    length += encode_definite_length(self, length);
+    length += encode_identifier(self, UT_ASN1_TAG_CLASS_UNIVERSAL, true,
+                                UT_ASN1_TAG_UNIVERSAL_EMBEDDED_PDV);
+  }
+  *is_constructed = true;
+  return length;
+}
+
 static size_t encode_utf8_string_value(UtAsn1BerEncoder *self, UtObject *value,
                                        bool encode_tag, bool *is_constructed) {
   if (!ut_object_implements_string(value)) {
@@ -636,10 +668,6 @@ static size_t encode_relative_oid_value(UtAsn1BerEncoder *self, UtObject *value,
   *is_constructed = encode_tag;
   return length;
 }
-
-static size_t encode_value(UtAsn1BerEncoder *self, UtObject *type,
-                           UtObject *value, bool encode_tag,
-                           bool *is_constructed);
 
 static size_t encode_components(UtAsn1BerEncoder *self, const char *type_name,
                                 UtObject *components, UtObject *value) {
@@ -987,6 +1015,9 @@ static size_t encode_value(UtAsn1BerEncoder *self, UtObject *type,
   } else if (ut_object_is_asn1_enumerated_type(type)) {
     return encode_enumerated_value(self, type, value, encode_tag,
                                    is_constructed);
+  } else if (ut_object_is_asn1_embedded_pdv_type(type)) {
+    return encode_embedded_pdv_value(self, type, value, encode_tag,
+                                     is_constructed);
   } else if (ut_object_is_asn1_utf8_string_type(type)) {
     return encode_utf8_string_value(self, value, encode_tag, is_constructed);
   } else if (ut_object_is_asn1_relative_oid_type(type)) {
@@ -1025,8 +1056,9 @@ static size_t encode_value(UtAsn1BerEncoder *self, UtObject *type,
   } else if (ut_object_is_asn1_tagged_type(type)) {
     return encode_tagged_value(self, type, value, encode_tag, is_constructed);
   } else {
-    ut_cstring_ref description = ut_cstring_new_printf(
-        "Unknown ASN.1 type %s", ut_object_get_type_name(type));
+    ut_cstring_ref type_string = ut_object_to_string(type);
+    ut_cstring_ref description =
+        ut_cstring_new_printf("Unknown ASN.1 type %s", type_string);
     set_error(self, description);
     *is_constructed = true;
     return 0;
@@ -1153,6 +1185,14 @@ size_t ut_asn1_ber_encoder_encode_enumerated(UtObject *object, int64_t value) {
   assert(ut_object_is_asn1_ber_encoder(object));
   UtAsn1BerEncoder *self = (UtAsn1BerEncoder *)object;
   return encode_enumerated(self, value);
+}
+
+size_t ut_asn1_ber_encoder_encode_embedded_pdv(UtObject *object,
+                                               UtObject *value) {
+  assert(ut_object_is_asn1_ber_encoder(object));
+  assert(ut_object_is_asn1_embedded_value(value));
+  UtAsn1BerEncoder *self = (UtAsn1BerEncoder *)object;
+  return encode_embedded_pdv(self, value);
 }
 
 size_t ut_asn1_ber_encoder_encode_utf8_string(UtObject *object,

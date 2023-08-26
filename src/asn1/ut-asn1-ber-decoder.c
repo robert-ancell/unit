@@ -23,6 +23,9 @@ typedef struct {
   UtObject *error;
 } UtAsn1BerDecoder;
 
+static UtObject *decode_value(UtAsn1BerDecoder *self, UtObject *type,
+                              bool decode_tag);
+
 static void set_error(UtAsn1BerDecoder *self, const char *description) {
   if (self->error == NULL) {
     self->error = ut_asn1_error_new(description);
@@ -437,6 +440,18 @@ static int64_t decode_enumerated(UtAsn1BerDecoder *self) {
   return decode_integer(self, "ENUMERATED");
 }
 
+static UtObject *decode_embedded_pdv(UtAsn1BerDecoder *self) {
+  UtObjectRef type = ut_asn1_embedded_pdv_type_new();
+  UtObjectRef associated_type =
+      ut_asn1_embedded_pdv_type_get_associated_type(type);
+  UtObjectRef value = decode_value(self, associated_type, false);
+  if (self->error != NULL) {
+    ut_asn1_embedded_value_new_take(ut_asn1_embedded_identification_fixed_new(),
+                                    NULL, ut_uint8_list_new());
+  }
+  return ut_asn1_embedded_pdv_type_decode_value(type, value);
+}
+
 static UtObject *decode_utf8_string(UtAsn1BerDecoder *self) {
   UtObjectRef data = decode_octet_string(self, "UTF8String");
   UtObjectRef value = ut_string_new_from_utf8(data);
@@ -682,6 +697,17 @@ static UtObject *decode_enumerated_value(UtAsn1BerDecoder *self, UtObject *type,
     }
   }
   return ut_string_new(name);
+}
+
+static UtObject *decode_embedded_pdv_value(UtAsn1BerDecoder *self,
+                                           UtObject *type, bool decode_tag) {
+  if (decode_tag && !expect_tag(self, UT_ASN1_TAG_CLASS_UNIVERSAL,
+                                UT_ASN1_TAG_UNIVERSAL_EMBEDDED_PDV)) {
+    return ut_asn1_embedded_value_new_take(
+        ut_asn1_embedded_identification_fixed_new(), NULL, ut_uint8_list_new());
+  }
+
+  return decode_embedded_pdv(self);
 }
 
 static UtObject *decode_utf8_string_value(UtAsn1BerDecoder *self,
@@ -988,9 +1014,6 @@ static UtObject *decode_set_of_value(UtAsn1BerDecoder *self, UtObject *type,
   return decode_value_list(self, ut_asn1_set_of_type_get_type(type), "SET OF");
 }
 
-static UtObject *decode_value(UtAsn1BerDecoder *self, UtObject *type,
-                              bool decode_tag);
-
 static UtObject *decode_choice_value(UtAsn1BerDecoder *self, UtObject *type,
                                      bool decode_tag) {
   UtObject *components = ut_asn1_choice_type_get_components(type);
@@ -1135,6 +1158,8 @@ static UtObject *decode_value(UtAsn1BerDecoder *self, UtObject *type,
     return decode_real_value(self, decode_tag);
   } else if (ut_object_is_asn1_enumerated_type(type)) {
     return decode_enumerated_value(self, type, decode_tag);
+  } else if (ut_object_is_asn1_embedded_pdv_type(type)) {
+    return decode_embedded_pdv_value(self, type, decode_tag);
   } else if (ut_object_is_asn1_utf8_string_type(type)) {
     return decode_utf8_string_value(self, decode_tag);
   } else if (ut_object_is_asn1_relative_oid_type(type)) {
@@ -1380,6 +1405,12 @@ int64_t ut_asn1_ber_decoder_decode_enumerated(UtObject *object) {
   assert(ut_object_is_asn1_ber_decoder(object));
   UtAsn1BerDecoder *self = (UtAsn1BerDecoder *)object;
   return decode_enumerated(self);
+}
+
+UtObject *ut_asn1_ber_decoder_decode_embedded_pdv(UtObject *object) {
+  assert(ut_object_is_asn1_ber_decoder(object));
+  UtAsn1BerDecoder *self = (UtAsn1BerDecoder *)object;
+  return decode_embedded_pdv(self);
 }
 
 char *ut_asn1_ber_decoder_decode_utf8_string(UtObject *object) {

@@ -2002,8 +2002,7 @@ static bool parse_type(UtAsn1ModuleDefinitionParser *self, UtObject **type) {
     if (!parse_text(self, "PDV")) {
       return false;
     }
-    set_error(self, "EMBEDDED PDV type not supported");
-    return false;
+    type_ = ut_asn1_embedded_pdv_type_new();
   } else if (maybe_parse_text(self, "UTF8String")) {
     type_ = ut_asn1_utf8_string_type_new();
   } else if (maybe_parse_text(self, "RELATIVE-OID")) {

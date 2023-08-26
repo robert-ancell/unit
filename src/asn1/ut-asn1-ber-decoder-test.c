@@ -697,6 +697,26 @@ static void test_enumerated() {
       "ENUMERATED does not have constructed form");
 }
 
+static void test_embedded_pdv() {
+  UtObjectRef data1 =
+      ut_uint8_list_new_from_hex_string("2b0aa004a5020500a2020400");
+  UtObjectRef decoder1 = ut_asn1_ber_decoder_new(data1);
+  ut_assert_true(ut_asn1_tag_matches(ut_asn1_ber_decoder_get_tag(decoder1),
+                                     UT_ASN1_TAG_CLASS_UNIVERSAL,
+                                     UT_ASN1_TAG_UNIVERSAL_EMBEDDED_PDV));
+  UtObjectRef value1 = ut_asn1_ber_decoder_decode_embedded_pdv(decoder1);
+  ut_assert_null_object(ut_asn1_decoder_get_error(decoder1));
+
+  // Decoded as object with type.
+  UtObjectRef data2 =
+      ut_uint8_list_new_from_hex_string("2b0aa004a5020500a2020400");
+  UtObjectRef decoder2 = ut_asn1_ber_decoder_new(data2);
+  UtObjectRef type2 = ut_asn1_embedded_pdv_type_new();
+  UtObjectRef value2 = ut_asn1_decoder_decode_value(decoder2, type2);
+  ut_assert_null_object(ut_asn1_decoder_get_error(decoder2));
+  ut_assert_true(ut_object_is_asn1_embedded_value(value2));
+}
+
 static void test_utf8_string() {
   UtObjectRef data1 =
       ut_uint8_list_new_from_hex_string("0c0a48656c6c6f20f09f9880");
@@ -1909,6 +1929,7 @@ int main(int argc, char **argv) {
   test_object_identifier();
   test_real();
   test_enumerated();
+  test_embedded_pdv();
   test_utf8_string();
   test_relative_oid();
   test_sequence();

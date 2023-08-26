@@ -26,6 +26,10 @@ UtObject *ut_map_new();
 UtObject *ut_map_new_unordered();
 
 /// !return-ref
+UtObject *ut_map_new_string_from_elements(const char *key, UtObject *value,
+                                          ...);
+
+/// !return-ref
 UtObject *ut_map_new_string_from_elements_take(const char *key, UtObject *value,
                                                ...);
 

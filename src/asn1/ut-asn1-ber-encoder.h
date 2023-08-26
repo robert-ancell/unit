@@ -43,6 +43,9 @@ size_t ut_asn1_ber_encoder_encode_real(UtObject *object, double value);
 
 size_t ut_asn1_ber_encoder_encode_enumerated(UtObject *object, int64_t value);
 
+size_t ut_asn1_ber_encoder_encode_embedded_pdv(UtObject *object,
+                                               UtObject *value);
+
 size_t ut_asn1_ber_encoder_encode_utf8_string(UtObject *object,
                                               UtObject *value);
 

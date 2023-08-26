@@ -12,6 +12,26 @@ UtObject *ut_map_new_unordered() {
   return ut_ordered_hash_table_new();
 }
 
+UtObject *ut_map_new_string_from_elements(const char *key0, UtObject *value0,
+                                          ...) {
+  UtObjectRef object = ut_map_new();
+
+  ut_map_insert_string_take(object, key0, value0);
+  va_list ap;
+  va_start(ap, value0);
+  while (true) {
+    const char *key = va_arg(ap, const char *);
+    if (key == NULL) {
+      break;
+    }
+    UtObject *value = va_arg(ap, UtObject *);
+    ut_map_insert_string(object, key, value);
+  }
+  va_end(ap);
+
+  return ut_object_ref(object);
+}
+
 UtObject *ut_map_new_string_from_elements_take(const char *key0,
                                                UtObject *value0, ...) {
   UtObjectRef object = ut_map_new();

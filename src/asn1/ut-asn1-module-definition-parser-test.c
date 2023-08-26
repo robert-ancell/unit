@@ -1616,6 +1616,47 @@ static void test_enumerated_value_assignment() {
                                       "Expected enumerated value, got yellow");
 }
 
+static void test_embedded_pdv_type_assignment() {
+  UtObjectRef module1 = ut_asn1_module_definition_new_from_text(
+      "Test DEFINITIONS ::= BEGIN\n"
+      "    EmbeddedPdvType ::= EMBEDDED PDV\n"
+      "END");
+  ut_assert_is_not_error(module1);
+  UtObject *type1 =
+      ut_asn1_module_definition_get_assignment(module1, "EmbeddedPdvType");
+  ut_assert_non_null_object(type1);
+  ut_assert_true(ut_object_is_asn1_embedded_pdv_type(type1));
+
+  // Referenced type.
+  UtObjectRef module2 = ut_asn1_module_definition_new_from_text(
+      "Test DEFINITIONS ::= BEGIN\n"
+      "    EmbeddedPdvType1 ::= EMBEDDED PDV\n"
+      "    EmbeddedPdvType2 ::= EmbeddedPdvType1\n"
+      "END");
+  ut_assert_is_not_error(module2);
+  UtObject *type2 =
+      ut_asn1_module_definition_get_assignment(module2, "EmbeddedPdvType2");
+  ut_assert_non_null_object(type2);
+  ut_assert_true(ut_object_is_asn1_referenced_type(type2));
+  UtObject *type2i = ut_asn1_referenced_type_get_type(type2);
+  ut_assert_true(ut_object_is_asn1_embedded_pdv_type(type2i));
+}
+
+static void test_embedded_pdv_value_assignment() {
+  // UtObjectRef module1 = ut_asn1_module_definition_new_from_text(
+  //     "Test DEFINITIONS ::= BEGIN\n"
+  //     "    embeddedPdvValue EMBEDDED PDV ::= { identification: fixed NULL,
+  //     data-value: ''H }\n" "END");
+  // ut_assert_is_not_error(module1);
+  // UtObject *assignment1 =
+  //     ut_asn1_module_definition_get_assignment(module1, "embeddedPdvValue");
+  // ut_assert_non_null_object(assignment1);
+  // ut_assert_true(ut_object_is_asn1_embedded_pdv_type(
+  //     ut_asn1_type_value_get_type(assignment1)));
+  // UtObject *value1 = ut_asn1_type_value_get_value(assignment1);
+  // ut_assert_true(ut_object_is_asn1_embedded_pdv(value1));
+}
+
 static void test_utf8_string_type_assignment() {
   UtObjectRef module1 = ut_asn1_module_definition_new_from_text(
       "Test DEFINITIONS ::= BEGIN\n"
@@ -3723,6 +3764,8 @@ int main(int argc, char **argv) {
   test_real_value_assignment();
   test_enumerated_type_assignment();
   test_enumerated_value_assignment();
+  test_embedded_pdv_type_assignment();
+  test_embedded_pdv_value_assignment();
   test_utf8_string_type_assignment();
   test_utf8_string_value_assignment();
   test_relative_oid_type_assignment();

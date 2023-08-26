@@ -583,6 +583,25 @@ static void test_enumerated() {
   ut_assert_uint8_list_equal_hex(data2, "0a0102");
 }
 
+static void test_embedded_pdv() {
+  UtObjectRef encoder1 = ut_asn1_ber_encoder_new();
+  UtObjectRef value1 = ut_asn1_embedded_value_new_take(
+      ut_asn1_embedded_identification_fixed_new(), NULL, ut_uint8_list_new());
+  ut_asn1_ber_encoder_encode_embedded_pdv(encoder1, value1);
+  ut_assert_null_object(ut_asn1_encoder_get_error(encoder1));
+  UtObjectRef data1 = ut_asn1_ber_encoder_get_data(encoder1);
+  ut_assert_uint8_list_equal_hex(data1, "a004a5020500a2020400");
+
+  // Encoded as object with type.
+  UtObjectRef encoder2 = ut_asn1_ber_encoder_new();
+  UtObjectRef type2 = ut_asn1_embedded_pdv_type_new();
+  UtObjectRef value2 = ut_asn1_embedded_value_new_take(
+      ut_asn1_embedded_identification_fixed_new(), NULL, ut_uint8_list_new());
+  ut_asn1_encoder_encode_value(encoder2, type2, value2);
+  UtObjectRef data2 = ut_asn1_ber_encoder_get_data(encoder2);
+  ut_assert_uint8_list_equal_hex(data2, "2b0aa004a5020500a2020400");
+}
+
 static void test_utf8_string() {
   UtObjectRef encoder1 = ut_asn1_ber_encoder_new();
   UtObjectRef string1 = ut_string_new("Hello 😀");
@@ -1271,6 +1290,7 @@ int main(int argc, char **argv) {
   test_object_identifier();
   test_real();
   test_enumerated();
+  test_embedded_pdv();
   test_utf8_string();
   test_relative_oid();
   test_sequence();
