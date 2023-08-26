@@ -1165,6 +1165,9 @@ static UtObject *decode_value(UtAsn1BerDecoder *self, UtObject *type,
     return decode_bmp_string_value(self, decode_tag);
   } else if (ut_object_is_asn1_tagged_type(type)) {
     return decode_tagged_value(self, type, decode_tag);
+  } else if (ut_object_is_asn1_referenced_type(type)) {
+    return decode_value(self, ut_asn1_referenced_type_get_type(type),
+                        decode_tag);
   } else {
     ut_cstring_ref description = ut_cstring_new_printf(
         "Unknown ASN.1 type %s", ut_object_get_type_name(type));
