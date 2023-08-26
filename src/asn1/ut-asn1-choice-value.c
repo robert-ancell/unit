@@ -11,8 +11,8 @@ typedef struct {
 static char *ut_asn1_choice_value_to_string(UtObject *object) {
   UtAsn1ChoiceValue *self = (UtAsn1ChoiceValue *)object;
   ut_cstring_ref value_string = ut_object_to_string(self->value);
-  return ut_cstring_new_printf("<UtAsn1ChoiceValue>(%s, %s)", self->identifier,
-                               value_string);
+  return ut_cstring_new_printf("<UtAsn1ChoiceValue>(\"%s\", %s)",
+                               self->identifier, value_string);
 }
 
 static void ut_asn1_choice_value_cleanup(UtObject *object) {
