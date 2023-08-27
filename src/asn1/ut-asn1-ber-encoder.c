@@ -357,6 +357,18 @@ static size_t encode_embedded_pdv(UtAsn1BerEncoder *self, UtObject *value) {
                       &is_constructed);
 }
 
+static size_t encode_external(UtAsn1BerEncoder *self, UtObject *value) {
+  UtObject *identification = ut_asn1_embedded_value_get_identification(value);
+  if (ut_object_is_asn1_embedded_identification_syntaxes(identification) ||
+      ut_object_is_asn1_embedded_identification_transfer_syntax(
+          identification) ||
+      ut_object_is_asn1_embedded_identification_fixed(identification)) {
+    set_error(self, "Unsupported identification for EXTERNAL type");
+    return 0;
+  }
+  return encode_embedded_pdv(self, value);
+}
+
 static size_t encode_utf8_string(UtAsn1BerEncoder *self, UtObject *value) {
   UtObjectRef utf8 = ut_string_get_utf8(value);
   return encode_octet_string(self, utf8);
@@ -576,6 +588,23 @@ static size_t encode_object_descriptor_value(UtAsn1BerEncoder *self,
                                 UT_ASN1_TAG_UNIVERSAL_OBJECT_DESCRIPTOR);
   }
   *is_constructed = encode_tag;
+  return length;
+}
+
+static size_t encode_external_value(UtAsn1BerEncoder *self, UtObject *type,
+                                    UtObject *value, bool encode_tag,
+                                    bool *is_constructed) {
+  if (!ut_object_is_asn1_embedded_value(value)) {
+    set_type_error(self, "EXTERNAL", value);
+    return 0;
+  }
+  size_t length = encode_external(self, value);
+  if (encode_tag) {
+    length += encode_definite_length(self, length);
+    length += encode_identifier(self, UT_ASN1_TAG_CLASS_UNIVERSAL, true,
+                                UT_ASN1_TAG_UNIVERSAL_EXTERNAL);
+  }
+  *is_constructed = true;
   return length;
 }
 
@@ -1010,6 +1039,8 @@ static size_t encode_value(UtAsn1BerEncoder *self, UtObject *type,
   } else if (ut_object_is_asn1_object_descriptor_type(type)) {
     return encode_object_descriptor_value(self, value, encode_tag,
                                           is_constructed);
+  } else if (ut_object_is_asn1_external_type(type)) {
+    return encode_external_value(self, type, value, encode_tag, is_constructed);
   } else if (ut_object_is_asn1_real_type(type)) {
     return encode_real_value(self, value, encode_tag, is_constructed);
   } else if (ut_object_is_asn1_enumerated_type(type)) {
@@ -1173,6 +1204,13 @@ size_t ut_asn1_ber_encoder_encode_object_descriptor(UtObject *object,
   assert(ut_object_is_asn1_ber_encoder(object));
   UtAsn1BerEncoder *self = (UtAsn1BerEncoder *)object;
   return encode_object_descriptor(self, descriptor);
+}
+
+size_t ut_asn1_ber_encoder_encode_external(UtObject *object, UtObject *value) {
+  assert(ut_object_is_asn1_ber_encoder(object));
+  assert(ut_object_is_asn1_embedded_value(value));
+  UtAsn1BerEncoder *self = (UtAsn1BerEncoder *)object;
+  return encode_external(self, value);
 }
 
 size_t ut_asn1_ber_encoder_encode_real(UtObject *object, double value) {

@@ -481,6 +481,35 @@ static void test_object_identifier() {
       "OBJECT IDENTIFIER does not have constructed form");
 }
 
+static void test_external() {
+  UtObjectRef data1 =
+      ut_uint8_list_new_from_hex_string("280ba005a20302012aa2020400");
+  UtObjectRef decoder1 = ut_asn1_ber_decoder_new(data1);
+  ut_assert_true(ut_asn1_tag_matches(ut_asn1_ber_decoder_get_tag(decoder1),
+                                     UT_ASN1_TAG_CLASS_UNIVERSAL,
+                                     UT_ASN1_TAG_UNIVERSAL_EXTERNAL));
+  UtObjectRef value1 = ut_asn1_ber_decoder_decode_external(decoder1);
+  ut_assert_null_object(ut_asn1_decoder_get_error(decoder1));
+
+  // Decoded as object with type.
+  UtObjectRef data2 =
+      ut_uint8_list_new_from_hex_string("280ba005a20302012aa2020400");
+  UtObjectRef decoder2 = ut_asn1_ber_decoder_new(data2);
+  UtObjectRef type2 = ut_asn1_external_type_new();
+  UtObjectRef value2 = ut_asn1_decoder_decode_value(decoder2, type2);
+  ut_assert_null_object(ut_asn1_decoder_get_error(decoder2));
+  ut_assert_true(ut_object_is_asn1_embedded_value(value2));
+
+  // Unsupported identification type (fixed).
+  UtObjectRef data10 =
+      ut_uint8_list_new_from_hex_string("280aa004a5020500a2020400");
+  UtObjectRef decoder10 = ut_asn1_ber_decoder_new(data10);
+  UtObjectRef value10 = ut_asn1_ber_decoder_decode_external(decoder10);
+  ut_assert_is_error_with_description(
+      ut_asn1_decoder_get_error(decoder10),
+      "Unsupported identification for EXTERNAL type");
+}
+
 static void test_real() {
   // Zero.
   UtObjectRef data1 = ut_uint8_list_new_from_hex_string("0900");
@@ -1927,6 +1956,7 @@ int main(int argc, char **argv) {
   test_octet_string();
   test_null();
   test_object_identifier();
+  test_external();
   test_real();
   test_enumerated();
   test_embedded_pdv();

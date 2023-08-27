@@ -474,6 +474,28 @@ static void test_object_identifier() {
       "Unknown type UtBoolean provided for OBJECT IDENTIFIER");
 }
 
+static void test_external() {
+  UtObjectRef encoder1 = ut_asn1_ber_encoder_new();
+  UtObjectRef value1 = ut_asn1_embedded_value_new_take(
+      ut_asn1_embedded_identification_presentation_context_id_new(42), NULL,
+      ut_uint8_list_new());
+  ut_asn1_ber_encoder_encode_external(encoder1, value1);
+  ut_assert_null_object(ut_asn1_encoder_get_error(encoder1));
+  UtObjectRef data1 = ut_asn1_ber_encoder_get_data(encoder1);
+  ut_assert_uint8_list_equal_hex(data1, "a005a20302012aa2020400");
+
+  // Encoded as object with type.
+  UtObjectRef encoder2 = ut_asn1_ber_encoder_new();
+  UtObjectRef type2 = ut_asn1_external_type_new();
+  UtObjectRef value2 = ut_asn1_embedded_value_new_take(
+      ut_asn1_embedded_identification_presentation_context_id_new(42), NULL,
+      ut_uint8_list_new());
+  ut_asn1_encoder_encode_value(encoder2, type2, value2);
+  ut_assert_null_object(ut_asn1_encoder_get_error(encoder2));
+  UtObjectRef data2 = ut_asn1_ber_encoder_get_data(encoder2);
+  ut_assert_uint8_list_equal_hex(data2, "280ba005a20302012aa2020400");
+}
+
 static void test_real() {
   // Zero.
   UtObjectRef encoder1 = ut_asn1_ber_encoder_new();
@@ -598,6 +620,7 @@ static void test_embedded_pdv() {
   UtObjectRef value2 = ut_asn1_embedded_value_new_take(
       ut_asn1_embedded_identification_fixed_new(), NULL, ut_uint8_list_new());
   ut_asn1_encoder_encode_value(encoder2, type2, value2);
+  ut_assert_null_object(ut_asn1_encoder_get_error(encoder2));
   UtObjectRef data2 = ut_asn1_ber_encoder_get_data(encoder2);
   ut_assert_uint8_list_equal_hex(data2, "2b0aa004a5020500a2020400");
 }
@@ -1288,6 +1311,7 @@ int main(int argc, char **argv) {
   test_octet_string();
   test_null();
   test_object_identifier();
+  test_external();
   test_real();
   test_enumerated();
   test_embedded_pdv();

@@ -452,6 +452,21 @@ static UtObject *decode_embedded_pdv(UtAsn1BerDecoder *self) {
   return ut_asn1_embedded_pdv_type_decode_value(type, value);
 }
 
+static UtObject *decode_external(UtAsn1BerDecoder *self) {
+  UtObjectRef value = decode_embedded_pdv(self);
+  UtObject *identification = ut_asn1_embedded_value_get_identification(value);
+  if (ut_object_is_asn1_embedded_identification_syntaxes(identification) ||
+      ut_object_is_asn1_embedded_identification_transfer_syntax(
+          identification) ||
+      ut_object_is_asn1_embedded_identification_fixed(identification)) {
+    set_error(self, "Unsupported identification for EXTERNAL type");
+    return ut_asn1_embedded_value_new_take(
+        ut_asn1_embedded_identification_presentation_context_id_new(0), NULL,
+        ut_uint8_list_new());
+  }
+  return ut_object_ref(value);
+}
+
 static UtObject *decode_utf8_string(UtAsn1BerDecoder *self) {
   UtObjectRef data = decode_octet_string(self, "UTF8String");
   UtObjectRef value = ut_string_new_from_utf8(data);
@@ -667,6 +682,18 @@ static UtObject *decode_object_descriptor_value(UtAsn1BerDecoder *self,
     return ut_uint32_list_new();
   }
   return decode_object_descriptor(self);
+}
+
+static UtObject *decode_external_value(UtAsn1BerDecoder *self,
+                                       bool decode_tag) {
+  if (decode_tag && !expect_tag(self, UT_ASN1_TAG_CLASS_UNIVERSAL,
+                                UT_ASN1_TAG_UNIVERSAL_EXTERNAL)) {
+    return ut_asn1_embedded_value_new_take(
+        ut_asn1_embedded_identification_presentation_context_id_new(0), NULL,
+        ut_uint8_list_new());
+  }
+
+  return decode_external(self);
 }
 
 static UtObject *decode_real_value(UtAsn1BerDecoder *self, bool decode_tag) {
@@ -1154,6 +1181,8 @@ static UtObject *decode_value(UtAsn1BerDecoder *self, UtObject *type,
     return decode_object_identifier_value(self, decode_tag);
   } else if (ut_object_is_asn1_object_descriptor_type(type)) {
     return decode_object_descriptor_value(self, decode_tag);
+  } else if (ut_object_is_asn1_external_type(type)) {
+    return decode_external_value(self, decode_tag);
   } else if (ut_object_is_asn1_real_type(type)) {
     return decode_real_value(self, decode_tag);
   } else if (ut_object_is_asn1_enumerated_type(type)) {
@@ -1393,6 +1422,12 @@ char *ut_asn1_ber_decoder_decode_object_descriptor(UtObject *object) {
   UtAsn1BerDecoder *self = (UtAsn1BerDecoder *)object;
   UtObjectRef value = decode_object_descriptor(self);
   return ut_string_take_text(value);
+}
+
+UtObject *ut_asn1_ber_decoder_decode_external(UtObject *object) {
+  assert(ut_object_is_asn1_ber_decoder(object));
+  UtAsn1BerDecoder *self = (UtAsn1BerDecoder *)object;
+  return decode_external(self);
 }
 
 double ut_asn1_ber_decoder_decode_real(UtObject *object) {

@@ -39,6 +39,8 @@ size_t ut_asn1_ber_encoder_encode_object_identifier(UtObject *object,
 size_t ut_asn1_ber_encoder_encode_object_descriptor(UtObject *object,
                                                     const char *descriptor);
 
+size_t ut_asn1_ber_encoder_encode_external(UtObject *object, UtObject *value);
+
 size_t ut_asn1_ber_encoder_encode_real(UtObject *object, double value);
 
 size_t ut_asn1_ber_encoder_encode_enumerated(UtObject *object, int64_t value);

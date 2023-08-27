@@ -20,6 +20,7 @@ ut_sources = [
   'asn1/ut-asn1-encoder.c',
   'asn1/ut-asn1-enumerated-type.c',
   'asn1/ut-asn1-error.c',
+  'asn1/ut-asn1-external-type.c',
   'asn1/ut-asn1-general-string-type.c',
   'asn1/ut-asn1-generalized-time-type.c',
   'asn1/ut-asn1-graphic-string-type.c',

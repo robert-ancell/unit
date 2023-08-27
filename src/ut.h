@@ -19,6 +19,7 @@
 #include "asn1/ut-asn1-encoder.h"
 #include "asn1/ut-asn1-enumerated-type.h"
 #include "asn1/ut-asn1-error.h"
+#include "asn1/ut-asn1-external-type.h"
 #include "asn1/ut-asn1-general-string-type.h"
 #include "asn1/ut-asn1-generalized-time-type.h"
 #include "asn1/ut-asn1-graphic-string-type.h"

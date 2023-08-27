@@ -1990,8 +1990,7 @@ static bool parse_type(UtAsn1ModuleDefinitionParser *self, UtObject **type) {
   } else if (maybe_parse_text(self, "ObjectDescriptor")) {
     type_ = ut_asn1_object_descriptor_type_new();
   } else if (maybe_parse_text(self, "EXTERNAL")) {
-    set_error(self, "EXTERNAL type not supported");
-    return false;
+    type_ = ut_asn1_external_type_new();
   } else if (maybe_parse_text(self, "REAL")) {
     type_ = ut_asn1_real_type_new();
   } else if (maybe_parse_text(self, "ENUMERATED")) {
