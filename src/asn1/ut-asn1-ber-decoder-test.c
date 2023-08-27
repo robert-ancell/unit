@@ -481,6 +481,52 @@ static void test_object_identifier() {
       "OBJECT IDENTIFIER does not have constructed form");
 }
 
+static void test_object_descriptor() {
+  UtObjectRef data1 =
+      ut_uint8_list_new_from_hex_string("070e4578616d706c65204f626a656374");
+  UtObjectRef decoder1 = ut_asn1_ber_decoder_new(data1);
+  ut_assert_true(ut_asn1_tag_matches(ut_asn1_ber_decoder_get_tag(decoder1),
+                                     UT_ASN1_TAG_CLASS_UNIVERSAL,
+                                     UT_ASN1_TAG_UNIVERSAL_OBJECT_DESCRIPTOR));
+  ut_cstring_ref string1 = ut_asn1_ber_decoder_decode_graphic_string(decoder1);
+  ut_assert_cstring_equal(string1, "Example Object");
+  ut_assert_null_object(ut_asn1_decoder_get_error(decoder1));
+
+  // Empty string.
+  UtObjectRef data2 = ut_uint8_list_new_from_hex_string("0700");
+  UtObjectRef decoder2 = ut_asn1_ber_decoder_new(data2);
+  ut_cstring_ref string2 = ut_asn1_ber_decoder_decode_graphic_string(decoder2);
+  ut_assert_null_object(ut_asn1_decoder_get_error(decoder2));
+  ut_assert_cstring_equal(string2, "");
+
+  // Constructed form.
+  UtObjectRef data3 = ut_uint8_list_new_from_hex_string(
+      "271207084578616d706c652007064f626a656374");
+  UtObjectRef decoder3 = ut_asn1_ber_decoder_new(data3);
+  ut_cstring_ref string3 = ut_asn1_ber_decoder_decode_graphic_string(decoder3);
+  ut_assert_null_object(ut_asn1_decoder_get_error(decoder3));
+  ut_assert_cstring_equal(string3, "Example Object");
+
+  // Decoded as object with type.
+  UtObjectRef data4 =
+      ut_uint8_list_new_from_hex_string("070e4578616d706c65204f626a656374");
+  UtObjectRef decoder4 = ut_asn1_ber_decoder_new(data4);
+  UtObjectRef type4 = ut_asn1_object_descriptor_type_new();
+  UtObjectRef value4 = ut_asn1_decoder_decode_value(decoder4, type4);
+  ut_assert_null_object(ut_asn1_decoder_get_error(decoder4));
+  ut_assert_true(ut_object_implements_string(value4));
+  ut_assert_cstring_equal(ut_string_get_text(value4), "Example Object");
+
+  // Invalid characters - "Example\tObject".
+  UtObjectRef data5 =
+      ut_uint8_list_new_from_hex_string("070e4578616d706c65094f626a656374");
+  UtObjectRef decoder5 = ut_asn1_ber_decoder_new(data5);
+  ut_cstring_ref string5 =
+      ut_asn1_ber_decoder_decode_object_descriptor(decoder5);
+  ut_assert_is_error_with_description(ut_asn1_decoder_get_error(decoder5),
+                                      "Invalid ObjectDescriptor");
+}
+
 static void test_external() {
   UtObjectRef data1 =
       ut_uint8_list_new_from_hex_string("280ba005a20302012aa2020400");
@@ -1454,7 +1500,7 @@ static void test_numeric_string() {
   ut_assert_true(ut_object_implements_string(value4));
   ut_assert_cstring_equal(ut_string_get_text(value4), "12345 67890");
 
-  // Invalid characters - "Hello World"
+  // Invalid characters - "Example\tObject"
   UtObjectRef data10 =
       ut_uint8_list_new_from_hex_string("120b48656c6c6f20576f726c64");
   UtObjectRef decoder10 = ut_asn1_ber_decoder_new(data10);
@@ -1707,7 +1753,7 @@ static void test_graphic_string() {
 
   // Invalid characters - "Hello\tWorld".
   UtObjectRef data5 =
-      ut_uint8_list_new_from_hex_string("160b48656c6c6f09576f726c64");
+      ut_uint8_list_new_from_hex_string("190b48656c6c6f09576f726c64");
   UtObjectRef decoder5 = ut_asn1_ber_decoder_new(data5);
   ut_cstring_ref string5 = ut_asn1_ber_decoder_decode_graphic_string(decoder5);
   ut_assert_is_error_with_description(ut_asn1_decoder_get_error(decoder5),
@@ -1956,6 +2002,7 @@ int main(int argc, char **argv) {
   test_octet_string();
   test_null();
   test_object_identifier();
+  test_object_descriptor();
   test_external();
   test_real();
   test_enumerated();

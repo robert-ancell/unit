@@ -414,10 +414,12 @@ static size_t encode_ia5_string(UtAsn1BerEncoder *self, const char *value) {
   return encode_octet_string(self, ia5_string);
 }
 
-static size_t encode_graphic_string(UtAsn1BerEncoder *self, const char *value) {
+static size_t encode_graphic_string(UtAsn1BerEncoder *self, const char *value,
+                                    const char *type_name) {
   UtObjectRef graphic_string = ut_asn1_encode_graphic_string(value);
   if (graphic_string == NULL) {
-    set_error(self, "Invalid GraphicString");
+    ut_cstring_ref description = ut_cstring_new_printf("Invalid %s", type_name);
+    set_error(self, description);
     return 0;
   }
   return encode_octet_string(self, graphic_string);
@@ -425,7 +427,7 @@ static size_t encode_graphic_string(UtAsn1BerEncoder *self, const char *value) {
 
 static size_t encode_object_descriptor(UtAsn1BerEncoder *self,
                                        const char *descriptor) {
-  return encode_graphic_string(self, descriptor);
+  return encode_graphic_string(self, descriptor, "ObjectDescriptor");
 }
 
 static size_t encode_visible_string(UtAsn1BerEncoder *self, const char *value,
@@ -942,7 +944,8 @@ static size_t encode_graphic_string_value(UtAsn1BerEncoder *self,
     set_type_error(self, "GraphicString", value);
     return 0;
   }
-  size_t length = encode_graphic_string(self, ut_string_get_text(value));
+  size_t length =
+      encode_graphic_string(self, ut_string_get_text(value), "GraphicString");
   if (encode_tag) {
     length += encode_definite_length(self, length);
     length += encode_identifier(self, UT_ASN1_TAG_CLASS_UNIVERSAL, false,
@@ -1286,7 +1289,7 @@ size_t ut_asn1_ber_encoder_encode_graphic_string(UtObject *object,
                                                  const char *value) {
   assert(ut_object_is_asn1_ber_encoder(object));
   UtAsn1BerEncoder *self = (UtAsn1BerEncoder *)object;
-  return encode_graphic_string(self, value);
+  return encode_graphic_string(self, value, "GraphicString");
 }
 
 size_t ut_asn1_ber_encoder_encode_visible_string(UtObject *object,

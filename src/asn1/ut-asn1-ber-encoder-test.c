@@ -474,6 +474,38 @@ static void test_object_identifier() {
       "Unknown type UtBoolean provided for OBJECT IDENTIFIER");
 }
 
+static void test_object_descriptor() {
+  UtObjectRef encoder1 = ut_asn1_ber_encoder_new();
+  ut_asn1_ber_encoder_encode_object_descriptor(encoder1, "Example Object");
+  ut_assert_null_object(ut_asn1_encoder_get_error(encoder1));
+  UtObjectRef data1 = ut_asn1_ber_encoder_get_data(encoder1);
+  ut_assert_uint8_list_equal_hex(data1, "4578616d706c65204f626a656374");
+
+  // Empty string.
+  UtObjectRef encoder2 = ut_asn1_ber_encoder_new();
+  ut_asn1_ber_encoder_encode_object_descriptor(encoder2, "");
+  ut_assert_null_object(ut_asn1_encoder_get_error(encoder2));
+  UtObjectRef data2 = ut_asn1_ber_encoder_get_data(encoder2);
+  ut_assert_uint8_list_equal_hex(data2, "");
+
+  // Encoded as object with type.
+  UtObjectRef encoder3 = ut_asn1_ber_encoder_new();
+  UtObjectRef type3 = ut_asn1_object_descriptor_type_new();
+  UtObjectRef value3 = ut_string_new("Example Object");
+  ut_asn1_encoder_encode_value(encoder3, type3, value3);
+  ut_assert_null_object(ut_asn1_encoder_get_error(encoder3));
+  UtObjectRef data3 = ut_asn1_ber_encoder_get_data(encoder3);
+  ut_assert_uint8_list_equal_hex(data3, "070e4578616d706c65204f626a656374");
+
+  // Invalid characters.
+  UtObjectRef encoder4 = ut_asn1_ber_encoder_new();
+  UtObjectRef type4 = ut_asn1_object_descriptor_type_new();
+  UtObjectRef value4 = ut_string_new("Example\tObject");
+  ut_asn1_encoder_encode_value(encoder4, type4, value4);
+  ut_assert_is_error_with_description(ut_asn1_encoder_get_error(encoder4),
+                                      "Invalid ObjectDescriptor");
+}
+
 static void test_external() {
   UtObjectRef encoder1 = ut_asn1_ber_encoder_new();
   UtObjectRef value1 = ut_asn1_embedded_value_new_take(
@@ -1311,6 +1343,7 @@ int main(int argc, char **argv) {
   test_octet_string();
   test_null();
   test_object_identifier();
+  test_object_descriptor();
   test_external();
   test_real();
   test_enumerated();
