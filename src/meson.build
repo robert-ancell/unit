@@ -95,6 +95,11 @@ ut_sources = [
   'png/ut-png-encoder.c',
   'png/ut-png-error.c',
   'png/ut-png-image.c',
+  'protobuf/ut-protobuf-encoder.c',
+  'protobuf/ut-protobuf-error.c',
+  'protobuf/ut-protobuf-message-field.c',
+  'protobuf/ut-protobuf-message-type.c',
+  'protobuf/ut-protobuf-primitive-type.c',
   'jpeg/ut-jpeg.c',
   'jpeg/ut-jpeg-decoder.c',
   'jpeg/ut-jpeg-encoder.c',
@@ -410,6 +415,11 @@ asn1_ber_decoder_test = executable('ut-asn1-ber-decoder-test',
                                    'asn1/ut-asn1-ber-decoder-test.c',
                                    link_with: ut_lib)
 test('ASN.1 BER Decoder', asn1_ber_decoder_test)
+
+protobuf_encoder_test = executable('ut-protobuf-encoder-test',
+                                   'protobuf/ut-protobuf-encoder-test.c',
+                                   link_with: ut_lib)
+test('Protobuf Encoder', protobuf_encoder_test)
 
 huffman_decoder_test = executable('ut-huffman-decoder-test',
                                   'huffman/ut-huffman-decoder-test.c',
