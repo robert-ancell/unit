@@ -1678,7 +1678,7 @@ static bool parse_enumerated_type(UtAsn1ModuleDefinitionParser *self,
     }
     next_number = number + 1;
 
-    ut_map_insert_string(components, name, ut_uint64_new(number));
+    ut_map_insert_string_take(components, name, ut_uint64_new(number));
 
     if (maybe_parse_text(self, "}")) {
       *type = ut_asn1_enumerated_type_new(components, false);
