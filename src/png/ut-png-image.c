@@ -436,8 +436,8 @@ void ut_png_image_set_international_text(UtObject *object, const char *keyword,
   if (self->international_keywords == NULL) {
     self->international_keywords = ut_map_new();
   }
-  UtObject *language_keywords =
-      ut_map_lookup_string(self->international_keywords, lower_language);
+  UtObjectRef language_keywords = ut_object_ref(
+      ut_map_lookup_string(self->international_keywords, lower_language));
   if (language_keywords == NULL) {
     language_keywords = ut_map_new();
     ut_map_insert_string(self->international_keywords, lower_language,
@@ -449,8 +449,8 @@ void ut_png_image_set_international_text(UtObject *object, const char *keyword,
   if (self->international_text == NULL) {
     self->international_text = ut_map_new();
   }
-  UtObject *language_text =
-      ut_map_lookup_string(self->international_text, lower_language);
+  UtObjectRef language_text = ut_object_ref(
+      ut_map_lookup_string(self->international_text, lower_language));
   if (language_text == NULL) {
     language_text = ut_map_new();
     ut_map_insert_string(self->international_text, lower_language,
