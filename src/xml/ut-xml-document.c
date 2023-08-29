@@ -104,9 +104,10 @@ static UtObject *reference_to_character_data(const char *name) {
 }
 
 static void append_content(UtObject *content, UtObject *child) {
+  UtObjectRef last = ut_list_get_last(content);
   if (ut_list_get_length(content) > 0 && ut_object_implements_string(child) &&
-      ut_object_implements_string(ut_list_get_last(content))) {
-    ut_string_append(ut_list_get_last(content), ut_string_get_text(child));
+      ut_object_implements_string(last)) {
+    ut_string_append(last, ut_string_get_text(child));
   } else {
     ut_list_append(content, child);
   }
