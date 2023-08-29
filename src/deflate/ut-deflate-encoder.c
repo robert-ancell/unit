@@ -103,7 +103,7 @@ static void find_match(UtDeflateEncoder *self, size_t data_length,
     }
 
     size_t length;
-    for (length = 0; length <= max_length; length++) {
+    for (length = 0; length < max_length; length++) {
       if (match[length] != data[length]) {
         break;
       }
