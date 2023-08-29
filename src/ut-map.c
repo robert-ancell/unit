@@ -16,7 +16,7 @@ UtObject *ut_map_new_string_from_elements(const char *key0, UtObject *value0,
                                           ...) {
   UtObjectRef object = ut_map_new();
 
-  ut_map_insert_string_take(object, key0, value0);
+  ut_map_insert_string(object, key0, value0);
   va_list ap;
   va_start(ap, value0);
   while (true) {
