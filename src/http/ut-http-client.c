@@ -31,7 +31,9 @@ static void http_request_init(UtObject *object) {
 static void http_request_cleanup(UtObject *object) {
   HttpRequest *self = (HttpRequest *)object;
 
-  ut_input_stream_close(self->tcp_socket);
+  if (self->tcp_socket != NULL) {
+    ut_input_stream_close(self->tcp_socket);
+  }
 
   ut_object_unref(self->tcp_socket);
   free(self->host);
@@ -81,6 +83,7 @@ static void ut_http_client_init(UtObject *object) {
 static void ut_http_client_cleanup(UtObject *object) {
   UtHttpClient *self = (UtHttpClient *)object;
   ut_object_unref(self->ip_address_resolver);
+  ut_object_unref(self->requests);
 }
 
 static size_t read_cb(UtObject *object, UtObject *data, bool complete) {

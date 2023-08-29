@@ -123,7 +123,9 @@ static size_t body_read_cb(UtObject *object, UtObject *data, bool complete) {
 static void ut_http_message_encoder_cleanup(UtObject *object) {
   UtHttpMessageEncoder *self = (UtHttpMessageEncoder *)object;
 
-  ut_input_stream_close(self->body);
+  if (self->body != NULL) {
+    ut_input_stream_close(self->body);
+  }
 
   ut_object_unref(self->output_stream);
   free(self->method);
