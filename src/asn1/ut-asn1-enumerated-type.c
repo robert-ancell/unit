@@ -56,8 +56,8 @@ UtObject *ut_asn1_enumerated_type_new(UtObject *values_by_name,
   size_t items_length = ut_list_get_length(items);
   for (size_t i = 0; i < items_length; i++) {
     UtObject *item = ut_object_list_get_element(items, i);
-    ut_map_insert(self->names_by_value, ut_map_item_get_value(item),
-                  ut_map_item_get_key(item));
+    ut_map_insert_take(self->names_by_value, ut_map_item_get_value(item),
+                       ut_map_item_get_key(item));
   }
   self->extensible = extensible;
 
