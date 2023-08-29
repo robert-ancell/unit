@@ -25,6 +25,7 @@ static void ut_udp_socket_cleanup(UtObject *object) {
   UtUdpSocket *self = (UtUdpSocket *)object;
   ut_object_unref(self->fd);
   ut_object_unref(self->watch);
+  ut_object_unref(self->read_buffer);
   ut_object_weak_unref(&self->read_callback_object);
 }
 
