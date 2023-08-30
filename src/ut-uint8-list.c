@@ -267,8 +267,8 @@ void ut_uint8_list_append_float32_be(UtObject *object, float value) {
 void ut_uint8_list_append_uint64_le(UtObject *object, uint64_t value) {
   uint8_t data[8] = {value & 0xff,         (value >> 8) & 0xff,
                      (value >> 16) & 0xff, (value >> 24) & 0xff,
-                     (value >> 32) & 0xff, (value >> 48) & 0xff,
-                     value >> 56};
+                     (value >> 32) & 0xff, (value >> 40) & 0xff,
+                     (value >> 48) & 0xff, value >> 56};
   ut_uint8_list_append_block(object, data, 8);
 }
 
