@@ -150,7 +150,10 @@ static size_t read_cb(UtObject *object, UtObject *data, bool complete) {
     offset += match_length;
 
     // New dictionary entry with next symbol appended to just used match.
-    uint8_t b = ut_uint8_list_get_element(data, offset);
+    // Note on the last code an entry is written using 0 to ensure the following
+    // code is the correct length.
+    uint8_t b =
+        offset < data_length ? ut_uint8_list_get_element(data, offset) : 0;
     ut_lzw_dictionary_append(self->dictionary, code, b);
 
     // Reset dictionary when it's full.
