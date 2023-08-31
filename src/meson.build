@@ -95,6 +95,7 @@ ut_sources = [
   'png/ut-png-encoder.c',
   'png/ut-png-error.c',
   'png/ut-png-image.c',
+  'protobuf/ut-protobuf-decoder.c',
   'protobuf/ut-protobuf-encoder.c',
   'protobuf/ut-protobuf-error.c',
   'protobuf/ut-protobuf-message-field.c',
@@ -420,6 +421,11 @@ protobuf_encoder_test = executable('ut-protobuf-encoder-test',
                                    'protobuf/ut-protobuf-encoder-test.c',
                                    link_with: ut_lib)
 test('Protobuf Encoder', protobuf_encoder_test)
+
+protobuf_decoder_test = executable('ut-protobuf-decoder-test',
+                                   'protobuf/ut-protobuf-decoder-test.c',
+                                   link_with: ut_lib)
+test('Protobuf Decoder', protobuf_decoder_test)
 
 huffman_decoder_test = executable('ut-huffman-decoder-test',
                                   'huffman/ut-huffman-decoder-test.c',
