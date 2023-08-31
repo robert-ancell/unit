@@ -89,7 +89,11 @@ static void encode_varint(UtProtobufEncoder *self, uint64_t value) {
 
 static void encode_tag(UtProtobufEncoder *self, uint32_t number,
                        uint32_t wire_type) {
-  ut_uint8_list_append(self->buffer, number << 3 | wire_type);
+  if (number == 0 || number > 0x1fffffff) {
+    set_error(self, "Invalid tag number");
+    return;
+  }
+  encode_varint(self, number << 3 | wire_type);
 }
 
 static void encode_varint_record(UtProtobufEncoder *self, uint32_t number,
