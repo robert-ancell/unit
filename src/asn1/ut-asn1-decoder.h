@@ -11,7 +11,7 @@ typedef struct {
 
 extern int ut_asn1_decoder_id;
 
-/// Decode of [type]. [type] is an [UtAsn1Type].
+/// Decode value of [type]. [type] is an [UtAsn1Type].
 /// !return-ref
 UtObject *ut_asn1_decoder_decode_value(UtObject *object, UtObject *type);
 
