@@ -210,20 +210,61 @@ static void test_enum() {
 }
 
 static void test_message() {
-  UtObjectRef encoder1 = ut_protobuf_encoder_new();
-  UtObjectRef message1 =
+  UtObjectRef message =
       ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
           ut_protobuf_message_field_new_take(
               ut_protobuf_primitive_type_new_string(), "name", 1),
           ut_protobuf_message_field_new_take(
               ut_protobuf_primitive_type_new_uint32(), "age", 2),
           NULL));
+
+  // All values.
   UtObjectRef value1 = ut_map_new_string_from_elements_take(
       "name", ut_string_new("Arthur Dent"), "age", ut_uint32_new(42), NULL);
-  ut_protobuf_encoder_encode_message(encoder1, message1, value1);
-  ut_assert_null_object(ut_protobuf_encoder_get_error(encoder1));
-  UtObject *data1 = ut_protobuf_encoder_get_data(encoder1);
-  ut_assert_uint8_list_equal_hex(data1, "0a0b4172746875722044656e74102a");
+  test_encode(message, value1, "0a0b4172746875722044656e74102a");
+
+  // Missing name.
+  UtObjectRef value2 =
+      ut_map_new_string_from_elements_take("age", ut_uint32_new(42), NULL);
+  test_encode_error(message, value2, "Missing field name");
+
+  // Missing age.
+  UtObjectRef value3 = ut_map_new_string_from_elements_take(
+      "name", ut_string_new("Arthur Dent"), NULL);
+  test_encode_error(message, value3, "Missing field age");
+
+  // Missing multiple values.
+  UtObjectRef value4 = ut_map_new();
+  test_encode_error(message, value4, "Missing field name");
+}
+
+static void test_optional() {
+  UtObjectRef message =
+      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
+          ut_protobuf_message_field_new_take(
+              ut_protobuf_primitive_type_new_string(), "name", 1),
+          ut_protobuf_message_field_new_optional_take(
+              ut_protobuf_primitive_type_new_uint32(), "age", 2),
+          NULL));
+
+  // All values.
+  UtObjectRef value1 = ut_map_new_string_from_elements_take(
+      "name", ut_string_new("Arthur Dent"), "age", ut_uint32_new(42), NULL);
+  test_encode(message, value1, "0a0b4172746875722044656e74102a");
+
+  // Missing name.
+  UtObjectRef value2 =
+      ut_map_new_string_from_elements_take("age", ut_uint32_new(42), NULL);
+  test_encode_error(message, value2, "Missing field name");
+
+  // Missing age.
+  UtObjectRef value3 = ut_map_new_string_from_elements_take(
+      "name", ut_string_new("Arthur Dent"), NULL);
+  test_encode(message, value3, "0a0b4172746875722044656e74");
+
+  // Missing multiple values.
+  UtObjectRef value4 = ut_map_new();
+  test_encode_error(message, value4, "Missing field name");
 }
 
 int main(int argc, char **argv) {
@@ -322,6 +363,7 @@ int main(int argc, char **argv) {
   test_enum();
 
   test_message();
+  test_optional();
 
   return 0;
 }

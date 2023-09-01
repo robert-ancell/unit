@@ -14,6 +14,8 @@ UtObject *ut_protobuf_enum_type_new(UtObject *values_by_name);
 /// !return-ref
 UtObject *ut_protobuf_enum_type_new_take(UtObject *values_by_name);
 
+UtObject *ut_protobuf_enum_type_get_values_by_name(UtObject *object);
+
 bool ut_protobuf_enum_type_get_value(UtObject *object, const char *name,
                                      int32_t *value);
 

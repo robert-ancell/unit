@@ -41,6 +41,12 @@ UtObject *ut_protobuf_enum_type_new_take(UtObject *values_by_name) {
   return object;
 }
 
+UtObject *ut_protobuf_enum_type_get_values_by_name(UtObject *object) {
+  assert(ut_object_is_protobuf_enum_type(object));
+  UtProtobufEnumType *self = (UtProtobufEnumType *)object;
+  return self->values_by_name;
+}
+
 bool ut_protobuf_enum_type_get_value(UtObject *object, const char *name,
                                      int32_t *value) {
   assert(ut_object_is_protobuf_enum_type(object));

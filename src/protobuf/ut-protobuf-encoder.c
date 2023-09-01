@@ -238,20 +238,27 @@ static void encode_message(UtProtobufEncoder *self, UtObject *type,
   size_t fields_length = ut_list_get_length(fields);
   for (size_t i = 0; i < fields_length; i++) {
     UtObject *field = ut_object_list_get_element(fields, i);
-    UtObject *field_type = ut_protobuf_message_field_get_type(field);
+    UtProtobufMessageFieldType field_type =
+        ut_protobuf_message_field_get_type(field);
+    UtObject *field_value_type =
+        ut_protobuf_message_field_get_value_type(field);
     uint32_t number = ut_protobuf_message_field_get_number(field);
 
     const char *name = ut_protobuf_message_field_get_name(field);
     UtObject *field_value = ut_map_lookup_string(value, name);
     if (field_value == NULL) {
+      if (field_type == UT_PROTOBUF_MESSAGE_FIELD_TYPE_OPTIONAL) {
+        continue;
+      }
+
       ut_cstring_ref description =
           ut_cstring_new_printf("Missing field %s", name);
       set_error(self, description);
       return;
     }
 
-    if (ut_object_is_protobuf_primitive_type(field_type)) {
-      switch (ut_protobuf_primitive_type_get_type(field_type)) {
+    if (ut_object_is_protobuf_primitive_type(field_value_type)) {
+      switch (ut_protobuf_primitive_type_get_type(field_value_type)) {
       case UT_PROTOBUF_PRIMITIVE_DOUBLE:
         if (check_type(self, ut_object_is_float64, field_value, "double")) {
           encode_double(self, number, ut_float64_get_value(field_value));
@@ -330,16 +337,17 @@ static void encode_message(UtProtobufEncoder *self, UtObject *type,
         }
         break;
       }
-    } else if (ut_object_is_protobuf_enum_type(field_type)) {
+    } else if (ut_object_is_protobuf_enum_type(field_value_type)) {
       if (check_type(self, ut_object_implements_string, field_value, "enum")) {
-        encode_enum(self, number, field_type, ut_string_get_text(field_value));
+        encode_enum(self, number, field_value_type,
+                    ut_string_get_text(field_value));
       }
-    } else if (ut_object_is_protobuf_message_type(field_type)) {
+    } else if (ut_object_is_protobuf_message_type(field_value_type)) {
       if (check_type(self, ut_object_implements_map, field_value, "message")) {
-        encode_message(self, field_type, value);
+        encode_message(self, field_value_type, value);
       }
     } else {
-      ut_cstring_ref type_string = ut_object_to_string(field_type);
+      ut_cstring_ref type_string = ut_object_to_string(field_value_type);
       ut_cstring_ref description =
           ut_cstring_new_printf("Unknown Protobuf type %s", type_string);
       set_error(self, description);

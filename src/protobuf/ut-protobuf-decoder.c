@@ -180,7 +180,7 @@ static void read_varint_field(UtProtobufDecoder *self, size_t data_length,
   }
 
   const char *name = ut_protobuf_message_field_get_name(field);
-  UtObject *type = ut_protobuf_message_field_get_type(field);
+  UtObject *type = ut_protobuf_message_field_get_value_type(field);
   UtObjectRef value = NULL;
   if (ut_object_is_protobuf_primitive_type(type)) {
     switch (ut_protobuf_primitive_type_get_type(type)) {
@@ -234,7 +234,7 @@ static void read_i64_field(UtProtobufDecoder *self, size_t data_length,
   }
 
   const char *name = ut_protobuf_message_field_get_name(field);
-  UtObject *type = ut_protobuf_message_field_get_type(field);
+  UtObject *type = ut_protobuf_message_field_get_value_type(field);
   if (ut_object_is_protobuf_primitive_type(type)) {
     switch (ut_protobuf_primitive_type_get_type(type)) {
     case UT_PROTOBUF_PRIMITIVE_FIXED64:
@@ -293,7 +293,7 @@ static void read_len_field(UtProtobufDecoder *self, size_t data_length,
   *offset += length;
 
   const char *name = ut_protobuf_message_field_get_name(field);
-  UtObject *type = ut_protobuf_message_field_get_type(field);
+  UtObject *type = ut_protobuf_message_field_get_value_type(field);
   if (ut_object_is_protobuf_primitive_type(type)) {
     switch (ut_protobuf_primitive_type_get_type(type)) {
     case UT_PROTOBUF_PRIMITIVE_STRING:
@@ -318,7 +318,7 @@ static void read_i32_field(UtProtobufDecoder *self, size_t data_length,
   }
 
   const char *name = ut_protobuf_message_field_get_name(field);
-  UtObject *type = ut_protobuf_message_field_get_type(field);
+  UtObject *type = ut_protobuf_message_field_get_value_type(field);
   if (ut_object_is_protobuf_primitive_type(type)) {
     switch (ut_protobuf_primitive_type_get_type(type)) {
     case UT_PROTOBUF_PRIMITIVE_FIXED32:
@@ -341,6 +341,48 @@ static void read_i32_field(UtProtobufDecoder *self, size_t data_length,
   }
 
   set_error(self, "Received I32 for non-I32 field");
+}
+
+UtObject *get_default_value(UtProtobufDecoder *self, UtObject *type) {
+  if (ut_object_is_protobuf_primitive_type(type)) {
+    switch (ut_protobuf_primitive_type_get_type(type)) {
+    case UT_PROTOBUF_PRIMITIVE_DOUBLE:
+      return ut_float64_new(0);
+    case UT_PROTOBUF_PRIMITIVE_FLOAT:
+      return ut_float32_new(0);
+    case UT_PROTOBUF_PRIMITIVE_INT32:
+    case UT_PROTOBUF_PRIMITIVE_SINT32:
+    case UT_PROTOBUF_PRIMITIVE_SFIXED32:
+      return ut_int32_new(0);
+    case UT_PROTOBUF_PRIMITIVE_INT64:
+    case UT_PROTOBUF_PRIMITIVE_SINT64:
+    case UT_PROTOBUF_PRIMITIVE_SFIXED64:
+      return ut_int64_new(0);
+    case UT_PROTOBUF_PRIMITIVE_UINT32:
+    case UT_PROTOBUF_PRIMITIVE_FIXED32:
+      return ut_uint32_new(0);
+    case UT_PROTOBUF_PRIMITIVE_UINT64:
+    case UT_PROTOBUF_PRIMITIVE_FIXED64:
+      return ut_uint64_new(0);
+    case UT_PROTOBUF_PRIMITIVE_BOOL:
+      return ut_boolean_new(false);
+    case UT_PROTOBUF_PRIMITIVE_STRING:
+      return ut_string_new("");
+    case UT_PROTOBUF_PRIMITIVE_BYTES:
+      return ut_uint8_list_new();
+    }
+  } else if (ut_object_is_protobuf_enum_type(type)) {
+    UtObject *values_by_name = ut_protobuf_enum_type_get_values_by_name(type);
+    UtObjectRef keys = ut_map_get_keys(values_by_name);
+    if (ut_list_get_length(keys) == 0) {
+      set_error(self, "Unable to determine default enum value");
+      return NULL;
+    }
+    return ut_list_get_element(keys, 0);
+  }
+
+  set_error(self, "Unable to determine default value");
+  return NULL;
 }
 
 static void ut_protobuf_decoder_cleanup(UtObject *object) {
@@ -403,6 +445,20 @@ UtObject *ut_protobuf_decoder_decode_message(UtObject *object, UtObject *type) {
   for (size_t i = 0; i < fields_length; i++) {
     UtObject *field = ut_object_list_get_element(fields, i);
     const char *name = ut_protobuf_message_field_get_name(field);
+
+    if (ut_protobuf_message_field_get_type(field) ==
+        UT_PROTOBUF_MESSAGE_FIELD_TYPE_OPTIONAL) {
+      if (ut_map_lookup_string(message, name) == NULL) {
+        UtObjectRef default_value = get_default_value(
+            self, ut_protobuf_message_field_get_value_type(field));
+        if (default_value == NULL) {
+          return ut_map_new();
+        }
+        ut_map_insert_string(message, name, default_value);
+      }
+      continue;
+    }
+
     if (ut_map_lookup_string(message, name) == NULL) {
       ut_cstring_ref description =
           ut_cstring_new_printf("Missing required field %s", name);
