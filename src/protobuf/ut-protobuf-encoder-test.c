@@ -121,7 +121,7 @@ static void test_sfixed64(int64_t value, const char *hex_string) {
   test_encode(message, message_value, hex_string);
 }
 
-static void test_boolean(bool value, const char *hex_string) {
+static void test_bool(bool value, const char *hex_string) {
   UtObjectRef message =
       ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
           ut_protobuf_message_field_new_take(
@@ -198,14 +198,14 @@ int main(int argc, char **argv) {
   test_uint32(0, "0800");
   test_uint32(1, "0801");
   test_uint32(127, "087f");
-  test_uint32(128, "080081");
+  test_uint32(128, "088001");
   test_uint32(UINT32_MAX, "08ffffffff0f");
 
   test_int32(0, "0800");
   test_int32(1, "0801");
   test_int32(-1, "08ffffffffffffffffff01");
   test_int32(127, "087f");
-  test_int32(128, "080081");
+  test_int32(128, "088001");
   test_int32(INT32_MAX, "08ffffffff07");
   test_int32(INT32_MIN, "0880808080f8ffffffff01");
 
@@ -213,7 +213,7 @@ int main(int argc, char **argv) {
   test_sint32(1, "0802");
   test_sint32(-1, "0801");
   test_sint32(63, "087e");
-  test_sint32(64, "080081");
+  test_sint32(64, "088001");
   test_sint32(INT32_MAX, "08feffffff0f");
   test_sint32(INT32_MIN, "08ffffffff0f");
 
@@ -232,14 +232,14 @@ int main(int argc, char **argv) {
   test_uint64(0, "0800");
   test_uint64(1, "0801");
   test_uint64(127, "087f");
-  test_uint64(128, "080081");
+  test_uint64(128, "088001");
   test_uint64(UINT64_MAX, "08ffffffffffffffffff01");
 
   test_int64(0, "0800");
   test_int64(1, "0801");
   test_int64(-1, "08ffffffffffffffffff01");
   test_int64(127, "087f");
-  test_int64(128, "080081");
+  test_int64(128, "088001");
   test_int64(INT64_MAX, "08ffffffffffffffff7f");
   test_int64(INT64_MIN, "0880808080808080808001");
 
@@ -247,7 +247,7 @@ int main(int argc, char **argv) {
   test_sint64(1, "0802");
   test_sint64(-1, "0801");
   test_sint64(63, "087e");
-  test_sint64(64, "080081");
+  test_sint64(64, "088001");
   test_sint64(INT64_MAX, "08feffffffffffffffff01");
   test_sint64(INT64_MIN, "08ffffffffffffffffff01");
 
@@ -263,8 +263,8 @@ int main(int argc, char **argv) {
   test_sfixed64(INT64_MAX, "09ffffffffffffff7f");
   test_sfixed64(INT64_MIN, "090000000000000080");
 
-  test_boolean(false, "0800");
-  test_boolean(true, "0801");
+  test_bool(false, "0800");
+  test_bool(true, "0801");
 
   test_float(0, "0d00000000");
   test_float(1, "0d0000803f");

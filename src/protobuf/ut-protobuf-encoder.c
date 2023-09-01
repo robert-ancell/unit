@@ -22,8 +22,8 @@ static void encode_varint(UtProtobufEncoder *self, uint64_t value) {
   if (value <= 0x7f) {
     ut_uint8_list_append(self->buffer, value);
   } else if (value <= 0x3fff) {
-    ut_uint8_list_append(self->buffer, value & 0x7f);
-    ut_uint8_list_append(self->buffer, 0x80 | (value >> 7));
+    ut_uint8_list_append(self->buffer, 0x80 | (value & 0x7f));
+    ut_uint8_list_append(self->buffer, value >> 7);
   } else if (value <= 0x1fffff) {
     ut_uint8_list_append(self->buffer, 0x80 | (value & 0x7f));
     ut_uint8_list_append(self->buffer, 0x80 | ((value >> 7) & 0x7f));
