@@ -97,6 +97,7 @@ ut_sources = [
   'png/ut-png-image.c',
   'protobuf/ut-protobuf-decoder.c',
   'protobuf/ut-protobuf-encoder.c',
+  'protobuf/ut-protobuf-enum-type.c',
   'protobuf/ut-protobuf-error.c',
   'protobuf/ut-protobuf-message-field.c',
   'protobuf/ut-protobuf-message-type.c',

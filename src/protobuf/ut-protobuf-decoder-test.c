@@ -576,6 +576,45 @@ static void test_bytes() {
   test_decode_error(message, "0a03ffff", "Insufficient space for LEN data");
 }
 
+static void test_enum_value(UtObject *message, const char *hex_string,
+                            const char *value) {
+  UtObjectRef message_value = test_decode(message, hex_string);
+  UtObject *v = ut_map_lookup_string(message_value, "value");
+  ut_assert_non_null_object(v);
+  ut_assert_true(ut_object_implements_string(v));
+  ut_assert_cstring_equal(ut_string_get_text(v), value);
+}
+
+static void test_enum() {
+  UtObjectRef message =
+      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
+          ut_protobuf_message_field_new_take(
+              ut_protobuf_enum_type_new_take(
+                  ut_map_new_string_from_elements_take(
+                      "ZERO", ut_int32_new(0), "ONE", ut_int32_new(1), "TWO",
+                      ut_int32_new(2), NULL)),
+              "value", 1),
+          NULL));
+
+  test_enum_value(message, "0801", "ONE");
+  test_enum_value(message, "0802", "TWO");
+  test_enum_value(message, "082a", "42");
+
+  test_decode_error(message, "090000000000000000",
+                    "Received I64 for non-I64 field");
+  test_decode_error(message, "0a00", "Received LEN for non-LEN field");
+  test_decode_error(message, "0b00", "Unknown wire type");
+  test_decode_error(message, "0c00", "Unknown wire type");
+  test_decode_error(message, "0d00000000", "Received I32 for non-I32 field");
+  test_decode_error(message, "0e00", "Unknown wire type");
+  test_decode_error(message, "0f00", "Unknown wire type");
+
+  test_decode_error(message, "088080808010",
+                    "VARINT too large for signed 32 bit value");
+  test_decode_error(message, "0880808080808080808001",
+                    "VARINT too large for signed 32 bit value");
+}
+
 static void test_message() {
   UtObjectRef message =
       ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
@@ -660,7 +699,7 @@ int main(int argc, char **argv) {
   test_string();
   test_bytes();
 
-  // test_enum();
+  test_enum();
 
   test_message();
 

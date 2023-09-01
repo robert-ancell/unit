@@ -95,6 +95,7 @@
 #include "png/ut-png-image.h"
 #include "protobuf/ut-protobuf-decoder.h"
 #include "protobuf/ut-protobuf-encoder.h"
+#include "protobuf/ut-protobuf-enum-type.h"
 #include "protobuf/ut-protobuf-error.h"
 #include "protobuf/ut-protobuf-message-field.h"
 #include "protobuf/ut-protobuf-message-type.h"

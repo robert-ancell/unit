@@ -207,6 +207,18 @@ static void encode_bytes(UtProtobufEncoder *self, uint32_t number,
   encode_len_record(self, number, value);
 }
 
+static void encode_enum(UtProtobufEncoder *self, uint32_t number,
+                        UtObject *type, const char *value) {
+  int32_t enum_value;
+  if (!ut_protobuf_enum_type_get_value(type, value, &enum_value)) {
+    ut_cstring_ref description =
+        ut_cstring_new_printf("Unknown enum value %s", value);
+    set_error(self, description);
+    return;
+  }
+  encode_int32(self, number, enum_value);
+}
+
 static bool check_type(UtProtobufEncoder *self, bool (*is_type)(UtObject *),
                        UtObject *value, const char *protobuf_type) {
   if (is_type(value)) {
@@ -318,8 +330,14 @@ static void encode_message(UtProtobufEncoder *self, UtObject *type,
         }
         break;
       }
+    } else if (ut_object_is_protobuf_enum_type(field_type)) {
+      if (check_type(self, ut_object_implements_string, field_value, "enum")) {
+        encode_enum(self, number, field_type, ut_string_get_text(field_value));
+      }
     } else if (ut_object_is_protobuf_message_type(field_type)) {
-      encode_message(self, field_type, value);
+      if (check_type(self, ut_object_implements_map, field_value, "message")) {
+        encode_message(self, field_type, value);
+      }
     } else {
       ut_cstring_ref type_string = ut_object_to_string(field_type);
       ut_cstring_ref description =

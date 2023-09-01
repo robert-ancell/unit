@@ -181,42 +181,49 @@ static void read_varint_field(UtProtobufDecoder *self, size_t data_length,
 
   const char *name = ut_protobuf_message_field_get_name(field);
   UtObject *type = ut_protobuf_message_field_get_type(field);
+  UtObjectRef value = NULL;
   if (ut_object_is_protobuf_primitive_type(type)) {
     switch (ut_protobuf_primitive_type_get_type(type)) {
     case UT_PROTOBUF_PRIMITIVE_INT32:
-      ut_map_insert_string_take(
-          message, name, ut_int32_new(read_int32(self, data_length, offset)));
-      return;
+      value = ut_int32_new(read_int32(self, data_length, offset));
+      break;
     case UT_PROTOBUF_PRIMITIVE_INT64:
-      ut_map_insert_string_take(
-          message, name, ut_int64_new(read_int64(self, data_length, offset)));
-      return;
+      value = ut_int64_new(read_int64(self, data_length, offset));
+      break;
     case UT_PROTOBUF_PRIMITIVE_UINT32:
-      ut_map_insert_string_take(
-          message, name, ut_uint32_new(read_uint32(self, data_length, offset)));
-      return;
+      value = ut_uint32_new(read_uint32(self, data_length, offset));
+      break;
     case UT_PROTOBUF_PRIMITIVE_UINT64:
-      ut_map_insert_string_take(
-          message, name, ut_uint64_new(read_uint64(self, data_length, offset)));
-      return;
+      value = ut_uint64_new(read_uint64(self, data_length, offset));
+      break;
     case UT_PROTOBUF_PRIMITIVE_SINT32:
-      ut_map_insert_string_take(
-          message, name, ut_int32_new(read_sint32(self, data_length, offset)));
-      return;
+      value = ut_int32_new(read_sint32(self, data_length, offset));
+      break;
     case UT_PROTOBUF_PRIMITIVE_SINT64:
-      ut_map_insert_string_take(
-          message, name, ut_int64_new(read_sint64(self, data_length, offset)));
-      return;
+      value = ut_int64_new(read_sint64(self, data_length, offset));
+      break;
     case UT_PROTOBUF_PRIMITIVE_BOOL:
-      ut_map_insert_string_take(
-          message, name, ut_boolean_new(read_bool(self, data_length, offset)));
-      return;
+      value = ut_boolean_new(read_bool(self, data_length, offset));
+      break;
     default:
       break;
     }
+  } else if (ut_object_is_protobuf_enum_type(type)) {
+    int32_t enum_value = read_int32(self, data_length, offset);
+    ut_cstring_ref name = ut_protobuf_enum_type_get_name(type, enum_value);
+    if (name != NULL) {
+      value = ut_string_new(name);
+    } else {
+      value = ut_string_new_printf("%d", enum_value);
+    }
   }
 
-  set_error(self, "Received VARINT for non-VARINT field");
+  if (value == NULL) {
+    set_error(self, "Received VARINT for non-VARINT field");
+    return;
+  }
+
+  ut_map_insert_string(message, name, value);
 }
 
 static void read_i64_field(UtProtobufDecoder *self, size_t data_length,

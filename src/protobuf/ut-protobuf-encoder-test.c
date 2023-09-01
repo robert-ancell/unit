@@ -11,6 +11,14 @@ static void test_encode(UtObject *message, UtObject *value,
   ut_assert_uint8_list_equal_hex(data, hex_string);
 }
 
+static void test_encode_error(UtObject *message, UtObject *value,
+                              const char *error_description) {
+  UtObjectRef encoder = ut_protobuf_encoder_new();
+  ut_protobuf_encoder_encode_message(encoder, message, value);
+  ut_assert_is_error_with_description(ut_protobuf_encoder_get_error(encoder),
+                                      error_description);
+}
+
 static void test_uint32(uint32_t value, const char *hex_string) {
   UtObjectRef message =
       ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
@@ -177,6 +185,30 @@ static void test_bytes(const char *hex_value, const char *hex_string) {
   test_encode(message, message_value, hex_string);
 }
 
+static void test_enum() {
+  UtObjectRef message =
+      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
+          ut_protobuf_message_field_new_take(
+              ut_protobuf_enum_type_new_take(
+                  ut_map_new_string_from_elements_take(
+                      "ZERO", ut_int32_new(0), "ONE", ut_int32_new(1), "TWO",
+                      ut_int32_new(2), NULL)),
+              "value", 1),
+          NULL));
+
+  UtObjectRef message_value1 =
+      ut_map_new_string_from_elements_take("value", ut_string_new("ONE"), NULL);
+  test_encode(message, message_value1, "0801");
+
+  UtObjectRef message_value2 =
+      ut_map_new_string_from_elements_take("value", ut_string_new("TWO"), NULL);
+  test_encode(message, message_value2, "0802");
+
+  UtObjectRef message_value3 = ut_map_new_string_from_elements_take(
+      "value", ut_string_new("INVALID"), NULL);
+  test_encode_error(message, message_value3, "Unknown enum value INVALID");
+}
+
 static void test_message() {
   UtObjectRef encoder1 = ut_protobuf_encoder_new();
   UtObjectRef message1 =
@@ -287,7 +319,7 @@ int main(int argc, char **argv) {
   test_bytes("ff", "0a01ff");
   test_bytes("deadbeef", "0a04deadbeef");
 
-  // test_enum();
+  test_enum();
 
   test_message();
 
