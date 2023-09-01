@@ -62,9 +62,9 @@ char *ut_protobuf_enum_type_get_name(UtObject *object, int32_t value) {
   size_t items_length = ut_list_get_length(items);
   for (size_t i = 0; i < items_length; i++) {
     UtObject *item = ut_object_list_get_element(items, i);
-    UtObjectRef item_value = ut_map_item_get_value(item);
+    UtObject *item_value = ut_map_item_get_value(item);
     if (ut_int32_get_value(item_value) == value) {
-      UtObjectRef name = ut_map_item_get_key(item);
+      UtObject *name = ut_map_item_get_key(item);
       return ut_cstring_new(ut_string_get_text(name));
     }
   }

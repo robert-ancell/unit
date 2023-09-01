@@ -76,7 +76,7 @@ static bool encode_object(UtObject *buffer, UtObject *value) {
       ut_string_append(buffer, ",");
     }
 
-    UtObjectRef key = ut_map_item_get_key(item);
+    UtObject *key = ut_map_item_get_key(item);
     if (!ut_object_implements_string(key)) {
       // FIXME: Throw exception
       return false;
@@ -88,7 +88,7 @@ static bool encode_object(UtObject *buffer, UtObject *value) {
 
     ut_string_append(buffer, ":");
 
-    UtObjectRef value = ut_map_item_get_value(item);
+    UtObject *value = ut_map_item_get_value(item);
     result = encode_value(buffer, value);
     if (!result) {
       return false;

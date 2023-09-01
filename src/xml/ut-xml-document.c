@@ -368,9 +368,9 @@ static bool encode_element(UtObject *buffer, UtObject *element) {
     UtObjectRef attribute_items = ut_map_get_items(attributes);
     size_t attributes_length = ut_list_get_length(attribute_items);
     for (size_t i = 0; i < attributes_length; i++) {
-      UtObjectRef item = ut_list_get_element(attribute_items, i);
-      UtObjectRef name = ut_map_item_get_key(item);
-      UtObjectRef value = ut_map_item_get_value(item);
+      UtObject *item = ut_object_list_get_element(attribute_items, i);
+      UtObject *name = ut_map_item_get_key(item);
+      UtObject *value = ut_map_item_get_value(item);
       ut_string_append(buffer, " ");
       ut_string_append(buffer, ut_string_get_text(name));
       ut_string_append(buffer, "=");

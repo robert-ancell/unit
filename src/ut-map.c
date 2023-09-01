@@ -125,13 +125,13 @@ char *ut_map_to_string(UtObject *object) {
       ut_string_append(string, ", ");
     }
 
-    UtObjectRef key = ut_map_item_get_key(item);
+    UtObject *key = ut_map_item_get_key(item);
     ut_cstring_ref key_string = ut_object_to_string(key);
     ut_string_append(string, key_string);
 
     ut_string_append(string, ": ");
 
-    UtObjectRef value = ut_map_item_get_value(item);
+    UtObject *value = ut_map_item_get_value(item);
     ut_cstring_ref value_string = ut_object_to_string(value);
     ut_string_append(string, value_string);
   }

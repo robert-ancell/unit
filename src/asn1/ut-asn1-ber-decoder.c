@@ -787,8 +787,8 @@ static UtObject *decode_sequence_value(UtAsn1BerDecoder *self, UtObject *type,
     UtObjectRef component_type = NULL;
     while (next_component < components_length) {
       UtObjectRef item = ut_list_get_element(component_items, next_component);
-      UtObjectRef name = ut_map_item_get_key(item);
-      UtObjectRef type = ut_map_item_get_value(item);
+      UtObject *name = ut_map_item_get_key(item);
+      UtObject *type = ut_map_item_get_value(item);
       next_component++;
 
       // This component matches.
@@ -849,9 +849,9 @@ static UtObject *decode_sequence_value(UtAsn1BerDecoder *self, UtObject *type,
   // Set any remaining default components.
   for (size_t i = next_component; i < components_length; i++) {
     UtObject *item = ut_object_list_get_element(component_items, i);
-    UtObjectRef type = ut_map_item_get_value(item);
+    UtObject *type = ut_map_item_get_value(item);
     if (ut_object_is_asn1_default_type(type)) {
-      UtObjectRef name = ut_map_item_get_key(item);
+      UtObject *name = ut_map_item_get_key(item);
       ut_map_insert_string(value, ut_string_get_text(name),
                            ut_asn1_default_type_get_default_value(type));
       continue;
@@ -924,7 +924,7 @@ static UtObject *match_component(UtObject *decoder, UtObject *components) {
   size_t items_length = ut_list_get_length(items);
   for (size_t i = 0; i < items_length; i++) {
     UtObject *item = ut_object_list_get_element(items, i);
-    UtObjectRef item_type = ut_map_item_get_value(item);
+    UtObject *item_type = ut_map_item_get_value(item);
     if (ut_asn1_type_matches_tag(item_type,
                                  ut_asn1_ber_decoder_get_tag(decoder))) {
       return ut_map_item_get_key(item);
@@ -959,7 +959,7 @@ static UtObject *decode_set_value(UtAsn1BerDecoder *self, UtObject *type,
     UtObjectRef decoder = ut_asn1_ber_decoder_new(data);
     offset += ut_asn1_ber_decoder_get_length(decoder);
 
-    UtObjectRef component_name = match_component(decoder, components);
+    UtObject *component_name = match_component(decoder, components);
     if (component_name == NULL) {
       // If extensible, ignore all unknown components.
       if (extensible) {
@@ -1006,9 +1006,9 @@ static UtObject *decode_set_value(UtAsn1BerDecoder *self, UtObject *type,
   size_t total_required_components = 0;
   for (size_t i = 0; i < components_length; i++) {
     UtObject *item = ut_object_list_get_element(component_items, i);
-    UtObjectRef type = ut_map_item_get_value(item);
+    UtObject *type = ut_map_item_get_value(item);
     if (ut_object_is_asn1_default_type(type)) {
-      UtObjectRef name = ut_map_item_get_key(item);
+      UtObject *name = ut_map_item_get_key(item);
       if (ut_map_lookup_string(value, ut_string_get_text(name)) == NULL) {
         ut_map_insert_string(value, ut_string_get_text(name),
                              ut_asn1_default_type_get_default_value(type));
@@ -1051,9 +1051,9 @@ static UtObject *decode_choice_value(UtAsn1BerDecoder *self, UtObject *type,
   size_t items_length = ut_list_get_length(items);
   for (size_t i = 0; i < items_length; i++) {
     UtObject *item = ut_object_list_get_element(items, i);
-    UtObjectRef item_type = ut_map_item_get_value(item);
+    UtObject *item_type = ut_map_item_get_value(item);
     if (ut_asn1_type_matches_tag(item_type, self->tag)) {
-      UtObjectRef identifier = ut_map_item_get_key(item);
+      UtObject *identifier = ut_map_item_get_key(item);
       UtObjectRef value = decode_value(self, item_type, true);
       return ut_asn1_choice_value_new(ut_string_get_text(identifier), value);
     }

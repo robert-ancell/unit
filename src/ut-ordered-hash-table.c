@@ -19,12 +19,12 @@ struct _UtOrderedHashTableItem {
 
 static UtObject *ut_ordered_hash_table_item_get_key(UtObject *object) {
   UtOrderedHashTableItem *self = (UtOrderedHashTableItem *)object;
-  return ut_object_ref(self->key);
+  return self->key;
 }
 
 static UtObject *ut_ordered_hash_table_item_get_value(UtObject *object) {
   UtOrderedHashTableItem *self = (UtOrderedHashTableItem *)object;
-  return ut_object_ref(self->value);
+  return self->value;
 }
 
 static UtMapItemInterface map_item_interface = {
