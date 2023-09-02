@@ -26,10 +26,10 @@ static bool ut_boolean_array_get_element(UtObject *object, size_t index) {
 static void ut_boolean_array_insert(UtObject *object, size_t index, bool item) {
   UtBooleanArray *self = (UtBooleanArray *)object;
 
+  size_t n_after = self->data_length - index;
   resize_list(self, self->data_length + 1);
 
   // Shift existing data up
-  size_t n_after = self->data_length - index;
   for (size_t i = 0; i < n_after; i++) {
     size_t new_index = self->data_length - 1 - i;
     self->data[new_index] = self->data[new_index - 1];
