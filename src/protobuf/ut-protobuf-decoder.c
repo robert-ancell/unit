@@ -176,6 +176,14 @@ static bool read_bool(UtProtobufDecoder *self, size_t data_length,
   return v != 0;
 }
 
+static UtObject *get_type(UtObject *field) {
+  UtObject *type = ut_protobuf_message_field_get_value_type(field);
+  while (ut_object_is_protobuf_referenced_type(type)) {
+    type = ut_protobuf_referenced_type_get_type(type);
+  }
+  return type;
+}
+
 static void read_varint_field(UtProtobufDecoder *self, size_t data_length,
                               size_t *offset, UtObject *message,
                               const char *name, UtObject *field) {
@@ -187,7 +195,7 @@ static void read_varint_field(UtProtobufDecoder *self, size_t data_length,
   bool is_repeated = ut_protobuf_message_field_get_type(field) ==
                      UT_PROTOBUF_MESSAGE_FIELD_TYPE_REPEATED;
 
-  UtObject *type = ut_protobuf_message_field_get_value_type(field);
+  UtObject *type = get_type(field);
   UtObjectRef value = NULL;
   if (ut_object_is_protobuf_primitive_type(type)) {
     switch (ut_protobuf_primitive_type_get_type(type)) {
@@ -290,7 +298,7 @@ static void read_i64_field(UtProtobufDecoder *self, size_t data_length,
   bool is_repeated = ut_protobuf_message_field_get_type(field) ==
                      UT_PROTOBUF_MESSAGE_FIELD_TYPE_REPEATED;
 
-  UtObject *type = ut_protobuf_message_field_get_value_type(field);
+  UtObject *type = get_type(field);
   if (ut_object_is_protobuf_primitive_type(type)) {
     switch (ut_protobuf_primitive_type_get_type(type)) {
     case UT_PROTOBUF_PRIMITIVE_FIXED64:
@@ -372,7 +380,7 @@ static void read_len_field(UtProtobufDecoder *self, size_t data_length,
   bool is_repeated = ut_protobuf_message_field_get_type(field) ==
                      UT_PROTOBUF_MESSAGE_FIELD_TYPE_REPEATED;
 
-  UtObject *type = ut_protobuf_message_field_get_value_type(field);
+  UtObject *type = get_type(field);
   if (ut_object_is_protobuf_primitive_type(type)) {
     switch (ut_protobuf_primitive_type_get_type(type)) {
     case UT_PROTOBUF_PRIMITIVE_STRING:
@@ -404,7 +412,7 @@ static void read_i32_field(UtProtobufDecoder *self, size_t data_length,
   bool is_repeated = ut_protobuf_message_field_get_type(field) ==
                      UT_PROTOBUF_MESSAGE_FIELD_TYPE_REPEATED;
 
-  UtObject *type = ut_protobuf_message_field_get_value_type(field);
+  UtObject *type = get_type(field);
   if (ut_object_is_protobuf_primitive_type(type)) {
     switch (ut_protobuf_primitive_type_get_type(type)) {
     case UT_PROTOBUF_PRIMITIVE_FIXED32:
@@ -563,8 +571,8 @@ UtObject *ut_protobuf_decoder_decode_message(UtObject *object, UtObject *type) {
     if (ut_protobuf_message_field_get_type(field) ==
         UT_PROTOBUF_MESSAGE_FIELD_TYPE_REPEATED) {
       const char *name = ut_string_get_text(ut_map_item_get_key(item));
-      UtObjectRef value = get_repeated_field_initial_value(
-          self, ut_protobuf_message_field_get_value_type(field));
+      UtObjectRef value =
+          get_repeated_field_initial_value(self, get_type(field));
       if (value == NULL) {
         return ut_map_new();
       }
@@ -610,8 +618,7 @@ UtObject *ut_protobuf_decoder_decode_message(UtObject *object, UtObject *type) {
     if (ut_protobuf_message_field_get_type(field) ==
         UT_PROTOBUF_MESSAGE_FIELD_TYPE_OPTIONAL) {
       if (ut_map_lookup_string(message, name) == NULL) {
-        UtObjectRef default_value = get_default_value(
-            self, ut_protobuf_message_field_get_value_type(field));
+        UtObjectRef default_value = get_default_value(self, get_type(field));
         if (default_value == NULL) {
           return ut_map_new();
         }

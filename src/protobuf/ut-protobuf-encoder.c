@@ -547,6 +547,10 @@ static bool encode_message(UtProtobufEncoder *self, UtObject *type,
         ut_protobuf_message_field_get_value_type(field);
     uint32_t number = ut_protobuf_message_field_get_number(field);
 
+    while (ut_object_is_protobuf_referenced_type(field_value_type)) {
+      field_value_type = ut_protobuf_referenced_type_get_type(field_value_type);
+    }
+
     const char *name = ut_string_get_text(ut_map_item_get_key(item));
     UtObject *field_value = ut_map_lookup_string(value, name);
     if (field_value == NULL) {

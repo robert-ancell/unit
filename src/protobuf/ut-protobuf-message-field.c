@@ -12,8 +12,8 @@ typedef struct {
 static char *ut_protobuf_message_field_to_string(UtObject *object) {
   UtProtobufMessageField *self = (UtProtobufMessageField *)object;
   ut_cstring_ref value_type_string = ut_object_to_string(self->value_type);
-  return ut_cstring_new_printf("<UtProtobufMessageField>(%s, %u)",
-                               value_type_string, self->number);
+  return ut_cstring_new_printf("<UtProtobufMessageField>(%d, %s, %u)",
+                               self->type, value_type_string, self->number);
 }
 
 static void ut_protobuf_message_field_cleanup(UtObject *object) {
@@ -26,8 +26,8 @@ static UtObjectInterface object_interface = {
     .to_string = ut_protobuf_message_field_to_string,
     .cleanup = ut_protobuf_message_field_cleanup};
 
-static UtObject *message_field_new(UtProtobufMessageFieldType type,
-                                   UtObject *value_type, uint32_t number) {
+UtObject *ut_protobuf_message_field_new(UtProtobufMessageFieldType type,
+                                        UtObject *value_type, uint32_t number) {
   UtObject *object =
       ut_object_new(sizeof(UtProtobufMessageField), &object_interface);
   UtProtobufMessageField *self = (UtProtobufMessageField *)object;
@@ -39,35 +39,27 @@ static UtObject *message_field_new(UtProtobufMessageFieldType type,
   return object;
 }
 
-UtObject *ut_protobuf_message_field_new(UtObject *value_type, uint32_t number) {
-  return message_field_new(UT_PROTOBUF_MESSAGE_FIELD_TYPE_IMPLICIT, value_type,
-                           number);
-}
-
 UtObject *ut_protobuf_message_field_new_optional(UtObject *value_type,
-
                                                  uint32_t number) {
-  return message_field_new(UT_PROTOBUF_MESSAGE_FIELD_TYPE_OPTIONAL, value_type,
-                           number);
+  return ut_protobuf_message_field_new(UT_PROTOBUF_MESSAGE_FIELD_TYPE_OPTIONAL,
+                                       value_type, number);
 }
 
 UtObject *ut_protobuf_message_field_new_repeated(UtObject *value_type,
-
                                                  uint32_t number) {
-  return message_field_new(UT_PROTOBUF_MESSAGE_FIELD_TYPE_REPEATED, value_type,
-                           number);
+  return ut_protobuf_message_field_new(UT_PROTOBUF_MESSAGE_FIELD_TYPE_REPEATED,
+                                       value_type, number);
 }
 
 UtObject *ut_protobuf_message_field_new_take(UtObject *value_type,
-
                                              uint32_t number) {
-  UtObject *object = ut_protobuf_message_field_new(value_type, number);
+  UtObject *object = ut_protobuf_message_field_new(
+      UT_PROTOBUF_MESSAGE_FIELD_TYPE_IMPLICIT, value_type, number);
   ut_object_unref(value_type);
   return object;
 }
 
 UtObject *ut_protobuf_message_field_new_optional_take(UtObject *value_type,
-
                                                       uint32_t number) {
   UtObject *object = ut_protobuf_message_field_new_optional(value_type, number);
   ut_object_unref(value_type);
@@ -75,7 +67,6 @@ UtObject *ut_protobuf_message_field_new_optional_take(UtObject *value_type,
 }
 
 UtObject *ut_protobuf_message_field_new_repeated_take(UtObject *value_type,
-
                                                       uint32_t number) {
   UtObject *object = ut_protobuf_message_field_new_repeated(value_type, number);
   ut_object_unref(value_type);

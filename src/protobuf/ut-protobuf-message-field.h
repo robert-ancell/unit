@@ -14,7 +14,8 @@ typedef enum {
 /// Creates a new [UtProtobufMessageField] object.
 ///
 /// !return-ref
-UtObject *ut_protobuf_message_field_new(UtObject *value_type, uint32_t number);
+UtObject *ut_protobuf_message_field_new(UtProtobufMessageFieldType type,
+                                        UtObject *value_type, uint32_t number);
 
 /// Creates a new [UtProtobufMessageField] object.
 ///
