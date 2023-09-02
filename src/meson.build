@@ -121,6 +121,8 @@ ut_sources = [
   'ut-base64.c',
   'ut-bit-list.c',
   'ut-boolean.c',
+  'ut-boolean-array.c',
+  'ut-boolean-list.c',
   'ut-buffered-input-stream.c',
   'ut-color.c',
   'ut-constant-utf8-string.c',
@@ -332,6 +334,11 @@ float64_array_test = executable('ut-float64-array-test',
                                 'ut-float64-array-test.c',
                                 link_with: ut_lib)
 test('Float64 Array', float64_array_test)
+
+boolean_array_test = executable('ut-boolean-array-test',
+                                'ut-boolean-array-test.c',
+                                link_with: ut_lib)
+test('Boolean Array', boolean_array_test)
 
 bit_list_test = executable('ut-bit-list-test',
                            'ut-bit-list-test.c',
