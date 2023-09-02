@@ -1253,6 +1253,52 @@ static void test_message() {
   // Missing age.
   test_decode_error(message, "0a0b4172746875722044656e74",
                     "Missing required field age");
+
+  UtObjectRef optional_message =
+      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
+          ut_protobuf_message_field_new_take(
+              ut_protobuf_primitive_type_new_string(), "name", 1),
+          ut_protobuf_message_field_new_optional_take(
+              ut_protobuf_primitive_type_new_uint32(), "age", 2),
+          NULL));
+
+  // All values.
+  UtObjectRef data4 =
+      ut_uint8_list_new_from_hex_string("0a0b4172746875722044656e74102a");
+  UtObjectRef decoder4 = ut_protobuf_decoder_new(data4);
+  UtObjectRef value4 =
+      ut_protobuf_decoder_decode_message(decoder4, optional_message);
+  ut_assert_null_object(ut_protobuf_decoder_get_error(decoder4));
+  UtObject *v4a = ut_map_lookup_string(value4, "name");
+  ut_assert_non_null_object(v4a);
+  ut_assert_true(ut_object_implements_string(v4a));
+  ut_assert_cstring_equal(ut_string_get_text(v4a), "Arthur Dent");
+  UtObject *v4b = ut_map_lookup_string(value4, "age");
+  ut_assert_non_null_object(v4b);
+  ut_assert_true(ut_object_is_uint32(v4b));
+  ut_assert_int_equal(ut_uint32_get_value(v4b), 42);
+
+  // Missing age (defaults to 0).
+  UtObjectRef data5 =
+      ut_uint8_list_new_from_hex_string("0a0b4172746875722044656e74");
+  UtObjectRef decoder5 = ut_protobuf_decoder_new(data5);
+  UtObjectRef value5 =
+      ut_protobuf_decoder_decode_message(decoder5, optional_message);
+  ut_assert_null_object(ut_protobuf_decoder_get_error(decoder5));
+  UtObject *v5a = ut_map_lookup_string(value5, "name");
+  ut_assert_non_null_object(v5a);
+  ut_assert_true(ut_object_implements_string(v5a));
+  ut_assert_cstring_equal(ut_string_get_text(v5a), "Arthur Dent");
+  UtObject *v5b = ut_map_lookup_string(value5, "age");
+  ut_assert_non_null_object(v5b);
+  ut_assert_true(ut_object_is_uint32(v5b));
+  ut_assert_int_equal(ut_uint32_get_value(v5b), 0);
+
+  // Empty data.
+  test_decode_error(optional_message, "", "Missing required field name");
+
+  // Missing name.
+  test_decode_error(optional_message, "102a", "Missing required field name");
 }
 
 int main(int argc, char **argv) {
@@ -1261,21 +1307,17 @@ int main(int argc, char **argv) {
   test_sint32();
   test_fixed32();
   test_sfixed32();
-
   test_uint64();
   test_int64();
   test_sint64();
   test_fixed64();
   test_sfixed64();
-
   test_bool();
   test_float();
   test_double();
   test_string();
   test_bytes();
-
   test_enum();
-
   test_message();
 
   return 0;
