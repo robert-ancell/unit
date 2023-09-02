@@ -22,9 +22,7 @@ static void test_encode_error(UtObject *message, UtObject *value,
 static void test_uint32_value(uint32_t value, const char *hex_string) {
   UtObjectRef message =
       ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_take(
-              ut_protobuf_primitive_type_new_uint32(), "value", 1),
-          NULL));
+          ut_protobuf_message_field_new_uint32("value", 1), NULL));
   UtObjectRef message_value =
       ut_map_new_string_from_elements_take("value", ut_uint32_new(value), NULL);
   test_encode(message, message_value, hex_string);
@@ -34,9 +32,7 @@ static void test_repeated_uint32_value(UtObject *value,
                                        const char *hex_string) {
   UtObjectRef message =
       ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_repeated_take(
-              ut_protobuf_primitive_type_new_uint32(), "value", 1),
-          NULL));
+          ut_protobuf_message_field_new_repeated_uint32("value", 1), NULL));
   UtObjectRef message_value =
       ut_map_new_string_from_elements_take("value", value, NULL);
   test_encode(message, message_value, hex_string);
@@ -58,9 +54,7 @@ static void test_uint32() {
 static void test_int32_value(uint32_t value, const char *hex_string) {
   UtObjectRef message =
       ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_take(
-              ut_protobuf_primitive_type_new_int32(), "value", 1),
-          NULL));
+          ut_protobuf_message_field_new_int32("value", 1), NULL));
   UtObjectRef message_value =
       ut_map_new_string_from_elements_take("value", ut_int32_new(value), NULL);
   test_encode(message, message_value, hex_string);
@@ -69,9 +63,7 @@ static void test_int32_value(uint32_t value, const char *hex_string) {
 static void test_repeated_int32_value(UtObject *value, const char *hex_string) {
   UtObjectRef message =
       ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_repeated_take(
-              ut_protobuf_primitive_type_new_int32(), "value", 1),
-          NULL));
+          ut_protobuf_message_field_new_repeated_int32("value", 1), NULL));
   UtObjectRef message_value =
       ut_map_new_string_from_elements_take("value", value, NULL);
   test_encode(message, message_value, hex_string);
@@ -95,9 +87,7 @@ static void test_int32() {
 static void test_sint32_value(int32_t value, const char *hex_string) {
   UtObjectRef message =
       ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_take(
-              ut_protobuf_primitive_type_new_sint32(), "value", 1),
-          NULL));
+          ut_protobuf_message_field_new_sint32("value", 1), NULL));
   UtObjectRef message_value =
       ut_map_new_string_from_elements_take("value", ut_int32_new(value), NULL);
   test_encode(message, message_value, hex_string);
@@ -107,9 +97,7 @@ static void test_repeated_sint32_value(UtObject *value,
                                        const char *hex_string) {
   UtObjectRef message =
       ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_repeated_take(
-              ut_protobuf_primitive_type_new_sint32(), "value", 1),
-          NULL));
+          ut_protobuf_message_field_new_repeated_sint32("value", 1), NULL));
   UtObjectRef message_value =
       ut_map_new_string_from_elements_take("value", value, NULL);
   test_encode(message, message_value, hex_string);
@@ -133,9 +121,7 @@ static void test_sint32() {
 static void test_fixed32_value(uint32_t value, const char *hex_string) {
   UtObjectRef message =
       ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_take(
-              ut_protobuf_primitive_type_new_fixed32(), "value", 1),
-          NULL));
+          ut_protobuf_message_field_new_fixed32("value", 1), NULL));
   UtObjectRef message_value =
       ut_map_new_string_from_elements_take("value", ut_uint32_new(value), NULL);
   test_encode(message, message_value, hex_string);
@@ -145,9 +131,7 @@ static void test_repeated_fixed32_value(UtObject *value,
                                         const char *hex_string) {
   UtObjectRef message =
       ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_repeated_take(
-              ut_protobuf_primitive_type_new_fixed32(), "value", 1),
-          NULL));
+          ut_protobuf_message_field_new_repeated_fixed32("value", 1), NULL));
   UtObjectRef message_value =
       ut_map_new_string_from_elements_take("value", value, NULL);
   test_encode(message, message_value, hex_string);
@@ -169,9 +153,7 @@ static void test_fixed32() {
 static void test_sfixed32_value(int32_t value, const char *hex_string) {
   UtObjectRef message =
       ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_take(
-              ut_protobuf_primitive_type_new_sfixed32(), "value", 1),
-          NULL));
+          ut_protobuf_message_field_new_sfixed32("value", 1), NULL));
   UtObjectRef message_value =
       ut_map_new_string_from_elements_take("value", ut_int32_new(value), NULL);
   test_encode(message, message_value, hex_string);
@@ -181,9 +163,7 @@ static void test_repeated_sfixed32_value(UtObject *value,
                                          const char *hex_string) {
   UtObjectRef message =
       ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_repeated_take(
-              ut_protobuf_primitive_type_new_sfixed32(), "value", 1),
-          NULL));
+          ut_protobuf_message_field_new_repeated_sfixed32("value", 1), NULL));
   UtObjectRef message_value =
       ut_map_new_string_from_elements_take("value", value, NULL);
   test_encode(message, message_value, hex_string);
@@ -207,9 +187,7 @@ static void test_sfixed32() {
 static void test_uint64_value(uint64_t value, const char *hex_string) {
   UtObjectRef message =
       ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_take(
-              ut_protobuf_primitive_type_new_uint64(), "value", 1),
-          NULL));
+          ut_protobuf_message_field_new_uint64("value", 1), NULL));
   UtObjectRef message_value =
       ut_map_new_string_from_elements_take("value", ut_uint64_new(value), NULL);
   test_encode(message, message_value, hex_string);
@@ -219,9 +197,7 @@ static void test_repeated_uint64_value(UtObject *value,
                                        const char *hex_string) {
   UtObjectRef message =
       ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_repeated_take(
-              ut_protobuf_primitive_type_new_uint64(), "value", 1),
-          NULL));
+          ut_protobuf_message_field_new_repeated_uint64("value", 1), NULL));
   UtObjectRef message_value =
       ut_map_new_string_from_elements_take("value", value, NULL);
   test_encode(message, message_value, hex_string);
@@ -243,9 +219,7 @@ static void test_uint64() {
 static void test_int64_value(uint64_t value, const char *hex_string) {
   UtObjectRef message =
       ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_take(
-              ut_protobuf_primitive_type_new_int64(), "value", 1),
-          NULL));
+          ut_protobuf_message_field_new_int64("value", 1), NULL));
   UtObjectRef message_value =
       ut_map_new_string_from_elements_take("value", ut_int64_new(value), NULL);
   test_encode(message, message_value, hex_string);
@@ -254,9 +228,7 @@ static void test_int64_value(uint64_t value, const char *hex_string) {
 static void test_repeated_int64_value(UtObject *value, const char *hex_string) {
   UtObjectRef message =
       ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_repeated_take(
-              ut_protobuf_primitive_type_new_int64(), "value", 1),
-          NULL));
+          ut_protobuf_message_field_new_repeated_int64("value", 1), NULL));
   UtObjectRef message_value =
       ut_map_new_string_from_elements_take("value", value, NULL);
   test_encode(message, message_value, hex_string);
@@ -282,9 +254,7 @@ static void test_int64() {
 static void test_sint64_value(int64_t value, const char *hex_string) {
   UtObjectRef message =
       ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_take(
-              ut_protobuf_primitive_type_new_sint64(), "value", 1),
-          NULL));
+          ut_protobuf_message_field_new_sint64("value", 1), NULL));
   UtObjectRef message_value =
       ut_map_new_string_from_elements_take("value", ut_int64_new(value), NULL);
   test_encode(message, message_value, hex_string);
@@ -294,9 +264,7 @@ static void test_repeated_sint64_value(UtObject *value,
                                        const char *hex_string) {
   UtObjectRef message =
       ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_repeated_take(
-              ut_protobuf_primitive_type_new_sint64(), "value", 1),
-          NULL));
+          ut_protobuf_message_field_new_repeated_sint64("value", 1), NULL));
   UtObjectRef message_value =
       ut_map_new_string_from_elements_take("value", value, NULL);
   test_encode(message, message_value, hex_string);
@@ -321,9 +289,7 @@ static void test_sint64() {
 static void test_fixed64_value(uint64_t value, const char *hex_string) {
   UtObjectRef message =
       ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_take(
-              ut_protobuf_primitive_type_new_fixed64(), "value", 1),
-          NULL));
+          ut_protobuf_message_field_new_fixed64("value", 1), NULL));
   UtObjectRef message_value =
       ut_map_new_string_from_elements_take("value", ut_uint64_new(value), NULL);
   test_encode(message, message_value, hex_string);
@@ -333,9 +299,7 @@ static void test_repeated_fixed64_value(UtObject *value,
                                         const char *hex_string) {
   UtObjectRef message =
       ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_repeated_take(
-              ut_protobuf_primitive_type_new_fixed64(), "value", 1),
-          NULL));
+          ut_protobuf_message_field_new_repeated_fixed64("value", 1), NULL));
   UtObjectRef message_value =
       ut_map_new_string_from_elements_take("value", value, NULL);
   test_encode(message, message_value, hex_string);
@@ -359,9 +323,7 @@ static void test_fixed64() {
 static void test_sfixed64_value(int64_t value, const char *hex_string) {
   UtObjectRef message =
       ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_take(
-              ut_protobuf_primitive_type_new_sfixed64(), "value", 1),
-          NULL));
+          ut_protobuf_message_field_new_sfixed64("value", 1), NULL));
   UtObjectRef message_value =
       ut_map_new_string_from_elements_take("value", ut_int64_new(value), NULL);
   test_encode(message, message_value, hex_string);
@@ -371,9 +333,7 @@ static void test_repeated_sfixed64_value(UtObject *value,
                                          const char *hex_string) {
   UtObjectRef message =
       ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_repeated_take(
-              ut_protobuf_primitive_type_new_sfixed64(), "value", 1),
-          NULL));
+          ut_protobuf_message_field_new_repeated_sfixed64("value", 1), NULL));
   UtObjectRef message_value =
       ut_map_new_string_from_elements_take("value", value, NULL);
   test_encode(message, message_value, hex_string);
@@ -398,9 +358,7 @@ static void test_sfixed64() {
 static void test_bool_value(bool value, const char *hex_string) {
   UtObjectRef message =
       ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_take(
-              ut_protobuf_primitive_type_new_bool(), "value", 1),
-          NULL));
+          ut_protobuf_message_field_new_bool("value", 1), NULL));
   UtObjectRef message_value = ut_map_new_string_from_elements_take(
       "value", ut_boolean_new(value), NULL);
   test_encode(message, message_value, hex_string);
@@ -409,9 +367,7 @@ static void test_bool_value(bool value, const char *hex_string) {
 static void test_repeated_bool_value(UtObject *value, const char *hex_string) {
   UtObjectRef message =
       ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_repeated_take(
-              ut_protobuf_primitive_type_new_bool(), "value", 1),
-          NULL));
+          ut_protobuf_message_field_new_repeated_bool("value", 1), NULL));
   UtObjectRef message_value =
       ut_map_new_string_from_elements("value", value, NULL);
   test_encode(message, message_value, hex_string);
@@ -435,9 +391,7 @@ static void test_bool() {
 static void test_float_value(float value, const char *hex_string) {
   UtObjectRef message =
       ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_take(
-              ut_protobuf_primitive_type_new_float(), "value", 1),
-          NULL));
+          ut_protobuf_message_field_new_float("value", 1), NULL));
   UtObjectRef message_value = ut_map_new_string_from_elements_take(
       "value", ut_float32_new(value), NULL);
   test_encode(message, message_value, hex_string);
@@ -446,9 +400,7 @@ static void test_float_value(float value, const char *hex_string) {
 static void test_repeated_float_value(UtObject *value, const char *hex_string) {
   UtObjectRef message =
       ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_repeated_take(
-              ut_protobuf_primitive_type_new_float(), "value", 1),
-          NULL));
+          ut_protobuf_message_field_new_repeated_float("value", 1), NULL));
   UtObjectRef message_value =
       ut_map_new_string_from_elements_take("value", value, NULL);
   test_encode(message, message_value, hex_string);
@@ -471,9 +423,7 @@ static void test_float() {
 static void test_double_value(double value, const char *hex_string) {
   UtObjectRef message =
       ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_take(
-              ut_protobuf_primitive_type_new_double(), "value", 1),
-          NULL));
+          ut_protobuf_message_field_new_double("value", 1), NULL));
   UtObjectRef message_value = ut_map_new_string_from_elements_take(
       "value", ut_float64_new(value), NULL);
   test_encode(message, message_value, hex_string);
@@ -483,9 +433,7 @@ static void test_repeated_double_value(UtObject *value,
                                        const char *hex_string) {
   UtObjectRef message =
       ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_repeated_take(
-              ut_protobuf_primitive_type_new_double(), "value", 1),
-          NULL));
+          ut_protobuf_message_field_new_repeated_double("value", 1), NULL));
   UtObjectRef message_value =
       ut_map_new_string_from_elements_take("value", value, NULL);
   test_encode(message, message_value, hex_string);
@@ -508,9 +456,7 @@ static void test_double() {
 static void test_string_value(const char *value, const char *hex_string) {
   UtObjectRef message =
       ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_take(
-              ut_protobuf_primitive_type_new_string(), "value", 1),
-          NULL));
+          ut_protobuf_message_field_new_string("value", 1), NULL));
   UtObjectRef message_value =
       ut_map_new_string_from_elements_take("value", ut_string_new(value), NULL);
   test_encode(message, message_value, hex_string);
@@ -520,9 +466,7 @@ static void test_repeated_string_value(UtObject *value,
                                        const char *hex_string) {
   UtObjectRef message =
       ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_repeated_take(
-              ut_protobuf_primitive_type_new_string(), "value", 1),
-          NULL));
+          ut_protobuf_message_field_new_repeated_string("value", 1), NULL));
   UtObjectRef message_value =
       ut_map_new_string_from_elements_take("value", value, NULL);
   test_encode(message, message_value, hex_string);
@@ -544,9 +488,7 @@ static void test_string() {
 static void test_bytes_value(const char *hex_value, const char *hex_string) {
   UtObjectRef message =
       ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_take(
-              ut_protobuf_primitive_type_new_bytes(), "value", 1),
-          NULL));
+          ut_protobuf_message_field_new_bytes("value", 1), NULL));
   UtObjectRef value = ut_uint8_list_new_from_hex_string(hex_value);
   UtObjectRef message_value =
       ut_map_new_string_from_elements("value", value, NULL);
@@ -556,9 +498,7 @@ static void test_bytes_value(const char *hex_value, const char *hex_string) {
 static void test_repeated_bytes_value(UtObject *value, const char *hex_string) {
   UtObjectRef message =
       ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_repeated_take(
-              ut_protobuf_primitive_type_new_bytes(), "value", 1),
-          NULL));
+          ut_protobuf_message_field_new_repeated_bytes("value", 1), NULL));
   UtObjectRef message_value =
       ut_map_new_string_from_elements_take("value", value, NULL);
   test_encode(message, message_value, hex_string);
@@ -606,11 +546,8 @@ static void test_enum() {
 static void test_message() {
   UtObjectRef message =
       ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_take(
-              ut_protobuf_primitive_type_new_string(), "name", 1),
-          ut_protobuf_message_field_new_take(
-              ut_protobuf_primitive_type_new_uint32(), "age", 2),
-          NULL));
+          ut_protobuf_message_field_new_string("name", 1),
+          ut_protobuf_message_field_new_uint32("age", 2), NULL));
 
   // All values.
   UtObjectRef value1 = ut_map_new_string_from_elements_take(
@@ -633,11 +570,8 @@ static void test_message() {
 
   UtObjectRef optional_message =
       ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_take(
-              ut_protobuf_primitive_type_new_string(), "name", 1),
-          ut_protobuf_message_field_new_optional_take(
-              ut_protobuf_primitive_type_new_uint32(), "age", 2),
-          NULL));
+          ut_protobuf_message_field_new_string("name", 1),
+          ut_protobuf_message_field_new_optional_uint32("age", 2), NULL));
 
   // All values.
   UtObjectRef value5 = ut_map_new_string_from_elements_take(
