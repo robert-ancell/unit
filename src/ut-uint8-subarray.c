@@ -84,6 +84,23 @@ static char *ut_uint8_subarray_to_string(UtObject *object) {
   return ut_string_take_text(string);
 }
 
+static bool ut_uint8_subarray_equal(UtObject *object, UtObject *other) {
+  UtUint8Subarray *self = (UtUint8Subarray *)object;
+  if (!ut_object_implements_uint8_list(other)) {
+    return false;
+  }
+  if (self->length != ut_list_get_length(other)) {
+    return false;
+  }
+  uint8_t *data = get_data(self);
+  for (size_t i = 0; i < self->length; i++) {
+    if (data[i] != ut_uint8_list_get_element(other, i)) {
+      return false;
+    }
+  }
+  return true;
+}
+
 static void ut_uint8_subarray_cleanup(UtObject *object) {
   UtUint8Subarray *self = (UtUint8Subarray *)object;
   ut_object_unref(self->parent);
@@ -105,6 +122,7 @@ static UtListInterface list_interface = {
 static UtObjectInterface object_interface = {
     .type_name = "UtUint8Subarray",
     .to_string = ut_uint8_subarray_to_string,
+    .equal = ut_uint8_subarray_equal,
     .cleanup = ut_uint8_subarray_cleanup,
     .interfaces = {{&ut_uint8_list_id, &uint8_list_interface},
                    {&ut_list_id, &list_interface},
