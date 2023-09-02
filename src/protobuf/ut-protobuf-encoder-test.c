@@ -19,7 +19,7 @@ static void test_encode_error(UtObject *message, UtObject *value,
                                       error_description);
 }
 
-static void test_uint32(uint32_t value, const char *hex_string) {
+static void test_uint32_value(uint32_t value, const char *hex_string) {
   UtObjectRef message =
       ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
           ut_protobuf_message_field_new_take(
@@ -30,7 +30,32 @@ static void test_uint32(uint32_t value, const char *hex_string) {
   test_encode(message, message_value, hex_string);
 }
 
-static void test_int32(uint32_t value, const char *hex_string) {
+static void test_repeated_uint32_value(UtObject *value,
+                                       const char *hex_string) {
+  UtObjectRef message =
+      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
+          ut_protobuf_message_field_new_repeated_take(
+              ut_protobuf_primitive_type_new_uint32(), "value", 1),
+          NULL));
+  UtObjectRef message_value =
+      ut_map_new_string_from_elements_take("value", value, NULL);
+  test_encode(message, message_value, hex_string);
+}
+
+static void test_uint32() {
+  test_uint32_value(0, "0800");
+  test_uint32_value(1, "0801");
+  test_uint32_value(127, "087f");
+  test_uint32_value(128, "088001");
+  test_uint32_value(UINT32_MAX, "08ffffffff0f");
+
+  test_repeated_uint32_value(ut_uint32_list_new(), "");
+  test_repeated_uint32_value(ut_uint32_list_new_from_elements(1, 42), "082a");
+  test_repeated_uint32_value(ut_uint32_list_new_from_elements(3, 1, 2, 3),
+                             "080108020803");
+}
+
+static void test_int32_value(uint32_t value, const char *hex_string) {
   UtObjectRef message =
       ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
           ut_protobuf_message_field_new_take(
@@ -41,7 +66,33 @@ static void test_int32(uint32_t value, const char *hex_string) {
   test_encode(message, message_value, hex_string);
 }
 
-static void test_sint32(int32_t value, const char *hex_string) {
+static void test_repeated_int32_value(UtObject *value, const char *hex_string) {
+  UtObjectRef message =
+      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
+          ut_protobuf_message_field_new_repeated_take(
+              ut_protobuf_primitive_type_new_int32(), "value", 1),
+          NULL));
+  UtObjectRef message_value =
+      ut_map_new_string_from_elements_take("value", value, NULL);
+  test_encode(message, message_value, hex_string);
+}
+
+static void test_int32() {
+  test_int32_value(0, "0800");
+  test_int32_value(1, "0801");
+  test_int32_value(-1, "08ffffffffffffffffff01");
+  test_int32_value(127, "087f");
+  test_int32_value(128, "088001");
+  test_int32_value(INT32_MAX, "08ffffffff07");
+  test_int32_value(INT32_MIN, "0880808080f8ffffffff01");
+
+  test_repeated_int32_value(ut_int32_list_new(), "");
+  test_repeated_int32_value(ut_int32_list_new_from_elements(1, 42), "082a");
+  test_repeated_int32_value(ut_int32_list_new_from_elements(3, 1, 2, 3),
+                            "080108020803");
+}
+
+static void test_sint32_value(int32_t value, const char *hex_string) {
   UtObjectRef message =
       ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
           ut_protobuf_message_field_new_take(
@@ -52,7 +103,34 @@ static void test_sint32(int32_t value, const char *hex_string) {
   test_encode(message, message_value, hex_string);
 }
 
-static void test_fixed32(uint32_t value, const char *hex_string) {
+static void test_repeated_sint32_value(UtObject *value,
+                                       const char *hex_string) {
+  UtObjectRef message =
+      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
+          ut_protobuf_message_field_new_repeated_take(
+              ut_protobuf_primitive_type_new_sint32(), "value", 1),
+          NULL));
+  UtObjectRef message_value =
+      ut_map_new_string_from_elements_take("value", value, NULL);
+  test_encode(message, message_value, hex_string);
+}
+
+static void test_sint32() {
+  test_sint32_value(0, "0800");
+  test_sint32_value(1, "0802");
+  test_sint32_value(-1, "0801");
+  test_sint32_value(63, "087e");
+  test_sint32_value(64, "088001");
+  test_sint32_value(INT32_MAX, "08feffffff0f");
+  test_sint32_value(INT32_MIN, "08ffffffff0f");
+
+  test_repeated_sint32_value(ut_int32_list_new(), "");
+  test_repeated_sint32_value(ut_int32_list_new_from_elements(1, 42), "0854");
+  test_repeated_sint32_value(ut_int32_list_new_from_elements(3, 1, 2, 3),
+                             "080208040806");
+}
+
+static void test_fixed32_value(uint32_t value, const char *hex_string) {
   UtObjectRef message =
       ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
           ut_protobuf_message_field_new_take(
@@ -63,7 +141,32 @@ static void test_fixed32(uint32_t value, const char *hex_string) {
   test_encode(message, message_value, hex_string);
 }
 
-static void test_sfixed32(int32_t value, const char *hex_string) {
+static void test_repeated_fixed32_value(UtObject *value,
+                                        const char *hex_string) {
+  UtObjectRef message =
+      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
+          ut_protobuf_message_field_new_repeated_take(
+              ut_protobuf_primitive_type_new_fixed32(), "value", 1),
+          NULL));
+  UtObjectRef message_value =
+      ut_map_new_string_from_elements_take("value", value, NULL);
+  test_encode(message, message_value, hex_string);
+}
+
+static void test_fixed32() {
+  test_fixed32_value(0, "0d00000000");
+  test_fixed32_value(1, "0d01000000");
+  test_fixed32_value(0x12345678, "0d78563412");
+  test_fixed32_value(UINT32_MAX, "0dffffffff");
+
+  test_repeated_fixed32_value(ut_uint32_list_new(), "");
+  test_repeated_fixed32_value(ut_uint32_list_new_from_elements(1, 42),
+                              "0d2a000000");
+  test_repeated_fixed32_value(ut_uint32_list_new_from_elements(3, 1, 2, 3),
+                              "0d010000000d020000000d03000000");
+}
+
+static void test_sfixed32_value(int32_t value, const char *hex_string) {
   UtObjectRef message =
       ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
           ut_protobuf_message_field_new_take(
@@ -74,7 +177,34 @@ static void test_sfixed32(int32_t value, const char *hex_string) {
   test_encode(message, message_value, hex_string);
 }
 
-static void test_uint64(uint64_t value, const char *hex_string) {
+static void test_repeated_sfixed32_value(UtObject *value,
+                                         const char *hex_string) {
+  UtObjectRef message =
+      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
+          ut_protobuf_message_field_new_repeated_take(
+              ut_protobuf_primitive_type_new_sfixed32(), "value", 1),
+          NULL));
+  UtObjectRef message_value =
+      ut_map_new_string_from_elements_take("value", value, NULL);
+  test_encode(message, message_value, hex_string);
+}
+
+static void test_sfixed32() {
+  test_sfixed32_value(0, "0d00000000");
+  test_sfixed32_value(1, "0d01000000");
+  test_sfixed32_value(-1, "0dffffffff");
+  test_sfixed32_value(0x12345678, "0d78563412");
+  test_sfixed32_value(INT32_MAX, "0dffffff7f");
+  test_sfixed32_value(INT32_MIN, "0d00000080");
+
+  test_repeated_sfixed32_value(ut_int32_list_new(), "");
+  test_repeated_sfixed32_value(ut_int32_list_new_from_elements(1, 42),
+                               "0d2a000000");
+  test_repeated_sfixed32_value(ut_int32_list_new_from_elements(3, 1, 2, 3),
+                               "0d010000000d020000000d03000000");
+}
+
+static void test_uint64_value(uint64_t value, const char *hex_string) {
   UtObjectRef message =
       ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
           ut_protobuf_message_field_new_take(
@@ -85,7 +215,32 @@ static void test_uint64(uint64_t value, const char *hex_string) {
   test_encode(message, message_value, hex_string);
 }
 
-static void test_int64(uint64_t value, const char *hex_string) {
+static void test_repeated_uint64_value(UtObject *value,
+                                       const char *hex_string) {
+  UtObjectRef message =
+      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
+          ut_protobuf_message_field_new_repeated_take(
+              ut_protobuf_primitive_type_new_uint64(), "value", 1),
+          NULL));
+  UtObjectRef message_value =
+      ut_map_new_string_from_elements_take("value", value, NULL);
+  test_encode(message, message_value, hex_string);
+}
+
+static void test_uint64() {
+  test_uint64_value(0, "0800");
+  test_uint64_value(1, "0801");
+  test_uint64_value(127, "087f");
+  test_uint64_value(128, "088001");
+  test_uint64_value(UINT64_MAX, "08ffffffffffffffffff01");
+
+  test_repeated_uint64_value(ut_uint64_list_new(), "");
+  test_repeated_uint64_value(ut_uint64_list_new_from_elements(1, 42), "082a");
+  test_repeated_uint64_value(ut_uint64_list_new_from_elements(3, 1, 2, 3),
+                             "080108020803");
+}
+
+static void test_int64_value(uint64_t value, const char *hex_string) {
   UtObjectRef message =
       ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
           ut_protobuf_message_field_new_take(
@@ -96,7 +251,35 @@ static void test_int64(uint64_t value, const char *hex_string) {
   test_encode(message, message_value, hex_string);
 }
 
-static void test_sint64(int64_t value, const char *hex_string) {
+static void test_repeated_int64_value(UtObject *value, const char *hex_string) {
+  UtObjectRef message =
+      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
+          ut_protobuf_message_field_new_repeated_take(
+              ut_protobuf_primitive_type_new_int64(), "value", 1),
+          NULL));
+  UtObjectRef message_value =
+      ut_map_new_string_from_elements_take("value", value, NULL);
+  test_encode(message, message_value, hex_string);
+}
+
+static void test_int64() {
+  test_int64_value(0, "0800");
+  test_int64_value(1, "0801");
+  test_int64_value(-1, "08ffffffffffffffffff01");
+  test_int64_value(127, "087f");
+  test_int64_value(128, "088001");
+  test_int64_value(INT64_MAX, "08ffffffffffffffff7f");
+  test_int64_value(INT64_MIN, "0880808080808080808001");
+
+  test_repeated_int64_value(ut_int64_list_new(), "");
+  test_repeated_int64_value(ut_int64_list_new_from_elements(1, (int64_t)42),
+                            "082a");
+  test_repeated_int64_value(
+      ut_int64_list_new_from_elements(3, (int64_t)1, (int64_t)2, (int64_t)3),
+      "080108020803");
+}
+
+static void test_sint64_value(int64_t value, const char *hex_string) {
   UtObjectRef message =
       ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
           ut_protobuf_message_field_new_take(
@@ -107,7 +290,35 @@ static void test_sint64(int64_t value, const char *hex_string) {
   test_encode(message, message_value, hex_string);
 }
 
-static void test_fixed64(uint64_t value, const char *hex_string) {
+static void test_repeated_sint64_value(UtObject *value,
+                                       const char *hex_string) {
+  UtObjectRef message =
+      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
+          ut_protobuf_message_field_new_repeated_take(
+              ut_protobuf_primitive_type_new_sint64(), "value", 1),
+          NULL));
+  UtObjectRef message_value =
+      ut_map_new_string_from_elements_take("value", value, NULL);
+  test_encode(message, message_value, hex_string);
+}
+
+static void test_sint64() {
+  test_sint64_value(0, "0800");
+  test_sint64_value(1, "0802");
+  test_sint64_value(-1, "0801");
+  test_sint64_value(63, "087e");
+  test_sint64_value(64, "088001");
+  test_sint64_value(INT64_MAX, "08feffffffffffffffff01");
+  test_sint64_value(INT64_MIN, "08ffffffffffffffffff01");
+
+  test_repeated_sint64_value(ut_int64_list_new(), "");
+  test_repeated_sint64_value(ut_int64_list_new_from_elements(1, 42), "0854");
+  test_repeated_sint64_value(
+      ut_int64_list_new_from_elements(3, (int64_t)1, (int64_t)2, (int64_t)3),
+      "080208040806");
+}
+
+static void test_fixed64_value(uint64_t value, const char *hex_string) {
   UtObjectRef message =
       ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
           ut_protobuf_message_field_new_take(
@@ -118,7 +329,34 @@ static void test_fixed64(uint64_t value, const char *hex_string) {
   test_encode(message, message_value, hex_string);
 }
 
-static void test_sfixed64(int64_t value, const char *hex_string) {
+static void test_repeated_fixed64_value(UtObject *value,
+                                        const char *hex_string) {
+  UtObjectRef message =
+      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
+          ut_protobuf_message_field_new_repeated_take(
+              ut_protobuf_primitive_type_new_fixed64(), "value", 1),
+          NULL));
+  UtObjectRef message_value =
+      ut_map_new_string_from_elements_take("value", value, NULL);
+  test_encode(message, message_value, hex_string);
+}
+
+static void test_fixed64() {
+  test_fixed64_value(0, "090000000000000000");
+  test_fixed64_value(1, "090100000000000000");
+  test_fixed64_value(0x123456789abcdef0, "09f0debc9a78563412");
+  test_fixed64_value(UINT64_MAX, "09ffffffffffffffff");
+
+  test_repeated_fixed64_value(ut_uint64_list_new(), "");
+  test_repeated_fixed64_value(ut_uint64_list_new_from_elements(1, 42),
+                              "092a00000000000000");
+  test_repeated_fixed64_value(
+      ut_uint64_list_new_from_elements(3, (uint64_t)1, (uint64_t)2,
+                                       (uint64_t)3),
+      "090100000000000000090200000000000000090300000000000000");
+}
+
+static void test_sfixed64_value(int64_t value, const char *hex_string) {
   UtObjectRef message =
       ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
           ut_protobuf_message_field_new_take(
@@ -129,7 +367,35 @@ static void test_sfixed64(int64_t value, const char *hex_string) {
   test_encode(message, message_value, hex_string);
 }
 
-static void test_bool(bool value, const char *hex_string) {
+static void test_repeated_sfixed64_value(UtObject *value,
+                                         const char *hex_string) {
+  UtObjectRef message =
+      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
+          ut_protobuf_message_field_new_repeated_take(
+              ut_protobuf_primitive_type_new_sfixed64(), "value", 1),
+          NULL));
+  UtObjectRef message_value =
+      ut_map_new_string_from_elements_take("value", value, NULL);
+  test_encode(message, message_value, hex_string);
+}
+
+static void test_sfixed64() {
+  test_sfixed64_value(0, "090000000000000000");
+  test_sfixed64_value(1, "090100000000000000");
+  test_sfixed64_value(-1, "09ffffffffffffffff");
+  test_sfixed64_value(0x123456789abcdef0, "09f0debc9a78563412");
+  test_sfixed64_value(INT64_MAX, "09ffffffffffffff7f");
+  test_sfixed64_value(INT64_MIN, "090000000000000080");
+
+  test_repeated_sfixed64_value(ut_int64_list_new(), "");
+  test_repeated_sfixed64_value(ut_int64_list_new_from_elements(1, 42),
+                               "092a00000000000000");
+  test_repeated_sfixed64_value(
+      ut_int64_list_new_from_elements(3, (int64_t)1, (int64_t)2, (int64_t)3),
+      "090100000000000000090200000000000000090300000000000000");
+}
+
+static void test_bool_value(bool value, const char *hex_string) {
   UtObjectRef message =
       ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
           ut_protobuf_message_field_new_take(
@@ -140,7 +406,33 @@ static void test_bool(bool value, const char *hex_string) {
   test_encode(message, message_value, hex_string);
 }
 
-static void test_float(float value, const char *hex_string) {
+static void test_repeated_bool_value(UtObject *value, const char *hex_string) {
+  UtObjectRef message =
+      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
+          ut_protobuf_message_field_new_repeated_take(
+              ut_protobuf_primitive_type_new_bool(), "value", 1),
+          NULL));
+  UtObjectRef message_value =
+      ut_map_new_string_from_elements("value", value, NULL);
+  test_encode(message, message_value, hex_string);
+}
+
+static void test_bool() {
+  test_bool_value(false, "0800");
+  test_bool_value(true, "0801");
+
+  UtObjectRef v1 = ut_boolean_list_new();
+  test_repeated_bool_value(v1, "");
+  UtObjectRef v2 = ut_boolean_list_new();
+  ut_boolean_list_append(v2, true);
+  test_repeated_bool_value(v2, "0801");
+  UtObjectRef v3 = ut_boolean_list_new();
+  ut_boolean_list_append(v3, false);
+  ut_boolean_list_append(v3, true);
+  test_repeated_bool_value(v3, "08000801");
+}
+
+static void test_float_value(float value, const char *hex_string) {
   UtObjectRef message =
       ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
           ut_protobuf_message_field_new_take(
@@ -151,7 +443,32 @@ static void test_float(float value, const char *hex_string) {
   test_encode(message, message_value, hex_string);
 }
 
-static void test_double(double value, const char *hex_string) {
+static void test_repeated_float_value(UtObject *value, const char *hex_string) {
+  UtObjectRef message =
+      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
+          ut_protobuf_message_field_new_repeated_take(
+              ut_protobuf_primitive_type_new_float(), "value", 1),
+          NULL));
+  UtObjectRef message_value =
+      ut_map_new_string_from_elements_take("value", value, NULL);
+  test_encode(message, message_value, hex_string);
+}
+
+static void test_float() {
+  test_float_value(0, "0d00000000");
+  test_float_value(1, "0d0000803f");
+  test_float_value(-1, "0d000080bf");
+  test_float_value(3.14159, "0dd00f4940");
+  test_float_value(FLT_MAX, "0dffff7f7f");
+
+  test_repeated_float_value(ut_float32_list_new(), "");
+  test_repeated_float_value(ut_float32_list_new_from_elements(1, 1.0f),
+                            "0d0000803f");
+  test_repeated_float_value(ut_float32_list_new_from_elements(2, 1.0f, -1.0f),
+                            "0d0000803f0d000080bf");
+}
+
+static void test_double_value(double value, const char *hex_string) {
   UtObjectRef message =
       ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
           ut_protobuf_message_field_new_take(
@@ -162,7 +479,33 @@ static void test_double(double value, const char *hex_string) {
   test_encode(message, message_value, hex_string);
 }
 
-static void test_string(const char *value, const char *hex_string) {
+static void test_repeated_double_value(UtObject *value,
+                                       const char *hex_string) {
+  UtObjectRef message =
+      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
+          ut_protobuf_message_field_new_repeated_take(
+              ut_protobuf_primitive_type_new_double(), "value", 1),
+          NULL));
+  UtObjectRef message_value =
+      ut_map_new_string_from_elements_take("value", value, NULL);
+  test_encode(message, message_value, hex_string);
+}
+
+static void test_double() {
+  test_double_value(0, "090000000000000000");
+  test_double_value(1, "09000000000000f03f");
+  test_double_value(-1, "09000000000000f0bf");
+  test_double_value(3.14159, "096e861bf0f9210940");
+  test_double_value(DBL_MAX, "09ffffffffffffef7f");
+
+  test_repeated_double_value(ut_float64_list_new(), "");
+  test_repeated_double_value(ut_float64_list_new_from_elements(1, 1.0),
+                             "09000000000000f03f");
+  test_repeated_double_value(ut_float64_list_new_from_elements(2, 1.0, -1.0),
+                             "09000000000000f03f09000000000000f0bf");
+}
+
+static void test_string_value(const char *value, const char *hex_string) {
   UtObjectRef message =
       ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
           ut_protobuf_message_field_new_take(
@@ -173,7 +516,32 @@ static void test_string(const char *value, const char *hex_string) {
   test_encode(message, message_value, hex_string);
 }
 
-static void test_bytes(const char *hex_value, const char *hex_string) {
+static void test_repeated_string_value(UtObject *value,
+                                       const char *hex_string) {
+  UtObjectRef message =
+      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
+          ut_protobuf_message_field_new_repeated_take(
+              ut_protobuf_primitive_type_new_string(), "value", 1),
+          NULL));
+  UtObjectRef message_value =
+      ut_map_new_string_from_elements_take("value", value, NULL);
+  test_encode(message, message_value, hex_string);
+}
+
+static void test_string() {
+  test_string_value("", "0a00");
+  test_string_value("H", "0a0148");
+  test_string_value("Hello World!", "0a0c48656c6c6f20576f726c6421");
+  test_string_value("$¢€𐐷😀", "0a0e24c2a2e282acf09090b7f09f9880");
+
+  test_repeated_string_value(ut_string_list_new(), "");
+  test_repeated_string_value(ut_string_list_new_from_elements("H", NULL),
+                             "0a0148");
+  test_repeated_string_value(ut_string_list_new_from_elements("H", "W", NULL),
+                             "0a01480a0157");
+}
+
+static void test_bytes_value(const char *hex_value, const char *hex_string) {
   UtObjectRef message =
       ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
           ut_protobuf_message_field_new_take(
@@ -183,6 +551,32 @@ static void test_bytes(const char *hex_value, const char *hex_string) {
   UtObjectRef message_value =
       ut_map_new_string_from_elements("value", value, NULL);
   test_encode(message, message_value, hex_string);
+}
+
+static void test_repeated_bytes_value(UtObject *value, const char *hex_string) {
+  UtObjectRef message =
+      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
+          ut_protobuf_message_field_new_repeated_take(
+              ut_protobuf_primitive_type_new_bytes(), "value", 1),
+          NULL));
+  UtObjectRef message_value =
+      ut_map_new_string_from_elements_take("value", value, NULL);
+  test_encode(message, message_value, hex_string);
+}
+
+static void test_bytes() {
+  test_bytes_value("", "0a00");
+  test_bytes_value("ff", "0a01ff");
+  test_bytes_value("deadbeef", "0a04deadbeef");
+
+  test_repeated_bytes_value(ut_list_new(), "");
+  test_repeated_bytes_value(ut_list_new_from_elements_take(
+                                ut_uint8_list_new_from_hex_string("ff"), NULL),
+                            "0a01ff");
+  test_repeated_bytes_value(ut_list_new_from_elements_take(
+                                ut_uint8_list_new_from_hex_string("de"),
+                                ut_uint8_list_new_from_hex_string("ad"), NULL),
+                            "0a01de0a01ad");
 }
 
 static void test_enum() {
@@ -268,97 +662,21 @@ static void test_optional() {
 }
 
 int main(int argc, char **argv) {
-  test_uint32(0, "0800");
-  test_uint32(1, "0801");
-  test_uint32(127, "087f");
-  test_uint32(128, "088001");
-  test_uint32(UINT32_MAX, "08ffffffff0f");
-
-  test_int32(0, "0800");
-  test_int32(1, "0801");
-  test_int32(-1, "08ffffffffffffffffff01");
-  test_int32(127, "087f");
-  test_int32(128, "088001");
-  test_int32(INT32_MAX, "08ffffffff07");
-  test_int32(INT32_MIN, "0880808080f8ffffffff01");
-
-  test_sint32(0, "0800");
-  test_sint32(1, "0802");
-  test_sint32(-1, "0801");
-  test_sint32(63, "087e");
-  test_sint32(64, "088001");
-  test_sint32(INT32_MAX, "08feffffff0f");
-  test_sint32(INT32_MIN, "08ffffffff0f");
-
-  test_fixed32(0, "0d00000000");
-  test_fixed32(1, "0d01000000");
-  test_fixed32(0x12345678, "0d78563412");
-  test_fixed32(UINT32_MAX, "0dffffffff");
-
-  test_sfixed32(0, "0d00000000");
-  test_sfixed32(1, "0d01000000");
-  test_sfixed32(-1, "0dffffffff");
-  test_sfixed32(0x12345678, "0d78563412");
-  test_sfixed32(INT32_MAX, "0dffffff7f");
-  test_sfixed32(INT32_MIN, "0d00000080");
-
-  test_uint64(0, "0800");
-  test_uint64(1, "0801");
-  test_uint64(127, "087f");
-  test_uint64(128, "088001");
-  test_uint64(UINT64_MAX, "08ffffffffffffffffff01");
-
-  test_int64(0, "0800");
-  test_int64(1, "0801");
-  test_int64(-1, "08ffffffffffffffffff01");
-  test_int64(127, "087f");
-  test_int64(128, "088001");
-  test_int64(INT64_MAX, "08ffffffffffffffff7f");
-  test_int64(INT64_MIN, "0880808080808080808001");
-
-  test_sint64(0, "0800");
-  test_sint64(1, "0802");
-  test_sint64(-1, "0801");
-  test_sint64(63, "087e");
-  test_sint64(64, "088001");
-  test_sint64(INT64_MAX, "08feffffffffffffffff01");
-  test_sint64(INT64_MIN, "08ffffffffffffffffff01");
-
-  test_fixed64(0, "090000000000000000");
-  test_fixed64(1, "090100000000000000");
-  test_fixed64(0x123456789abcdef0, "09f0debc9a78563412");
-  test_fixed64(UINT64_MAX, "09ffffffffffffffff");
-
-  test_sfixed64(0, "090000000000000000");
-  test_sfixed64(1, "090100000000000000");
-  test_sfixed64(-1, "09ffffffffffffffff");
-  test_sfixed64(0x123456789abcdef0, "09f0debc9a78563412");
-  test_sfixed64(INT64_MAX, "09ffffffffffffff7f");
-  test_sfixed64(INT64_MIN, "090000000000000080");
-
-  test_bool(false, "0800");
-  test_bool(true, "0801");
-
-  test_float(0, "0d00000000");
-  test_float(1, "0d0000803f");
-  test_float(-1, "0d000080bf");
-  test_float(3.14159, "0dd00f4940");
-  test_float(FLT_MAX, "0dffff7f7f");
-
-  test_double(0, "090000000000000000");
-  test_double(1, "09000000000000f03f");
-  test_double(-1, "09000000000000f0bf");
-  test_double(3.14159, "096e861bf0f9210940");
-  test_double(DBL_MAX, "09ffffffffffffef7f");
-
-  test_string("", "0a00");
-  test_string("H", "0a0148");
-  test_string("Hello World!", "0a0c48656c6c6f20576f726c6421");
-  test_string("$¢€𐐷😀", "0a0e24c2a2e282acf09090b7f09f9880");
-
-  test_bytes("", "0a00");
-  test_bytes("ff", "0a01ff");
-  test_bytes("deadbeef", "0a04deadbeef");
+  test_uint32();
+  test_int32();
+  test_sint32();
+  test_fixed32();
+  test_sfixed32();
+  test_uint64();
+  test_int64();
+  test_sint64();
+  test_fixed64();
+  test_sfixed64();
+  test_bool();
+  test_float();
+  test_double();
+  test_string();
+  test_bytes();
 
   test_enum();
 

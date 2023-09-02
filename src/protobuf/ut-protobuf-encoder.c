@@ -232,7 +232,308 @@ static bool check_type(UtProtobufEncoder *self, bool (*is_type)(UtObject *),
   return false;
 }
 
-static void encode_message(UtProtobufEncoder *self, UtObject *type,
+static bool encode_message(UtProtobufEncoder *self, UtObject *type,
+                           UtObject *value);
+
+static bool encode_repeated_field(UtProtobufEncoder *self, uint32_t number,
+                                  UtObject *type, UtObject *value) {
+  size_t value_length;
+  if (ut_object_is_protobuf_primitive_type(type)) {
+    switch (ut_protobuf_primitive_type_get_type(type)) {
+    case UT_PROTOBUF_PRIMITIVE_DOUBLE:
+      if (!check_type(self, ut_object_implements_float64_list, value,
+                      "double")) {
+        return false;
+      }
+      value_length = ut_list_get_length(value);
+      for (size_t i = 0; i < value_length; i++) {
+        encode_double(self, number, ut_float64_list_get_element(value, i));
+      }
+      return true;
+    case UT_PROTOBUF_PRIMITIVE_FLOAT:
+      if (!check_type(self, ut_object_implements_float32_list, value,
+                      "float")) {
+        return false;
+      }
+      value_length = ut_list_get_length(value);
+      for (size_t i = 0; i < value_length; i++) {
+        encode_float(self, number, ut_float32_list_get_element(value, i));
+      }
+      return true;
+    case UT_PROTOBUF_PRIMITIVE_INT32:
+      if (!check_type(self, ut_object_implements_int32_list, value, "int32")) {
+        return false;
+      }
+      value_length = ut_list_get_length(value);
+      for (size_t i = 0; i < value_length; i++) {
+        encode_int32(self, number, ut_int32_list_get_element(value, i));
+      }
+      return true;
+    case UT_PROTOBUF_PRIMITIVE_INT64:
+      if (!check_type(self, ut_object_implements_int64_list, value, "int64")) {
+        return false;
+      }
+      value_length = ut_list_get_length(value);
+      for (size_t i = 0; i < value_length; i++) {
+        encode_int64(self, number, ut_int64_list_get_element(value, i));
+      }
+      return true;
+    case UT_PROTOBUF_PRIMITIVE_UINT32:
+      if (!check_type(self, ut_object_implements_uint32_list, value,
+                      "uint32")) {
+        return false;
+      }
+      value_length = ut_list_get_length(value);
+      for (size_t i = 0; i < value_length; i++) {
+        encode_uint32(self, number, ut_uint32_list_get_element(value, i));
+      }
+      return true;
+    case UT_PROTOBUF_PRIMITIVE_UINT64:
+      if (!check_type(self, ut_object_implements_uint64_list, value,
+                      "uint64")) {
+        return false;
+      }
+      value_length = ut_list_get_length(value);
+      for (size_t i = 0; i < value_length; i++) {
+        encode_uint64(self, number, ut_uint64_list_get_element(value, i));
+      }
+      return true;
+    case UT_PROTOBUF_PRIMITIVE_SINT32:
+      if (!check_type(self, ut_object_implements_int32_list, value, "sint32")) {
+        return false;
+      }
+      value_length = ut_list_get_length(value);
+      for (size_t i = 0; i < value_length; i++) {
+        encode_sint32(self, number, ut_int32_list_get_element(value, i));
+      }
+      return true;
+    case UT_PROTOBUF_PRIMITIVE_SINT64:
+      if (!check_type(self, ut_object_implements_int64_list, value, "sint64")) {
+        return false;
+      }
+      value_length = ut_list_get_length(value);
+      for (size_t i = 0; i < value_length; i++) {
+        encode_sint64(self, number, ut_int64_list_get_element(value, i));
+      }
+      return true;
+    case UT_PROTOBUF_PRIMITIVE_FIXED32:
+      if (!check_type(self, ut_object_implements_uint32_list, value,
+                      "fixed32")) {
+        return false;
+      }
+      value_length = ut_list_get_length(value);
+      for (size_t i = 0; i < value_length; i++) {
+        encode_fixed32(self, number, ut_uint32_list_get_element(value, i));
+      }
+      return true;
+    case UT_PROTOBUF_PRIMITIVE_FIXED64:
+      if (!check_type(self, ut_object_implements_uint64_list, value,
+                      "fixed64")) {
+        return false;
+      }
+      value_length = ut_list_get_length(value);
+      for (size_t i = 0; i < value_length; i++) {
+        encode_fixed64(self, number, ut_uint64_list_get_element(value, i));
+      }
+      return true;
+    case UT_PROTOBUF_PRIMITIVE_SFIXED32:
+      if (!check_type(self, ut_object_implements_int32_list, value,
+                      "sfixed32")) {
+        return false;
+      }
+      value_length = ut_list_get_length(value);
+      for (size_t i = 0; i < value_length; i++) {
+        encode_sfixed32(self, number, ut_int32_list_get_element(value, i));
+      }
+      return true;
+    case UT_PROTOBUF_PRIMITIVE_SFIXED64:
+      if (!check_type(self, ut_object_implements_int64_list, value,
+                      "sfixed64")) {
+        return false;
+      }
+      value_length = ut_list_get_length(value);
+      for (size_t i = 0; i < value_length; i++) {
+        encode_sfixed64(self, number, ut_int64_list_get_element(value, i));
+      }
+      return true;
+    case UT_PROTOBUF_PRIMITIVE_BOOL:
+      if (!check_type(self, ut_object_implements_boolean_list, value, "bool")) {
+        return false;
+      }
+      value_length = ut_list_get_length(value);
+      for (size_t i = 0; i < value_length; i++) {
+        encode_bool(self, number, ut_boolean_list_get_element(value, i));
+      }
+      return true;
+    case UT_PROTOBUF_PRIMITIVE_STRING:
+      if (!check_type(self, ut_object_implements_string_list, value,
+                      "string")) {
+        return false;
+      }
+      value_length = ut_list_get_length(value);
+      for (size_t i = 0; i < value_length; i++) {
+        encode_string(self, number, ut_string_list_get_element(value, i));
+      }
+      return true;
+    case UT_PROTOBUF_PRIMITIVE_BYTES:
+      if (!check_type(self, ut_object_implements_list, value, "bytes")) {
+        return false;
+      }
+      value_length = ut_list_get_length(value);
+      for (size_t i = 0; i < value_length; i++) {
+        UtObject *data = ut_object_list_get_element(value, i);
+        encode_bytes(self, number, data);
+      }
+      return true;
+    }
+  } else if (ut_object_is_protobuf_enum_type(type)) {
+    if (!check_type(self, ut_object_implements_string_list, value, "enum")) {
+      return false;
+    }
+    value_length = ut_list_get_length(value);
+    for (size_t i = 0; i < value_length; i++) {
+      encode_enum(self, number, type, ut_string_list_get_element(value, i));
+    }
+    return true;
+  } else if (ut_object_is_protobuf_message_type(type)) {
+    if (!check_type(self, ut_object_implements_map, value, "message")) {
+      return false;
+    }
+    value_length = ut_list_get_length(value);
+    for (size_t i = 0; i < value_length; i++) {
+      UtObject *message = ut_object_list_get_element(value, i);
+      if (!encode_message(self, type, message)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  ut_cstring_ref type_string = ut_object_to_string(type);
+  ut_cstring_ref description =
+      ut_cstring_new_printf("Unknown Protobuf repeated type %s", type_string);
+  set_error(self, description);
+
+  return false;
+}
+
+static bool encode_single_field(UtProtobufEncoder *self, uint32_t number,
+                                UtObject *type, UtObject *value) {
+  if (ut_object_is_protobuf_primitive_type(type)) {
+    switch (ut_protobuf_primitive_type_get_type(type)) {
+    case UT_PROTOBUF_PRIMITIVE_DOUBLE:
+      if (!check_type(self, ut_object_is_float64, value, "double")) {
+        return false;
+      }
+      encode_double(self, number, ut_float64_get_value(value));
+      return true;
+    case UT_PROTOBUF_PRIMITIVE_FLOAT:
+      if (!check_type(self, ut_object_is_float32, value, "float")) {
+        return false;
+      }
+      encode_float(self, number, ut_float32_get_value(value));
+      return true;
+    case UT_PROTOBUF_PRIMITIVE_INT32:
+      if (!check_type(self, ut_object_is_int32, value, "int32")) {
+        return false;
+      }
+      encode_int32(self, number, ut_int32_get_value(value));
+      return true;
+    case UT_PROTOBUF_PRIMITIVE_INT64:
+      if (!check_type(self, ut_object_is_int64, value, "int64")) {
+        return false;
+      }
+      encode_int64(self, number, ut_int64_get_value(value));
+      return true;
+    case UT_PROTOBUF_PRIMITIVE_UINT32:
+      if (!check_type(self, ut_object_is_uint32, value, "uint32")) {
+        return false;
+      }
+      encode_uint32(self, number, ut_uint32_get_value(value));
+      return true;
+    case UT_PROTOBUF_PRIMITIVE_UINT64:
+      if (!check_type(self, ut_object_is_uint64, value, "uint64")) {
+        return false;
+      }
+      encode_uint64(self, number, ut_uint64_get_value(value));
+      return true;
+    case UT_PROTOBUF_PRIMITIVE_SINT32:
+      if (!check_type(self, ut_object_is_int32, value, "sint32")) {
+        return false;
+      }
+      encode_sint32(self, number, ut_int32_get_value(value));
+      return true;
+    case UT_PROTOBUF_PRIMITIVE_SINT64:
+      if (!check_type(self, ut_object_is_int64, value, "sint64")) {
+        return false;
+      }
+      encode_sint64(self, number, ut_int64_get_value(value));
+      return true;
+    case UT_PROTOBUF_PRIMITIVE_FIXED32:
+      if (!check_type(self, ut_object_is_uint32, value, "fixed32")) {
+        return false;
+      }
+      encode_fixed32(self, number, ut_uint32_get_value(value));
+      return true;
+    case UT_PROTOBUF_PRIMITIVE_FIXED64:
+      if (!check_type(self, ut_object_is_uint64, value, "fixed64")) {
+        return false;
+      }
+      encode_fixed64(self, number, ut_uint64_get_value(value));
+      return true;
+    case UT_PROTOBUF_PRIMITIVE_SFIXED32:
+      if (!check_type(self, ut_object_is_int32, value, "sfixed32")) {
+        return false;
+      }
+      encode_sfixed32(self, number, ut_int32_get_value(value));
+      return true;
+    case UT_PROTOBUF_PRIMITIVE_SFIXED64:
+      if (!check_type(self, ut_object_is_int64, value, "sfixed64")) {
+        return false;
+      }
+      encode_sfixed64(self, number, ut_int64_get_value(value));
+      return true;
+    case UT_PROTOBUF_PRIMITIVE_BOOL:
+      if (!check_type(self, ut_object_is_boolean, value, "bool")) {
+        return false;
+      }
+      encode_bool(self, number, ut_boolean_get_value(value));
+      return true;
+    case UT_PROTOBUF_PRIMITIVE_STRING:
+      if (!check_type(self, ut_object_implements_string, value, "string")) {
+        return false;
+      }
+      encode_string(self, number, ut_string_get_text(value));
+      return true;
+    case UT_PROTOBUF_PRIMITIVE_BYTES:
+      if (!check_type(self, ut_object_implements_uint8_list, value, "bytes")) {
+        return false;
+      }
+      encode_bytes(self, number, value);
+      return true;
+    }
+  } else if (ut_object_is_protobuf_enum_type(type)) {
+    if (!check_type(self, ut_object_implements_string, value, "enum")) {
+      return false;
+    }
+    encode_enum(self, number, type, ut_string_get_text(value));
+    return true;
+  } else if (ut_object_is_protobuf_message_type(type)) {
+    if (!check_type(self, ut_object_implements_map, value, "message")) {
+      return false;
+    }
+    encode_message(self, type, value);
+    return true;
+  }
+
+  ut_cstring_ref type_string = ut_object_to_string(type);
+  ut_cstring_ref description =
+      ut_cstring_new_printf("Unknown Protobuf type %s", type_string);
+  set_error(self, description);
+  return false;
+}
+
+static bool encode_message(UtProtobufEncoder *self, UtObject *type,
                            UtObject *value) {
   UtObject *fields = ut_protobuf_message_type_get_fields(type);
   size_t fields_length = ut_list_get_length(fields);
@@ -254,106 +555,22 @@ static void encode_message(UtProtobufEncoder *self, UtObject *type,
       ut_cstring_ref description =
           ut_cstring_new_printf("Missing field %s", name);
       set_error(self, description);
-      return;
+      return false;
     }
 
-    if (ut_object_is_protobuf_primitive_type(field_value_type)) {
-      switch (ut_protobuf_primitive_type_get_type(field_value_type)) {
-      case UT_PROTOBUF_PRIMITIVE_DOUBLE:
-        if (check_type(self, ut_object_is_float64, field_value, "double")) {
-          encode_double(self, number, ut_float64_get_value(field_value));
-        }
-        break;
-      case UT_PROTOBUF_PRIMITIVE_FLOAT:
-        if (check_type(self, ut_object_is_float32, field_value, "float")) {
-          encode_float(self, number, ut_float32_get_value(field_value));
-        }
-        break;
-      case UT_PROTOBUF_PRIMITIVE_INT32:
-        if (check_type(self, ut_object_is_int32, field_value, "int32")) {
-          encode_int32(self, number, ut_int32_get_value(field_value));
-        }
-        break;
-      case UT_PROTOBUF_PRIMITIVE_INT64:
-        if (check_type(self, ut_object_is_int64, field_value, "int64")) {
-          encode_int64(self, number, ut_int64_get_value(field_value));
-        }
-        break;
-      case UT_PROTOBUF_PRIMITIVE_UINT32:
-        if (check_type(self, ut_object_is_uint32, field_value, "uint32")) {
-          encode_uint32(self, number, ut_uint32_get_value(field_value));
-        }
-        break;
-      case UT_PROTOBUF_PRIMITIVE_UINT64:
-        if (check_type(self, ut_object_is_uint64, field_value, "uint64")) {
-          encode_uint64(self, number, ut_uint64_get_value(field_value));
-        }
-        break;
-      case UT_PROTOBUF_PRIMITIVE_SINT32:
-        if (check_type(self, ut_object_is_int32, field_value, "sint32")) {
-          encode_sint32(self, number, ut_int32_get_value(field_value));
-        }
-        break;
-      case UT_PROTOBUF_PRIMITIVE_SINT64:
-        if (check_type(self, ut_object_is_int64, field_value, "sint64")) {
-          encode_sint64(self, number, ut_int64_get_value(field_value));
-        }
-        break;
-      case UT_PROTOBUF_PRIMITIVE_FIXED32:
-        if (check_type(self, ut_object_is_uint32, field_value, "fixed32")) {
-          encode_fixed32(self, number, ut_uint32_get_value(field_value));
-        }
-        break;
-      case UT_PROTOBUF_PRIMITIVE_FIXED64:
-        if (check_type(self, ut_object_is_uint64, field_value, "fixed64")) {
-          encode_fixed64(self, number, ut_uint64_get_value(field_value));
-        }
-        break;
-      case UT_PROTOBUF_PRIMITIVE_SFIXED32:
-        if (check_type(self, ut_object_is_int32, field_value, "sfixed32")) {
-          encode_sfixed32(self, number, ut_int32_get_value(field_value));
-        }
-        break;
-      case UT_PROTOBUF_PRIMITIVE_SFIXED64:
-        if (check_type(self, ut_object_is_int64, field_value, "sfixed64")) {
-          encode_sfixed64(self, number, ut_int64_get_value(field_value));
-        }
-        break;
-      case UT_PROTOBUF_PRIMITIVE_BOOL:
-        if (check_type(self, ut_object_is_boolean, field_value, "bool")) {
-          encode_bool(self, number, ut_boolean_get_value(field_value));
-        }
-        break;
-      case UT_PROTOBUF_PRIMITIVE_STRING:
-        if (check_type(self, ut_object_implements_string, field_value,
-                       "string")) {
-          encode_string(self, number, ut_string_get_text(field_value));
-        }
-        break;
-      case UT_PROTOBUF_PRIMITIVE_BYTES:
-        if (check_type(self, ut_object_implements_uint8_list, field_value,
-                       "bytes")) {
-          encode_bytes(self, number, field_value);
-        }
-        break;
+    if (field_type == UT_PROTOBUF_MESSAGE_FIELD_TYPE_REPEATED) {
+      if (!encode_repeated_field(self, number, field_value_type, field_value)) {
+        return false;
       }
-    } else if (ut_object_is_protobuf_enum_type(field_value_type)) {
-      if (check_type(self, ut_object_implements_string, field_value, "enum")) {
-        encode_enum(self, number, field_value_type,
-                    ut_string_get_text(field_value));
-      }
-    } else if (ut_object_is_protobuf_message_type(field_value_type)) {
-      if (check_type(self, ut_object_implements_map, field_value, "message")) {
-        encode_message(self, field_value_type, value);
-      }
-    } else {
-      ut_cstring_ref type_string = ut_object_to_string(field_value_type);
-      ut_cstring_ref description =
-          ut_cstring_new_printf("Unknown Protobuf type %s", type_string);
-      set_error(self, description);
-      return;
+      continue;
+    }
+
+    if (!encode_single_field(self, number, field_value_type, field_value)) {
+      return false;
     }
   }
+
+  return true;
 }
 
 static void ut_protobuf_encoder_init(UtObject *object) {
