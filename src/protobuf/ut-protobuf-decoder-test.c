@@ -44,6 +44,7 @@ static void test_uint32() {
   // Second value is the one kept.
   test_uint32_value(message, "08010802", 2);
 
+  test_decode_error(message, "", "Missing required field value");
   test_decode_error(message, "090000000000000000",
                     "Received I64 for non-I64 field");
   test_decode_error(message, "0a00", "Received LEN for non-LEN field");
@@ -84,6 +85,7 @@ static void test_int32() {
   // Second value is the one kept.
   test_int32_value(message, "08010802", 2);
 
+  test_decode_error(message, "", "Missing required field value");
   test_decode_error(message, "090000000000000000",
                     "Received I64 for non-I64 field");
   test_decode_error(message, "0a00", "Received LEN for non-LEN field");
@@ -126,6 +128,7 @@ static void test_sint32() {
   // Second value is the one kept.
   test_sint32_value(message, "08020804", 2);
 
+  test_decode_error(message, "", "Missing required field value");
   test_decode_error(message, "090000000000000000",
                     "Received I64 for non-I64 field");
   test_decode_error(message, "0a00", "Received LEN for non-LEN field");
@@ -163,6 +166,7 @@ static void test_fixed32() {
   // Second value is the one kept.
   test_fixed32_value(message, "0d010000000d02000000", 2);
 
+  test_decode_error(message, "", "Missing required field value");
   test_decode_error(message, "0800", "Received VARINT for non-VARINT field");
   test_decode_error(message, "090000000000000000",
                     "Received I64 for non-I64 field");
@@ -204,6 +208,7 @@ static void test_sfixed32() {
   // Second value is the one kept.
   test_sfixed32_value(message, "0d010000000d02000000", 2);
 
+  test_decode_error(message, "", "Missing required field value");
   test_decode_error(message, "0800", "Received VARINT for non-VARINT field");
   test_decode_error(message, "090000000000000000",
                     "Received I64 for non-I64 field");
@@ -244,6 +249,7 @@ static void test_uint64() {
   // Second value is the one kept.
   test_uint64_value(message, "08010802", 2);
 
+  test_decode_error(message, "", "Missing required field value");
   test_decode_error(message, "090000000000000000",
                     "Received I64 for non-I64 field");
   test_decode_error(message, "0a00", "Received LEN for non-LEN field");
@@ -284,6 +290,7 @@ static void test_int64() {
   // Second value is the one kept.
   test_int64_value(message, "08010802", 2);
 
+  test_decode_error(message, "", "Missing required field value");
   test_decode_error(message, "090000000000000000",
                     "Received I64 for non-I64 field");
   test_decode_error(message, "0a00", "Received LEN for non-LEN field");
@@ -324,6 +331,7 @@ static void test_sint64() {
   // Second value is the one kept.
   test_sint64_value(message, "08020804", 2);
 
+  test_decode_error(message, "", "Missing required field value");
   test_decode_error(message, "090000000000000000",
                     "Received I64 for non-I64 field");
   test_decode_error(message, "0a00", "Received LEN for non-LEN field");
@@ -361,6 +369,7 @@ static void test_fixed64() {
   // Second value is the one kept.
   test_fixed64_value(message, "090100000000000000090200000000000000", 2);
 
+  test_decode_error(message, "", "Missing required field value");
   test_decode_error(message, "0800", "Received VARINT for non-VARINT field");
   test_decode_error(message, "0a00", "Received LEN for non-LEN field");
   test_decode_error(message, "0b00", "Unknown wire type");
@@ -405,6 +414,7 @@ static void test_sfixed64() {
   // Second value is the one kept.
   test_sfixed64_value(message, "09010000000000000009ffffffffffffffff", -1);
 
+  test_decode_error(message, "", "Missing required field value");
   test_decode_error(message, "0800", "Received VARINT for non-VARINT field");
   test_decode_error(message, "0a00", "Received LEN for non-LEN field");
   test_decode_error(message, "0b00", "Unknown wire type");
@@ -449,6 +459,7 @@ static void test_bool() {
   // Second value is the one kept.
   test_bool_value(message, "08000801", true);
 
+  test_decode_error(message, "", "Missing required field value");
   test_decode_error(message, "090000000000000000",
                     "Received I64 for non-I64 field");
   test_decode_error(message, "0a00", "Received LEN for non-LEN field");
@@ -488,6 +499,7 @@ static void test_float() {
   // Second value is the one kept.
   test_float_value(message, "0d0000803f0d000080bf", -1);
 
+  test_decode_error(message, "", "Missing required field value");
   test_decode_error(message, "0800", "Received VARINT for non-VARINT field");
   test_decode_error(message, "090000000000000000",
                     "Received I64 for non-I64 field");
@@ -528,6 +540,7 @@ static void test_double() {
   // Second value is the one kept.
   test_double_value(message, "09000000000000f03f09000000000000f0bf", -1);
 
+  test_decode_error(message, "", "Missing required field value");
   test_decode_error(message, "0800", "Received VARINT for non-VARINT field");
   test_decode_error(message, "0a00", "Received LEN for non-LEN field");
   test_decode_error(message, "0b00", "Unknown wire type");
@@ -572,6 +585,7 @@ static void test_string() {
 
   // FIXME: Invalid UTF-8.
 
+  test_decode_error(message, "", "Missing required field value");
   test_decode_error(message, "0800", "Received VARINT for non-VARINT field");
   test_decode_error(message, "090000000000000000",
                     "Received I64 for non-I64 field");
@@ -608,6 +622,7 @@ static void test_bytes() {
   // Second value is the one kept.
   test_bytes_value(message, "0a01de0a01ad", "ad");
 
+  test_decode_error(message, "", "Missing required field value");
   test_decode_error(message, "0800", "Received VARINT for non-VARINT field");
   test_decode_error(message, "090000000000000000",
                     "Received I64 for non-I64 field");
@@ -648,6 +663,7 @@ static void test_enum() {
   // Second value is the one kept.
   test_enum_value(message, "08010802", "TWO");
 
+  test_decode_error(message, "", "Missing required field value");
   test_decode_error(message, "090000000000000000",
                     "Received I64 for non-I64 field");
   test_decode_error(message, "0a00", "Received LEN for non-LEN field");
