@@ -56,6 +56,15 @@ static void test_uint32() {
 
   test_decode_error(message, "088080808010",
                     "VARINT too large for 32 bit value");
+
+  UtObjectRef optional_message =
+      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
+          ut_protobuf_message_field_new_optional_take(
+              ut_protobuf_primitive_type_new_uint32(), "value", 1),
+          NULL));
+  test_uint32_value(optional_message, "", 0);
+  test_uint32_value(optional_message, "0801", 1);
+  test_uint32_value(optional_message, "08010802", 2);
 }
 
 static void test_int32_value(UtObject *message, const char *hex_string,
@@ -99,6 +108,15 @@ static void test_int32() {
                     "VARINT too large for signed 32 bit value");
   test_decode_error(message, "0880808080808080808001",
                     "VARINT too large for signed 32 bit value");
+
+  UtObjectRef optional_message =
+      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
+          ut_protobuf_message_field_new_optional_take(
+              ut_protobuf_primitive_type_new_int32(), "value", 1),
+          NULL));
+  test_int32_value(optional_message, "", 0);
+  test_int32_value(optional_message, "0801", 1);
+  test_int32_value(optional_message, "08010802", 2);
 }
 
 static void test_sint32_value(UtObject *message, const char *hex_string,
@@ -140,6 +158,15 @@ static void test_sint32() {
 
   test_decode_error(message, "088080808010",
                     "VARINT too large for 32 bit value");
+
+  UtObjectRef optional_message =
+      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
+          ut_protobuf_message_field_new_optional_take(
+              ut_protobuf_primitive_type_new_sint32(), "value", 1),
+          NULL));
+  test_sint32_value(optional_message, "", 0);
+  test_sint32_value(optional_message, "0802", 1);
+  test_sint32_value(optional_message, "08020804", 2);
 }
 
 static void test_fixed32_value(UtObject *message, const char *hex_string,
@@ -180,6 +207,15 @@ static void test_fixed32() {
   test_decode_error(message, "0d00", "Insufficient data");
   test_decode_error(message, "0d0000", "Insufficient data");
   test_decode_error(message, "0d000000", "Insufficient data");
+
+  UtObjectRef optional_message =
+      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
+          ut_protobuf_message_field_new_optional_take(
+              ut_protobuf_primitive_type_new_fixed32(), "value", 1),
+          NULL));
+  test_fixed32_value(optional_message, "", 0);
+  test_fixed32_value(optional_message, "0d01000000", 1);
+  test_fixed32_value(optional_message, "0d010000000d02000000", 2);
 }
 
 static void test_sfixed32_value(UtObject *message, const char *hex_string,
@@ -222,6 +258,15 @@ static void test_sfixed32() {
   test_decode_error(message, "0d00", "Insufficient data");
   test_decode_error(message, "0d0000", "Insufficient data");
   test_decode_error(message, "0d000000", "Insufficient data");
+
+  UtObjectRef optional_message =
+      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
+          ut_protobuf_message_field_new_optional_take(
+              ut_protobuf_primitive_type_new_sfixed32(), "value", 1),
+          NULL));
+  test_sfixed32_value(optional_message, "", 0);
+  test_sfixed32_value(optional_message, "0d01000000", 1);
+  test_sfixed32_value(optional_message, "0d010000000d02000000", 2);
 }
 
 static void test_uint64_value(UtObject *message, const char *hex_string,
@@ -261,6 +306,15 @@ static void test_uint64() {
 
   test_decode_error(message, "0880808080808080808002",
                     "VARINT greater than 64 bit not supported");
+
+  UtObjectRef optional_message =
+      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
+          ut_protobuf_message_field_new_optional_take(
+              ut_protobuf_primitive_type_new_uint64(), "value", 1),
+          NULL));
+  test_uint64_value(optional_message, "", 0);
+  test_uint64_value(optional_message, "0801", 1);
+  test_uint64_value(optional_message, "08010802", 2);
 }
 
 static void test_int64_value(UtObject *message, const char *hex_string,
@@ -302,6 +356,15 @@ static void test_int64() {
 
   test_decode_error(message, "0880808080808080808002",
                     "VARINT greater than 64 bit not supported");
+
+  UtObjectRef optional_message =
+      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
+          ut_protobuf_message_field_new_optional_take(
+              ut_protobuf_primitive_type_new_int64(), "value", 1),
+          NULL));
+  test_int64_value(optional_message, "", 0);
+  test_int64_value(optional_message, "0801", 1);
+  test_int64_value(optional_message, "08010802", 2);
 }
 
 static void test_sint64_value(UtObject *message, const char *hex_string,
@@ -343,6 +406,15 @@ static void test_sint64() {
 
   test_decode_error(message, "0880808080808080808002",
                     "VARINT greater than 64 bit not supported");
+
+  UtObjectRef optional_message =
+      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
+          ut_protobuf_message_field_new_optional_take(
+              ut_protobuf_primitive_type_new_sint64(), "value", 1),
+          NULL));
+  test_sint64_value(optional_message, "", 0);
+  test_sint64_value(optional_message, "0802", 1);
+  test_sint64_value(optional_message, "08020804", 2);
 }
 
 static void test_fixed64_value(UtObject *message, const char *hex_string,
@@ -386,6 +458,16 @@ static void test_fixed64() {
   test_decode_error(message, "090000000000", "Insufficient data");
   test_decode_error(message, "09000000000000", "Insufficient data");
   test_decode_error(message, "0900000000000000", "Insufficient data");
+
+  UtObjectRef optional_message =
+      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
+          ut_protobuf_message_field_new_optional_take(
+              ut_protobuf_primitive_type_new_fixed64(), "value", 1),
+          NULL));
+  test_fixed64_value(optional_message, "", 0);
+  test_fixed64_value(optional_message, "090100000000000000", 1);
+  test_fixed64_value(optional_message, "090100000000000000090200000000000000",
+                     2);
 }
 
 static void test_sfixed64_value(UtObject *message, const char *hex_string,
@@ -431,6 +513,16 @@ static void test_sfixed64() {
   test_decode_error(message, "090000000000", "Insufficient data");
   test_decode_error(message, "09000000000000", "Insufficient data");
   test_decode_error(message, "0900000000000000", "Insufficient data");
+
+  UtObjectRef optional_message =
+      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
+          ut_protobuf_message_field_new_optional_take(
+              ut_protobuf_primitive_type_new_sfixed64(), "value", 1),
+          NULL));
+  test_sfixed64_value(optional_message, "", 0);
+  test_sfixed64_value(optional_message, "090100000000000000", 1);
+  test_sfixed64_value(optional_message, "09010000000000000009ffffffffffffffff",
+                      -1);
 }
 
 static void test_bool_value(UtObject *message, const char *hex_string,
@@ -472,6 +564,15 @@ static void test_bool() {
   test_decode_error(message, "0802", "Invalid bool value");
   test_decode_error(message, "087f", "Invalid bool value");
   test_decode_error(message, "08ff7f", "Invalid bool value");
+
+  UtObjectRef optional_message =
+      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
+          ut_protobuf_message_field_new_optional_take(
+              ut_protobuf_primitive_type_new_bool(), "value", 1),
+          NULL));
+  test_bool_value(optional_message, "", false);
+  test_bool_value(optional_message, "0801", true);
+  test_bool_value(optional_message, "08000801", true);
 }
 
 static void test_float_value(UtObject *message, const char *hex_string,
@@ -513,6 +614,15 @@ static void test_float() {
   test_decode_error(message, "0d00", "Insufficient data");
   test_decode_error(message, "0d0000", "Insufficient data");
   test_decode_error(message, "0d000000", "Insufficient data");
+
+  UtObjectRef optional_message =
+      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
+          ut_protobuf_message_field_new_optional_take(
+              ut_protobuf_primitive_type_new_float(), "value", 1),
+          NULL));
+  test_float_value(optional_message, "", 0);
+  test_float_value(optional_message, "0d0000803f", 1);
+  test_float_value(optional_message, "0d0000803f0d000080bf", -1);
 }
 
 static void test_double_value(UtObject *message, const char *hex_string,
@@ -557,6 +667,16 @@ static void test_double() {
   test_decode_error(message, "090000000000", "Insufficient data");
   test_decode_error(message, "09000000000000", "Insufficient data");
   test_decode_error(message, "0900000000000000", "Insufficient data");
+
+  UtObjectRef optional_message =
+      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
+          ut_protobuf_message_field_new_optional_take(
+              ut_protobuf_primitive_type_new_double(), "value", 1),
+          NULL));
+  test_double_value(optional_message, "", 0);
+  test_double_value(optional_message, "09000000000000f03f", 1);
+  test_double_value(optional_message, "09000000000000f03f09000000000000f0bf",
+                    -1);
 }
 
 static void test_string_value(UtObject *message, const char *hex_string,
@@ -597,6 +717,15 @@ static void test_string() {
 
   test_decode_error(message, "0a03", "Insufficient space for LEN data");
   test_decode_error(message, "0a03ffff", "Insufficient space for LEN data");
+
+  UtObjectRef optional_message =
+      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
+          ut_protobuf_message_field_new_optional_take(
+              ut_protobuf_primitive_type_new_string(), "value", 1),
+          NULL));
+  test_string_value(optional_message, "", "");
+  test_string_value(optional_message, "0a0148", "H");
+  test_string_value(optional_message, "0a01480a0157", "W");
 }
 
 static void test_bytes_value(UtObject *message, const char *hex_string,
@@ -634,6 +763,15 @@ static void test_bytes() {
 
   test_decode_error(message, "0a03", "Insufficient space for LEN data");
   test_decode_error(message, "0a03ffff", "Insufficient space for LEN data");
+
+  UtObjectRef optional_message =
+      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
+          ut_protobuf_message_field_new_optional_take(
+              ut_protobuf_primitive_type_new_bytes(), "value", 1),
+          NULL));
+  test_bytes_value(optional_message, "", "");
+  test_bytes_value(optional_message, "0a01ff", "ff");
+  test_bytes_value(optional_message, "0a01de0a01ad", "ad");
 }
 
 static void test_enum_value(UtObject *message, const char *hex_string,
@@ -677,6 +815,19 @@ static void test_enum() {
                     "VARINT too large for signed 32 bit value");
   test_decode_error(message, "0880808080808080808001",
                     "VARINT too large for signed 32 bit value");
+
+  UtObjectRef optional_message =
+      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
+          ut_protobuf_message_field_new_optional_take(
+              ut_protobuf_enum_type_new_take(
+                  ut_map_new_string_from_elements_take(
+                      "ZERO", ut_int32_new(0), "ONE", ut_int32_new(1), "TWO",
+                      ut_int32_new(2), NULL)),
+              "value", 1),
+          NULL));
+  test_enum_value(optional_message, "", "ZERO");
+  test_enum_value(optional_message, "0801", "ONE");
+  test_enum_value(optional_message, "08010802", "TWO");
 }
 
 static void test_message() {
@@ -744,52 +895,6 @@ static void test_message() {
                     "Missing required field age");
 }
 
-static void test_optional() {
-  UtObjectRef message =
-      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_take(
-              ut_protobuf_primitive_type_new_string(), "name", 1),
-          ut_protobuf_message_field_new_optional_take(
-              ut_protobuf_primitive_type_new_uint32(), "age", 2),
-          NULL));
-
-  // All values.
-  UtObjectRef data1 =
-      ut_uint8_list_new_from_hex_string("0a0b4172746875722044656e74102a");
-  UtObjectRef decoder1 = ut_protobuf_decoder_new(data1);
-  UtObjectRef value1 = ut_protobuf_decoder_decode_message(decoder1, message);
-  ut_assert_null_object(ut_protobuf_decoder_get_error(decoder1));
-  UtObject *v1a = ut_map_lookup_string(value1, "name");
-  ut_assert_non_null_object(v1a);
-  ut_assert_true(ut_object_implements_string(v1a));
-  ut_assert_cstring_equal(ut_string_get_text(v1a), "Arthur Dent");
-  UtObject *v1b = ut_map_lookup_string(value1, "age");
-  ut_assert_non_null_object(v1b);
-  ut_assert_true(ut_object_is_uint32(v1b));
-  ut_assert_int_equal(ut_uint32_get_value(v1b), 42);
-
-  // Missing age (defaults to 0).
-  UtObjectRef data2 =
-      ut_uint8_list_new_from_hex_string("0a0b4172746875722044656e74");
-  UtObjectRef decoder2 = ut_protobuf_decoder_new(data2);
-  UtObjectRef value2 = ut_protobuf_decoder_decode_message(decoder2, message);
-  ut_assert_null_object(ut_protobuf_decoder_get_error(decoder2));
-  UtObject *v2a = ut_map_lookup_string(value2, "name");
-  ut_assert_non_null_object(v2a);
-  ut_assert_true(ut_object_implements_string(v2a));
-  ut_assert_cstring_equal(ut_string_get_text(v2a), "Arthur Dent");
-  UtObject *v2b = ut_map_lookup_string(value2, "age");
-  ut_assert_non_null_object(v2b);
-  ut_assert_true(ut_object_is_uint32(v2b));
-  ut_assert_int_equal(ut_uint32_get_value(v2b), 0);
-
-  // Empty data.
-  test_decode_error(message, "", "Missing required field name");
-
-  // Missing name.
-  test_decode_error(message, "102a", "Missing required field name");
-}
-
 int main(int argc, char **argv) {
   test_uint32();
   test_int32();
@@ -812,7 +917,6 @@ int main(int argc, char **argv) {
   test_enum();
 
   test_message();
-  test_optional();
 
   return 0;
 }
