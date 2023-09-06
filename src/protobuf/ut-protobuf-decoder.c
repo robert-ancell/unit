@@ -173,7 +173,7 @@ static bool read_bool(UtProtobufDecoder *self, size_t data_length,
 
 static void read_varint_field(UtProtobufDecoder *self, size_t data_length,
                               size_t *offset, UtObject *message,
-                              UtObject *field) {
+                              const char *name, UtObject *field) {
   if (field == NULL) {
     read_varint(self, data_length, offset);
     return;
@@ -182,7 +182,6 @@ static void read_varint_field(UtProtobufDecoder *self, size_t data_length,
   bool is_repeated = ut_protobuf_message_field_get_type(field) ==
                      UT_PROTOBUF_MESSAGE_FIELD_TYPE_REPEATED;
 
-  const char *name = ut_protobuf_message_field_get_name(field);
   UtObject *type = ut_protobuf_message_field_get_value_type(field);
   UtObjectRef value = NULL;
   if (ut_object_is_protobuf_primitive_type(type)) {
@@ -276,7 +275,8 @@ static void read_varint_field(UtProtobufDecoder *self, size_t data_length,
 }
 
 static void read_i64_field(UtProtobufDecoder *self, size_t data_length,
-                           size_t *offset, UtObject *message, UtObject *field) {
+                           size_t *offset, UtObject *message, const char *name,
+                           UtObject *field) {
   if (field == NULL) {
     read_i64(self, data_length, offset);
     return;
@@ -285,7 +285,6 @@ static void read_i64_field(UtProtobufDecoder *self, size_t data_length,
   bool is_repeated = ut_protobuf_message_field_get_type(field) ==
                      UT_PROTOBUF_MESSAGE_FIELD_TYPE_REPEATED;
 
-  const char *name = ut_protobuf_message_field_get_name(field);
   UtObject *type = ut_protobuf_message_field_get_value_type(field);
   if (ut_object_is_protobuf_primitive_type(type)) {
     switch (ut_protobuf_primitive_type_get_type(type)) {
@@ -347,7 +346,8 @@ static void process_string(UtProtobufDecoder *self, UtObject *data,
 }
 
 static void read_len_field(UtProtobufDecoder *self, size_t data_length,
-                           size_t *offset, UtObject *message, UtObject *field) {
+                           size_t *offset, UtObject *message, const char *name,
+                           UtObject *field) {
   int32_t length = read_int32(self, data_length, offset);
   if (length < 0) {
     set_error(self, "Negative LEN field");
@@ -368,7 +368,6 @@ static void read_len_field(UtProtobufDecoder *self, size_t data_length,
   bool is_repeated = ut_protobuf_message_field_get_type(field) ==
                      UT_PROTOBUF_MESSAGE_FIELD_TYPE_REPEATED;
 
-  const char *name = ut_protobuf_message_field_get_name(field);
   UtObject *type = ut_protobuf_message_field_get_value_type(field);
   if (ut_object_is_protobuf_primitive_type(type)) {
     switch (ut_protobuf_primitive_type_get_type(type)) {
@@ -391,7 +390,8 @@ static void read_len_field(UtProtobufDecoder *self, size_t data_length,
 }
 
 static void read_i32_field(UtProtobufDecoder *self, size_t data_length,
-                           size_t *offset, UtObject *message, UtObject *field) {
+                           size_t *offset, UtObject *message, const char *name,
+                           UtObject *field) {
   if (field == NULL) {
     read_i32(self, data_length, offset);
     return;
@@ -400,7 +400,6 @@ static void read_i32_field(UtProtobufDecoder *self, size_t data_length,
   bool is_repeated = ut_protobuf_message_field_get_type(field) ==
                      UT_PROTOBUF_MESSAGE_FIELD_TYPE_REPEATED;
 
-  const char *name = ut_protobuf_message_field_get_name(field);
   UtObject *type = ut_protobuf_message_field_get_value_type(field);
   if (ut_object_is_protobuf_primitive_type(type)) {
     switch (ut_protobuf_primitive_type_get_type(type)) {
@@ -551,13 +550,15 @@ UtObject *ut_protobuf_decoder_decode_message(UtObject *object, UtObject *type) {
 
   // Set repeated fields to empty lists.
   UtObject *fields = ut_protobuf_message_type_get_fields(type);
-  size_t fields_length = ut_list_get_length(fields);
-  for (size_t i = 0; i < fields_length; i++) {
-    UtObject *field = ut_object_list_get_element(fields, i);
+  UtObjectRef field_items = ut_map_get_items(fields);
+  size_t field_items_length = ut_list_get_length(field_items);
+  for (size_t i = 0; i < field_items_length; i++) {
+    UtObject *item = ut_object_list_get_element(field_items, i);
+    UtObject *field = ut_map_item_get_value(item);
 
     if (ut_protobuf_message_field_get_type(field) ==
         UT_PROTOBUF_MESSAGE_FIELD_TYPE_REPEATED) {
-      const char *name = ut_protobuf_message_field_get_name(field);
+      const char *name = ut_string_get_text(ut_map_item_get_key(item));
       UtObjectRef value = get_repeated_field_initial_value(
           self, ut_protobuf_message_field_get_value_type(field));
       if (value == NULL) {
@@ -574,21 +575,21 @@ UtObject *ut_protobuf_decoder_decode_message(UtObject *object, UtObject *type) {
 
     uint8_t wire_type = tag & 0x7;
     uint32_t number = tag >> 3;
-    UtObject *field =
-        ut_protobuf_message_type_get_field_by_number(type, number);
+    const char *name = ut_protobuf_message_type_get_field_name(type, number);
+    UtObject *field = ut_protobuf_message_type_get_field(type, name);
 
     switch (wire_type) {
     case 0:
-      read_varint_field(self, data_length, &offset, message, field);
+      read_varint_field(self, data_length, &offset, message, name, field);
       break;
     case 1:
-      read_i64_field(self, data_length, &offset, message, field);
+      read_i64_field(self, data_length, &offset, message, name, field);
       break;
     case 2:
-      read_len_field(self, data_length, &offset, message, field);
+      read_len_field(self, data_length, &offset, message, name, field);
       break;
     case 5:
-      read_i32_field(self, data_length, &offset, message, field);
+      read_i32_field(self, data_length, &offset, message, name, field);
       break;
     default:
       set_error(self, "Unknown wire type");
@@ -597,9 +598,10 @@ UtObject *ut_protobuf_decoder_decode_message(UtObject *object, UtObject *type) {
   }
 
   // Check for missing fields.
-  for (size_t i = 0; i < fields_length; i++) {
-    UtObject *field = ut_object_list_get_element(fields, i);
-    const char *name = ut_protobuf_message_field_get_name(field);
+  for (size_t i = 0; i < field_items_length; i++) {
+    UtObject *item = ut_object_list_get_element(field_items, i);
+    const char *name = ut_string_get_text(ut_map_item_get_key(item));
+    UtObject *field = ut_map_item_get_value(item);
 
     if (ut_protobuf_message_field_get_type(field) ==
         UT_PROTOBUF_MESSAGE_FIELD_TYPE_OPTIONAL) {

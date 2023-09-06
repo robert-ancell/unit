@@ -45,32 +45,25 @@ UtObject *ut_protobuf_message_type_get_fields(UtObject *object) {
   return self->fields;
 }
 
-UtObject *ut_protobuf_message_type_get_field_by_name(UtObject *object,
-                                                     const char *name) {
+UtObject *ut_protobuf_message_type_get_field(UtObject *object,
+                                             const char *name) {
   assert(ut_object_is_protobuf_message_type(object));
   UtProtobufMessageType *self = (UtProtobufMessageType *)object;
-
-  size_t fields_length = ut_list_get_length(self->fields);
-  for (size_t i = 0; i < fields_length; i++) {
-    UtObject *field = ut_object_list_get_element(self->fields, i);
-    if (ut_cstring_equal(ut_protobuf_message_field_get_name(field), name)) {
-      return field;
-    }
-  }
-
-  return NULL;
+  return ut_map_lookup_string(self->fields, name);
 }
 
-UtObject *ut_protobuf_message_type_get_field_by_number(UtObject *object,
-                                                       uint32_t number) {
+const char *ut_protobuf_message_type_get_field_name(UtObject *object,
+                                                    uint32_t number) {
   assert(ut_object_is_protobuf_message_type(object));
   UtProtobufMessageType *self = (UtProtobufMessageType *)object;
 
-  size_t fields_length = ut_list_get_length(self->fields);
-  for (size_t i = 0; i < fields_length; i++) {
-    UtObject *field = ut_object_list_get_element(self->fields, i);
+  UtObjectRef field_items = ut_map_get_items(self->fields);
+  size_t field_items_length = ut_list_get_length(field_items);
+  for (size_t i = 0; i < field_items_length; i++) {
+    UtObject *item = ut_object_list_get_element(field_items, i);
+    UtObject *field = ut_map_item_get_value(item);
     if (ut_protobuf_message_field_get_number(field) == number) {
-      return field;
+      return ut_string_get_text(ut_map_item_get_key(item));
     }
   }
 

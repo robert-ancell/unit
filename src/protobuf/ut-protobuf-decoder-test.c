@@ -41,8 +41,8 @@ static void test_repeated_uint32_value(UtObject *message,
 
 static void test_uint32() {
   UtObjectRef message =
-      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_uint32("value", 1), NULL));
+      ut_protobuf_message_type_new_take(ut_map_new_string_from_elements_take(
+          "value", ut_protobuf_message_field_new_uint32(1), NULL));
 
   test_uint32_value(message, "0800", 0);
   test_uint32_value(message, "0801", 1);
@@ -67,15 +67,15 @@ static void test_uint32() {
                     "VARINT too large for 32 bit value");
 
   UtObjectRef optional_message =
-      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_optional_uint32("value", 1), NULL));
+      ut_protobuf_message_type_new_take(ut_map_new_string_from_elements_take(
+          "value", ut_protobuf_message_field_new_optional_uint32(1), NULL));
   test_uint32_value(optional_message, "", 0);
   test_uint32_value(optional_message, "0801", 1);
   test_uint32_value(optional_message, "08010802", 2);
 
   UtObjectRef repeated_message =
-      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_repeated_uint32("value", 1), NULL));
+      ut_protobuf_message_type_new_take(ut_map_new_string_from_elements_take(
+          "value", ut_protobuf_message_field_new_repeated_uint32(1), NULL));
   test_repeated_uint32_value(repeated_message, "", ut_uint32_list_new());
   test_repeated_uint32_value(repeated_message, "0801",
                              ut_uint32_list_new_from_elements(1, 1));
@@ -104,8 +104,8 @@ static void test_repeated_int32_value(UtObject *message, const char *hex_string,
 
 static void test_int32() {
   UtObjectRef message =
-      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_int32("value", 1), NULL));
+      ut_protobuf_message_type_new_take(ut_map_new_string_from_elements_take(
+          "value", ut_protobuf_message_field_new_int32(1), NULL));
 
   test_int32_value(message, "0800", 0);
   test_int32_value(message, "0801", 1);
@@ -134,15 +134,15 @@ static void test_int32() {
                     "VARINT too large for signed 32 bit value");
 
   UtObjectRef optional_message =
-      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_optional_int32("value", 1), NULL));
+      ut_protobuf_message_type_new_take(ut_map_new_string_from_elements_take(
+          "value", ut_protobuf_message_field_new_optional_int32(1), NULL));
   test_int32_value(optional_message, "", 0);
   test_int32_value(optional_message, "0801", 1);
   test_int32_value(optional_message, "08010802", 2);
 
   UtObjectRef repeated_message =
-      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_repeated_int32("value", 1), NULL));
+      ut_protobuf_message_type_new_take(ut_map_new_string_from_elements_take(
+          "value", ut_protobuf_message_field_new_repeated_int32(1), NULL));
   test_repeated_int32_value(repeated_message, "", ut_int32_list_new());
   test_repeated_int32_value(repeated_message, "0801",
                             ut_int32_list_new_from_elements(1, 1));
@@ -172,8 +172,8 @@ static void test_repeated_sint32_value(UtObject *message,
 
 static void test_sint32() {
   UtObjectRef message =
-      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_sint32("value", 1), NULL));
+      ut_protobuf_message_type_new_take(ut_map_new_string_from_elements_take(
+          "value", ut_protobuf_message_field_new_sint32(1), NULL));
 
   test_sint32_value(message, "0800", 0);
   test_sint32_value(message, "0802", 1);
@@ -200,15 +200,15 @@ static void test_sint32() {
                     "VARINT too large for 32 bit value");
 
   UtObjectRef optional_message =
-      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_optional_sint32("value", 1), NULL));
+      ut_protobuf_message_type_new_take(ut_map_new_string_from_elements_take(
+          "value", ut_protobuf_message_field_new_optional_sint32(1), NULL));
   test_sint32_value(optional_message, "", 0);
   test_sint32_value(optional_message, "0802", 1);
   test_sint32_value(optional_message, "08020804", 2);
 
   UtObjectRef repeated_message =
-      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_repeated_sint32("value", 1), NULL));
+      ut_protobuf_message_type_new_take(ut_map_new_string_from_elements_take(
+          "value", ut_protobuf_message_field_new_repeated_sint32(1), NULL));
   test_repeated_sint32_value(repeated_message, "", ut_int32_list_new());
   test_repeated_sint32_value(repeated_message, "0802",
                              ut_int32_list_new_from_elements(1, 1));
@@ -238,8 +238,8 @@ static void test_repeated_fixed32_value(UtObject *message,
 
 static void test_fixed32() {
   UtObjectRef message =
-      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_fixed32("value", 1), NULL));
+      ut_protobuf_message_type_new_take(ut_map_new_string_from_elements_take(
+          "value", ut_protobuf_message_field_new_fixed32(1), NULL));
 
   test_fixed32_value(message, "0d00000000", 0);
   test_fixed32_value(message, "0d01000000", 1);
@@ -265,15 +265,15 @@ static void test_fixed32() {
   test_decode_error(message, "0d000000", "Insufficient data");
 
   UtObjectRef optional_message =
-      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_optional_fixed32("value", 1), NULL));
+      ut_protobuf_message_type_new_take(ut_map_new_string_from_elements_take(
+          "value", ut_protobuf_message_field_new_optional_fixed32(1), NULL));
   test_fixed32_value(optional_message, "", 0);
   test_fixed32_value(optional_message, "0d01000000", 1);
   test_fixed32_value(optional_message, "0d010000000d02000000", 2);
 
   UtObjectRef repeated_message =
-      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_repeated_fixed32("value", 1), NULL));
+      ut_protobuf_message_type_new_take(ut_map_new_string_from_elements_take(
+          "value", ut_protobuf_message_field_new_repeated_fixed32(1), NULL));
   test_repeated_fixed32_value(repeated_message, "", ut_uint32_list_new());
   test_repeated_fixed32_value(repeated_message, "0d01000000",
                               ut_uint32_list_new_from_elements(1, 1));
@@ -303,8 +303,8 @@ static void test_repeated_sfixed32_value(UtObject *message,
 
 static void test_sfixed32() {
   UtObjectRef message =
-      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_sfixed32("value", 1), NULL));
+      ut_protobuf_message_type_new_take(ut_map_new_string_from_elements_take(
+          "value", ut_protobuf_message_field_new_sfixed32(1), NULL));
 
   test_sfixed32_value(message, "0d00000000", 0);
   test_sfixed32_value(message, "0d01000000", 1);
@@ -332,15 +332,15 @@ static void test_sfixed32() {
   test_decode_error(message, "0d000000", "Insufficient data");
 
   UtObjectRef optional_message =
-      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_optional_sfixed32("value", 1), NULL));
+      ut_protobuf_message_type_new_take(ut_map_new_string_from_elements_take(
+          "value", ut_protobuf_message_field_new_optional_sfixed32(1), NULL));
   test_sfixed32_value(optional_message, "", 0);
   test_sfixed32_value(optional_message, "0d01000000", 1);
   test_sfixed32_value(optional_message, "0d010000000d02000000", 2);
 
   UtObjectRef repeated_message =
-      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_repeated_sfixed32("value", 1), NULL));
+      ut_protobuf_message_type_new_take(ut_map_new_string_from_elements_take(
+          "value", ut_protobuf_message_field_new_repeated_sfixed32(1), NULL));
   test_repeated_sfixed32_value(repeated_message, "", ut_int32_list_new());
   test_repeated_sfixed32_value(repeated_message, "0d01000000",
                                ut_int32_list_new_from_elements(1, 1));
@@ -370,8 +370,8 @@ static void test_repeated_uint64_value(UtObject *message,
 
 static void test_uint64() {
   UtObjectRef message =
-      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_uint64("value", 1), NULL));
+      ut_protobuf_message_type_new_take(ut_map_new_string_from_elements_take(
+          "value", ut_protobuf_message_field_new_uint64(1), NULL));
 
   test_uint64_value(message, "0800", 0);
   test_uint64_value(message, "0801", 1);
@@ -396,15 +396,15 @@ static void test_uint64() {
                     "VARINT greater than 64 bit not supported");
 
   UtObjectRef optional_message =
-      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_optional_uint64("value", 1), NULL));
+      ut_protobuf_message_type_new_take(ut_map_new_string_from_elements_take(
+          "value", ut_protobuf_message_field_new_optional_uint64(1), NULL));
   test_uint64_value(optional_message, "", 0);
   test_uint64_value(optional_message, "0801", 1);
   test_uint64_value(optional_message, "08010802", 2);
 
   UtObjectRef repeated_message =
-      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_repeated_uint64("value", 1), NULL));
+      ut_protobuf_message_type_new_take(ut_map_new_string_from_elements_take(
+          "value", ut_protobuf_message_field_new_repeated_uint64(1), NULL));
   test_repeated_uint64_value(repeated_message, "", ut_uint64_list_new());
   test_repeated_uint64_value(repeated_message, "0801",
                              ut_uint64_list_new_from_elements(1, 1));
@@ -433,8 +433,8 @@ static void test_repeated_int64_value(UtObject *message, const char *hex_string,
 
 static void test_int64() {
   UtObjectRef message =
-      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_int64("value", 1), NULL));
+      ut_protobuf_message_type_new_take(ut_map_new_string_from_elements_take(
+          "value", ut_protobuf_message_field_new_int64(1), NULL));
 
   test_int64_value(message, "0800", 0);
   test_int64_value(message, "0801", 1);
@@ -461,15 +461,15 @@ static void test_int64() {
                     "VARINT greater than 64 bit not supported");
 
   UtObjectRef optional_message =
-      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_optional_int64("value", 1), NULL));
+      ut_protobuf_message_type_new_take(ut_map_new_string_from_elements_take(
+          "value", ut_protobuf_message_field_new_optional_int64(1), NULL));
   test_int64_value(optional_message, "", 0);
   test_int64_value(optional_message, "0801", 1);
   test_int64_value(optional_message, "08010802", 2);
 
   UtObjectRef repeated_message =
-      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_repeated_int64("value", 1), NULL));
+      ut_protobuf_message_type_new_take(ut_map_new_string_from_elements_take(
+          "value", ut_protobuf_message_field_new_repeated_int64(1), NULL));
   test_repeated_int64_value(repeated_message, "", ut_int64_list_new());
   test_repeated_int64_value(repeated_message, "0801",
                             ut_int64_list_new_from_elements(1, 1));
@@ -499,8 +499,8 @@ static void test_repeated_sint64_value(UtObject *message,
 
 static void test_sint64() {
   UtObjectRef message =
-      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_sint64("value", 1), NULL));
+      ut_protobuf_message_type_new_take(ut_map_new_string_from_elements_take(
+          "value", ut_protobuf_message_field_new_sint64(1), NULL));
 
   test_sint64_value(message, "0800", 0);
   test_sint64_value(message, "0802", 1);
@@ -527,15 +527,15 @@ static void test_sint64() {
                     "VARINT greater than 64 bit not supported");
 
   UtObjectRef optional_message =
-      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_optional_sint64("value", 1), NULL));
+      ut_protobuf_message_type_new_take(ut_map_new_string_from_elements_take(
+          "value", ut_protobuf_message_field_new_optional_sint64(1), NULL));
   test_sint64_value(optional_message, "", 0);
   test_sint64_value(optional_message, "0802", 1);
   test_sint64_value(optional_message, "08020804", 2);
 
   UtObjectRef repeated_message =
-      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_repeated_sint64("value", 1), NULL));
+      ut_protobuf_message_type_new_take(ut_map_new_string_from_elements_take(
+          "value", ut_protobuf_message_field_new_repeated_sint64(1), NULL));
   test_repeated_sint64_value(repeated_message, "", ut_int64_list_new());
   test_repeated_sint64_value(repeated_message, "0802",
                              ut_int64_list_new_from_elements(1, 1));
@@ -565,8 +565,8 @@ static void test_repeated_fixed64_value(UtObject *message,
 
 static void test_fixed64() {
   UtObjectRef message =
-      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_fixed64("value", 1), NULL));
+      ut_protobuf_message_type_new_take(ut_map_new_string_from_elements_take(
+          "value", ut_protobuf_message_field_new_fixed64(1), NULL));
 
   test_fixed64_value(message, "090000000000000000", 0);
   test_fixed64_value(message, "090100000000000000", 1);
@@ -595,16 +595,16 @@ static void test_fixed64() {
   test_decode_error(message, "0900000000000000", "Insufficient data");
 
   UtObjectRef optional_message =
-      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_optional_fixed64("value", 1), NULL));
+      ut_protobuf_message_type_new_take(ut_map_new_string_from_elements_take(
+          "value", ut_protobuf_message_field_new_optional_fixed64(1), NULL));
   test_fixed64_value(optional_message, "", 0);
   test_fixed64_value(optional_message, "090100000000000000", 1);
   test_fixed64_value(optional_message, "090100000000000000090200000000000000",
                      2);
 
   UtObjectRef repeated_message =
-      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_repeated_fixed64("value", 1), NULL));
+      ut_protobuf_message_type_new_take(ut_map_new_string_from_elements_take(
+          "value", ut_protobuf_message_field_new_repeated_fixed64(1), NULL));
   test_repeated_fixed64_value(repeated_message, "", ut_uint64_list_new());
   test_repeated_fixed64_value(repeated_message, "090100000000000000",
                               ut_uint64_list_new_from_elements(1, 1));
@@ -635,8 +635,8 @@ static void test_repeated_sfixed64_value(UtObject *message,
 
 static void test_sfixed64() {
   UtObjectRef message =
-      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_sfixed64("value", 1), NULL));
+      ut_protobuf_message_type_new_take(ut_map_new_string_from_elements_take(
+          "value", ut_protobuf_message_field_new_sfixed64(1), NULL));
 
   test_sfixed64_value(message, "090000000000000000", 0);
   test_sfixed64_value(message, "090100000000000000", 1);
@@ -667,16 +667,16 @@ static void test_sfixed64() {
   test_decode_error(message, "0900000000000000", "Insufficient data");
 
   UtObjectRef optional_message =
-      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_optional_sfixed64("value", 1), NULL));
+      ut_protobuf_message_type_new_take(ut_map_new_string_from_elements_take(
+          "value", ut_protobuf_message_field_new_optional_sfixed64(1), NULL));
   test_sfixed64_value(optional_message, "", 0);
   test_sfixed64_value(optional_message, "090100000000000000", 1);
   test_sfixed64_value(optional_message, "09010000000000000009ffffffffffffffff",
                       -1);
 
   UtObjectRef repeated_message =
-      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_repeated_sfixed64("value", 1), NULL));
+      ut_protobuf_message_type_new_take(ut_map_new_string_from_elements_take(
+          "value", ut_protobuf_message_field_new_repeated_sfixed64(1), NULL));
   test_repeated_sfixed64_value(repeated_message, "", ut_int64_list_new());
   test_repeated_sfixed64_value(repeated_message, "090100000000000000",
                                ut_int64_list_new_from_elements(1, 1));
@@ -709,8 +709,8 @@ static void test_repeated_bool_value(UtObject *message, const char *hex_string,
 
 static void test_bool() {
   UtObjectRef message =
-      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_bool("value", 1), NULL));
+      ut_protobuf_message_type_new_take(ut_map_new_string_from_elements_take(
+          "value", ut_protobuf_message_field_new_bool(1), NULL));
 
   test_bool_value(message, "0800", false);
   test_bool_value(message, "0801", true);
@@ -733,15 +733,15 @@ static void test_bool() {
   test_decode_error(message, "08ff7f", "Invalid bool value");
 
   UtObjectRef optional_message =
-      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_optional_bool("value", 1), NULL));
+      ut_protobuf_message_type_new_take(ut_map_new_string_from_elements_take(
+          "value", ut_protobuf_message_field_new_optional_bool(1), NULL));
   test_bool_value(optional_message, "", false);
   test_bool_value(optional_message, "0801", true);
   test_bool_value(optional_message, "08000801", true);
 
   UtObjectRef repeated_message =
-      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_repeated_bool("value", 1), NULL));
+      ut_protobuf_message_type_new_take(ut_map_new_string_from_elements_take(
+          "value", ut_protobuf_message_field_new_repeated_bool(1), NULL));
   UtObjectRef v1 = ut_boolean_list_new();
   test_repeated_bool_value(repeated_message, "", v1);
   UtObjectRef v2 = ut_boolean_list_new();
@@ -774,8 +774,8 @@ static void test_repeated_float_value(UtObject *message, const char *hex_string,
 
 static void test_float() {
   UtObjectRef message =
-      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_float("value", 1), NULL));
+      ut_protobuf_message_type_new_take(ut_map_new_string_from_elements_take(
+          "value", ut_protobuf_message_field_new_float(1), NULL));
 
   test_float_value(message, "0d00000000", 0);
   test_float_value(message, "0d0000803f", 1);
@@ -802,15 +802,15 @@ static void test_float() {
   test_decode_error(message, "0d000000", "Insufficient data");
 
   UtObjectRef optional_message =
-      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_optional_float("value", 1), NULL));
+      ut_protobuf_message_type_new_take(ut_map_new_string_from_elements_take(
+          "value", ut_protobuf_message_field_new_optional_float(1), NULL));
   test_float_value(optional_message, "", 0);
   test_float_value(optional_message, "0d0000803f", 1);
   test_float_value(optional_message, "0d0000803f0d000080bf", -1);
 
   UtObjectRef repeated_message =
-      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_repeated_float("value", 1), NULL));
+      ut_protobuf_message_type_new_take(ut_map_new_string_from_elements_take(
+          "value", ut_protobuf_message_field_new_repeated_float(1), NULL));
   test_repeated_float_value(repeated_message, "", ut_float32_list_new());
   test_repeated_float_value(repeated_message, "0d0000803f",
                             ut_float32_list_new_from_elements(1, 1.0f));
@@ -840,8 +840,8 @@ static void test_repeated_double_value(UtObject *message,
 
 static void test_double() {
   UtObjectRef message =
-      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_double("value", 1), NULL));
+      ut_protobuf_message_type_new_take(ut_map_new_string_from_elements_take(
+          "value", ut_protobuf_message_field_new_double(1), NULL));
 
   test_double_value(message, "090000000000000000", 0);
   test_double_value(message, "09000000000000f03f", 1);
@@ -871,16 +871,16 @@ static void test_double() {
   test_decode_error(message, "0900000000000000", "Insufficient data");
 
   UtObjectRef optional_message =
-      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_optional_double("value", 1), NULL));
+      ut_protobuf_message_type_new_take(ut_map_new_string_from_elements_take(
+          "value", ut_protobuf_message_field_new_optional_double(1), NULL));
   test_double_value(optional_message, "", 0);
   test_double_value(optional_message, "09000000000000f03f", 1);
   test_double_value(optional_message, "09000000000000f03f09000000000000f0bf",
                     -1);
 
   UtObjectRef repeated_message =
-      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_repeated_double("value", 1), NULL));
+      ut_protobuf_message_type_new_take(ut_map_new_string_from_elements_take(
+          "value", ut_protobuf_message_field_new_repeated_double(1), NULL));
   test_repeated_double_value(repeated_message, "", ut_float64_list_new());
   test_repeated_double_value(repeated_message, "09000000000000f03f",
                              ut_float64_list_new_from_elements(1, 1.0));
@@ -911,8 +911,8 @@ static void test_repeated_string_value(UtObject *message,
 
 static void test_string() {
   UtObjectRef message =
-      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_string("value", 1), NULL));
+      ut_protobuf_message_type_new_take(ut_map_new_string_from_elements_take(
+          "value", ut_protobuf_message_field_new_string(1), NULL));
 
   test_string_value(message, "0a00", "");
   test_string_value(message, "0a0148", "H");
@@ -938,15 +938,15 @@ static void test_string() {
   test_decode_error(message, "0a03ffff", "Insufficient space for LEN data");
 
   UtObjectRef optional_message =
-      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_optional_string("value", 1), NULL));
+      ut_protobuf_message_type_new_take(ut_map_new_string_from_elements_take(
+          "value", ut_protobuf_message_field_new_optional_string(1), NULL));
   test_string_value(optional_message, "", "");
   test_string_value(optional_message, "0a0148", "H");
   test_string_value(optional_message, "0a01480a0157", "W");
 
   UtObjectRef repeated_message =
-      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_repeated_string("value", 1), NULL));
+      ut_protobuf_message_type_new_take(ut_map_new_string_from_elements_take(
+          "value", ut_protobuf_message_field_new_repeated_string(1), NULL));
   test_repeated_string_value(repeated_message, "", ut_string_list_new());
   test_repeated_string_value(repeated_message, "0a0148",
                              ut_string_list_new_from_elements("H", NULL));
@@ -975,8 +975,8 @@ static void test_repeated_bytes_value(UtObject *message, const char *hex_string,
 
 static void test_bytes() {
   UtObjectRef message =
-      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_bytes("value", 1), NULL));
+      ut_protobuf_message_type_new_take(ut_map_new_string_from_elements_take(
+          "value", ut_protobuf_message_field_new_bytes(1), NULL));
 
   test_bytes_value(message, "0a00", "");
   test_bytes_value(message, "0a01ff", "ff");
@@ -999,15 +999,15 @@ static void test_bytes() {
   test_decode_error(message, "0a03ffff", "Insufficient space for LEN data");
 
   UtObjectRef optional_message =
-      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_optional_bytes("value", 1), NULL));
+      ut_protobuf_message_type_new_take(ut_map_new_string_from_elements_take(
+          "value", ut_protobuf_message_field_new_optional_bytes(1), NULL));
   test_bytes_value(optional_message, "", "");
   test_bytes_value(optional_message, "0a01ff", "ff");
   test_bytes_value(optional_message, "0a01de0a01ad", "ad");
 
   UtObjectRef repeated_message =
-      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_repeated_bytes("value", 1), NULL));
+      ut_protobuf_message_type_new_take(ut_map_new_string_from_elements_take(
+          "value", ut_protobuf_message_field_new_repeated_bytes(1), NULL));
   test_repeated_bytes_value(repeated_message, "", ut_list_new());
   test_repeated_bytes_value(repeated_message, "0a01ff",
                             ut_list_new_from_elements_take(
@@ -1039,13 +1039,14 @@ static void test_repeated_enum_value(UtObject *message, const char *hex_string,
 
 static void test_enum() {
   UtObjectRef message =
-      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
+      ut_protobuf_message_type_new_take(ut_map_new_string_from_elements_take(
+          "value",
           ut_protobuf_message_field_new_take(
               ut_protobuf_enum_type_new_take(
                   ut_map_new_string_from_elements_take(
                       "ZERO", ut_int32_new(0), "ONE", ut_int32_new(1), "TWO",
                       ut_int32_new(2), NULL)),
-              "value", 1),
+              1),
           NULL));
 
   test_enum_value(message, "0801", "ONE");
@@ -1071,26 +1072,28 @@ static void test_enum() {
                     "VARINT too large for signed 32 bit value");
 
   UtObjectRef optional_message =
-      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
+      ut_protobuf_message_type_new_take(ut_map_new_string_from_elements_take(
+          "value",
           ut_protobuf_message_field_new_optional_take(
               ut_protobuf_enum_type_new_take(
                   ut_map_new_string_from_elements_take(
                       "ZERO", ut_int32_new(0), "ONE", ut_int32_new(1), "TWO",
                       ut_int32_new(2), NULL)),
-              "value", 1),
+              1),
           NULL));
   test_enum_value(optional_message, "", "ZERO");
   test_enum_value(optional_message, "0801", "ONE");
   test_enum_value(optional_message, "08010802", "TWO");
 
   UtObjectRef repeated_message =
-      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
+      ut_protobuf_message_type_new_take(ut_map_new_string_from_elements_take(
+          "value",
           ut_protobuf_message_field_new_repeated_take(
               ut_protobuf_enum_type_new_take(
                   ut_map_new_string_from_elements_take(
                       "ZERO", ut_int32_new(0), "ONE", ut_int32_new(1), "TWO",
                       ut_int32_new(2), NULL)),
-              "value", 1),
+              1),
           NULL));
   test_repeated_enum_value(repeated_message, "", ut_string_list_new());
   test_repeated_enum_value(repeated_message, "0801",
@@ -1102,9 +1105,9 @@ static void test_enum() {
 
 static void test_message() {
   UtObjectRef message =
-      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_string("name", 1),
-          ut_protobuf_message_field_new_uint32("age", 2), NULL));
+      ut_protobuf_message_type_new_take(ut_map_new_string_from_elements_take(
+          "name", ut_protobuf_message_field_new_string(1), "age",
+          ut_protobuf_message_field_new_uint32(2), NULL));
 
   // Data in order name, age.
   UtObjectRef data1 =
@@ -1162,9 +1165,9 @@ static void test_message() {
                     "Missing required field age");
 
   UtObjectRef optional_message =
-      ut_protobuf_message_type_new_take(ut_list_new_from_elements_take(
-          ut_protobuf_message_field_new_string("name", 1),
-          ut_protobuf_message_field_new_optional_uint32("age", 2), NULL));
+      ut_protobuf_message_type_new_take(ut_map_new_string_from_elements_take(
+          "name", ut_protobuf_message_field_new_string(1), "age",
+          ut_protobuf_message_field_new_optional_uint32(2), NULL));
 
   // All values.
   UtObjectRef data4 =

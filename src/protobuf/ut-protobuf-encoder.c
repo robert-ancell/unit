@@ -536,16 +536,18 @@ static bool encode_single_field(UtProtobufEncoder *self, uint32_t number,
 static bool encode_message(UtProtobufEncoder *self, UtObject *type,
                            UtObject *value) {
   UtObject *fields = ut_protobuf_message_type_get_fields(type);
-  size_t fields_length = ut_list_get_length(fields);
-  for (size_t i = 0; i < fields_length; i++) {
-    UtObject *field = ut_object_list_get_element(fields, i);
+  UtObjectRef field_items = ut_map_get_items(fields);
+  size_t field_items_length = ut_list_get_length(field_items);
+  for (size_t i = 0; i < field_items_length; i++) {
+    UtObject *item = ut_object_list_get_element(field_items, i);
+    UtObject *field = ut_map_item_get_value(item);
     UtProtobufMessageFieldType field_type =
         ut_protobuf_message_field_get_type(field);
     UtObject *field_value_type =
         ut_protobuf_message_field_get_value_type(field);
     uint32_t number = ut_protobuf_message_field_get_number(field);
 
-    const char *name = ut_protobuf_message_field_get_name(field);
+    const char *name = ut_string_get_text(ut_map_item_get_key(item));
     UtObject *field_value = ut_map_lookup_string(value, name);
     if (field_value == NULL) {
       if (field_type == UT_PROTOBUF_MESSAGE_FIELD_TYPE_OPTIONAL) {
