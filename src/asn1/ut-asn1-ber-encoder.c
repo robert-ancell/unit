@@ -33,12 +33,16 @@ static void set_error(UtAsn1BerEncoder *self, const char *description) {
   }
 }
 
+static void set_error_take(UtAsn1BerEncoder *self, char *description) {
+  set_error(self, description);
+  free(description);
+}
+
 static void set_type_error(UtAsn1BerEncoder *self, const char *type_name,
                            UtObject *value) {
-  ut_cstring_ref description =
-      ut_cstring_new_printf("Unknown type %s provided for %s",
-                            ut_object_get_type_name(value), type_name);
-  set_error(self, description);
+  set_error_take(self, ut_cstring_new_printf("Unknown type %s provided for %s",
+                                             ut_object_get_type_name(value),
+                                             type_name));
 }
 
 static void resize(UtAsn1BerEncoder *self, size_t required_length) {
@@ -418,8 +422,7 @@ static size_t encode_graphic_string(UtAsn1BerEncoder *self, const char *value,
                                     const char *type_name) {
   UtObjectRef graphic_string = ut_asn1_encode_graphic_string(value);
   if (graphic_string == NULL) {
-    ut_cstring_ref description = ut_cstring_new_printf("Invalid %s", type_name);
-    set_error(self, description);
+    set_error_take(self, ut_cstring_new_printf("Invalid %s", type_name));
     return 0;
   }
   return encode_octet_string(self, graphic_string);
@@ -434,8 +437,7 @@ static size_t encode_visible_string(UtAsn1BerEncoder *self, const char *value,
                                     const char *type_name) {
   UtObjectRef visible_string = ut_asn1_encode_visible_string(value);
   if (visible_string == NULL) {
-    ut_cstring_ref description = ut_cstring_new_printf("Invalid %s", type_name);
-    set_error(self, description);
+    set_error_take(self, ut_cstring_new_printf("Invalid %s", type_name));
     return 0;
   }
   return encode_octet_string(self, visible_string);
@@ -636,9 +638,8 @@ static size_t encode_enumerated_value(UtAsn1BerEncoder *self, UtObject *type,
   int64_t number =
       ut_asn1_enumerated_type_get_value(type, ut_string_get_text(value));
   if (number < 0) {
-    ut_cstring_ref description = ut_cstring_new_printf(
-        "Unknown enumeration item %s", ut_string_get_text(value));
-    set_error(self, description);
+    set_error_take(self, ut_cstring_new_printf("Unknown enumeration item %s",
+                                               ut_string_get_text(value)));
     return 0;
   }
   size_t length = encode_enumerated(self, number);
@@ -729,9 +730,8 @@ static size_t encode_components(UtAsn1BerEncoder *self, const char *type_name,
     }
 
     if (component_value == NULL) {
-      ut_cstring_ref description = ut_cstring_new_printf(
-          "Missing %s component %s", type_name, identifier_text);
-      set_error(self, description);
+      set_error_take(self, ut_cstring_new_printf("Missing %s component %s",
+                                                 type_name, identifier_text));
       return 0;
     }
 
@@ -843,9 +843,8 @@ static size_t encode_choice_value(UtAsn1BerEncoder *self, UtObject *type,
   const char *identifier = ut_asn1_choice_value_get_identifier(value);
   UtObject *choice_type = ut_asn1_choice_type_get_component(type, identifier);
   if (choice_type == NULL) {
-    ut_cstring_ref description =
-        ut_cstring_new_printf("Invalid choice component %s", identifier);
-    set_error(self, description);
+    set_error_take(
+        self, ut_cstring_new_printf("Invalid choice component %s", identifier));
     *is_constructed = false;
     return 0;
   }
@@ -1091,9 +1090,8 @@ static size_t encode_value(UtAsn1BerEncoder *self, UtObject *type,
     return encode_tagged_value(self, type, value, encode_tag, is_constructed);
   } else {
     ut_cstring_ref type_string = ut_object_to_string(type);
-    ut_cstring_ref description =
-        ut_cstring_new_printf("Unknown ASN.1 type %s", type_string);
-    set_error(self, description);
+    set_error_take(self,
+                   ut_cstring_new_printf("Unknown ASN.1 type %s", type_string));
     *is_constructed = true;
     return 0;
   }

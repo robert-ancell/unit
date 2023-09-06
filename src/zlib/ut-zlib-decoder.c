@@ -48,14 +48,19 @@ static void set_error(UtZlibDecoder *self, const char *description) {
   }
 }
 
+static void set_error_take(UtZlibDecoder *self, char *description) {
+  set_error(self, description);
+  free(description);
+}
+
 static size_t deflate_read_cb(UtObject *object, UtObject *data, bool complete) {
   UtZlibDecoder *self = (UtZlibDecoder *)object;
 
   if (ut_object_implements_error(data)) {
     ut_cstring_ref deflate_description = ut_error_get_description(data);
-    ut_cstring_ref description = ut_cstring_new_printf(
-        "Error decoding deflate data: %s", deflate_description);
-    set_error(self, description);
+    set_error_take(self,
+                   ut_cstring_new_printf("Error decoding deflate data: %s",
+                                         deflate_description));
     return 0;
   }
 

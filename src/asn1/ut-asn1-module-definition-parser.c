@@ -40,6 +40,12 @@ static void set_error(UtAsn1ModuleDefinitionParser *self,
   }
 }
 
+static void set_error_take(UtAsn1ModuleDefinitionParser *self,
+                           char *description) {
+  set_error(self, description);
+  free(description);
+}
+
 static bool is_reserved(const char *word) {
   static const char *reserved_words[] = {"ABSENT",
                                          "ABSTRACT-SYNTAX",
@@ -286,9 +292,8 @@ static bool current_token_is(UtAsn1ModuleDefinitionParser *self,
 
 static void set_expected_error(UtAsn1ModuleDefinitionParser *self,
                                const char *type) {
-  ut_cstring_ref description =
-      ut_cstring_new_printf("Expected %s, got %s", type, current_token(self));
-  set_error(self, description);
+  set_error_take(self, ut_cstring_new_printf("Expected %s, got %s", type,
+                                             current_token(self)));
 }
 
 static const char *text_to_uint64(const char *text, uint64_t *number) {
@@ -954,9 +959,8 @@ static bool maybe_parse_defined_value(UtAsn1ModuleDefinitionParser *self,
   self->index++;
 
   if (!type_matches(type, ut_asn1_type_value_get_type(referenced_type_value))) {
-    ut_cstring_ref description =
-        ut_cstring_new_printf("Reference %s has incorrect type", reference);
-    set_error(self, description);
+    set_error_take(self, ut_cstring_new_printf(
+                             "Reference %s has incorrect type", reference));
     return false;
   }
 
@@ -1740,9 +1744,9 @@ static bool parse_component_type_list(UtAsn1ModuleDefinitionParser *self,
 
     UtObject *existing_type = ut_map_lookup_string(components_, identifier);
     if (existing_type != NULL) {
-      ut_cstring_ref description = ut_cstring_new_printf(
-          "Duplicate component identifier %s", identifier);
-      set_error(self, description);
+      set_error_take(self,
+                     ut_cstring_new_printf("Duplicate component identifier %s",
+                                           identifier));
       return false;
     }
 
@@ -1940,9 +1944,8 @@ static bool parse_choice_type(UtAsn1ModuleDefinitionParser *self,
 
     UtObject *existing_type = ut_map_lookup_string(components, identifier);
     if (existing_type != NULL) {
-      ut_cstring_ref description =
-          ut_cstring_new_printf("Duplicate choice option %s", identifier);
-      set_error(self, description);
+      set_error_take(self, ut_cstring_new_printf("Duplicate choice option %s",
+                                                 identifier));
       return false;
     }
 
@@ -2090,9 +2093,7 @@ static bool parse_type(UtAsn1ModuleDefinitionParser *self, UtObject **type) {
     UtObject *referenced_type =
         ut_map_lookup_string(self->assignments, reference);
     if (referenced_type == NULL) {
-      ut_cstring_ref description =
-          ut_cstring_new_printf("Unknown type %s", reference);
-      set_error(self, description);
+      set_error_take(self, ut_cstring_new_printf("Unknown type %s", reference));
       return false;
     }
 

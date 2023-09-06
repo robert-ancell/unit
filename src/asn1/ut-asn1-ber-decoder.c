@@ -32,6 +32,11 @@ static void set_error(UtAsn1BerDecoder *self, const char *description) {
   }
 }
 
+static void set_error_take(UtAsn1BerDecoder *self, char *description) {
+  set_error(self, description);
+  free(description);
+}
+
 static bool decode_compressed_integer(UtObject *data, size_t *offset,
                                       uint32_t *value) {
   size_t data_length = ut_list_get_length(data);
@@ -63,9 +68,8 @@ static UtObject *decode_constructed(UtAsn1BerDecoder *self) {
     UtObject *child_error = ut_asn1_decoder_get_error(child);
     if (child_error != NULL) {
       ut_cstring_ref child_description = ut_error_get_description(child_error);
-      ut_cstring_ref description = ut_cstring_new_printf(
-          "Failed to decode child: %s", child_description);
-      set_error(self, description);
+      set_error_take(self, ut_cstring_new_printf("Failed to decode child: %s",
+                                                 child_description));
       return ut_list_new();
     }
     ut_list_append(children, child);
@@ -93,23 +97,21 @@ static bool decode_boolean(UtAsn1BerDecoder *self) {
 
 static int64_t decode_integer(UtAsn1BerDecoder *self, const char *type_name) {
   if (self->constructed) {
-    ut_cstring_ref description =
-        ut_cstring_new_printf("%s does not have constructed form", type_name);
-    set_error(self, description);
+    set_error_take(self, ut_cstring_new_printf(
+                             "%s does not have constructed form", type_name));
     return 0;
   }
 
   size_t data_length = ut_list_get_length(self->contents);
   if (data_length == 0) {
-    ut_cstring_ref description =
-        ut_cstring_new_printf("Invalid %s data length", type_name);
-    set_error(self, description);
+    set_error_take(self,
+                   ut_cstring_new_printf("Invalid %s data length", type_name));
     return 0;
   }
   if (data_length > 8) {
-    ut_cstring_ref description = ut_cstring_new_printf(
-        "%s greater than 64 bits not supported", type_name);
-    set_error(self, description);
+    set_error_take(
+        self, ut_cstring_new_printf("%s greater than 64 bits not supported",
+                                    type_name));
     return 0;
   }
   size_t offset = 0;
@@ -171,10 +173,10 @@ static UtObject *decode_constructed_bit_string(UtAsn1BerDecoder *self) {
     UtObject *error = ut_asn1_decoder_get_error(decoder);
     if (error != NULL) {
       ut_cstring_ref child_description = ut_error_get_description(error);
-      ut_cstring_ref description = ut_cstring_new_printf(
-          "Error decoding constructed BIT STRING element: %s",
-          child_description);
-      set_error(self, description);
+      set_error_take(self,
+                     ut_cstring_new_printf(
+                         "Error decoding constructed BIT STRING element: %s",
+                         child_description));
       return ut_bit_list_new_msb();
     }
     ut_bit_list_append_list(value, child_value);
@@ -203,15 +205,13 @@ static UtObject *decode_constructed_octet_string(UtAsn1BerDecoder *self,
     offset += ut_asn1_ber_decoder_get_length(decoder);
 
     if (!ut_object_equal(self->tag, ut_asn1_ber_decoder_get_tag(decoder))) {
-      ut_cstring_ref description =
-          ut_cstring_new_printf("Invalid tag inside constructed %s", type_name);
-      set_error(self, description);
+      set_error_take(self, ut_cstring_new_printf(
+                               "Invalid tag inside constructed %s", type_name));
       return ut_uint8_list_new();
     }
     if (ut_asn1_ber_decoder_get_constructed(decoder)) {
-      ut_cstring_ref description =
-          ut_cstring_new_printf("Invalid nested constructed %s", type_name);
-      set_error(self, description);
+      set_error_take(self, ut_cstring_new_printf(
+                               "Invalid nested constructed %s", type_name));
       return ut_uint8_list_new();
     }
 
@@ -219,10 +219,9 @@ static UtObject *decode_constructed_octet_string(UtAsn1BerDecoder *self,
     UtObject *error = ut_asn1_decoder_get_error(decoder);
     if (error != NULL) {
       ut_cstring_ref child_description = ut_error_get_description(error);
-      ut_cstring_ref description =
-          ut_cstring_new_printf("Error decoding constructed %s element: %s",
-                                type_name, child_description);
-      set_error(self, description);
+      set_error_take(self, ut_cstring_new_printf(
+                               "Error decoding constructed %s element: %s",
+                               type_name, child_description));
       return ut_uint8_list_new();
     }
   }
@@ -516,8 +515,7 @@ static UtObject *decode_graphic_string(UtAsn1BerDecoder *self,
   UtObjectRef data = decode_octet_string(self, type_name);
   UtObjectRef value = ut_asn1_decode_graphic_string(data);
   if (value == NULL) {
-    ut_cstring_ref description = ut_cstring_new_printf("Invalid %s", type_name);
-    set_error(self, description);
+    set_error_take(self, ut_cstring_new_printf("Invalid %s", type_name));
     return ut_string_new("");
   }
 
@@ -533,8 +531,7 @@ static UtObject *decode_visible_string(UtAsn1BerDecoder *self,
   UtObjectRef data = decode_octet_string(self, type_name);
   UtObjectRef value = ut_asn1_decode_visible_string(data);
   if (value == NULL) {
-    ut_cstring_ref description = ut_cstring_new_printf("Invalid %s", type_name);
-    set_error(self, description);
+    set_error_take(self, ut_cstring_new_printf("Invalid %s", type_name));
     return ut_string_new("");
   }
 
@@ -614,9 +611,9 @@ static bool expect_tag(UtAsn1BerDecoder *self, UtAsn1TagClass class,
     UtObjectRef expected_tag = ut_asn1_tag_new(class, number);
     ut_cstring_ref expected_tag_string = ut_asn1_tag_to_string(expected_tag);
     ut_cstring_ref received_tag_string = ut_asn1_tag_to_string(self->tag);
-    ut_cstring_ref description = ut_cstring_new_printf(
-        "Expected tag %s, got %s", expected_tag_string, received_tag_string);
-    set_error(self, description);
+    set_error_take(self, ut_cstring_new_printf("Expected tag %s, got %s",
+                                               expected_tag_string,
+                                               received_tag_string));
     return false;
   }
 
@@ -717,9 +714,8 @@ static UtObject *decode_enumerated_value(UtAsn1BerDecoder *self, UtObject *type,
     if (ut_asn1_enumerated_type_get_extensible(type)) {
       return ut_string_new_printf("%li", value);
     } else {
-      ut_cstring_ref description =
-          ut_cstring_new_printf("Unknown enumeration value %li", value);
-      set_error(self, description);
+      set_error_take(
+          self, ut_cstring_new_printf("Unknown enumeration value %li", value));
       return ut_string_new("");
     }
   }
@@ -815,9 +811,9 @@ static UtObject *decode_sequence_value(UtAsn1BerDecoder *self, UtObject *type,
         continue;
       }
 
-      ut_cstring_ref description = ut_cstring_new_printf(
-          "Required SEQUENCE component %s missing", ut_string_get_text(name));
-      set_error(self, description);
+      set_error_take(
+          self, ut_cstring_new_printf("Required SEQUENCE component %s missing",
+                                      ut_string_get_text(name)));
       return ut_map_new();
     }
 
@@ -835,10 +831,10 @@ static UtObject *decode_sequence_value(UtAsn1BerDecoder *self, UtObject *type,
     UtObject *error = ut_asn1_decoder_get_error(decoder);
     if (error != NULL) {
       ut_cstring_ref child_description = ut_error_get_description(error);
-      ut_cstring_ref description = ut_cstring_new_printf(
-          "Error decoding SEQUENCE component %s: %s",
-          ut_string_get_text(component_name), child_description);
-      set_error(self, description);
+      set_error_take(self, ut_cstring_new_printf(
+                               "Error decoding SEQUENCE component %s: %s",
+                               ut_string_get_text(component_name),
+                               child_description));
       return ut_map_new();
     }
 
@@ -891,10 +887,9 @@ static UtObject *decode_value_list(UtAsn1BerDecoder *self, UtObject *type,
     UtObject *error = ut_asn1_decoder_get_error(decoder);
     if (error != NULL) {
       ut_cstring_ref child_description = ut_error_get_description(error);
-      ut_cstring_ref description = ut_cstring_new_printf(
-          "Error decoding %s element %zi: %s", type_string,
-          ut_list_get_length(value), child_description);
-      set_error(self, description);
+      set_error_take(self, ut_cstring_new_printf(
+                               "Error decoding %s element %zi: %s", type_string,
+                               ut_list_get_length(value), child_description));
       return ut_list_new();
     }
     offset += ut_asn1_ber_decoder_get_length(decoder);
@@ -970,9 +965,9 @@ static UtObject *decode_set_value(UtAsn1BerDecoder *self, UtObject *type,
     }
 
     if (ut_map_lookup(value, component_name)) {
-      ut_cstring_ref description = ut_cstring_new_printf(
-          "Duplicate SET component %s", ut_string_get_text(component_name));
-      set_error(self, description);
+      set_error_take(self,
+                     ut_cstring_new_printf("Duplicate SET component %s",
+                                           ut_string_get_text(component_name)));
       return ut_map_new();
     }
 
@@ -989,10 +984,9 @@ static UtObject *decode_set_value(UtAsn1BerDecoder *self, UtObject *type,
     UtObject *error = ut_asn1_decoder_get_error(decoder);
     if (error != NULL) {
       ut_cstring_ref child_description = ut_error_get_description(error);
-      ut_cstring_ref description =
-          ut_cstring_new_printf("Error decoding SET element %zi: %s",
-                                ut_list_get_length(value), child_description);
-      set_error(self, description);
+      set_error_take(self, ut_cstring_new_printf(
+                               "Error decoding SET element %zi: %s",
+                               ut_list_get_length(value), child_description));
       return ut_map_new();
     }
 
@@ -1227,9 +1221,8 @@ static UtObject *decode_value(UtAsn1BerDecoder *self, UtObject *type,
     return decode_value(self, ut_asn1_referenced_type_get_type(type),
                         decode_tag);
   } else {
-    ut_cstring_ref description = ut_cstring_new_printf(
-        "Unknown ASN.1 type %s", ut_object_get_type_name(type));
-    set_error(self, description);
+    set_error_take(self, ut_cstring_new_printf("Unknown ASN.1 type %s",
+                                               ut_object_get_type_name(type)));
     return NULL;
   }
 }

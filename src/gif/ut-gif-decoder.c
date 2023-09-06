@@ -106,6 +106,11 @@ static void set_error(UtGifDecoder *self, const char *description) {
   notify_complete(self);
 }
 
+static void set_error_take(UtGifDecoder *self, char *description) {
+  set_error(self, description);
+  free(description);
+}
+
 static size_t decode_header(UtGifDecoder *self, UtObject *data) {
   if (ut_list_get_length(data) < 6) {
     return 0;
@@ -218,9 +223,9 @@ static void decode_comment(UtGifDecoder *self, UtObject *sub_blocks) {
 
   UtObjectRef comment = ut_string_new_from_ascii(comment_data);
   if (ut_object_implements_error(comment)) {
-    ut_cstring_ref description = ut_cstring_new_printf(
-        "Invalid GIF comment: %s", ut_error_get_description(comment));
-    set_error(self, description);
+    set_error_take(self,
+                   ut_cstring_new_printf("Invalid GIF comment: %s",
+                                         ut_error_get_description(comment)));
     return;
   }
 
@@ -415,9 +420,8 @@ static size_t lzw_read_cb(UtObject *object, UtObject *data, bool complete) {
   UtGifDecoder *self = (UtGifDecoder *)object;
 
   if (ut_object_implements_error(data)) {
-    ut_cstring_ref description = ut_cstring_new_printf(
-        "Image data LZW error: %s", ut_error_get_description(data));
-    set_error(self, description);
+    set_error_take(self, ut_cstring_new_printf("Image data LZW error: %s",
+                                               ut_error_get_description(data)));
     return 0;
   }
 
@@ -516,9 +520,8 @@ static size_t read_cb(UtObject *object, UtObject *data, bool complete) {
   UtGifDecoder *self = (UtGifDecoder *)object;
 
   if (ut_object_implements_error(data)) {
-    ut_cstring_ref description = ut_cstring_new_printf(
-        "Failed to read GIF data: %s", ut_error_get_description(data));
-    set_error(self, description);
+    set_error_take(self, ut_cstring_new_printf("Failed to read GIF data: %s",
+                                               ut_error_get_description(data)));
     return 0;
   }
 

@@ -18,6 +18,11 @@ static void set_error(UtProtobufDecoder *self, const char *description) {
   }
 }
 
+static void set_error_take(UtProtobufDecoder *self, char *description) {
+  set_error(self, description);
+  free(description);
+}
+
 static void set_insufficient_data_error(UtProtobufDecoder *self) {
   set_error(self, "Insufficient data");
 }
@@ -332,9 +337,8 @@ static void process_string(UtProtobufDecoder *self, UtObject *data,
   UtObjectRef string = ut_string_new_from_utf8(data);
   if (ut_object_implements_error(string)) {
     ut_cstring_ref error_description = ut_error_get_description(string);
-    ut_cstring_ref description =
-        ut_cstring_new_printf("Invalid string: %s", error_description);
-    set_error(self, description);
+    set_error_take(
+        self, ut_cstring_new_printf("Invalid string: %s", error_description));
     return;
   }
   if (is_repeated) {
@@ -617,9 +621,8 @@ UtObject *ut_protobuf_decoder_decode_message(UtObject *object, UtObject *type) {
     }
 
     if (ut_map_lookup_string(message, name) == NULL) {
-      ut_cstring_ref description =
-          ut_cstring_new_printf("Missing required field %s", name);
-      set_error(self, description);
+      set_error_take(self,
+                     ut_cstring_new_printf("Missing required field %s", name));
       return ut_map_new();
     }
   }

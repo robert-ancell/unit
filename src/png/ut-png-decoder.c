@@ -128,6 +128,11 @@ static void set_error(UtPngDecoder *self, const char *description) {
   notify_complete(self);
 }
 
+static void set_error_take(UtPngDecoder *self, char *description) {
+  set_error(self, description);
+  free(description);
+}
+
 static void set_end(UtPngDecoder *self) {
   self->state = DECODER_STATE_END;
   notify_complete(self);
@@ -543,9 +548,9 @@ static size_t data_decoder_read_cb(UtObject *object, UtObject *data,
   UtPngDecoder *self = (UtPngDecoder *)object;
 
   if (ut_object_implements_error(data)) {
-    ut_cstring_ref description = ut_cstring_new_printf(
-        "Error decoding PNG image data: %s", ut_error_get_description(data));
-    set_error(self, description);
+    set_error_take(self,
+                   ut_cstring_new_printf("Error decoding PNG image data: %s",
+                                         ut_error_get_description(data)));
     return 0;
   }
 
@@ -1159,9 +1164,8 @@ static size_t read_cb(UtObject *object, UtObject *data, bool complete) {
   UtPngDecoder *self = (UtPngDecoder *)object;
 
   if (ut_object_implements_error(data)) {
-    ut_cstring_ref description = ut_cstring_new_printf(
-        "Failed to read PNG data: %s", ut_error_get_description(data));
-    set_error(self, description);
+    set_error_take(self, ut_cstring_new_printf("Failed to read PNG data: %s",
+                                               ut_error_get_description(data)));
     return 0;
   }
 

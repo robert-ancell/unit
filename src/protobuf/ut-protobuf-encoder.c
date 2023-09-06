@@ -18,6 +18,11 @@ static void set_error(UtProtobufEncoder *self, const char *description) {
   }
 }
 
+static void set_error_take(UtProtobufEncoder *self, char *description) {
+  set_error(self, description);
+  free(description);
+}
+
 static void encode_varint(UtProtobufEncoder *self, uint64_t value) {
   if (value <= 0x7f) {
     ut_uint8_list_append(self->buffer, value);
@@ -211,9 +216,7 @@ static void encode_enum(UtProtobufEncoder *self, uint32_t number,
                         UtObject *type, const char *value) {
   int32_t enum_value;
   if (!ut_protobuf_enum_type_get_value(type, value, &enum_value)) {
-    ut_cstring_ref description =
-        ut_cstring_new_printf("Unknown enum value %s", value);
-    set_error(self, description);
+    set_error_take(self, ut_cstring_new_printf("Unknown enum value %s", value));
     return;
   }
   encode_int32(self, number, enum_value);
@@ -225,10 +228,9 @@ static bool check_type(UtProtobufEncoder *self, bool (*is_type)(UtObject *),
     return true;
   }
 
-  ut_cstring_ref description =
-      ut_cstring_new_printf("Invalid type %s provided for %s",
-                            ut_object_get_type_name(value), protobuf_type);
-  set_error(self, description);
+  set_error_take(self, ut_cstring_new_printf("Invalid type %s provided for %s",
+                                             ut_object_get_type_name(value),
+                                             protobuf_type));
   return false;
 }
 
@@ -410,9 +412,8 @@ static bool encode_repeated_field(UtProtobufEncoder *self, uint32_t number,
   }
 
   ut_cstring_ref type_string = ut_object_to_string(type);
-  ut_cstring_ref description =
-      ut_cstring_new_printf("Unknown Protobuf repeated type %s", type_string);
-  set_error(self, description);
+  set_error_take(self, ut_cstring_new_printf(
+                           "Unknown Protobuf repeated type %s", type_string));
 
   return false;
 }
@@ -527,9 +528,8 @@ static bool encode_single_field(UtProtobufEncoder *self, uint32_t number,
   }
 
   ut_cstring_ref type_string = ut_object_to_string(type);
-  ut_cstring_ref description =
-      ut_cstring_new_printf("Unknown Protobuf type %s", type_string);
-  set_error(self, description);
+  set_error_take(
+      self, ut_cstring_new_printf("Unknown Protobuf type %s", type_string));
   return false;
 }
 
@@ -554,9 +554,7 @@ static bool encode_message(UtProtobufEncoder *self, UtObject *type,
         continue;
       }
 
-      ut_cstring_ref description =
-          ut_cstring_new_printf("Missing field %s", name);
-      set_error(self, description);
+      set_error_take(self, ut_cstring_new_printf("Missing field %s", name));
       return false;
     }
 
