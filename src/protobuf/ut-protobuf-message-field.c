@@ -40,7 +40,7 @@ static UtObject *message_field_new(UtProtobufMessageFieldType type,
 }
 
 UtObject *ut_protobuf_message_field_new(UtObject *value_type, uint32_t number) {
-  return message_field_new(UT_PROTOBUF_MESSAGE_FIELD_TYPE_SINGLE, value_type,
+  return message_field_new(UT_PROTOBUF_MESSAGE_FIELD_TYPE_IMPLICIT, value_type,
                            number);
 }
 
