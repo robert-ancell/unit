@@ -561,6 +561,19 @@ static void test_package() {
       "Multiple package definitions");
 }
 
+static void test_import() {
+  UtObjectRef parser1 = ut_protobuf_definition_parser_new();
+  ut_protobuf_definition_parser_parse(parser1, "syntax = \"proto3\";\n"
+                                               "import \"foo.proto\";\n"
+                                               "message Person {\n"
+                                               "  string name = 1;\n"
+                                               "  uint32 age = 2;\n"
+                                               "}\n");
+  ut_assert_is_error_with_description(
+      ut_protobuf_definition_parser_get_error(parser1),
+      "Imports not implemented");
+}
+
 int main(int argc, char **argv) {
   test_empty();
   test_comments();
@@ -570,6 +583,7 @@ int main(int argc, char **argv) {
   test_enum();
   test_service();
   test_package();
+  test_import();
 
   return 0;
 }

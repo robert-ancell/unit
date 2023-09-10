@@ -320,6 +320,17 @@ static bool parse_type(UtProtobufDefinitionParser *self, UtObject **type) {
   return true;
 }
 
+static bool parse_import(UtProtobufDefinitionParser *self) {
+  ut_cstring_ref path = NULL;
+  if (!parse_text(self, "import") || !parse_string(self, &path) ||
+      !parse_text(self, ";")) {
+    return false;
+  }
+
+  set_error(self, "Imports not implemented");
+  return false;
+}
+
 static bool is_identifier_starting_char(char c) {
   return is_alpha(c) || c == '_';
 }
@@ -899,6 +910,10 @@ bool ut_protobuf_definition_parser_parse(UtObject *object, const char *text) {
       self->definition =
           ut_protobuf_definition_new(self->syntax, self->definitions);
       return true;
+    } else if (current_token_is(self, "import")) {
+      if (!parse_import(self)) {
+        return false;
+      }
     } else if (current_token_is(self, "package")) {
       if (!parse_package(self)) {
         return false;
