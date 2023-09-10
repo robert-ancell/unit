@@ -207,12 +207,6 @@ UtObject *ut_int64_array_new_from_va_elements(size_t length, va_list ap) {
   return object;
 }
 
-int64_t *ut_int64_array_get_data(UtObject *object) {
-  assert(ut_object_is_int64_array(object));
-  UtInt64Array *self = (UtInt64Array *)object;
-  return self->data;
-}
-
 bool ut_object_is_int64_array(UtObject *object) {
   return ut_object_is_type(object, &object_interface);
 }

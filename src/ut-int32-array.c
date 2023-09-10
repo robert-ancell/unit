@@ -206,12 +206,6 @@ UtObject *ut_int32_array_new_from_va_elements(size_t length, va_list ap) {
   return object;
 }
 
-int32_t *ut_int32_array_get_data(UtObject *object) {
-  assert(ut_object_is_int32_array(object));
-  UtInt32Array *self = (UtInt32Array *)object;
-  return self->data;
-}
-
 bool ut_object_is_int32_array(UtObject *object) {
   return ut_object_is_type(object, &object_interface);
 }

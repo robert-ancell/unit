@@ -7,14 +7,19 @@
 
 #pragma once
 
+/// Creates a new array that contains signed 16 bit values.
+/// !return-type UtInt16Array
+/// !return-ref
 UtObject *ut_int16_array_new();
 
+/// Creates a new array of [length] zeros.
+/// !return-type UtInt16Array
+/// !return-ref
 UtObject *ut_int16_array_new_sized(size_t length);
 
 UtObject *ut_int16_array_new_from_elements(size_t length, ...);
 
 UtObject *ut_int16_array_new_from_va_elements(size_t length, va_list ap);
 
-int16_t *ut_int16_array_get_data(UtObject *object);
-
+/// Returns [true] if [object] is a [UtInt16Array].
 bool ut_object_is_int16_array(UtObject *object);

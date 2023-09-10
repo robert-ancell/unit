@@ -207,12 +207,6 @@ UtObject *ut_int16_array_new_from_va_elements(size_t length, va_list ap) {
   return object;
 }
 
-int16_t *ut_int16_array_get_data(UtObject *object) {
-  assert(ut_object_is_int16_array(object));
-  UtInt16Array *self = (UtInt16Array *)object;
-  return self->data;
-}
-
 bool ut_object_is_int16_array(UtObject *object) {
   return ut_object_is_type(object, &object_interface);
 }
