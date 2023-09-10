@@ -18,7 +18,7 @@ bool ut_asn1_type_matches_tag(UtObject *object, UtObject *tag);
 
 /// Checks if [value] is a valid value for this type and returns a [UtAsn1Error]
 /// if it is not valid.
-///!return-ref
+/// !return-ref
 UtObject *ut_asn1_type_check_value(UtObject *object, UtObject *value);
 
 UtObject *ut_asn1_type_get_base_type(UtObject *object);

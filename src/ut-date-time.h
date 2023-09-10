@@ -5,14 +5,14 @@
 #pragma once
 
 /// Creates a new [UtDateTime] object with a timezone offset.
-///!return-ref
+/// !return-ref
 UtObject *ut_date_time_new(unsigned int year, unsigned int month,
                            unsigned int day, unsigned int hour,
                            unsigned int minutes, unsigned int seconds,
                            int utc_offset);
 
 /// Creates a new [UtDateTime] object in UTC.
-/////!return-ref
+/// !return-ref
 UtObject *ut_date_time_new_utc(unsigned int year, unsigned int month,
                                unsigned int day, unsigned int hour,
                                unsigned int minutes, unsigned int seconds);
