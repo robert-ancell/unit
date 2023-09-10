@@ -18,4 +18,5 @@ UtObject *ut_http_message_encoder_new_response(UtObject *output_stream,
 
 void ut_http_message_encoder_encode(UtObject *object);
 
+/// Returns [true] if [object] is a [UtHttpMessageEncoder].
 bool ut_object_is_http_message_encoder(UtObject *object);

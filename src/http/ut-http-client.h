@@ -4,13 +4,20 @@
 
 #pragma once
 
+/// Method to handle a received HTTP [response].
 typedef void (*UtHttpResponseCallback)(UtObject *object, UtObject *response);
 
+/// Creates a new [UtHttpClient].
+///
+/// !return-ref
 UtObject *ut_http_client_new();
 
+/// Sends a request to [uri] containing [body]. The result is returned in
+/// [callback].
 void ut_http_client_send_request(UtObject *object, const char *method,
                                  const char *uri, UtObject *body,
                                  UtObject *callback_object,
                                  UtHttpResponseCallback callback);
 
+/// Returns [true] if [object] is a [UtHttpClient].
 bool ut_object_is_http_client(UtObject *object);

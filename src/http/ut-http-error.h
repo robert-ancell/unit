@@ -4,6 +4,10 @@
 
 #pragma once
 
+/// Creates a new [UtHttpError] with [description].
+///
+/// !return-ref
 UtObject *ut_http_error_new(const char *description);
 
+/// Returns [true] if [object] is a [UtHttpError].
 bool ut_object_is_http_error(UtObject *object);

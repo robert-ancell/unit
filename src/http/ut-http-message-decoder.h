@@ -28,4 +28,5 @@ bool ut_http_message_decoder_get_done(UtObject *object);
 
 UtObject *ut_http_message_decoder_get_error(UtObject *object);
 
+/// Returns [true] if [object] is a [UtHttpMessageDecoder].
 bool ut_object_is_http_message_decoder(UtObject *object);
