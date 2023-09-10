@@ -77,4 +77,5 @@ UtObject *ut_tiff_reader_get_subfile(UtObject *object, uint32_t offset);
 
 UtObject *ut_tiff_reader_get_error(UtObject *object);
 
+/// Returns [true] if [object] is a [UtTiffReader].
 bool ut_object_is_tiff_reader(UtObject *object);

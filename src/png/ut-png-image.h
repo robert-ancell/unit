@@ -56,4 +56,5 @@ UtObject *ut_png_image_get_data(UtObject *object);
 
 UtObject *ut_png_image_to_rgba(UtObject *object);
 
+/// Returns [true] if [object] is a [UtPngImage].
 bool ut_object_is_png_image(UtObject *object);

@@ -5,12 +5,13 @@
 
 #pragma once
 
-/// Creates a new [UtUint32] object that contains [value].
+/// Creates a new object that contains a single unsigned 32 bit [value].
 ///
+/// !return-type UtUint32
 /// !return-ref
 UtObject *ut_uint32_new(uint32_t value);
 
-/// Gets the value of [object].
+/// Returns the value of [object].
 uint32_t ut_uint32_get_value(UtObject *object);
 
 /// Returns [true] if [object] is a [UtUint32].

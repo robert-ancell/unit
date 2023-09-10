@@ -5,8 +5,9 @@
 
 #pragma once
 
-/// Creates a new [UtUint8] object that contains [value].
+/// Creates a new object that contains a single unsigned 8 bit [value].
 ///
+/// !return-type UtUint8
 /// !return-ref
 UtObject *ut_uint8_new(uint8_t value);
 

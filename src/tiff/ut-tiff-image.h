@@ -39,4 +39,5 @@ UtObject *ut_tiff_image_get_data(UtObject *object);
 
 UtObject *ut_tiff_image_to_rgba(UtObject *object);
 
+/// Returns [true] if [object] is a [UtTiffImage].
 bool ut_object_is_tiff_image(UtObject *object);

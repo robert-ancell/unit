@@ -14,4 +14,5 @@ void ut_gif_encoder_add_comment(UtObject *object, const char *comment);
 
 void ut_gif_encoder_encode(UtObject *object);
 
+/// Returns [true] if [object] is a [UtGifEncoder].
 bool ut_object_is_gif_encoder(UtObject *object);

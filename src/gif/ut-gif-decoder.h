@@ -25,4 +25,5 @@ UtObject *ut_gif_decoder_get_images(UtObject *object);
 
 size_t ut_gif_decoder_get_loop_count(UtObject *object);
 
+/// Returns [true] if [object] is a [UtGifDecoder].
 bool ut_object_is_gif_decoder(UtObject *object);

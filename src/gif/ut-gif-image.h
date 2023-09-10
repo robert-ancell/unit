@@ -37,4 +37,5 @@ UtObject *ut_gif_image_get_color_table(UtObject *object);
 
 UtObject *ut_gif_image_get_data(UtObject *object);
 
+/// Returns [true] if [object] is a [UtGifImage].
 bool ut_object_is_gif_image(UtObject *object);

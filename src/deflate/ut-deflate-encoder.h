@@ -11,4 +11,5 @@ UtObject *ut_deflate_encoder_new_with_window_size(size_t window_size,
 
 size_t ut_deflate_encoder_get_window_size(UtObject *object);
 
+/// Returns [true] if [object] is a [UtDeflateEncoder].
 bool ut_object_is_deflate_encoder(UtObject *object);

@@ -163,4 +163,5 @@ uint32_t ut_tiff_tag_get_long(UtObject *object, size_t index);
 
 uint32_t ut_tiff_tag_get_short_or_long(UtObject *object, size_t index);
 
+/// Returns [true] if [object] is a [UtTiffTag].
 bool ut_object_is_tiff_tag(UtObject *object);
