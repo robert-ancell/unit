@@ -31,4 +31,5 @@ void ut_dbus_client_call_method(UtObject *object, const char *destination,
 void ut_dbus_client_send_reply(UtObject *object, UtObject *method_call,
                                UtObject *args);
 
+/// Returns [true] if [object] is a [UtDbusClient].
 bool ut_object_is_dbus_client(UtObject *object);

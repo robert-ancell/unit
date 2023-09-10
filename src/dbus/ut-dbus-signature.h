@@ -11,4 +11,5 @@ const char *ut_dbus_signature_get_value(UtObject *object);
 
 UtObject *ut_dbus_signature_split(UtObject *object);
 
+/// Returns [true] if [object] is a [UtDbusSignature].
 bool ut_object_is_dbus_signature(UtObject *object);

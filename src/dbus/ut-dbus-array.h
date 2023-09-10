@@ -8,4 +8,5 @@ UtObject *ut_dbus_array_new(const char *value_signature);
 
 const char *ut_dbus_array_get_value_signature(UtObject *object);
 
+/// Returns [true] if [object] is a [UtDbusArray].
 bool ut_object_is_dbus_array(UtObject *object);

@@ -31,4 +31,5 @@ size_t ut_jpeg_image_get_n_components(UtObject *object);
 
 UtObject *ut_jpeg_image_get_data(UtObject *object);
 
+/// Returns [true] if [object] is a [UtJpegImage].
 bool ut_object_is_jpeg_image(UtObject *object);

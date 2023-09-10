@@ -79,4 +79,5 @@ UtObject *ut_dbus_message_get_args(UtObject *object);
 
 UtObject *ut_dbus_message_encode(UtObject *object);
 
+/// Returns [true] if [object] is a [UtDbusMessage].
 bool ut_object_is_dbus_message(UtObject *object);

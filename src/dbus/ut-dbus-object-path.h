@@ -9,4 +9,5 @@ UtObject *ut_dbus_object_path_new(const char *value);
 
 const char *ut_dbus_object_path_get_value(UtObject *object);
 
+/// Returns [true] if [object] is a [UtDbusObjectPath].
 bool ut_object_is_dbus_object_path(UtObject *object);

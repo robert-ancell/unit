@@ -9,4 +9,5 @@ UtObject *ut_dbus_server_new();
 bool ut_dbus_server_listen_unix(UtObject *object, const char *path,
                                 UtObject **error);
 
+/// Returns [true] if [object] is a [UtDbusServer].
 bool ut_object_is_dbus_server(UtObject *object);

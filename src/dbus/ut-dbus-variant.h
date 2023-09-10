@@ -13,4 +13,5 @@ const char *ut_dbus_variant_get_signature(UtObject *object);
 
 UtObject *ut_dbus_variant_get_value(UtObject *object);
 
+/// Returns [true] if [object] is a [UtDbusVariant].
 bool ut_object_is_dbus_variant(UtObject *object);

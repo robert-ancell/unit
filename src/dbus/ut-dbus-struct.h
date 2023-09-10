@@ -15,4 +15,5 @@ UtObject *ut_dbus_struct_get_value(UtObject *object, size_t index);
 
 UtObject *ut_dbus_struct_get_values(UtObject *object);
 
+/// Returns [true] if [object] is a [UtDbusStruct].
 bool ut_object_is_dbus_struct(UtObject *object);

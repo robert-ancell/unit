@@ -17,4 +17,5 @@ UtObject *ut_jpeg_decoder_get_error(UtObject *object);
 
 UtObject *ut_jpeg_decoder_get_image(UtObject *object);
 
+/// Returns [true] if [object] is a [UtJpegDecoder].
 bool ut_object_is_jpeg_decoder(UtObject *object);

@@ -8,4 +8,5 @@ UtObject *ut_dbus_message_encoder_new();
 
 UtObject *ut_dbus_message_encoder_encode(UtObject *object, UtObject *message);
 
+/// Returns [true] if [object] is a [UtDbusMessageEncoder].
 bool ut_object_is_dbus_message_encoder(UtObject *object);

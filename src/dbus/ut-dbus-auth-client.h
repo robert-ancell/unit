@@ -16,4 +16,5 @@ void ut_dbus_auth_client_set_negotiate_unix_fd(UtObject *object,
 void ut_dbus_auth_client_run(UtObject *object, UtObject *callback_object,
                              UtAuthCompleteCallback callback);
 
+/// Returns [true] if [object] is a [UtDbusAuthClient].
 bool ut_object_is_dbus_auth_client(UtObject *object);

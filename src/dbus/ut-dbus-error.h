@@ -11,4 +11,5 @@ const char *ut_dbus_error_get_error_name(UtObject *object);
 
 UtObject *ut_dbus_error_get_args(UtObject *object);
 
+/// Returns [true] if [object] is a [UtDbusError].
 bool ut_object_is_dbus_error(UtObject *object);
