@@ -9,6 +9,9 @@
 /// !return-ref
 UtObject *ut_asn1_embedded_pdv_type_new();
 
+/// Returns a sequence type that the EMBEDDED PDV type is encoded with.
+///
+/// !return-type UtAsn1Type
 /// !return-ref
 UtObject *ut_asn1_embedded_pdv_type_get_associated_type(UtObject *object);
 
