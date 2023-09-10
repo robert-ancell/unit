@@ -481,6 +481,86 @@ static void test_service() {
   ut_assert_true(ut_object_is_protobuf_service(service1));
 }
 
+static void test_package() {
+  UtObjectRef parser1 = ut_protobuf_definition_parser_new();
+  ut_protobuf_definition_parser_parse(parser1, "syntax = \"proto3\";\n"
+                                               "package foo.bar;\n"
+                                               "message Person {\n"
+                                               "  string name = 1;\n"
+                                               "  uint32 age = 2;\n"
+                                               "}\n");
+  ut_assert_null_object(ut_protobuf_definition_parser_get_error(parser1));
+  UtObject *definition1 = ut_protobuf_definition_parser_get_definition(parser1);
+  UtObject *message1 =
+      ut_protobuf_definition_lookup(definition1, "foo.bar.Person");
+  ut_assert_non_null_object(message1);
+  ut_assert_true(ut_object_is_protobuf_message_type(message1));
+
+  // Package defined at end of file.
+  UtObjectRef parser2 = ut_protobuf_definition_parser_new();
+  ut_protobuf_definition_parser_parse(parser2, "syntax = \"proto3\";\n"
+                                               "message Person {\n"
+                                               "  string name = 1;\n"
+                                               "  uint32 age = 2;\n"
+                                               "}\n"
+                                               "package foo.bar;\n");
+  ut_assert_null_object(ut_protobuf_definition_parser_get_error(parser2));
+  UtObject *definition2 = ut_protobuf_definition_parser_get_definition(parser2);
+  UtObject *message2 =
+      ut_protobuf_definition_lookup(definition2, "foo.bar.Person");
+  ut_assert_non_null_object(message2);
+  ut_assert_true(ut_object_is_protobuf_message_type(message2));
+
+  // Invalid package name.
+  UtObjectRef parser10 = ut_protobuf_definition_parser_new();
+  ut_protobuf_definition_parser_parse(parser10, "syntax = \"proto3\";\n"
+                                                "package .foo.bar;\n");
+  ut_assert_is_error_with_description(
+      ut_protobuf_definition_parser_get_error(parser10), "Invalid character");
+
+  // Invalid package name.
+  UtObjectRef parser11 = ut_protobuf_definition_parser_new();
+  ut_protobuf_definition_parser_parse(parser11, "syntax = \"proto3\";\n"
+                                                "package foo..bar;\n");
+  ut_assert_is_error_with_description(
+      ut_protobuf_definition_parser_get_error(parser11),
+      "Invalid package name \"foo..bar\"");
+
+  // Invalid package name.
+  UtObjectRef parser12 = ut_protobuf_definition_parser_new();
+  ut_protobuf_definition_parser_parse(parser12, "syntax = \"proto3\";\n"
+                                                "package foo.bar.;\n");
+  ut_assert_is_error_with_description(
+      ut_protobuf_definition_parser_get_error(parser12),
+      "Invalid package name \"foo.bar.\"");
+
+  // Duplicate package definition.
+  UtObjectRef parser13 = ut_protobuf_definition_parser_new();
+  ut_protobuf_definition_parser_parse(parser13, "syntax = \"proto3\";\n"
+                                                "package foo.bar;\n"
+                                                "package foo.bar;\n"
+                                                "message Person {}\n"
+                                                "  string name = 1;\n"
+                                                "  uint32 age = 2;\n"
+                                                "}\n");
+  ut_assert_is_error_with_description(
+      ut_protobuf_definition_parser_get_error(parser13),
+      "Multiple package definitions");
+
+  // Multiple package definitions.
+  UtObjectRef parser14 = ut_protobuf_definition_parser_new();
+  ut_protobuf_definition_parser_parse(parser14, "syntax = \"proto3\";\n"
+                                                "package foo.bar;\n"
+                                                "package foo.baz;\n"
+                                                "message Person {}\n"
+                                                "  string name = 1;\n"
+                                                "  uint32 age = 2;\n"
+                                                "}\n");
+  ut_assert_is_error_with_description(
+      ut_protobuf_definition_parser_get_error(parser14),
+      "Multiple package definitions");
+}
+
 int main(int argc, char **argv) {
   test_empty();
   test_comments();
@@ -489,6 +569,7 @@ int main(int argc, char **argv) {
   test_reserved();
   test_enum();
   test_service();
+  test_package();
 
   return 0;
 }

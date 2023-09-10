@@ -12,6 +12,9 @@ typedef struct {
   // Syntax (2 or 3).
   int syntax;
 
+  // Name of the package.
+  char *package_name;
+
   UtObject *definitions;
 
   // Decoded definition.
@@ -339,6 +342,29 @@ static bool is_valid_identifier(const char *name) {
   return true;
 }
 
+static bool is_valid_namespaced_identifier(const char *name) {
+  size_t offset = 0;
+  while (true) {
+    if (!is_identifier_starting_char(name[offset])) {
+      return false;
+    }
+    offset++;
+
+    while (is_identifier_char(name[offset])) {
+      offset++;
+    }
+
+    if (name[offset] == '\0') {
+      return true;
+    }
+
+    if (name[offset] != '.') {
+      return false;
+    }
+    offset++;
+  }
+}
+
 static bool parse_identifier(UtProtobufDefinitionParser *self,
                              const char *type_name, char **value) {
   const char *v = current_token(self);
@@ -351,6 +377,36 @@ static bool parse_identifier(UtProtobufDefinitionParser *self,
 
   self->index++;
   *value = ut_cstring_new(v);
+  return true;
+}
+
+static bool parse_namespaced_identifier(UtProtobufDefinitionParser *self,
+                                        const char *type_name, char **value) {
+  const char *v = current_token(self);
+
+  if (!is_valid_namespaced_identifier(v)) {
+    set_error_take(self,
+                   ut_cstring_new_printf("Invalid %s \"%s\"", type_name, v));
+    return false;
+  }
+
+  self->index++;
+  *value = ut_cstring_new(v);
+  return true;
+}
+
+static bool parse_package(UtProtobufDefinitionParser *self) {
+  if (self->package_name != NULL) {
+    set_error(self, "Multiple package definitions");
+    return false;
+  }
+
+  if (!parse_text(self, "package") ||
+      !parse_namespaced_identifier(self, "package name", &self->package_name) ||
+      !parse_text(self, ";")) {
+    return false;
+  }
+
   return true;
 }
 
@@ -663,6 +719,27 @@ static bool parse_service(UtProtobufDefinitionParser *self) {
   return false;
 }
 
+static void add_package_to_definitions(UtProtobufDefinitionParser *self) {
+  if (self->package_name == NULL) {
+    return;
+  }
+
+  UtObjectRef unprefixed_definitions = self->definitions;
+  self->definitions = ut_map_new();
+
+  UtObjectRef items = ut_map_get_items(unprefixed_definitions);
+  size_t items_length = ut_list_get_length(items);
+  for (size_t i = 0; i < items_length; i++) {
+    UtObject *item = ut_object_list_get_element(items, i);
+    const char *name = ut_string_get_text(ut_map_item_get_key(item));
+    UtObject *type = ut_map_item_get_value(item);
+
+    ut_cstring_ref prefixed_name =
+        ut_cstring_new_printf("%s.%s", self->package_name, name);
+    ut_map_insert_string(self->definitions, prefixed_name, type);
+  }
+}
+
 static void strip_prefix(char *prefix) {
   size_t end = 0;
   for (size_t i = 0; prefix[i] != '\0'; i++) {
@@ -765,6 +842,7 @@ static bool resolve_references(UtProtobufDefinitionParser *self) {
 static void ut_protobuf_definition_parser_cleanup(UtObject *object) {
   UtProtobufDefinitionParser *self = (UtProtobufDefinitionParser *)object;
   ut_object_unref(self->tokens);
+  free(self->package_name);
   ut_object_unref(self->definitions);
   ut_object_unref(self->definition);
   ut_object_unref(self->error);
@@ -786,6 +864,7 @@ bool ut_protobuf_definition_parser_parse(UtObject *object, const char *text) {
     return false;
   }
 
+  ut_cstring_set(&self->package_name, NULL);
   ut_object_clear(&self->definition);
   ut_object_unref(self->definitions);
   self->definitions = ut_map_new();
@@ -811,6 +890,8 @@ bool ut_protobuf_definition_parser_parse(UtObject *object, const char *text) {
 
   while (true) {
     if (current_token_is(self, "")) {
+      add_package_to_definitions(self);
+
       if (!resolve_references(self)) {
         return false;
       }
@@ -818,6 +899,10 @@ bool ut_protobuf_definition_parser_parse(UtObject *object, const char *text) {
       self->definition =
           ut_protobuf_definition_new(self->syntax, self->definitions);
       return true;
+    } else if (current_token_is(self, "package")) {
+      if (!parse_package(self)) {
+        return false;
+      }
     } else if (current_token_is(self, "message")) {
       if (!parse_message(self, NULL)) {
         return false;
