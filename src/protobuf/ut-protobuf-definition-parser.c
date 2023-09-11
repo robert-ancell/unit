@@ -145,8 +145,8 @@ static bool current_token_is(UtProtobufDefinitionParser *self,
 
 static void set_expected_error(UtProtobufDefinitionParser *self,
                                const char *type) {
-  set_error(self, ut_cstring_new_printf("Expected %s, got %s", type,
-                                        current_token(self)));
+  set_error_take(self, ut_cstring_new_printf("Expected %s, got %s", type,
+                                             current_token(self)));
 }
 
 static bool maybe_parse_text(UtProtobufDefinitionParser *self,
@@ -677,7 +677,7 @@ static bool parse_enum(UtProtobufDefinitionParser *self) {
       return false;
     }
 
-    ut_map_insert_string(values_by_name, name, ut_int32_new(number));
+    ut_map_insert_string_take(values_by_name, name, ut_int32_new(number));
   }
 
   return false;
