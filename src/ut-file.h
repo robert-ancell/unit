@@ -18,4 +18,5 @@ void ut_file_open_write(UtObject *object, bool create);
 
 void ut_file_close(UtObject *object);
 
+/// Returns [true] if [object] is a [UtFile].
 bool ut_object_implements_file(UtObject *object);

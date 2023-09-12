@@ -61,4 +61,5 @@ UtObject *ut_map_get_values(UtObject *object);
 
 char *ut_map_to_string(UtObject *object);
 
+/// Returns [true] if [object] is a [UtMap].
 bool ut_object_implements_map(UtObject *object);

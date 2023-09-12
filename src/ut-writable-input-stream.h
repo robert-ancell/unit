@@ -17,4 +17,5 @@ void ut_writable_input_stream_set_reading_callback(
 size_t ut_writable_input_stream_write(UtObject *object, UtObject *data,
                                       bool complete);
 
+/// Returns [true] if [object] is a [UtWritableInputStream].
 bool ut_object_is_writable_input_stream(UtObject *object);

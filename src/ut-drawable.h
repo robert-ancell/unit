@@ -17,4 +17,5 @@ void ut_drawable_clear(UtObject *object, UtObject *color);
 void ut_drawable_render_box(UtObject *object, double x, double y, double width,
                             double height, UtObject *color);
 
+/// Returns [true] if [object] is a [UtDrawable].
 bool ut_object_implements_drawable(UtObject *object);

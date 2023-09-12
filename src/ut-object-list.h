@@ -16,4 +16,5 @@ UtObject *ut_object_list_new();
 
 UtObject *ut_object_list_get_element(UtObject *object, size_t index);
 
+/// Returns [true] if [object] is a [UtObjectList].
 bool ut_object_implements_object_list(UtObject *object);

@@ -10,4 +10,5 @@ UtObject *ut_utf8_string_new_sized(const char *text, size_t length);
 
 UtObject *ut_utf8_string_new_from_data(UtObject *data);
 
+/// Returns [true] if [object] is a [UtUtf8String].
 bool ut_object_is_utf8_string(UtObject *object);

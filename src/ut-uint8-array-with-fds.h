@@ -10,4 +10,5 @@ UtObject *ut_uint8_array_with_fds_get_data(UtObject *object);
 
 UtObject *ut_uint8_array_with_fds_get_fds(UtObject *object);
 
+/// Returns [true] if [object] is a [UtUint8ArrayWithFds].
 bool ut_object_is_uint8_array_with_fds(UtObject *object);

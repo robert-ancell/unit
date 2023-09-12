@@ -43,4 +43,5 @@ void ut_float64_list_insert(UtObject *object, size_t index, double item);
 void ut_float64_list_insert_block(UtObject *object, size_t index,
                                   const double *data, size_t data_length);
 
+/// Returns [true] if [object] is a [UtFloat64List].
 bool ut_object_implements_float64_list(UtObject *object);

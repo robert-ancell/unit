@@ -11,4 +11,5 @@ UtObject *ut_object_array_new_from_elements(UtObject *item0, ...);
 
 UtObject *ut_object_array_new_from_elements_take(UtObject *item0, ...);
 
+/// Returns [true] if [object] is a [UtObjectArray].
 bool ut_object_is_object_array(UtObject *object);

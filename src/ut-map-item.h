@@ -15,4 +15,5 @@ UtObject *ut_map_item_get_key(UtObject *object);
 
 UtObject *ut_map_item_get_value(UtObject *object);
 
+/// Returns [true] if [object] is a [UtMapItem].
 bool ut_object_implements_map_item(UtObject *object);

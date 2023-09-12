@@ -18,4 +18,5 @@ void ut_string_array_append(UtObject *object, const char *value);
 
 void ut_string_array_insert(UtObject *object, size_t index, const char *value);
 
+/// Returns [true] if [object] is a [UtStringArray].
 bool ut_object_is_string_array(UtObject *object);

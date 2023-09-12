@@ -31,4 +31,5 @@ void ut_bit_list_append_list(UtObject *object, UtObject *value);
 
 char *ut_bit_list_to_bin_string(UtObject *object);
 
+/// Returns [true] if [object] is a [UtBitList].
 bool ut_object_is_bit_list(UtObject *object);

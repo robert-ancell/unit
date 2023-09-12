@@ -39,4 +39,5 @@ void ut_uint256_sub(UtObject *object, UtObject *a, UtObject *b);
 
 void ut_uint256_mul(UtObject *object, UtObject *a, UtObject *b);
 
+/// Returns [true] if [object] is a [UtUint256].
 bool ut_object_is_uint256(UtObject *object);

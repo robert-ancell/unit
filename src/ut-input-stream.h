@@ -26,4 +26,5 @@ UtObject *ut_input_stream_read_sync(UtObject *object);
 
 void ut_input_stream_close(UtObject *object);
 
+/// Returns [true] if [object] is a [UtInputStream].
 bool ut_object_implements_input_stream(UtObject *object);

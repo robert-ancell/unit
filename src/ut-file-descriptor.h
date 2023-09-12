@@ -12,4 +12,5 @@ int ut_file_descriptor_take_fd(UtObject *object);
 
 void ut_file_descriptor_close(UtObject *object);
 
+/// Returns [true] if [object] is a [UtFileDescriptor].
 bool ut_object_is_file_descriptor(UtObject *object);

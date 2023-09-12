@@ -76,4 +76,6 @@ static inline void ut_object_clear(UtObject **object) {
 
 #define UtObjectRef UtObject *__attribute__((__cleanup__(ut_object_clear)))
 
+/// Returns [true] if [object] is the type defined in [functions].
+/// This is used when creating new object types.
 bool ut_object_is_type(UtObject *object, UtObjectInterface *functions);

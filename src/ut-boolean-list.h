@@ -22,4 +22,5 @@ void ut_boolean_list_prepend(UtObject *object, bool item);
 
 void ut_boolean_list_insert(UtObject *object, size_t index, bool item);
 
+/// Returns [true] if [object] is a [UtBooleanList].
 bool ut_object_implements_boolean_list(UtObject *object);

@@ -14,4 +14,5 @@ UtObject *ut_float64_new_not_a_number();
 
 double ut_float64_get_value(UtObject *object);
 
+/// Returns [true] if [object] is a [UtFloat64].
 bool ut_object_is_float64(UtObject *object);

@@ -18,4 +18,5 @@ size_t ut_image_buffer_get_height(UtObject *object);
 
 UtObject *ut_image_buffer_get_data(UtObject *object);
 
+/// Returns [true] if [object] is a [UtImageBuffer].
 bool ut_object_implements_image_buffer(UtObject *object);

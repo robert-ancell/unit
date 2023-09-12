@@ -13,4 +13,5 @@ UtObject *ut_shared_memory_array_get_fd(UtObject *object);
 
 uint8_t *ut_shared_memory_array_get_data(UtObject *object);
 
+/// Returns [true] if [object] is a [UtSharedMemoryArray].
 bool ut_object_is_shared_memory_array(UtObject *object);

@@ -59,4 +59,5 @@ void ut_int16_list_insert(UtObject *object, size_t index, int16_t item);
 void ut_int16_list_insert_block(UtObject *object, size_t index,
                                 const int16_t *data, size_t data_length);
 
+/// Returns [true] if [object] is a [UtInt16List].
 bool ut_object_implements_int16_list(UtObject *object);
