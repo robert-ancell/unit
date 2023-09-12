@@ -459,7 +459,7 @@ void ut_png_image_set_international_text(UtObject *object, const char *keyword,
   ut_map_insert_string_take(language_text, keyword, ut_string_new(text));
 }
 
-const char *ut_png_image_get_text(UtObject *object, const char *keyword) {
+const char *ut_png_image_lookup_text(UtObject *object, const char *keyword) {
   assert(ut_object_is_png_image(object));
   UtPngImage *self = (UtPngImage *)object;
   if (self->text == NULL) {
@@ -470,9 +470,9 @@ const char *ut_png_image_get_text(UtObject *object, const char *keyword) {
 }
 
 const char *
-ut_png_image_get_international_text(UtObject *object, const char *keyword,
-                                    const char *language,
-                                    const char **translated_keyword) {
+ut_png_image_lookup_international_text(UtObject *object, const char *keyword,
+                                       const char *language,
+                                       const char **translated_keyword) {
   assert(ut_object_is_png_image(object));
   UtPngImage *self = (UtPngImage *)object;
 

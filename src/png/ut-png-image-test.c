@@ -223,13 +223,13 @@ int main(int argc, char **argv) {
   ut_png_image_set_text(text_image, "Title", "Test Text");
   ut_png_image_set_text(text_image, "Author", "Foo <foo@example.com>");
   ut_png_image_set_text(text_image, "Description", "Lorem Ipsum.\nFoo Bar");
-  ut_assert_cstring_equal(ut_png_image_get_text(text_image, "Title"),
+  ut_assert_cstring_equal(ut_png_image_lookup_text(text_image, "Title"),
                           "Test Text");
-  ut_assert_cstring_equal(ut_png_image_get_text(text_image, "Author"),
+  ut_assert_cstring_equal(ut_png_image_lookup_text(text_image, "Author"),
                           "Foo <foo@example.com>");
-  ut_assert_cstring_equal(ut_png_image_get_text(text_image, "Description"),
+  ut_assert_cstring_equal(ut_png_image_lookup_text(text_image, "Description"),
                           "Lorem Ipsum.\nFoo Bar");
-  ut_assert_null_cstring(ut_png_image_get_text(text_image, "Comment"));
+  ut_assert_null_cstring(ut_png_image_lookup_text(text_image, "Comment"));
 
   UtObjectRef international_text_image_data =
       ut_uint8_list_new_from_hex_string("00");
@@ -241,16 +241,16 @@ int main(int argc, char **argv) {
                                       "Autor", "Foo <foo-de@example.com>");
   const char *translated_keyword;
   ut_assert_cstring_equal(
-      ut_png_image_get_international_text(international_text_image, "Title",
-                                          "de", &translated_keyword),
+      ut_png_image_lookup_international_text(international_text_image, "Title",
+                                             "de", &translated_keyword),
       "Testtext");
   ut_assert_cstring_equal(translated_keyword, "Titel");
   ut_assert_cstring_equal(
-      ut_png_image_get_international_text(international_text_image, "Author",
-                                          "De", &translated_keyword),
+      ut_png_image_lookup_international_text(international_text_image, "Author",
+                                             "De", &translated_keyword),
       "Foo <foo-de@example.com>");
   ut_assert_cstring_equal(translated_keyword, "Autor");
-  ut_assert_null_cstring(ut_png_image_get_international_text(
+  ut_assert_null_cstring(ut_png_image_lookup_international_text(
       international_text_image, "fi", "Title", &translated_keyword));
   ut_assert_null_cstring(translated_keyword);
 
