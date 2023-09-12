@@ -17,25 +17,40 @@ typedef struct {
 
 extern int ut_uint32_list_id;
 
+/// Creates a new list that contains unsigned 32 bit values.
+/// This creates a [UtUint32Array].
+///
+/// !return-type UtUint32List
+/// !return-ref
 UtObject *ut_uint32_list_new();
 
 UtObject *ut_uint32_list_new_from_elements(size_t length, ...);
 
+/// Returns the value at [index] of this list.
 uint32_t ut_uint32_list_get_element(UtObject *object, size_t index);
 
 const uint32_t *ut_uint32_list_get_data(UtObject *object);
 
 uint32_t *ut_uint32_list_get_writable_data(UtObject *object);
 
+/// Returns the memory containing the contents of this list.
+/// The list will be empty after this call.
+/// If the list supports it, this data will be the data that was used in the
+/// list - no copy will be performed. When no longer required used [free] to
+/// release the memory.
 uint32_t *ut_uint32_list_take_data(UtObject *object);
 
+/// Add [value] to the end of this list.
 void ut_uint32_list_append(UtObject *object, uint32_t item);
 
+/// Add array [data] of size [data_length] to the end of this list.
 void ut_uint32_list_append_block(UtObject *object, const uint32_t *data,
                                  size_t data_length);
 
+/// Add [value] to the start of this list.
 void ut_uint32_list_prepend(UtObject *object, uint32_t item);
 
+/// Add array [data] of size [data_length] to the start of this list.
 void ut_uint32_list_prepend_block(UtObject *object, const uint32_t *data,
                                   size_t data_length);
 
