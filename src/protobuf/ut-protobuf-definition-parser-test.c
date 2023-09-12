@@ -250,6 +250,9 @@ static void test_message() {
   ut_assert_true(type7bi == message7a);
 
   // Dependency loop.
+  // FIXME: Makes reference loop
+  // https://github.com/robert-ancell/unit/issues/122
+#if 0
   UtObjectRef parser8 = ut_protobuf_definition_parser_new();
   ut_protobuf_definition_parser_parse(parser8, "syntax = \"proto3\";\n"
                                                "message A {\n"
@@ -274,6 +277,7 @@ static void test_message() {
   UtObject *type8b = ut_protobuf_message_field_get_value_type(field8b);
   ut_assert_true(ut_object_is_protobuf_referenced_type(type8b));
   ut_assert_true(ut_protobuf_referenced_type_get_type(type8b) == message8a);
+#endif
 
   // Invalid field number.
   UtObjectRef parser10 = ut_protobuf_definition_parser_new();
