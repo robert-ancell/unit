@@ -1,4 +1,3 @@
-#include <stdarg.h>
 #include <stdbool.h>
 
 #include "ut-object.h"
@@ -11,7 +10,20 @@ typedef struct {
 
 extern int ut_error_id;
 
-UtObject *ut_error_new(const char *format, ...);
+/// Creates a new error with [description].
+/// This creates a [UtGeneralError].
+///
+/// !return-ref
+/// !return-type UtError
+UtObject *ut_error_new(const char *description);
+
+/// Creates a new error with [description].
+/// [description] must be allocated for this call, e.g. with
+/// [ut_cstring_new_printf]. This creates a [UtGeneralError].
+///
+/// !return-ref
+/// !return-type UtError
+UtObject *ut_error_new_take(char *description);
 
 /// Returns a human readable description of this error.
 /// When no longer required used [free] to release the memory.

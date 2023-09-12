@@ -86,7 +86,7 @@ UtObject *ut_input_stream_read_sync(UtObject *object) {
   UtObjectRef results = ut_list_new();
   ut_input_stream_read(object, results, sync_cb);
   if (ut_list_get_length(results) != 1) {
-    return ut_general_error_new("Sync call did not complete");
+    return ut_error_new("Sync call did not complete");
   }
   return ut_list_get_element(results, 0);
 }

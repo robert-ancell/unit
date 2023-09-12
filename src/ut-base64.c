@@ -115,7 +115,7 @@ UtObject *ut_base64_decode(const char *text) {
   while (text[offset] != '\0') {
     size_t used = decode_block(text, offset, decoded);
     if (used == 0) {
-      return ut_general_error_new("Invalid Base64");
+      return ut_error_new("Invalid Base64");
     }
     offset += used;
   }

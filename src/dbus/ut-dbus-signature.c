@@ -73,7 +73,7 @@ UtObject *ut_dbus_signature_split(UtObject *object) {
   while (self->value[offset] != '\0') {
     size_t end = get_signature_end(self->value, offset);
     if (end == 0) {
-      return ut_general_error_new("Invalid DBus signature");
+      return ut_error_new("Invalid DBus signature");
     }
     ut_cstring_ref signature =
         ut_cstring_new_substring(self->value, offset, end);

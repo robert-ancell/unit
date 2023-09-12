@@ -1,18 +1,22 @@
-#include <stdarg.h>
 #include <stdbool.h>
 
 #include "ut-object.h"
 
 #pragma once
 
-UtObject *ut_general_error_new(const char *format, ...)
-    __attribute__((format(printf, 1, 2)));
+/// Creates a new general error with [description].
+///
+/// !return-ref
+/// !return-type UtGeneralError
+UtObject *ut_general_error_new(const char *description);
 
-UtObject *ut_general_error_new_valist(const char *format, va_list ap);
-
-UtObject *ut_general_error_new_literal(const char *description);
-
-const char *ut_general_error_get_description(UtObject *object);
+/// Creates a new general error with [description].
+/// [description] must be allocated for this call, e.g. with
+/// [ut_cstring_new_printf].
+///
+/// !return-ref
+/// !return-type UtGeneralError
+UtObject *ut_general_error_new_take(char *description);
 
 /// Returns [true] if [object] is a [UtGeneralError].
 bool ut_object_is_general_error(UtObject *object);

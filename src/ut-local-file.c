@@ -32,7 +32,7 @@ static void ut_local_file_open_read(UtObject *object) {
   assert(self->fd == NULL && self->error == NULL);
   int fd = open(self->path, O_RDONLY);
   if (fd < 0) {
-    self->error = ut_general_error_new("Failed to open file for reading");
+    self->error = ut_error_new("Failed to open file for reading");
     return;
   }
   self->fd = ut_file_descriptor_new(fd);
@@ -49,7 +49,7 @@ static void ut_local_file_open_write(UtObject *object, bool create) {
   int fd = open(self->path, O_WRONLY | flags,
                 S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
   if (fd < 0) {
-    self->error = ut_general_error_new("Failed to open file for writing");
+    self->error = ut_error_new("Failed to open file for writing");
     return;
   }
   self->fd = ut_file_descriptor_new(fd);

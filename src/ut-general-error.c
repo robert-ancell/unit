@@ -32,26 +32,17 @@ static UtObjectInterface object_interface = {
     .cleanup = ut_general_error_cleanup,
     .interfaces = {{&ut_error_id, &error_interface}, {NULL, NULL}}};
 
-UtObject *ut_general_error_new(const char *format, ...) {
-  va_list ap;
-  va_start(ap, format);
-  UtObject *object = ut_general_error_new_valist(format, ap);
-  va_end(ap);
-
-  return object;
-}
-
-UtObject *ut_general_error_new_valist(const char *format, va_list ap) {
-  UtObject *object = ut_object_new(sizeof(UtGeneralError), &object_interface);
-  UtGeneralError *self = (UtGeneralError *)object;
-  self->description = ut_cstring_new_vprintf(format, ap);
-  return object;
-}
-
-UtObject *ut_general_error_new_literal(const char *description) {
+UtObject *ut_general_error_new(const char *description) {
   UtObject *object = ut_object_new(sizeof(UtGeneralError), &object_interface);
   UtGeneralError *self = (UtGeneralError *)object;
   self->description = ut_cstring_new(description);
+  return object;
+}
+
+UtObject *ut_general_error_new_take(char *description) {
+  UtObject *object = ut_object_new(sizeof(UtGeneralError), &object_interface);
+  UtGeneralError *self = (UtGeneralError *)object;
+  self->description = description;
   return object;
 }
 

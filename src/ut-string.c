@@ -112,22 +112,22 @@ UtObject *ut_string_get_code_points(UtObject *object) {
       offset++;
     } else if ((byte1 & 0xe0) == 0xc0) {
       if (text_length - offset < 2) {
-        return ut_general_error_new("Invalid UTF-8");
+        return ut_error_new("Invalid UTF-8");
       }
       uint8_t byte2 = text[offset + 1];
       if ((byte2 & 0xc0) != 0x80) {
-        return ut_general_error_new("Invalid UTF-8");
+        return ut_error_new("Invalid UTF-8");
       }
       ut_uint32_list_append(code_points, (byte1 & 0x1f) << 6 | (byte2 & 0x3f));
       offset += 2;
     } else if ((byte1 & 0xf0) == 0xe0) {
       if (text_length - offset < 3) {
-        return ut_general_error_new("Invalid UTF-8");
+        return ut_error_new("Invalid UTF-8");
       }
       uint8_t byte2 = text[offset + 1];
       uint8_t byte3 = text[offset + 2];
       if ((byte2 & 0xc0) != 0x80 || (byte3 & 0xc0) != 0x80) {
-        return ut_general_error_new("Invalid UTF-8");
+        return ut_error_new("Invalid UTF-8");
       }
       ut_uint32_list_append(code_points, (byte1 & 0x0f) << 12 |
                                              (byte2 & 0x3f) << 6 |
@@ -135,21 +135,21 @@ UtObject *ut_string_get_code_points(UtObject *object) {
       offset += 3;
     } else if ((byte1 & 0xf8) == 0xf0) {
       if (text_length - offset < 4) {
-        return ut_general_error_new("Invalid UTF-8");
+        return ut_error_new("Invalid UTF-8");
       }
       uint8_t byte2 = text[offset + 1];
       uint8_t byte3 = text[offset + 2];
       uint8_t byte4 = text[offset + 3];
       if ((byte2 & 0xc0) != 0x80 || (byte3 & 0xc0) != 0x80 ||
           (byte4 & 0xc0) != 0x80) {
-        return ut_general_error_new("Invalid UTF-8");
+        return ut_error_new("Invalid UTF-8");
       }
       ut_uint32_list_append(code_points,
                             (byte1 & 0x07) << 18 | (byte2 & 0x3f) << 12 |
                                 (byte3 & 0x3f) << 6 | (byte4 & 0x3f));
       offset += 4;
     } else {
-      return ut_general_error_new("Invalid UTF-8");
+      return ut_error_new("Invalid UTF-8");
     }
   }
 
@@ -171,7 +171,7 @@ UtObject *ut_string_get_utf16(UtObject *object) {
     uint32_t code_point = ut_uint32_list_get_element(code_points, i);
     if (code_point <= 0xffff) {
       if (code_point >= 0xd800 && code_point <= 0xdfff) {
-        return ut_general_error_new("Invalid code points");
+        return ut_error_new("Invalid code points");
       }
       ut_uint16_list_append(utf16, code_point);
     } else if (code_point <= 0x10ffff) {
@@ -179,7 +179,7 @@ UtObject *ut_string_get_utf16(UtObject *object) {
       ut_uint16_list_append(utf16, 0xd800 + (u >> 10));
       ut_uint16_list_append(utf16, 0xdc00 + (u & 0x3ff));
     } else {
-      return ut_general_error_new("Invalid code points");
+      return ut_error_new("Invalid code points");
     }
   }
 
@@ -195,7 +195,7 @@ UtObject *ut_string_get_ascii(UtObject *object) {
     if (code_point <= 127) {
       ut_uint8_list_append(characters, code_point);
     } else {
-      return ut_general_error_new("Invalid code points");
+      return ut_error_new("Invalid code points");
     }
   }
 
@@ -211,7 +211,7 @@ UtObject *ut_string_get_iso_8859_1(UtObject *object) {
     if (code_point <= 0xff) {
       ut_uint8_list_append(characters, code_point);
     } else {
-      return ut_general_error_new("Invalid code points");
+      return ut_error_new("Invalid code points");
     }
   }
 

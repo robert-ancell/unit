@@ -84,7 +84,7 @@ static void process_line(UtDBusAuthClient *self, const char *line) {
       self->state = AUTH_STATE_AUTH_EXTERNAL;
       send_auth_external(self);
     } else {
-      self->error = ut_general_error_new("No supported auth mechanism");
+      self->error = ut_error_new("No supported auth mechanism");
       done(self);
     }
   } else if (ut_cstring_equal(command, "OK")) {
@@ -108,8 +108,8 @@ static void process_line(UtDBusAuthClient *self, const char *line) {
       send_auth_end(self);
       done(self);
     } else {
-      self->error =
-          ut_general_error_new("Error during authentication: %s", args);
+      self->error = ut_error_new_take(
+          ut_cstring_new_printf("Error during authentication: %s", args));
       done(self);
     }
   } else {
