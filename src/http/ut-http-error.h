@@ -6,6 +6,7 @@
 
 /// Creates a new [UtHttpError] with [description].
 ///
+/// !return-type UtHttpError
 /// !return-ref
 UtObject *ut_http_error_new(const char *description);
 

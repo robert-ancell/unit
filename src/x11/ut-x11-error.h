@@ -38,7 +38,15 @@ typedef enum {
   UT_X11_ERROR_BAD_PROVIDER
 } UtX11ErrorCode;
 
+/// Creates a new X11 error of type [code].
+/// [value] contains information about this error that depends on the value in
+/// [code]. [major_opcode] and [minor_opcode] are the request this error is in
+/// response to.
+///
+/// !return-ref
+/// !return-type UtX11Error
 UtObject *ut_x11_error_new(UtX11ErrorCode code, uint32_t value,
                            uint8_t major_opcode, uint16_t minor_opcode);
 
+/// Returns [true] if [object] is a [UtX11Error].
 bool ut_object_is_x11_error(UtObject *object);

@@ -4,6 +4,10 @@
 
 #pragma once
 
+/// Creates a new deflate error with [description].
+///
+/// !return-ref
+/// !return-type UtDeflateError
 UtObject *ut_deflate_error_new(const char *description);
 
 /// Returns [true] if [object] is a [UtDeflateError].
