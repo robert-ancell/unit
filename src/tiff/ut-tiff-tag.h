@@ -137,30 +137,66 @@ typedef enum {
   UT_TIFF_PREDICTOR_HORIZONTAL_DIFFERENCING = 2
 } UtTiffPredictor;
 
+/// Creates a new [UtTiffTag] object of [type] and containing raw [data].
+///
+/// !arg-type data UtUint8List
+/// !return-type UtTiffTag
+/// !return-ref
 UtObject *ut_tiff_tag_new(uint16_t id, uint16_t type, UtObject *data);
 
+/// Creates a new [UtTiffTag] containing a single byte [value].
+///
+/// !return-type UtTiffTag
+/// !return-ref
 UtObject *ut_tiff_tag_new_single_byte(uint16_t id, uint8_t value);
 
+/// Creates a new [UtTiffTag] containing multiple byte [value]s.
+///
+/// !arg-type value UtUint8List
+/// !return-type UtTiffTag
+/// !return-ref
 UtObject *ut_tiff_tag_new_byte(uint16_t id, UtObject *value);
 
+/// Creates a new [UtTiffTag] containing an ASCII string [value].
+///
+/// !return-type UtTiffTag
+/// !return-ref
 UtObject *ut_tiff_tag_new_ascii(uint16_t id, const char *value);
 
+/// Returns the ID of this tag.
+/// Use [UtTiffTagId] for standard IDs.
 uint16_t ut_tiff_tag_get_id(UtObject *object);
 
+/// Returns the type of tag this is.
+/// Use [UtTiffTagType] for standard tag types.
 uint16_t ut_tiff_tag_get_type(UtObject *object);
 
+/// Returns the number of values in this tag.
 size_t ut_tiff_tag_get_count(UtObject *object);
 
+/// Returns the data contained in this tag.
+///
+/// !return-type UtUint8List
 UtObject *ut_tiff_tag_get_data(UtObject *object);
 
+/// Returns the byte at position [index] in this tag.
+/// Returns 0 if this tag is not a byte tag.
 uint8_t ut_tiff_tag_get_byte(UtObject *object, size_t index);
 
+/// Returns the text inside this tag.
+/// Returns "" if this tag is not an ASCII tag.
 char *ut_tiff_tag_get_ascii(UtObject *object);
 
+/// Returns the short at position [index] in this tag.
+/// Returns 0 if this tag is not a short tag.
 uint16_t ut_tiff_tag_get_short(UtObject *object, size_t index);
 
+/// Returns the long at position [index] in this tag.
+/// Returns 0 if this tag is not a long tag.
 uint32_t ut_tiff_tag_get_long(UtObject *object, size_t index);
 
+/// Returns the short or long at position [index] in this tag.
+/// Returns 0 if this tag is not a short or long tag.
 uint32_t ut_tiff_tag_get_short_or_long(UtObject *object, size_t index);
 
 /// Returns [true] if [object] is a [UtTiffTag].
