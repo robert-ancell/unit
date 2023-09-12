@@ -19,7 +19,7 @@ UtObject *ut_tiff_reader_get_tags(UtObject *object);
 /// Returns the first tag that matches [id] or [NULL] if none.
 ///
 /// !return-type UtTiffTag NULL
-UtObject *ut_tiff_reader_get_tag(UtObject *object, uint16_t id);
+UtObject *ut_tiff_reader_lookup_tag(UtObject *object, uint16_t id);
 
 /// Returns the width of the image in pixels.
 uint32_t ut_tiff_reader_get_image_width(UtObject *object);

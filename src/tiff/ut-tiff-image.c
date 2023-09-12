@@ -22,7 +22,7 @@ static size_t get_row_stride(uint32_t width, size_t bits_per_sample,
 
 static bool get_short_tag(UtObject *reader, uint16_t id, uint16_t *value,
                           bool required, uint16_t default_value) {
-  UtObject *tag = ut_tiff_reader_get_tag(reader, id);
+  UtObject *tag = ut_tiff_reader_lookup_tag(reader, id);
   if (tag == NULL) {
     if (required) {
       return false;
@@ -42,7 +42,7 @@ static bool get_short_tag(UtObject *reader, uint16_t id, uint16_t *value,
 static bool get_short_or_long_tag(UtObject *reader, uint16_t id,
                                   uint32_t *value, bool required,
                                   uint32_t default_value) {
-  UtObject *tag = ut_tiff_reader_get_tag(reader, id);
+  UtObject *tag = ut_tiff_reader_lookup_tag(reader, id);
   if (tag == NULL) {
     if (required) {
       return false;
@@ -226,7 +226,7 @@ UtObject *ut_tiff_image_new_from_data(UtObject *data) {
     return ut_tiff_error_new("Invalid TIFF samples per pixel tag");
   }
   UtObject *bits_per_sample_tag =
-      ut_tiff_reader_get_tag(reader, UT_TIFF_TAG_BITS_PER_SAMPLE);
+      ut_tiff_reader_lookup_tag(reader, UT_TIFF_TAG_BITS_PER_SAMPLE);
   if (bits_per_sample_tag == NULL ||
       ut_tiff_tag_get_type(bits_per_sample_tag) != UT_TIFF_TAG_TYPE_SHORT ||
       ut_tiff_tag_get_count(bits_per_sample_tag) != samples_per_pixel) {
@@ -289,7 +289,7 @@ UtObject *ut_tiff_image_new_from_data(UtObject *data) {
     return ut_tiff_error_new("Invalid TIFF rows per strip tag");
   }
   UtObject *strip_offsets_tag =
-      ut_tiff_reader_get_tag(reader, UT_TIFF_TAG_STRIP_OFFSETS);
+      ut_tiff_reader_lookup_tag(reader, UT_TIFF_TAG_STRIP_OFFSETS);
   uint16_t strip_offsets_type = ut_tiff_tag_get_type(strip_offsets_tag);
   if (strip_offsets_tag == NULL ||
       !(strip_offsets_type == UT_TIFF_TAG_TYPE_SHORT ||
@@ -298,7 +298,7 @@ UtObject *ut_tiff_image_new_from_data(UtObject *data) {
   }
   size_t n_strips = ut_tiff_tag_get_count(strip_offsets_tag);
   UtObject *strip_byte_counts_tag =
-      ut_tiff_reader_get_tag(reader, UT_TIFF_TAG_STRIP_BYTE_COUNTS);
+      ut_tiff_reader_lookup_tag(reader, UT_TIFF_TAG_STRIP_BYTE_COUNTS);
   uint16_t strip_byte_counts_type = ut_tiff_tag_get_type(strip_byte_counts_tag);
   if (strip_byte_counts_tag == NULL ||
       !(strip_byte_counts_type == UT_TIFF_TAG_TYPE_SHORT ||
@@ -365,7 +365,7 @@ UtObject *ut_tiff_image_new_from_data(UtObject *data) {
     }
 
     UtObject *color_map_tag =
-        ut_tiff_reader_get_tag(reader, UT_TIFF_TAG_COLOR_MAP);
+        ut_tiff_reader_lookup_tag(reader, UT_TIFF_TAG_COLOR_MAP);
     if (color_map_tag == NULL) {
       return ut_tiff_error_new(
           "Missing colormap in color_map color TIFF image");

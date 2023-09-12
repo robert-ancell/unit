@@ -452,7 +452,7 @@ static UtObject *decode_tags(UtTiffReader *self) {
 
 static UtObject *get_tag(UtObject *object, uint16_t id) {
   assert(ut_object_is_tiff_reader(object));
-  return ut_tiff_reader_get_tag(object, id);
+  return ut_tiff_reader_lookup_tag(object, id);
 }
 
 static uint16_t get_short(UtObject *object, uint16_t id) {
@@ -505,7 +505,7 @@ UtObject *ut_tiff_reader_get_tags(UtObject *object) {
   return decode_tags(self);
 }
 
-UtObject *ut_tiff_reader_get_tag(UtObject *object, uint16_t id) {
+UtObject *ut_tiff_reader_lookup_tag(UtObject *object, uint16_t id) {
   assert(ut_object_is_tiff_reader(object));
   UtTiffReader *self = (UtTiffReader *)object;
   UtObject *tags = decode_tags(self);
