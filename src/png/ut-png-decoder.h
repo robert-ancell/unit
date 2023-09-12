@@ -6,11 +6,21 @@
 
 typedef void (*UtPngDecodeCallback)(UtObject *object);
 
+/// Creates a new PNG decoder to read an image from [input_stream].
+///
+/// !return-ref
+/// !return-type UtPngDecoder
 UtObject *ut_png_decoder_new(UtObject *input_stream);
 
+/// Start decoding.
+/// When complete [callback] is called.
 void ut_png_decoder_decode(UtObject *object, UtObject *callback_object,
                            UtPngDecodeCallback callback);
 
+/// Starts decoding an image that has all data available.
+///
+/// !return-ref
+/// !return-type UtPngImage UtPngError
 UtObject *ut_png_decoder_decode_sync(UtObject *object);
 
 /// Returns the first error that occurred during decoding or [NULL] if no error
