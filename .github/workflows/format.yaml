@@ -22,5 +22,4 @@ jobs:
       - name: Verify Python formatting
         run: |
           sudo apt-get install pycodestyle
-          pycodestyle doc/update-docs.py
-          if [ $? != 0 ]; then exit 1; fi
+          pycodestyle --show-source doc/update-docs.py
