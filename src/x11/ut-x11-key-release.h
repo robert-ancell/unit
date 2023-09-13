@@ -16,4 +16,5 @@ int16_t ut_x11_key_release_get_x(UtObject *object);
 
 int16_t ut_x11_key_release_get_y(UtObject *object);
 
+/// Returns [true] if [object] is a [UtX11KeyRelease].
 bool ut_object_is_x11_key_release(UtObject *object);

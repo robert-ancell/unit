@@ -47,4 +47,5 @@ void ut_wayland_surface_damage_buffer(UtObject *object, int32_t x, int32_t y,
 
 void ut_wayland_surface_offset(UtObject *object, int32_t x, int32_t y);
 
+/// Returns [true] if [object] is a [UtWaylandSurface].
 bool ut_object_is_wayland_surface(UtObject *object);

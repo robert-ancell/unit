@@ -16,4 +16,5 @@ void ut_x11_generic_event_extension_query_version(
     UtObject *object, UtObject *callback_object,
     UtX11ClientGenericEventQueryVersionCallback callback);
 
+/// Returns [true] if [object] is a [UtX11GenericEventExtension].
 bool ut_object_is_x11_generic_event_extension(UtObject *object);

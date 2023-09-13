@@ -45,4 +45,5 @@ UtObject *ut_wayland_seat_get_touch(UtObject *object, UtObject *callback_object,
 
 void ut_wayland_seat_release(UtObject *object);
 
+/// Returns [true] if [object] is a [UtWaylandSeat].
 bool ut_object_is_wayland_seat(UtObject *object);

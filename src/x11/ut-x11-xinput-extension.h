@@ -62,4 +62,5 @@ void ut_x11_xinput_extension_ungrab_device(UtObject *object,
 
 // GetSelectedEvents
 
+/// Returns [true] if [object] is a [UtX11XinputExtension].
 bool ut_object_is_x11_xinput_extension(UtObject *object);

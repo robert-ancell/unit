@@ -33,4 +33,5 @@ UtObject *ut_wayland_output_new(UtObject *client, uint32_t id,
 
 void ut_wayland_output_release(UtObject *object);
 
+/// Returns [true] if [object] is a [UtWaylandOutput].
 bool ut_object_is_wayland_output(UtObject *object);

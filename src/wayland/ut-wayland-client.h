@@ -22,4 +22,5 @@ UtObject *
 ut_wayland_client_get_registry(UtObject *object, UtObject *callback_object,
                                const UtWaylandRegistryCallbacks *callbacks);
 
+/// Returns [true] if [object] is a [UtWaylandClient].
 bool ut_object_is_wayland_client(UtObject *object);

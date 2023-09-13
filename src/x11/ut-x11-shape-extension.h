@@ -31,4 +31,5 @@ void ut_x11_shape_extension_query_version(
 void ut_x11_shape_extension_select_input(UtObject *object, uint32_t window,
                                          bool enabled);
 
+/// Returns [true] if [object] is a [UtX11ShapeExtension].
 bool ut_object_is_x11_shape_extension(UtObject *object);

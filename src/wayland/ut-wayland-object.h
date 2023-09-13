@@ -17,4 +17,5 @@ const char *ut_wayland_object_get_interface(UtObject *object);
 
 uint32_t ut_wayland_object_get_id(UtObject *object);
 
+/// Returns [true] if [object] is a [UtWaylandObject].
 bool ut_object_implements_wayland_object(UtObject *object);

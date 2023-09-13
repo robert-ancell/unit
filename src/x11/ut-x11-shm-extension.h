@@ -36,4 +36,5 @@ ut_x11_shm_extension_create_segment(UtObject *object, uint32_t size,
                                     bool read_only, UtObject *callback_object,
                                     UtX11ShmCreateSegmentCallback callback);
 
+/// Returns [true] if [object] is a [UtX11ShmExtension].
 bool ut_object_is_x11_shm_extension(UtObject *object);

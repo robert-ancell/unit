@@ -127,4 +127,5 @@ bool ut_wayland_shm_has_format(UtObject *object, uint32_t format);
 UtObject *ut_wayland_shm_create_pool(UtObject *object, UtObject *fd,
                                      int32_t size);
 
+/// Returns [true] if [object] is a [UtWaylandShm].
 bool ut_object_is_wayland_shm(UtObject *object);

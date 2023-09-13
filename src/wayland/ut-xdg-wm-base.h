@@ -30,4 +30,5 @@ UtObject *ut_xdg_wm_base_get_xdg_surface(UtObject *object, UtObject *surface,
 
 void ut_xdg_wm_base_pong(UtObject *object, uint32_t serial);
 
+/// Returns [true] if [object] is a [UtXdgWmBase].
 bool ut_object_is_xdg_wm_base(UtObject *object);

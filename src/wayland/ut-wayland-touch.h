@@ -37,4 +37,5 @@ UtObject *ut_wayland_touch_new(UtObject *client, uint32_t id,
 
 void ut_wayland_touch_release(UtObject *object);
 
+/// Returns [true] if [object] is a [UtWaylandTouch].
 bool ut_object_is_wayland_touch(UtObject *object);

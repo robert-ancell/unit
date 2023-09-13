@@ -90,4 +90,5 @@ void ut_x11_sync_extension_query_fence(
 
 void ut_x11_sync_extension_await_fence(UtObject *object, uint32_t fence);
 
+/// Returns [true] if [object] is a [UtX11SyncExtension].
 bool ut_object_is_x11_sync_extension(UtObject *object);

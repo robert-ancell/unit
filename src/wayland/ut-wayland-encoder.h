@@ -19,4 +19,5 @@ void ut_wayland_encoder_append_fd(UtObject *object, UtObject *fd);
 
 UtObject *ut_wayland_encoder_get_data(UtObject *object);
 
+/// Returns [true] if [object] is a [UtWaylandEncoder].
 bool ut_object_is_wayland_encoder(UtObject *object);

@@ -31,4 +31,5 @@ void ut_xdg_positioner_set_parent_size(UtObject *object, int32_t parent_width,
 
 void ut_xdg_positioner_set_parent_configure(UtObject *object, uint32_t serial);
 
+/// Returns [true] if [object] is a [UtXdgPositioner].
 bool ut_object_is_xdg_positioner(UtObject *object);

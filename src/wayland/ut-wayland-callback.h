@@ -11,4 +11,5 @@ UtObject *ut_wayland_callback_new(UtObject *client, uint32_t id,
                                   UtObject *callback_object,
                                   UtWaylandCallbackDoneCallback done_callback);
 
+/// Returns [true] if [object] is a [UtWaylandCallback].
 bool ut_object_is_wayland_callback(UtObject *object);

@@ -15,4 +15,5 @@ void ut_wayland_region_add(UtObject *object, int32_t x, int32_t y,
 void ut_wayland_region_subtract(UtObject *object, int32_t x, int32_t y,
                                 int32_t width, int32_t height);
 
+/// Returns [true] if [object] is a [UtWaylandRegion].
 bool ut_object_is_wayland_region(UtObject *object);

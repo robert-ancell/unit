@@ -16,4 +16,5 @@ int16_t ut_x11_button_press_get_x(UtObject *object);
 
 int16_t ut_x11_button_press_get_y(UtObject *object);
 
+/// Returns [true] if [object] is a [UtX11ButtonPress].
 bool ut_object_is_x11_button_press(UtObject *object);

@@ -26,4 +26,5 @@ UtObject *
 ut_wayland_display_get_registry(UtObject *object, UtObject *callback_object,
                                 const UtWaylandRegistryCallbacks *callbacks);
 
+/// Returns [true] if [object] is a [UtWaylandDisplay].
 bool ut_object_is_wayland_display(UtObject *object);

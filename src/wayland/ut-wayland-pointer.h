@@ -37,4 +37,5 @@ void ut_wayland_pointer_set_cursor(UtObject *object, uint32_t serial,
 
 void ut_wayland_pointer_release(UtObject *object);
 
+/// Returns [true] if [object] is a [UtWaylandPointer].
 bool ut_object_is_wayland_pointer(UtObject *object);

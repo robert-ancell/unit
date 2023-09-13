@@ -191,4 +191,5 @@ void ut_x11_core_rotate_properties(UtObject *object, uint32_t window,
 
 void ut_x11_core_no_operation(UtObject *object);
 
+/// Returns [true] if [object] is a [UtX11Core].
 bool ut_object_is_x11_core(UtObject *object);

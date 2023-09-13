@@ -21,4 +21,5 @@ UtObject *ut_x11_input_device_info_get_classes(UtObject *object);
 
 bool ut_x11_input_device_info_get_enabled(UtObject *object);
 
+/// Returns [true] if [object] is a [UtX11InputDeviceInfo].
 bool ut_object_is_x11_input_device_info(UtObject *object);

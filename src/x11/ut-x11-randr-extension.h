@@ -21,4 +21,5 @@ void ut_x11_randr_extension_query_version(
     UtObject *object, UtObject *callback_object,
     UtX11ClientRandrQueryVersionCallback callback);
 
+/// Returns [true] if [object] is a [UtX11RandrExtension].
 bool ut_object_is_x11_randr_extension(UtObject *object);

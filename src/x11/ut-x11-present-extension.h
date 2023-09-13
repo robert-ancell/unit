@@ -46,4 +46,5 @@ uint32_t ut_x11_present_extension_select_input(UtObject *object,
 void ut_x11_present_extension_query_capabilities(UtObject *object,
                                                  uint32_t crtc_or_window);
 
+/// Returns [true] if [object] is a [UtX11PresentExtension].
 bool ut_object_is_x11_present_extension(UtObject *object);

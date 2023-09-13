@@ -22,4 +22,5 @@ UtObject *ut_wayland_registry_new(UtObject *client, uint32_t id,
 uint32_t ut_wayland_registry_bind(UtObject *object, uint32_t name,
                                   const char *interface, uint32_t version);
 
+/// Returns [true] if [object] is a [UtWaylandRegistry].
 bool ut_object_is_wayland_registry(UtObject *object);

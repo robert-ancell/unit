@@ -40,4 +40,5 @@ UtObject *ut_wayland_keyboard_new(UtObject *client, uint32_t id,
 
 void ut_wayland_keyboard_release(UtObject *object);
 
+/// Returns [true] if [object] is a [UtWaylandKeyboard].
 bool ut_object_is_wayland_keyboard(UtObject *object);

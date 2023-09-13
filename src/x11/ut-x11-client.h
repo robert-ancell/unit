@@ -564,4 +564,5 @@ void ut_x11_client_query_counter(UtObject *object, uint32_t counter,
 
 void ut_x11_client_destroy_counter(UtObject *object, uint32_t counter);
 
+/// Returns [true] if [object] is a [UtX11Client].
 bool ut_object_is_x11_client(UtObject *object);

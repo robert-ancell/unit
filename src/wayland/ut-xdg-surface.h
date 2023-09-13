@@ -34,4 +34,5 @@ void ut_xdg_surface_set_window_geometry(UtObject *object, int32_t x, int32_t y,
 
 void ut_xdg_surface_ack_configure(UtObject *object, uint32_t serial);
 
+/// Returns [true] if [object] is a [UtXdgSurface].
 bool ut_object_is_xdg_surface(UtObject *object);

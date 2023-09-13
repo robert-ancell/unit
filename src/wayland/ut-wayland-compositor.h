@@ -17,4 +17,5 @@ UtObject *ut_wayland_compositor_create_surface(
 
 UtObject *ut_wayland_compositor_create_region(UtObject *object);
 
+/// Returns [true] if [object] is a [UtWaylandCompositor].
 bool ut_object_is_wayland_compositor(UtObject *object);

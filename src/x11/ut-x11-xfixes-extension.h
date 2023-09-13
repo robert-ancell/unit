@@ -125,4 +125,5 @@ void ut_x11_xfixes_hide_cursor(UtObject *object, uint32_t window);
 
 void ut_x11_xfixes_show_cursor(UtObject *object, uint32_t window);
 
+/// Returns [true] if [object] is a [UtX11XfixesExtension].
 bool ut_object_is_x11_xfixes_extension(UtObject *object);

@@ -76,4 +76,5 @@ size_t ut_x11_buffer_get_fd_count(UtObject *object);
 
 UtObject *ut_x11_buffer_take_fd(UtObject *object);
 
+/// Returns [true] if [object] is a [UtX11Buffer].
 bool ut_object_is_x11_buffer(UtObject *object);

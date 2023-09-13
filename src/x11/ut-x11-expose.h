@@ -18,4 +18,5 @@ uint16_t ut_x11_expose_get_width(UtObject *object);
 
 uint16_t ut_x11_expose_get_height(UtObject *object);
 
+/// Returns [true] if [object] is a [UtX11Expose].
 bool ut_object_is_x11_expose(UtObject *object);

@@ -18,4 +18,5 @@ UtObject *ut_x11_screen_get_root_visual(UtObject *object);
 
 UtObject *ut_x11_screen_get_visuals(UtObject *object);
 
+/// Returns [true] if [object] is a [UtX11Screen].
 bool ut_object_is_x11_screen(UtObject *object);

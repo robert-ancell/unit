@@ -16,4 +16,5 @@ char *ut_wayland_decoder_get_string(UtObject *object);
 
 UtObject *ut_wayland_decoder_get_uint_array(UtObject *object);
 
+/// Returns [true] if [object] is a [UtWaylandDecoder].
 bool ut_object_is_wayland_decoder(UtObject *object);

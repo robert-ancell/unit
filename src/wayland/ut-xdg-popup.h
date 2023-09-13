@@ -24,4 +24,5 @@ UtObject *ut_xdg_popup_new(UtObject *client, uint32_t id,
 
 void ut_xdg_popup_destroy(UtObject *object);
 
+/// Returns [true] if [object] is a [UtXdgPopup].
 bool ut_object_is_xdg_popup(UtObject *object);

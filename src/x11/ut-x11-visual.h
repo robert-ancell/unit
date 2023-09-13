@@ -13,4 +13,5 @@ uint32_t ut_x11_visual_get_id(UtObject *object);
 
 uint8_t ut_x11_visual_get_depth(UtObject *object);
 
+/// Returns [true] if [object] is a [UtX11Visual].
 bool ut_object_is_x11_visual(UtObject *object);

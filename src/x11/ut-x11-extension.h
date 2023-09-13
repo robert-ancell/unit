@@ -37,4 +37,5 @@ UtX11ErrorCode ut_x11_extension_decode_error(UtObject *object, uint8_t code);
 
 void ut_x11_extension_close(UtObject *object);
 
+/// Returns [true] if [object] is a [UtX11Extension].
 bool ut_object_implements_x11_extension(UtObject *object);

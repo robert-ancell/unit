@@ -7,4 +7,5 @@
 
 UtObject *ut_x11_button_class_new(UtObject *state, UtObject *labels);
 
+/// Returns [true] if [object] is a [UtX11ButtonClass].
 bool ut_object_is_x11_button_class(UtObject *object);

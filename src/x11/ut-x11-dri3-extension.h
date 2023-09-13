@@ -17,4 +17,5 @@ void ut_x11_dri3_extension_query_version(
     UtObject *object, UtObject *callbac_object,
     UtX11ClientDri3QueryVersionCallback callback);
 
+/// Returns [true] if [object] is a [UtX11Dri3Extension].
 bool ut_object_is_x11_dri3_extension(UtObject *object);

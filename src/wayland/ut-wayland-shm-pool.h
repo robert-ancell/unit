@@ -16,4 +16,5 @@ void ut_wayland_shm_pool_destroy(UtObject *object);
 
 void ut_wayland_shm_pool_resize(UtObject *object, int32_t size);
 
+/// Returns [true] if [object] is a [UtWaylandShmPool].
 bool ut_object_is_wayland_shm_pool(UtObject *object);

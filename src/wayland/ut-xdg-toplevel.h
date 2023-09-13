@@ -58,4 +58,5 @@ void ut_xdg_toplevel_unset_fullscreen(UtObject *object);
 
 void ut_xdg_toplevel_set_minimized(UtObject *object);
 
+/// Returns [true] if [object] is a [UtXdgToplevel].
 bool ut_object_is_xdg_toplevel(UtObject *object);
