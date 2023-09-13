@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <stdlib.h>
 
+#include "ut-map-private.h"
 #include "ut.h"
 
 int ut_map_id = 0;
@@ -115,7 +116,7 @@ UtObject *ut_map_get_values(UtObject *object) {
   return map_interface->get_values(object);
 }
 
-char *ut_map_to_string(UtObject *object) {
+char *_ut_map_to_string(UtObject *object) {
   UtObjectRef string = ut_string_new("{");
   UtObjectRef items = ut_map_get_items(object);
   for (size_t i = 0; i < ut_list_get_length(items); i++) {

@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <stdlib.h>
 
+#include "ut-map-private.h"
 #include "ut.h"
 
 typedef struct _UtOrderedHashTableItem UtOrderedHashTableItem;
@@ -178,7 +179,7 @@ static void ut_ordered_hash_table_cleanup(UtObject *object) {
 
 static UtObjectInterface object_interface = {
     .type_name = "UtOrderedHashTable",
-    .to_string = ut_map_to_string,
+    .to_string = _ut_map_to_string,
     .cleanup = ut_ordered_hash_table_cleanup,
     .interfaces = {{&ut_map_id, &map_interface}, {NULL, NULL}}};
 
