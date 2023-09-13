@@ -99,6 +99,12 @@ static char **ut_string_array_take_data(UtObject *object) {
   return value;
 }
 
+static void ut_string_array_insert(UtObject *object, size_t index,
+                                   const char *value) {
+  UtStringArray *self = (UtStringArray *)object;
+  insert(self, index, value);
+}
+
 static void ut_string_array_init(UtObject *object) {
   UtStringArray *self = (UtStringArray *)object;
   self->data = malloc(sizeof(char *) * 1);
@@ -169,35 +175,18 @@ UtObject *ut_string_array_new_from_elements(const char *value, ...) {
 
 UtObject *ut_string_array_new_from_va_elements(const char *value, va_list ap) {
   UtObject *object = ut_string_array_new();
+  UtStringArray *self = (UtStringArray *)object;
 
-  ut_string_array_append(object, value);
+  insert(self, self->data_length, value);
   while (true) {
     const char *v = va_arg(ap, const char *);
     if (v == NULL) {
       break;
     }
-    ut_string_array_append(object, v);
+    insert(self, self->data_length, v);
   }
 
   return object;
-}
-
-void ut_string_array_prepend(UtObject *object, const char *value) {
-  assert(ut_object_is_string_array(object));
-  UtStringArray *self = (UtStringArray *)object;
-  insert(self, 0, value);
-}
-
-void ut_string_array_append(UtObject *object, const char *value) {
-  assert(ut_object_is_string_array(object));
-  UtStringArray *self = (UtStringArray *)object;
-  insert(self, self->data_length, value);
-}
-
-void ut_string_array_insert(UtObject *object, size_t index, const char *value) {
-  assert(ut_object_is_string_array(object));
-  UtStringArray *self = (UtStringArray *)object;
-  insert(self, index, value);
 }
 
 bool ut_object_is_string_array(UtObject *object) {

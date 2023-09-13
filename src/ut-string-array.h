@@ -6,17 +6,23 @@
 
 #pragma once
 
+/// Creates a new array that contains strings.
+///
+/// !return-ref
+/// !return-type UtStringArray
 UtObject *ut_string_array_new();
 
+/// Creates a new array from the [NULL] terminated list of strings [value].
+///
+/// !return-ref
+/// !return-type UtStringArray
 UtObject *ut_string_array_new_from_elements(const char *value, ...);
 
+/// Creates a new array from the list of strings [value].
+///
+/// !return-ref
+/// !return-type UtStringArray
 UtObject *ut_string_array_new_from_va_elements(const char *value, va_list ap);
-
-void ut_string_array_prepend(UtObject *object, const char *value);
-
-void ut_string_array_append(UtObject *object, const char *value);
-
-void ut_string_array_insert(UtObject *object, size_t index, const char *value);
 
 /// Returns [true] if [object] is a [UtStringArray].
 bool ut_object_is_string_array(UtObject *object);

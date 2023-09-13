@@ -54,7 +54,7 @@ static UtObject *ut_string_subarray_copy(UtObject *object) {
   UtStringSubarray *self = (UtStringSubarray *)object;
   UtObject *copy = ut_string_array_new();
   for (size_t i = 0; i < self->length; i++) {
-    ut_string_array_append(copy, get_element(self, i));
+    ut_string_list_append(copy, get_element(self, i));
   }
   return copy;
 }

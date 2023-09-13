@@ -13,8 +13,8 @@ typedef struct {
 
 extern int ut_string_list_id;
 
-/// Creates a new list that contains unsigned 8 bit values.
-/// This creates a [UtUint8Array].
+/// Creates a new list that contains strings.
+/// This creates a [UtStringrray].
 ///
 /// !return-ref
 /// !return-type UtStringList
