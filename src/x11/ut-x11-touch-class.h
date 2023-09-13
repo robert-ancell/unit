@@ -5,6 +5,10 @@
 
 #pragma once
 
+/// Creates a new X11 touch class.
+///
+/// !return-ref
+/// !return-type UtX11TouchClass
 UtObject *ut_x11_touch_class_new(uint8_t mode, uint8_t num_touches);
 
 /// Returns [true] if [object] is a [UtX11TouchClass].

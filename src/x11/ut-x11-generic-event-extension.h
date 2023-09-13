@@ -9,6 +9,11 @@ typedef void (*UtX11ClientGenericEventQueryVersionCallback)(
     UtObject *object, uint16_t major_version, uint16_t minor_version,
     UtObject *error);
 
+/// Creates a new X11 generic event extension.
+///
+/// !arg-type client UtX11Client
+/// !return-ref
+/// !return-type UtX11GenericEventExtension
 UtObject *ut_x11_generic_event_extension_new(UtObject *client,
                                              uint8_t major_opcode);
 

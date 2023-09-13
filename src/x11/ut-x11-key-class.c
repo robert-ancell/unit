@@ -15,6 +15,11 @@ static void ut_x11_key_class_cleanup(UtObject *object) {
 static UtObjectInterface object_interface = {
     .type_name = "UtX11KeyClass", .cleanup = ut_x11_key_class_cleanup};
 
+/// Creates a new X11 key class.
+///
+/// !arg-type keys UtUint32List
+/// !return-ref
+/// !return-type UtX11KeyClass
 UtObject *ut_x11_key_class_new(UtObject *keys) {
   UtObject *object = ut_object_new(sizeof(UtX11KeyClass), &object_interface);
   UtX11KeyClass *self = (UtX11KeyClass *)object;

@@ -19,6 +19,11 @@ typedef void (*UtX11ShapeQueryVersionCallback)(UtObject *object,
                                                uint16_t minor_version,
                                                UtObject *error);
 
+/// Creates a new X11 shape extension.
+///
+/// !arg-type client UtX11Client
+/// !return-ref
+/// !return-type UtX11ShapeExtension
 UtObject *
 ut_x11_shape_extension_new(UtObject *client, uint8_t major_opcode,
                            uint8_t first_event, UtObject *callback_object,

@@ -5,6 +5,10 @@
 
 #pragma once
 
+/// Creates a new X11 key release event.
+///
+/// !return-ref
+/// !return-type UtX11KeyRelease
 UtObject *ut_x11_key_release_new(uint32_t window, uint8_t keycode, int16_t x,
                                  int16_t y);
 

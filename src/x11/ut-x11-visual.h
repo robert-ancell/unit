@@ -4,6 +4,10 @@
 
 #pragma once
 
+/// Creates a new X11 visual.
+///
+/// !return-ref
+/// !return-type UtX11Visual
 UtObject *ut_x11_visual_new(uint32_t id, uint8_t depth, uint8_t class,
                             uint8_t bits_per_rgb_value,
                             uint16_t colormap_entries, uint32_t red_mask,

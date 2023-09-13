@@ -5,6 +5,10 @@
 
 #pragma once
 
+/// Creates a new X11 rectangle.
+///
+/// !return-ref
+/// !return-type UtX11Rectangle
 UtObject *ut_x11_rectangle_new(int16_t x, int16_t y, uint16_t width,
                                uint16_t height);
 

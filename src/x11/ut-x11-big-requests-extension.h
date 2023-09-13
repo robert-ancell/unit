@@ -8,6 +8,11 @@
 typedef void (*UtX11ClientBigRequestsEnableCallback)(
     UtObject *object, uint32_t maximum_request_length, UtObject *error);
 
+/// Creates a new X11 big requests extension.
+///
+/// !arg-type client UtX11Client
+/// !return-ref
+/// !return-type UtX11BigRequestsExtension
 UtObject *ut_x11_big_requests_extension_new(UtObject *client,
                                             uint8_t major_opcode);
 

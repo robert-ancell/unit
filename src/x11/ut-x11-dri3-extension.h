@@ -11,6 +11,10 @@ typedef void (*UtX11ClientDri3QueryVersionCallback)(UtObject *object,
                                                     uint32_t minor_version,
                                                     UtObject *error);
 
+/// Creates a new X11 DRI3 extension.
+///
+/// !return-ref
+/// !return-type UtX11Dri3Extension
 UtObject *ut_x11_dri3_extension_new(UtObject *client, uint8_t major_opcode);
 
 void ut_x11_dri3_extension_query_version(

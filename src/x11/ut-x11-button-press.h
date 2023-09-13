@@ -5,6 +5,10 @@
 
 #pragma once
 
+/// Creates a new X11 button press event.
+///
+/// !return-ref
+/// !return-type UtX11ButtonPress
 UtObject *ut_x11_button_press_new(uint32_t window, uint8_t button, int16_t x,
                                   int16_t y);
 

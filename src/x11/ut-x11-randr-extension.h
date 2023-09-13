@@ -11,6 +11,11 @@ typedef void (*UtX11ClientRandrQueryVersionCallback)(UtObject *object,
                                                      uint32_t minor_version,
                                                      UtObject *error);
 
+/// Creates a new X11 RANDR extension.
+///
+/// !arg-type client UtX11Client
+/// !return-ref
+/// !return-type UtX11RandrExtension
 UtObject *
 ut_x11_randr_extension_new(UtObject *client, uint8_t major_opcode,
                            uint8_t first_event, uint8_t first_error,

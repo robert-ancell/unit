@@ -5,6 +5,11 @@
 
 #pragma once
 
+/// Creates a new X11 device info.
+///
+/// !arg-type classes UtObjectList
+/// !return-ref
+/// !return-type UtX11DeviceInfo
 UtObject *ut_x11_input_device_info_new(uint32_t id, const char *name,
                                        uint16_t type, uint32_t attachment,
                                        UtObject *classes, bool enabled);

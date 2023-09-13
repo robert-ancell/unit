@@ -5,6 +5,10 @@
 
 #pragma once
 
+/// Creates a new X11 key press event.
+///
+/// !return-ref
+/// !return-type UtX11KeyPress
 UtObject *ut_x11_key_press_new(uint32_t window, uint8_t keycode, int16_t x,
                                int16_t y);
 

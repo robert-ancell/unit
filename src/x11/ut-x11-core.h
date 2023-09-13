@@ -6,6 +6,10 @@
 
 #pragma once
 
+/// Creates a new X11 core.
+///
+/// !return-ref
+/// !return-type UtX11Core
 UtObject *ut_x11_core_new(UtObject *client, UtObject *callback_object,
                           const UtX11EventCallbacks *event_callbacks);
 

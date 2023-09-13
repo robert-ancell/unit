@@ -28,6 +28,11 @@ typedef void (*UtX11ClientSyncQueryFenceCallback)(UtObject *object,
                                                   bool triggered,
                                                   UtObject *error);
 
+/// Creates a new X11 sync extension.
+///
+/// !arg-type client UtX11Client
+/// !return-ref
+/// !return-type UtX11SyncExtension
 UtObject *ut_x11_sync_extension_new(UtObject *client, uint8_t major_opcode,
                                     uint8_t first_event, uint8_t first_error,
                                     UtObject *callback_object,

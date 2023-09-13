@@ -3,8 +3,17 @@
 
 #include "ut-object.h"
 
+/// Creates a new X11 buffer.
+///
+/// !return-ref
+/// !return-type UtX11Buffer
 UtObject *ut_x11_buffer_new();
 
+/// Creates a new X11 buffer from [data].
+///
+/// !arg-type data UtUint8List
+/// !return-ref
+/// !return-type UtX11Button
 UtObject *ut_x11_buffer_new_from_data(UtObject *data);
 
 UtObject *ut_x11_buffer_get_data(UtObject *object);

@@ -5,6 +5,10 @@
 
 #pragma once
 
+/// Creates a new X11 input event mask.
+///
+/// !return-ref
+/// !return-type UtX11InputEventMask
 UtObject *ut_x11_input_event_mask_new(uint16_t device_id, uint64_t value);
 
 uint16_t ut_x11_input_event_mask_get_device_id(UtObject *object);

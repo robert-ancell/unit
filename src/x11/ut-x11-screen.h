@@ -4,6 +4,12 @@
 
 #pragma once
 
+/// Creates a new X11 screen.
+///
+/// !arg-type root_visual UtX11Visual
+/// !arg-type visuals UtObjectList
+/// !return-ref
+/// !return-type UtX11Screen
 UtObject *ut_x11_screen_new(uint32_t root, uint32_t default_colormap,
                             uint32_t white_pixel, uint32_t black_pixel,
                             uint32_t current_input_masks,

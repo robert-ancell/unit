@@ -11,6 +11,11 @@ typedef void (*UtX11ShmQueryVersionCallback)(
     uint16_t uid, uint16_t gid, uint8_t pixmap_format, bool shared_pixmaps,
     UtObject *error);
 
+/// Creates a new X11 shared memory extension.
+///
+/// !arg-type client UtX11Client
+/// !return-ref
+/// !return-type UtX11ShmExtension
 UtObject *ut_x11_shm_extension_new(UtObject *client, uint8_t major_opcode,
                                    uint8_t first_event, uint8_t first_error);
 

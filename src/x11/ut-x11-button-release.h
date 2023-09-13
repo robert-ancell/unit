@@ -5,6 +5,10 @@
 
 #pragma once
 
+/// Creates a new X11 button release event.
+///
+/// !return-ref
+/// !return-type UtX11ButtonRelease
 UtObject *ut_x11_button_release_new(uint32_t window, uint8_t button, int16_t x,
                                     int16_t y);
 
