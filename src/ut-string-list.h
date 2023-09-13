@@ -20,7 +20,7 @@ extern int ut_string_list_id;
 /// !return-type UtStringList
 UtObject *ut_string_list_new();
 
-/// Creates a new list from the [NULL] terminated list of elements [value].
+/// Creates a new list from the [NULL] terminated list of strings [value].
 ///
 /// !return-ref
 /// !return-type UtStringList
