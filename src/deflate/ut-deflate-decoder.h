@@ -4,8 +4,9 @@
 
 #pragma once
 
-/// Creates a new [UtDeflateDecoder] to read deflate data from [input_stream].
+/// Creates a new decoder to read deflate data from [input_stream].
 ///
+/// !arg-type input_stream UtInputStream
 /// !return-type UtDeflateDecoder
 /// !return-ref
 UtObject *ut_deflate_decoder_new(UtObject *input_stream);
