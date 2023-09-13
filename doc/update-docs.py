@@ -1,5 +1,7 @@
 #!/usr/bin/python3
 
+import sys
+
 TYPES = ['void', 'bool',
          'uint8_t', 'uint16_t', 'uint32_t', 'uint64_t',
          'int8_t', 'int16_t', 'int32_t', 'int64_t',
@@ -676,3 +678,6 @@ if len(undocumented_functions) > 0:
         print('  ' + function.function.name)
 n_documented = len(functions) - len(undocumented_functions)
 print('Documented %d/%d functions' % (n_documented, len(functions)))
+
+if n_documented < len(functions):
+    sys.exit(1)
