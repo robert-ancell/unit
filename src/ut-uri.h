@@ -5,16 +5,18 @@
 
 #pragma once
 
-/// Creates a new [UtUri].
+/// Creates a new URI.
 ///
 /// !return-ref
+/// !return-type UtUri
 UtObject *ut_uri_new(const char *scheme, const char *user_info,
                      const char *host, uint16_t port, const char *path,
                      const char *query, const char *fragment);
 
-/// Creates a new [UtUri] from [uri], e.g. "http://example.com".
+/// Creates a new URI from [uri], e.g. "http://example.com".
 ///
 /// !return-ref
+/// !return-type UtUri
 UtObject *ut_uri_new_from_string(const char *uri);
 
 /// Returns the scheme in this URI, e.g. "http" for "http://example.com".

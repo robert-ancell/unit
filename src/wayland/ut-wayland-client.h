@@ -6,10 +6,10 @@
 
 #pragma once
 
-/// Creates a new [UtWaylandClient] object.
+/// Creates a new Wayland client.
 ///
-/// !return-type UtWaylandClient
 /// !return-ref
+/// !return-type UtWaylandClient
 UtObject *ut_wayland_client_new();
 
 /// Connect the [object] to the Wayland server.
