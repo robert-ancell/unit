@@ -10,6 +10,7 @@ typedef struct {
 
 extern int ut_ip_address_id;
 
+/// Returns this IP address in string form, e.g. "192.168.0.1"
 char *ut_ip_address_to_string(UtObject *object);
 
 /// Returns [true] if [object] is a [UtIpAddress].

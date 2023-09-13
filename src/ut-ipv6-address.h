@@ -5,15 +5,17 @@
 
 #pragma once
 
-/// Creates a new [UtIpv6Address] with raw 66 bit [address] value.
+/// Creates a new IPv6 address with raw 66 bit [address] value.
 ///
 /// !return-ref
+/// !return-type UtIpv6Address
 UtObject *ut_ipv6_address_new(uint8_t *address);
 
-/// Creates a new [UtIpv6Address] with from an [address] in string form, e.g.
+/// Creates a new IPv6 address from an [address] in string form, e.g.
 /// "192.168.0.1".
 ///
 /// !return-ref
+/// !return-type UtIpv6Address
 UtObject *ut_ipv6_address_new_from_string(const char *address);
 
 /// Gets the raw 66 bit address value for this address.
