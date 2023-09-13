@@ -83,7 +83,7 @@ ut_png_image_lookup_international_text(UtObject *object, const char *keyword,
                                        const char *language,
                                        const char **translated_keyword);
 
-/// Returns the image data.
+/// Returns the packed image data.
 ///
 /// !return-type UtUint8List
 UtObject *ut_png_image_get_data(UtObject *object);
