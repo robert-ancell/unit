@@ -21,8 +21,8 @@ extern int ut_uint8_list_id;
 /// Creates a new list that contains unsigned 8 bit values.
 /// This creates a [UtUint8Array].
 ///
-/// !return-type UtUint8List
 /// !return-ref
+/// !return-type UtUint8List
 UtObject *ut_uint8_list_new();
 
 UtObject *ut_uint8_list_new_from_data(const uint8_t *data, size_t data_length);
