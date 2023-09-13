@@ -46,73 +46,73 @@ UtObject *ut_uint8_list_new_from_elements(size_t length, ...);
 /// !return-type UtUint8List UtError !return-ref
 UtObject *ut_uint8_list_new_from_hex_string(const char *hex);
 
-/// Returns the value at [index] of this list.
+/// Returns the item at [index] of this list.
 uint8_t ut_uint8_list_get_element(UtObject *object, size_t index);
 
-/// Returns the value at [index] of this list as a signed 8 bit value.
+/// Returns the item at [index] of this list as a signed 8 bit value.
 int8_t ut_uint8_list_get_int8(UtObject *object, size_t index);
 
-/// Returns the two values starting at [index] of this list as an unsigned 16
+/// Returns the two items starting at [index] of this list as an unsigned 16
 /// bit value in little endian format.
 uint16_t ut_uint8_list_get_uint16_le(UtObject *object, size_t index);
 
-/// Returns the two values starting at [index] of this list as an unsigned 16
+/// Returns the two items starting at [index] of this list as an unsigned 16
 /// bit value in big endian format.
 uint16_t ut_uint8_list_get_uint16_be(UtObject *object, size_t index);
 
-/// Returns the two values starting at [index] of this list as a signed 16 bit
+/// Returns the two items starting at [index] of this list as a signed 16 bit
 /// value in little endian format.
 int16_t ut_uint8_list_get_int16_le(UtObject *object, size_t index);
 
-/// Returns the two values starting at [index] of this list as a signed 16 bit
+/// Returns the two items starting at [index] of this list as a signed 16 bit
 /// value in big endian format.
 int16_t ut_uint8_list_get_int16_be(UtObject *object, size_t index);
 
-/// Returns the four values starting at [index] of this list as an unsigned 32
+/// Returns the four items starting at [index] of this list as an unsigned 32
 /// bit value in little endian format.
 uint32_t ut_uint8_list_get_uint32_le(UtObject *object, size_t index);
 
-/// Returns the four values starting at [index] of this list as an unsigned 32
+/// Returns the four items starting at [index] of this list as an unsigned 32
 /// bit value in big endian format.
 uint32_t ut_uint8_list_get_uint32_be(UtObject *object, size_t index);
 
-/// Returns the four values starting at [index] of this list as a signed 32 bit
+/// Returns the four items starting at [index] of this list as a signed 32 bit
 /// value in little endian format.
 int32_t ut_uint8_list_get_int32_le(UtObject *object, size_t index);
 
-/// Returns the four values starting at [index] of this list as a signed 32 bit
+/// Returns the four items starting at [index] of this list as a signed 32 bit
 /// value in big endian format.
 int32_t ut_uint8_list_get_int32_be(UtObject *object, size_t index);
 
-/// Returns the four values starting at [index] of this list as a 32 bit
+/// Returns the four items starting at [index] of this list as a 32 bit
 /// floating point value in little endian format.
 float ut_uint8_list_get_float32_le(UtObject *object, size_t index);
 
-/// Returns the four values starting at [index] of this list as a 32 bit
+/// Returns the four items starting at [index] of this list as a 32 bit
 /// floating point value in big endian format.
 float ut_uint8_list_get_float32_be(UtObject *object, size_t index);
 
-/// Returns the eight values starting at [index] of this list as an unsigned 64
+/// Returns the eight items starting at [index] of this list as an unsigned 64
 /// bit value in little endian format.
 uint64_t ut_uint8_list_get_uint64_le(UtObject *object, size_t index);
 
-/// Returns the eight values starting at [index] of this list as an unsigned 64
+/// Returns the eight items starting at [index] of this list as an unsigned 64
 /// bit value in big endian format.
 uint64_t ut_uint8_list_get_uint64_be(UtObject *object, size_t index);
 
-/// Returns the eight values starting at [index] of this list as a signed 64 bit
+/// Returns the eight items starting at [index] of this list as a signed 64 bit
 /// value in little endian format.
 int64_t ut_uint8_list_get_int64_le(UtObject *object, size_t index);
 
-/// Returns the eight values starting at [index] of this list as a signed 64 bit
+/// Returns the eight items starting at [index] of this list as a signed 64 bit
 /// value in big endian format.
 int64_t ut_uint8_list_get_int64_be(UtObject *object, size_t index);
 
-/// Returns the eight values starting at [index] of this list as a 64 bit
+/// Returns the eight items starting at [index] of this list as a 64 bit
 /// floating point value in little endian format.
 double ut_uint8_list_get_float64_le(UtObject *object, size_t index);
 
-/// Returns the eight values starting at [index] of this list as a 64 bit
+/// Returns the eight items starting at [index] of this list as a 64 bit
 /// floating point value in little endian format.
 double ut_uint8_list_get_float64_be(UtObject *object, size_t index);
 
@@ -142,8 +142,8 @@ uint8_t *ut_uint8_list_copy_data(UtObject *object);
 /// release the memory.
 uint8_t *ut_uint8_list_take_data(UtObject *object);
 
-/// Add [value] to the end of this list.
-void ut_uint8_list_append(UtObject *object, uint8_t value);
+/// Add [item] to the end of this list.
+void ut_uint8_list_append(UtObject *object, uint8_t item);
 
 /// Add array [data] of size [data_length] to the end of this list.
 void ut_uint8_list_append_block(UtObject *object, const uint8_t *data,

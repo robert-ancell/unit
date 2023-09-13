@@ -8,11 +8,13 @@
 #pragma once
 
 /// Creates a new array that contains unsigned 8 bit values.
+///
 /// !return-type UtUint8Array
 /// !return-ref
 UtObject *ut_uint8_array_new();
 
 /// Creates a new array of [length] zeros.
+///
 /// !return-type UtUint8Array
 /// !return-ref
 UtObject *ut_uint8_array_new_sized(size_t length);
