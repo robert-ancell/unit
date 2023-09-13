@@ -147,7 +147,7 @@ class FunctionCall:
 
 
 def tokenize_c_comment(text):
-    assert(text.startswith('/*'))
+    assert text.startswith('/*')
     end = 2
     while end < len(text):
         if text.startswith('*/', end):
@@ -157,7 +157,7 @@ def tokenize_c_comment(text):
 
 
 def tokenize_cpp_comment(text):
-    assert(text.startswith('//'))
+    assert text.startswith('//')
     end = 2
     while end < len(text) and text[end] != '\n':
         end += 1
@@ -165,7 +165,7 @@ def tokenize_cpp_comment(text):
 
 
 def tokenize_hex_number(text):
-    assert(text.startswith('0x'))
+    assert text.startswith('0x')
     end = 2
     while end < len(text) and text[end] in HEX_NUMBER_CHARACTERS:
         end += 1
@@ -173,7 +173,7 @@ def tokenize_hex_number(text):
 
 
 def tokenize_number(text):
-    assert(len(text) > 0 and text[0] in NUMBER_CHARACTERS)
+    assert len(text) > 0 and text[0] in NUMBER_CHARACTERS
     end = 0
     while end < len(text) and text[end] in NUMBER_CHARACTERS:
         end += 1
@@ -188,7 +188,7 @@ def tokenize_keyword(text):
 
 
 def tokenize_string(text):
-    assert(text.startswith('"'))
+    assert text.startswith('"')
     end = 1
     in_escape = False
     while end < len(text) and (in_escape or text[end] != '"'):
@@ -201,7 +201,7 @@ def tokenize_string(text):
 
 
 def tokenize_system_include(text):
-    assert(text.startswith('<'))
+    assert text.startswith('<')
     end = 1
     while end < len(text) and text[end] != '>':
         end += 1
@@ -393,7 +393,7 @@ def parse_comment(tokens):
 
 
 def parse_name(tokens):
-    assert(len(tokens) > 0)
+    assert len(tokens) > 0
     name = tokens[0]
     for c in name:
         if c not in KEYWORD_CHARACTERS:
@@ -402,8 +402,8 @@ def parse_name(tokens):
 
 
 def parse_number(tokens):
-    assert(len(tokens) > 0)
-    assert(tokens[0][0] in NUMBER_CHARACTERS)
+    assert len(tokens) > 0
+    assert tokens[0][0] in NUMBER_CHARACTERS
     return (tokens[0], tokens[1:])
 
 
@@ -479,7 +479,7 @@ def parse_function_pointer(tokens):
 
 
 def parse_type(tokens):
-    assert(len(tokens) > 0)
+    assert len(tokens) > 0
     if tokens[0] == 'enum':
         return parse_enum(tokens)
     elif tokens[0] == 'struct':
