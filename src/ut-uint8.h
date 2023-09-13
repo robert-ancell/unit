@@ -7,8 +7,8 @@
 
 /// Creates a new object that contains a single unsigned 8 bit [value].
 ///
-/// !return-type UtUint8
 /// !return-ref
+/// !return-type UtUint8
 UtObject *ut_uint8_new(uint8_t value);
 
 /// Gets the value of [object].

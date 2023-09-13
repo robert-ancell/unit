@@ -16,14 +16,24 @@ typedef struct {
 
 extern int ut_input_stream_id;
 
+/// Start reading from this stream.
+/// [callback] is called when data is available.
 void ut_input_stream_read(UtObject *object, UtObject *callback_object,
                           UtInputStreamCallback callback);
 
+/// Read all the data from this stream and call [callback] when complete.
 void ut_input_stream_read_all(UtObject *object, UtObject *callback_object,
                               UtInputStreamCallback callback);
 
+/// Returns all data from this stream.
+/// Returns an error if all the stream data is not available.
+///
+/// !return-ref
+/// !return-type UtList UtError
 UtObject *ut_input_stream_read_sync(UtObject *object);
 
+/// Close this stream.
+/// The callback from [ut_input_stream_read] will no longer be called.
 void ut_input_stream_close(UtObject *object);
 
 /// Returns [true] if [object] is a [UtInputStream].
