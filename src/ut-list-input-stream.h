@@ -4,6 +4,10 @@
 
 #pragma once
 
+/// Creates an input stream containing a fixed [list] of data.
+///
+/// !return-ref
+/// !return-type UtListInputStream
 UtObject *ut_list_input_stream_new(UtObject *list);
 
 /// Returns [true] if [object] is a [UtListInputStream].
