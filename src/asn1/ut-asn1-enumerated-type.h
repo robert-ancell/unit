@@ -4,15 +4,20 @@
 
 #pragma once
 
-/// Creates a new [UtAsn1EnumeratedType] object.
+/// Creates a new ASN.1 ENUMERATED type with [values_by_name].
 ///
 /// !return-ref
+/// !return-type UtAsn1EnumeratedType
 UtObject *ut_asn1_enumerated_type_new(UtObject *values_by_name,
                                       bool extensible);
 
-int64_t ut_asn1_enumerated_type_get_value(UtObject *object, const char *name);
+/// Returns the enumerate value with [name] or -1 if none found.
+int64_t ut_asn1_enumerated_type_lookup_value(UtObject *object,
+                                             const char *name);
 
-const char *ut_asn1_enumerated_type_get_name(UtObject *object, int64_t number);
+/// Returns the name for enumerated value [number] or [NULL] if none found.
+const char *ut_asn1_enumerated_type_lookup_name(UtObject *object,
+                                                int64_t number);
 
 /// Returns true if this type is extensible.
 bool ut_asn1_enumerated_type_get_extensible(UtObject *object);

@@ -40,21 +40,29 @@ typedef enum {
   UT_ASN1_TAG_UNIVERSAL_BMP_STRING = 30
 } UtAsn1TagUniversal;
 
-/// Creates a new [UtAsn1Tag].
+/// Creates a new ASN.1 tag with [class] and [number].
 ///
 /// !return-ref
+/// !return-type UtAsn1Tag
 UtObject *ut_asn1_tag_new(UtAsn1TagClass class, uint32_t number);
 
+/// Creates a new ASN.1 tag with universal [type].
+///
 /// !return-ref
+/// !return-type UtAsn1Tag
 UtObject *ut_asn1_tag_new_universal(UtAsn1TagUniversal type);
 
+/// Returns the class of this tag.
 UtAsn1TagClass ut_asn1_tag_get_class(UtObject *object);
 
+/// Returns the number of this tag.
 uint32_t ut_asn1_tag_get_number(UtObject *object);
 
+/// Returns true if this tag matches [class] and [number].
 bool ut_asn1_tag_matches(UtObject *object, UtAsn1TagClass class,
                          uint32_t number);
 
+/// Returns this tag formatted in ASN.1 form, e.g. "[UNIVERSAL 12]".
 char *ut_asn1_tag_to_string(UtObject *object);
 
 /// Returns [true] if [object] is a [UtAsn1Tag].

@@ -4,9 +4,10 @@
 
 #pragma once
 
-/// Creates a new [UtAsn1OctetStringType] object.
+/// Creates a new ASN.1 OCTET STRING type.
 ///
 /// !return-ref
+/// !return-type UtAsn1OctetStringType
 UtObject *ut_asn1_octet_string_type_new();
 
 /// Returns [true] if [object] is a [UtAsn1OctetStringType].

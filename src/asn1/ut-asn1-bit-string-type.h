@@ -4,9 +4,10 @@
 
 #pragma once
 
-/// Creates a new [UtAsn1BitStringType] object.
+/// Creates a new ASN.1 BIT STRING type.
 ///
 /// !return-ref
+/// !return-type UtAsn1BitStringType
 UtObject *ut_asn1_bit_string_type_new();
 
 /// Returns [true] if [object] is a [UtAsn1BitStringType].

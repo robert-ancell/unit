@@ -4,9 +4,10 @@
 
 #pragma once
 
-/// Creates a new [UtAsn1ExternalType] object.
+/// Creates a new ASN.1 EXTERNAL type.
 ///
 /// !return-ref
+/// !return-type UtAsn1ExternalType
 UtObject *ut_asn1_external_type_new();
 
 /// Returns [true] if [object] is a [UtAsn1ExternalType].

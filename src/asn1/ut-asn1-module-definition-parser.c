@@ -1302,7 +1302,7 @@ static bool maybe_parse_enumerated_value(UtAsn1ModuleDefinitionParser *self,
                                          UtObject *type, UtObject **value) {
   const char *identifier = current_token(self);
 
-  if (ut_asn1_enumerated_type_get_value(type, identifier) < 0) {
+  if (ut_asn1_enumerated_type_lookup_value(type, identifier) < 0) {
     return false;
   }
   self->index++;

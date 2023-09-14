@@ -4,9 +4,10 @@
 
 #pragma once
 
-/// Creates a new [UtAsn1BooleanType] object.
+/// Creates a new ASN.1 BOOLEAN type.
 ///
 /// !return-ref
+/// !return-type UtAsn1BooleanType
 UtObject *ut_asn1_boolean_type_new();
 
 /// Returns [true] if [object] is a [UtAsn1BooleanType].

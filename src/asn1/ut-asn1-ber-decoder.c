@@ -709,7 +709,7 @@ static UtObject *decode_enumerated_value(UtAsn1BerDecoder *self, UtObject *type,
   }
 
   int64_t value = decode_enumerated(self);
-  const char *name = ut_asn1_enumerated_type_get_name(type, value);
+  const char *name = ut_asn1_enumerated_type_lookup_name(type, value);
   if (name == NULL) {
     if (ut_asn1_enumerated_type_get_extensible(type)) {
       return ut_string_new_printf("%li", value);

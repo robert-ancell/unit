@@ -64,7 +64,8 @@ UtObject *ut_asn1_enumerated_type_new(UtObject *values_by_name,
   return object;
 }
 
-int64_t ut_asn1_enumerated_type_get_value(UtObject *object, const char *name) {
+int64_t ut_asn1_enumerated_type_lookup_value(UtObject *object,
+                                             const char *name) {
   assert(ut_object_is_asn1_enumerated_type(object));
   UtAsn1EnumeratedType *self = (UtAsn1EnumeratedType *)object;
   UtObject *value = ut_map_lookup_string(self->values_by_name, name);
@@ -75,7 +76,8 @@ int64_t ut_asn1_enumerated_type_get_value(UtObject *object, const char *name) {
   }
 }
 
-const char *ut_asn1_enumerated_type_get_name(UtObject *object, int64_t number) {
+const char *ut_asn1_enumerated_type_lookup_name(UtObject *object,
+                                                int64_t number) {
   assert(ut_object_is_asn1_enumerated_type(object));
   UtAsn1EnumeratedType *self = (UtAsn1EnumeratedType *)object;
   if (number < 0) {

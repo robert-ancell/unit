@@ -4,9 +4,10 @@
 
 #pragma once
 
-/// Creates a new [UtAsn1IntegerType] object.
+/// Creates a new ASN.1 INTEGER type.
 ///
 /// !return-ref
+/// !return-type UtAsn1IntegerType
 UtObject *ut_asn1_integer_type_new();
 
 /// Returns [true] if [object] is a [UtAsn1IntegerType].

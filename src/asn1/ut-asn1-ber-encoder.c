@@ -636,7 +636,7 @@ static size_t encode_enumerated_value(UtAsn1BerEncoder *self, UtObject *type,
     return 0;
   }
   int64_t number =
-      ut_asn1_enumerated_type_get_value(type, ut_string_get_text(value));
+      ut_asn1_enumerated_type_lookup_value(type, ut_string_get_text(value));
   if (number < 0) {
     set_error_take(self, ut_cstring_new_printf("Unknown enumeration item %s",
                                                ut_string_get_text(value)));

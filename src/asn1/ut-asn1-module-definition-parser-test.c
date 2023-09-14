@@ -1527,9 +1527,9 @@ static void test_enumerated_type_assignment() {
       ut_asn1_module_definition_get_assignment(module1, "EnumeratedType");
   ut_assert_non_null_object(type1);
   ut_assert_true(ut_object_is_asn1_enumerated_type(type1));
-  ut_assert_int_equal(ut_asn1_enumerated_type_get_value(type1, "red"), 0);
-  ut_assert_int_equal(ut_asn1_enumerated_type_get_value(type1, "green"), 1);
-  ut_assert_int_equal(ut_asn1_enumerated_type_get_value(type1, "blue"), 2);
+  ut_assert_int_equal(ut_asn1_enumerated_type_lookup_value(type1, "red"), 0);
+  ut_assert_int_equal(ut_asn1_enumerated_type_lookup_value(type1, "green"), 1);
+  ut_assert_int_equal(ut_asn1_enumerated_type_lookup_value(type1, "blue"), 2);
 
   // Numbers explicitly set.
   UtObjectRef module2 = ut_asn1_module_definition_new_from_text(
@@ -1541,9 +1541,9 @@ static void test_enumerated_type_assignment() {
       ut_asn1_module_definition_get_assignment(module2, "EnumeratedType");
   ut_assert_non_null_object(type2);
   ut_assert_true(ut_object_is_asn1_enumerated_type(type2));
-  ut_assert_int_equal(ut_asn1_enumerated_type_get_value(type1, "red"), 0);
-  ut_assert_int_equal(ut_asn1_enumerated_type_get_value(type1, "green"), 1);
-  ut_assert_int_equal(ut_asn1_enumerated_type_get_value(type1, "blue"), 2);
+  ut_assert_int_equal(ut_asn1_enumerated_type_lookup_value(type1, "red"), 0);
+  ut_assert_int_equal(ut_asn1_enumerated_type_lookup_value(type1, "green"), 1);
+  ut_assert_int_equal(ut_asn1_enumerated_type_lookup_value(type1, "blue"), 2);
 
   // Referenced type.
   UtObjectRef module3 = ut_asn1_module_definition_new_from_text(
@@ -1558,9 +1558,9 @@ static void test_enumerated_type_assignment() {
   ut_assert_true(ut_object_is_asn1_referenced_type(type3));
   UtObject *type3i = ut_asn1_referenced_type_get_type(type3);
   ut_assert_true(ut_object_is_asn1_enumerated_type(type3i));
-  ut_assert_int_equal(ut_asn1_enumerated_type_get_value(type1, "red"), 0);
-  ut_assert_int_equal(ut_asn1_enumerated_type_get_value(type1, "green"), 1);
-  ut_assert_int_equal(ut_asn1_enumerated_type_get_value(type1, "blue"), 2);
+  ut_assert_int_equal(ut_asn1_enumerated_type_lookup_value(type1, "red"), 0);
+  ut_assert_int_equal(ut_asn1_enumerated_type_lookup_value(type1, "green"), 1);
+  ut_assert_int_equal(ut_asn1_enumerated_type_lookup_value(type1, "blue"), 2);
 
   // Constrained to single value.
   UtObjectRef module4 = ut_asn1_module_definition_new_from_text(
