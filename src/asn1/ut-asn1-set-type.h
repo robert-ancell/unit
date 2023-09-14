@@ -16,6 +16,7 @@ UtObject *ut_asn1_set_type_new_take(UtObject *components, bool extensible);
 
 UtObject *ut_asn1_set_type_get_components(UtObject *object);
 
+/// Returns true if this type is extensible.
 bool ut_asn1_set_type_get_extensible(UtObject *object);
 
 UtObject *ut_asn1_set_type_get_component(UtObject *object, const char *name);

@@ -11,8 +11,11 @@ typedef struct {
 
 extern int ut_asn1_decoder_id;
 
-/// Decode value of [type]. [type] is an [UtAsn1Type].
+/// Decode value of [type].
+///
+/// !arg-type type UtAsn1Type
 /// !return-ref
+/// !return-type UtObject
 UtObject *ut_asn1_decoder_decode_value(UtObject *object, UtObject *type);
 
 /// Gets any error that occurred during decoding.
