@@ -1972,17 +1972,17 @@ static void test_sequence_type_assignment() {
   ut_assert_int_equal(
       ut_map_get_length(ut_asn1_sequence_type_get_components(type1)), 3);
 
-  UtObject *type1a = ut_asn1_sequence_type_get_component(type1, "value1");
+  UtObject *type1a = ut_asn1_sequence_type_lookup_component(type1, "value1");
   ut_assert_non_null_object(type1a);
   ut_assert_true(ut_object_is_asn1_boolean_type(type1a));
 
-  UtObject *type1b = ut_asn1_sequence_type_get_component(type1, "value2");
+  UtObject *type1b = ut_asn1_sequence_type_lookup_component(type1, "value2");
   ut_assert_non_null_object(type1b);
   ut_assert_true(ut_object_is_asn1_optional_type(type1b));
   ut_assert_true(
       ut_object_is_asn1_real_type(ut_asn1_optional_type_get_type(type1b)));
 
-  UtObject *type1c = ut_asn1_sequence_type_get_component(type1, "value3");
+  UtObject *type1c = ut_asn1_sequence_type_lookup_component(type1, "value3");
   ut_assert_non_null_object(type1c);
   ut_assert_true(ut_object_is_asn1_default_type(type1c));
   ut_assert_true(
@@ -2036,12 +2036,12 @@ static void test_sequence_type_assignment() {
   ut_assert_true(ut_object_is_asn1_sequence_type(type4));
   ut_assert_int_equal(
       ut_map_get_length(ut_asn1_sequence_type_get_components(type4)), 2);
-  UtObject *type4a = ut_asn1_sequence_type_get_component(type4, "value1");
+  UtObject *type4a = ut_asn1_sequence_type_lookup_component(type4, "value1");
   ut_assert_non_null_object(type4a);
   ut_assert_true(ut_object_is_asn1_tagged_type(type4a));
   ut_assert_true(
       ut_object_is_asn1_integer_type(ut_asn1_tagged_type_get_type(type4a)));
-  UtObject *type4b = ut_asn1_sequence_type_get_component(type4, "value2");
+  UtObject *type4b = ut_asn1_sequence_type_lookup_component(type4, "value2");
   ut_assert_non_null_object(type4b);
   ut_assert_true(ut_object_is_asn1_tagged_type(type4b));
   ut_assert_true(
@@ -2062,12 +2062,12 @@ static void test_sequence_type_assignment() {
   ut_assert_true(ut_object_is_asn1_sequence_type(type5));
   ut_assert_int_equal(
       ut_map_get_length(ut_asn1_sequence_type_get_components(type5)), 2);
-  UtObject *type5a = ut_asn1_sequence_type_get_component(type5, "value1");
+  UtObject *type5a = ut_asn1_sequence_type_lookup_component(type5, "value1");
   ut_assert_non_null_object(type5a);
   ut_assert_true(ut_object_is_asn1_tagged_type(type5a));
   ut_assert_true(
       ut_object_is_asn1_integer_type(ut_asn1_tagged_type_get_type(type5a)));
-  UtObject *type5b = ut_asn1_sequence_type_get_component(type5, "value2");
+  UtObject *type5b = ut_asn1_sequence_type_lookup_component(type5, "value2");
   ut_assert_non_null_object(type5b);
   ut_assert_true(ut_object_is_asn1_integer_type(type5b));
 
@@ -2326,17 +2326,17 @@ static void test_set_type_assignment() {
   ut_assert_int_equal(ut_map_get_length(ut_asn1_set_type_get_components(type1)),
                       3);
 
-  UtObject *type1a = ut_asn1_set_type_get_component(type1, "value1");
+  UtObject *type1a = ut_asn1_set_type_lookup_component(type1, "value1");
   ut_assert_non_null_object(type1a);
   ut_assert_true(ut_object_is_asn1_boolean_type(type1a));
 
-  UtObject *type1b = ut_asn1_set_type_get_component(type1, "value2");
+  UtObject *type1b = ut_asn1_set_type_lookup_component(type1, "value2");
   ut_assert_non_null_object(type1b);
   ut_assert_true(ut_object_is_asn1_optional_type(type1b));
   ut_assert_true(
       ut_object_is_asn1_real_type(ut_asn1_optional_type_get_type(type1b)));
 
-  UtObject *type1c = ut_asn1_set_type_get_component(type1, "value3");
+  UtObject *type1c = ut_asn1_set_type_lookup_component(type1, "value3");
   ut_assert_non_null_object(type1c);
   ut_assert_true(ut_object_is_asn1_default_type(type1c));
   ut_assert_true(
@@ -2390,12 +2390,12 @@ static void test_set_type_assignment() {
   ut_assert_true(ut_object_is_asn1_set_type(type4));
   ut_assert_int_equal(ut_map_get_length(ut_asn1_set_type_get_components(type4)),
                       2);
-  UtObject *type4a = ut_asn1_set_type_get_component(type4, "value1");
+  UtObject *type4a = ut_asn1_set_type_lookup_component(type4, "value1");
   ut_assert_non_null_object(type4a);
   ut_assert_true(ut_object_is_asn1_tagged_type(type4a));
   ut_assert_true(
       ut_object_is_asn1_integer_type(ut_asn1_tagged_type_get_type(type4a)));
-  UtObject *type4b = ut_asn1_set_type_get_component(type4, "value2");
+  UtObject *type4b = ut_asn1_set_type_lookup_component(type4, "value2");
   ut_assert_non_null_object(type4b);
   ut_assert_true(ut_object_is_asn1_tagged_type(type4b));
   ut_assert_true(
@@ -2416,12 +2416,12 @@ static void test_set_type_assignment() {
   ut_assert_true(ut_object_is_asn1_set_type(type5));
   ut_assert_int_equal(ut_map_get_length(ut_asn1_set_type_get_components(type5)),
                       2);
-  UtObject *type5a = ut_asn1_set_type_get_component(type5, "value1");
+  UtObject *type5a = ut_asn1_set_type_lookup_component(type5, "value1");
   ut_assert_non_null_object(type5a);
   ut_assert_true(ut_object_is_asn1_tagged_type(type5a));
   ut_assert_true(
       ut_object_is_asn1_integer_type(ut_asn1_tagged_type_get_type(type5a)));
-  UtObject *type5b = ut_asn1_set_type_get_component(type5, "value2");
+  UtObject *type5b = ut_asn1_set_type_lookup_component(type5, "value2");
   ut_assert_non_null_object(type5b);
   ut_assert_true(ut_object_is_asn1_integer_type(type5b));
 
@@ -2675,10 +2675,10 @@ static void test_choice_type_assignment() {
   ut_assert_true(ut_object_is_asn1_choice_type(type1));
   ut_assert_int_equal(
       ut_map_get_length(ut_asn1_choice_type_get_components(type1)), 2);
-  UtObject *type1a = ut_asn1_choice_type_get_component(type1, "value1");
+  UtObject *type1a = ut_asn1_choice_type_lookup_component(type1, "value1");
   ut_assert_non_null_object(type1a);
   ut_assert_true(ut_object_is_asn1_boolean_type(type1a));
-  UtObject *type1b = ut_asn1_choice_type_get_component(type1, "value2");
+  UtObject *type1b = ut_asn1_choice_type_lookup_component(type1, "value2");
   ut_assert_non_null_object(type1b);
   ut_assert_true(ut_object_is_asn1_integer_type(type1b));
 
@@ -2700,10 +2700,10 @@ static void test_choice_type_assignment() {
   ut_assert_true(ut_object_is_asn1_choice_type(type2i));
   ut_assert_int_equal(
       ut_map_get_length(ut_asn1_choice_type_get_components(type2i)), 2);
-  UtObject *type2a = ut_asn1_choice_type_get_component(type2i, "value1");
+  UtObject *type2a = ut_asn1_choice_type_lookup_component(type2i, "value1");
   ut_assert_non_null_object(type2a);
   ut_assert_true(ut_object_is_asn1_boolean_type(type2a));
-  UtObject *type2b = ut_asn1_choice_type_get_component(type2i, "value2");
+  UtObject *type2b = ut_asn1_choice_type_lookup_component(type2i, "value2");
   ut_assert_non_null_object(type2b);
   ut_assert_true(ut_object_is_asn1_integer_type(type2b));
 
@@ -2733,12 +2733,12 @@ static void test_choice_type_assignment() {
   ut_assert_true(ut_object_is_asn1_choice_type(type4));
   ut_assert_int_equal(
       ut_map_get_length(ut_asn1_choice_type_get_components(type4)), 2);
-  UtObject *type4a = ut_asn1_choice_type_get_component(type4, "value1");
+  UtObject *type4a = ut_asn1_choice_type_lookup_component(type4, "value1");
   ut_assert_non_null_object(type4a);
   ut_assert_true(ut_object_is_asn1_tagged_type(type4a));
   ut_assert_true(
       ut_object_is_asn1_integer_type(ut_asn1_tagged_type_get_type(type4a)));
-  UtObject *type4b = ut_asn1_choice_type_get_component(type4, "value2");
+  UtObject *type4b = ut_asn1_choice_type_lookup_component(type4, "value2");
   ut_assert_non_null_object(type4b);
   ut_assert_true(ut_object_is_asn1_tagged_type(type4b));
   ut_assert_true(
@@ -2759,12 +2759,12 @@ static void test_choice_type_assignment() {
   ut_assert_true(ut_object_is_asn1_choice_type(type5));
   ut_assert_int_equal(
       ut_map_get_length(ut_asn1_choice_type_get_components(type5)), 2);
-  UtObject *type5a = ut_asn1_choice_type_get_component(type5, "value1");
+  UtObject *type5a = ut_asn1_choice_type_lookup_component(type5, "value1");
   ut_assert_non_null_object(type5a);
   ut_assert_true(ut_object_is_asn1_tagged_type(type5a));
   ut_assert_true(
       ut_object_is_asn1_integer_type(ut_asn1_tagged_type_get_type(type5a)));
-  UtObject *type5b = ut_asn1_choice_type_get_component(type5, "value2");
+  UtObject *type5b = ut_asn1_choice_type_lookup_component(type5, "value2");
   ut_assert_non_null_object(type5b);
   ut_assert_true(ut_object_is_asn1_integer_type(type5b));
 

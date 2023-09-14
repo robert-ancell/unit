@@ -113,7 +113,8 @@ bool ut_asn1_set_type_get_extensible(UtObject *object) {
   return self->extensible;
 }
 
-UtObject *ut_asn1_set_type_get_component(UtObject *object, const char *name) {
+UtObject *ut_asn1_set_type_lookup_component(UtObject *object,
+                                            const char *name) {
   assert(ut_object_is_asn1_set_type(object));
   UtAsn1SetType *self = (UtAsn1SetType *)object;
   return ut_map_lookup_string(self->components, name);

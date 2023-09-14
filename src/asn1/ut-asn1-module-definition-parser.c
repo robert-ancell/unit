@@ -1206,7 +1206,7 @@ static bool parse_sequence_value(UtAsn1ModuleDefinitionParser *self,
     }
 
     UtObject *component_type =
-        ut_asn1_sequence_type_get_component(type, identifier);
+        ut_asn1_sequence_type_lookup_component(type, identifier);
     if (component_type == NULL) {
       set_error(self, "Invalid sequence component");
       return false;
@@ -1274,7 +1274,8 @@ static bool parse_set_value(UtAsn1ModuleDefinitionParser *self, UtObject *type,
       return false;
     }
 
-    UtObject *component_type = ut_asn1_set_type_get_component(type, identifier);
+    UtObject *component_type =
+        ut_asn1_set_type_lookup_component(type, identifier);
     if (component_type == NULL) {
       set_error(self, "Invalid set component");
       return false;
@@ -1326,7 +1327,7 @@ static bool maybe_parse_choice_value(UtAsn1ModuleDefinitionParser *self,
   const char *identifier = current_token(self);
 
   UtObject *component_type =
-      ut_asn1_choice_type_get_component(type, identifier);
+      ut_asn1_choice_type_lookup_component(type, identifier);
   if (component_type == NULL) {
     return false;
   }

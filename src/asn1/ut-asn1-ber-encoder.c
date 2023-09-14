@@ -841,7 +841,8 @@ static size_t encode_choice_value(UtAsn1BerEncoder *self, UtObject *type,
   }
 
   const char *identifier = ut_asn1_choice_value_get_identifier(value);
-  UtObject *choice_type = ut_asn1_choice_type_get_component(type, identifier);
+  UtObject *choice_type =
+      ut_asn1_choice_type_lookup_component(type, identifier);
   if (choice_type == NULL) {
     set_error_take(
         self, ut_cstring_new_printf("Invalid choice component %s", identifier));
