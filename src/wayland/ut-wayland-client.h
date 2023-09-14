@@ -15,9 +15,17 @@ UtObject *ut_wayland_client_new();
 /// Connect the [object] to the Wayland server.
 void ut_wayland_client_connect(UtObject *object);
 
+/// Makes a sync request to the server.
+///
+/// !return-ref
+/// !return-type UtWaylandCallback
 UtObject *ut_wayland_client_sync(UtObject *object, UtObject *callback_object,
                                  UtWaylandCallbackDoneCallback done_callback);
 
+/// Returns the registry for this client.
+///
+/// !return-ref
+/// !return-type UtWaylandRegistry
 UtObject *
 ut_wayland_client_get_registry(UtObject *object, UtObject *callback_object,
                                const UtWaylandRegistryCallbacks *callbacks);

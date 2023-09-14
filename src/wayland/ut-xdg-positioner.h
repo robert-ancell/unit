@@ -5,8 +5,14 @@
 
 #pragma once
 
+/// Creates a new XDG positioner object.
+///
+/// !arg-type client UtWaylandClient
+/// !return-ref
+/// !return-type UtXdgPositioner
 UtObject *ut_xdg_positioner_new(UtObject *client, uint32_t id);
 
+/// Destroy this positioner.
 void ut_xdg_positioner_destroy(UtObject *object);
 
 void ut_xdg_positioner_set_size(UtObject *object, int32_t width,

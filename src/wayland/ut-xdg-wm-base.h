@@ -11,15 +11,26 @@ typedef struct {
   UtXdgWmBasePingCallback ping;
 } UtXdgWmBaseCallbacks;
 
+/// Creates a new XDG WM base extension object.
+///
+/// !arg-type client UtWaylandClient
+/// !return-ref
+/// !return-type UtXdgWmBase
 UtObject *ut_xdg_wm_base_new(UtObject *client, uint32_t id,
                              UtObject *callback_object,
                              const UtXdgWmBaseCallbacks *callbacks);
 
+/// Creates a new XDG WM base extension object from [registry].
+///
+/// !arg-type registry UtWaylandRegistry
+/// !return-ref
+/// !return-type UtXdgWmBase
 UtObject *
 ut_xdg_wm_base_new_from_registry(UtObject *registry, uint32_t name,
                                  UtObject *callback_object,
                                  const UtXdgWmBaseCallbacks *callbacks);
 
+/// Destroy this object.
 void ut_xdg_wm_base_destroy(UtObject *object);
 
 UtObject *ut_xdg_wm_base_create_positioner(UtObject *object);

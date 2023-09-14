@@ -18,10 +18,16 @@ typedef struct {
   UtXdgPopupRepositionedCallback repositioned;
 } UtXdgPopupCallbacks;
 
+/// Creates a new XDG popup object.
+///
+/// !arg-type client UtWaylandClient
+/// !return-ref
+/// !return-type UtXdgPopup
 UtObject *ut_xdg_popup_new(UtObject *client, uint32_t id,
                            UtObject *callback_object,
                            const UtXdgPopupCallbacks *callbacks);
 
+/// Destroy this popup.
 void ut_xdg_popup_destroy(UtObject *object);
 
 /// Returns [true] if [object] is a [UtXdgPopup].

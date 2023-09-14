@@ -31,10 +31,16 @@ typedef struct {
   UtWaylandTouchOrientationCallback orientation;
 } UtWaylandTouchCallbacks;
 
+/// Creates a new Wayland touch object.
+///
+/// !arg-type client UtWaylandClient
+/// !return-ref
+/// !return-type UtWaylandTouch
 UtObject *ut_wayland_touch_new(UtObject *client, uint32_t id,
                                UtObject *callback_object,
                                const UtWaylandTouchCallbacks *callbacks);
 
+/// Release this object.
 void ut_wayland_touch_release(UtObject *object);
 
 /// Returns [true] if [object] is a [UtWaylandTouch].

@@ -16,10 +16,16 @@ typedef struct {
   UtWaylandSurfaceLeaveCallback leave;
 } UtWaylandSurfaceCallbacks;
 
+/// Creates a new Wayland surface object.
+///
+/// !arg-type client UtWaylandClient
+/// !return-ref
+/// !return-type UtWaylandSurface
 UtObject *ut_wayland_surface_new(UtObject *client, uint32_t id,
                                  UtObject *callback_object,
                                  const UtWaylandSurfaceCallbacks *callbacks);
 
+/// Destroy this surface.
 void ut_wayland_surface_destroy(UtObject *object);
 
 void ut_wayland_surface_attach(UtObject *object, UtObject *buffer, int32_t x,

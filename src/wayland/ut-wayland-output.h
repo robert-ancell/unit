@@ -27,10 +27,16 @@ typedef struct {
   UtWaylandOutputDescriptionCallback description;
 } UtWaylandOutputCallbacks;
 
+/// Creates a new Wayland output object.
+///
+/// !arg-type client UtWaylandClient
+/// !return-ref
+/// !return-type UtWaylandOutput
 UtObject *ut_wayland_output_new(UtObject *client, uint32_t id,
                                 UtObject *callback_object,
                                 const UtWaylandOutputCallbacks *callbacks);
 
+/// Release this object.
 void ut_wayland_output_release(UtObject *object);
 
 /// Returns [true] if [object] is a [UtWaylandOutput].

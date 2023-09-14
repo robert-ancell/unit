@@ -15,6 +15,11 @@ typedef struct {
   UtWaylandRegistryGlobalRemoveCallback global_remove;
 } UtWaylandRegistryCallbacks;
 
+/// Creates a new Wayland registry object.
+///
+/// !arg-type client UtWaylandClient
+/// !return-ref
+/// !return-type UtWaylandRegistry
 UtObject *ut_wayland_registry_new(UtObject *client, uint32_t id,
                                   UtObject *callback_object,
                                   const UtWaylandRegistryCallbacks *callbacks);

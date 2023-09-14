@@ -27,6 +27,11 @@ typedef struct {
   UtWaylandPointerFrameCallback frame;
 } UtWaylandPointerCallbacks;
 
+/// Creates a new Wayland pointer object.
+///
+/// !arg-type client UtWaylandClient
+/// !return-ref
+/// !return-type UtWaylandPointer
 UtObject *ut_wayland_pointer_new(UtObject *client, uint32_t id,
                                  UtObject *callback_object,
                                  const UtWaylandPointerCallbacks *callbacks);
@@ -35,6 +40,7 @@ void ut_wayland_pointer_set_cursor(UtObject *object, uint32_t serial,
                                    UtObject *surface, int32_t hotspot_x,
                                    int32_t hotspot_y);
 
+/// Release this object.
 void ut_wayland_pointer_release(UtObject *object);
 
 /// Returns [true] if [object] is a [UtWaylandPointer].

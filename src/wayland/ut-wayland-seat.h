@@ -23,26 +23,49 @@ typedef struct {
   UtWaylandSeatNameCallback name;
 } UtWaylandSeatCallbacks;
 
+/// Creates a new Wayland seat object.
+///
+/// !arg-type client UtWaylandClient
+/// !return-ref
+/// !return-type UtWaylandSeat
 UtObject *ut_wayland_seat_new(UtObject *client, uint32_t id,
                               UtObject *callback_object,
                               const UtWaylandSeatCallbacks *callbacks);
 
+/// Creates a new Wayland seat object from [registry].
+///
+/// !arg-type registry UtWaylandRegistry
+/// !return-ref
+/// !return-type UtWaylandSeat
 UtObject *
 ut_wayland_seat_new_from_registry(UtObject *registry, uint32_t name,
                                   UtObject *callback_object,
                                   const UtWaylandSeatCallbacks *callbacks);
 
+/// Returns the pointer object.
+///
+/// !return-ref
+/// !return-type UtWaylandPointer
 UtObject *
 ut_wayland_seat_get_pointer(UtObject *object, UtObject *callback_object,
                             const UtWaylandPointerCallbacks *callbacks);
 
+/// Returns the keyboard object.
+///
+/// !return-ref
+/// !return-type UtWaylandKeyboard
 UtObject *
 ut_wayland_seat_get_keyboard(UtObject *object, UtObject *callback_object,
                              const UtWaylandKeyboardCallbacks *callbacks);
 
+/// Returns the touch object.
+///
+/// !return-ref
+/// !return-type UtWaylandTouch
 UtObject *ut_wayland_seat_get_touch(UtObject *object, UtObject *callback_object,
                                     const UtWaylandTouchCallbacks *callbacks);
 
+/// Release this object.
 void ut_wayland_seat_release(UtObject *object);
 
 /// Returns [true] if [object] is a [UtWaylandSeat].

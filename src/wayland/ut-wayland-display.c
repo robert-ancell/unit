@@ -112,7 +112,6 @@ ut_wayland_display_get_registry(UtObject *object, UtObject *callback_object,
   ut_wayland_client_send_request(self->client, self->id, 1,
                                  ut_wayland_encoder_get_data(payload));
   return ut_wayland_registry_new(self->client, id, callback_object, callbacks);
-  ;
 }
 
 bool ut_object_is_wayland_display(UtObject *object) {

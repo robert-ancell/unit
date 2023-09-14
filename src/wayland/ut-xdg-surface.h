@@ -14,10 +14,16 @@ typedef struct {
   UtXdgSurfaceConfigureCallback configure;
 } UtXdgSurfaceCallbacks;
 
+/// Creates a new XDG surface object.
+///
+/// !arg-type client UtWaylandClient
+/// !return-ref
+/// !return-type UtXdgSurface
 UtObject *ut_xdg_surface_new(UtObject *client, uint32_t id,
                              UtObject *callback_object,
                              const UtXdgSurfaceCallbacks *callbacks);
 
+/// Destroy this surface.
 void ut_xdg_surface_destroy(UtObject *object);
 
 UtObject *ut_xdg_surface_get_toplevel(UtObject *object,

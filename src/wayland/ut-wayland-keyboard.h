@@ -34,10 +34,16 @@ typedef struct {
   UtWaylandKeyboardRepeatInfoCallback repeat_info;
 } UtWaylandKeyboardCallbacks;
 
+/// Creates a new Wayland keyboard object.
+///
+/// !arg-type client UtWaylandClient
+/// !return-ref
+/// !return-type UtWaylanddKeyboard
 UtObject *ut_wayland_keyboard_new(UtObject *client, uint32_t id,
                                   UtObject *callback_object,
                                   const UtWaylandKeyboardCallbacks *callbacks);
 
+/// Release this object.
 void ut_wayland_keyboard_release(UtObject *object);
 
 /// Returns [true] if [object] is a [UtWaylandKeyboard].

@@ -22,10 +22,16 @@ typedef struct {
   UtXdgToplevelWmCapabilitiesCallback wm_capabilities;
 } UtXdgToplevelCallbacks;
 
+/// Creates a new XDG toplevel object.
+///
+/// !arg-type client UtWaylandClient
+/// !return-ref
+/// !return-type UtXdgToplevel
 UtObject *ut_xdg_toplevel_new(UtObject *client, uint32_t id,
                               UtObject *callback_object,
                               const UtXdgToplevelCallbacks *callbacks);
 
+/// Destry this toplevel.
 void ut_xdg_toplevel_destroy(UtObject *object);
 
 void ut_xdg_toplevel_set_parent(UtObject *object, UtObject *parent);
