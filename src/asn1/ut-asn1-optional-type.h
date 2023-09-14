@@ -5,16 +5,21 @@
 
 #pragma once
 
-/// Creates a new [UtAsn1OptionalType] object.
+/// Creates a new ASN.1 optional [type].
 ///
 /// !return-ref
+/// !return-type UtAsn1OptionalType
 UtObject *ut_asn1_optional_type_new(UtObject *type);
 
-/// Creates a new [UtAsn1OptionalType] object.
+/// Creates a new ASN.1 optional [type].
 ///
 /// !return-ref
+/// !return-type UtAsn1OptionalType
 UtObject *ut_asn1_optional_type_new_take(UtObject *type);
 
+/// Returns the type that has the optional value.
+///
+/// !return-type UtAsn1Type
 UtObject *ut_asn1_optional_type_get_type(UtObject *object);
 
 /// Returns [true] if [object] is a [UtAsn1OptionalType].
