@@ -7,6 +7,7 @@
 /// Creates a new PNG encoder to write [image] to [output_stream].
 ///
 /// !arg-type image UtPngImage
+/// !arg-type output_stream UtOutputStream
 /// !return-ref
 /// !return-type UtPngEncoder
 UtObject *ut_png_encoder_new(UtObject *image, UtObject *output_stream);
