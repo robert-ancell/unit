@@ -4,9 +4,10 @@
 
 #pragma once
 
-/// Creates a new [UtHttpHeader] with [name] and [value].
+/// Creates a new HTTP header with [name] and [value].
 ///
 /// !return-ref
+/// !return-type UtHttpHeader
 UtObject *ut_http_header_new(const char *name, const char *value);
 
 /// Returns the name of the header.

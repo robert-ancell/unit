@@ -4,7 +4,7 @@
 
 #pragma once
 
-/// Creates a new [UtXmlElement] with [name], [attributes] and [content].
+/// Creates a new XML element with [name], [attributes] and [content].
 ///
 /// !arg-type attributes UtMap
 /// !arg-type content UtList

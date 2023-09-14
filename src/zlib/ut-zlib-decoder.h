@@ -5,7 +5,7 @@
 
 #pragma once
 
-/// Creates a new [UtZlibDecoder] to decode the data from [input_stream].
+/// Creates a new Zlib decoder to decode the data from [input_stream].
 ///
 /// !arg-type input_stream UtInputStream
 /// !return-ref

@@ -11,20 +11,23 @@
 typedef void (*UtTcpServerSocketListenCallback)(UtObject *object,
                                                 UtObject *socket);
 
-/// Creates a new [UtTcpServerSocket] that listens on the provided IPv4 [port].
+/// Creates a new TCP server socket that listens on the provided IPv4 [port].
 ///
 /// !return-ref
+/// !return-type UtTcpServerSocket
 UtObject *ut_tcp_server_socket_new_ipv4(uint16_t port);
 
-/// Creates a new [UtTcpServerSocket] that listens on the provided IPv6 [port].
+/// Creates a new TCP server socket that listens on the provided IPv6 [port].
 ///
 /// !return-ref
+/// !return-type UtTcpServerSocket
 UtObject *ut_tcp_server_socket_new_ipv6(uint16_t port);
 
-/// Creates a new [UtTcpServerSocket] that listens on the Unix domain socket
+/// Creates a new TCP server socket that listens on the Unix domain socket
 /// [path].
 ///
 /// !return-ref
+/// !return-type UtTcpServerSocket
 UtObject *ut_tcp_server_socket_new_unix(const char *path);
 
 /// Listen for incoming connections. Each new connection is reported in

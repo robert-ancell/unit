@@ -4,7 +4,7 @@
 
 #pragma once
 
-/// Creates a new [UtGzipEncoder] to encode the data from [input_stream].
+/// Creates a new GZip encoder to encode the data from [input_stream].
 ///
 /// !arg-type input_stream UtInputStream
 /// !return-ref

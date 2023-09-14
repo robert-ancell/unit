@@ -215,7 +215,7 @@ static void encode_bytes(UtProtobufEncoder *self, uint32_t number,
 static void encode_enum(UtProtobufEncoder *self, uint32_t number,
                         UtObject *type, const char *value) {
   int32_t enum_value;
-  if (!ut_protobuf_enum_type_get_value(type, value, &enum_value)) {
+  if (!ut_protobuf_enum_type_lookup_value(type, value, &enum_value)) {
     set_error_take(self, ut_cstring_new_printf("Unknown enum value %s", value));
     return;
   }

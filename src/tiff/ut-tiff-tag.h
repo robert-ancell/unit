@@ -137,27 +137,27 @@ typedef enum {
   UT_TIFF_PREDICTOR_HORIZONTAL_DIFFERENCING = 2
 } UtTiffPredictor;
 
-/// Creates a new [UtTiffTag] object of [type] and containing raw [data].
+/// Creates a new TIFF tag of [type] and containing raw [data].
 ///
 /// !arg-type data UtUint8List
 /// !return-type UtTiffTag
 /// !return-ref
 UtObject *ut_tiff_tag_new(uint16_t id, uint16_t type, UtObject *data);
 
-/// Creates a new [UtTiffTag] containing a single byte [value].
+/// Creates a new TIFF tag containing a single byte [value].
 ///
 /// !return-type UtTiffTag
 /// !return-ref
 UtObject *ut_tiff_tag_new_single_byte(uint16_t id, uint8_t value);
 
-/// Creates a new [UtTiffTag] containing multiple byte [value]s.
+/// Creates a new TIFF tag containing multiple byte [value]s.
 ///
 /// !arg-type value UtUint8List
 /// !return-type UtTiffTag
 /// !return-ref
 UtObject *ut_tiff_tag_new_byte(uint16_t id, UtObject *value);
 
-/// Creates a new [UtTiffTag] containing an ASCII string [value].
+/// Creates a new TIFF tag containing an ASCII string [value].
 ///
 /// !return-type UtTiffTag
 /// !return-ref

@@ -5,11 +5,12 @@
 
 #pragma once
 
-/// Creates a new [UtHttpResponse].
+/// Creates a new HTTP response.
 ///
 /// !arg-type headers UtList
 /// !arg-type body UtUint8List
 /// !return-ref
+/// !return-type UtHttpResponse
 UtObject *ut_http_response_new(unsigned int status_code,
                                const char *reason_phrase, UtObject *headers,
                                UtObject *body);

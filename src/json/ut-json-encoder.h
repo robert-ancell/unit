@@ -4,7 +4,7 @@
 
 #pragma once
 
-/// Creates a new [UtJsonEncoder] object.
+/// Creates a new JSON encoder.
 ///
 /// !return-type UtJsonEncoder
 /// !return-ref

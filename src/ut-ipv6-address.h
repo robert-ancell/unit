@@ -5,7 +5,7 @@
 
 #pragma once
 
-/// Creates a new IPv6 address with raw 66 bit [address] value.
+/// Creates a new IPv6 address with raw 64 bit [address] value.
 ///
 /// !return-ref
 /// !return-type UtIpv6Address

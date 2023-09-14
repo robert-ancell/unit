@@ -4,9 +4,10 @@
 
 #pragma once
 
-/// Creates a new [UtNull] object.
+/// Creates a new null object.
 ///
 /// !return-ref
+/// !return-type UtNull
 UtObject *ut_null_new();
 
 /// Returns [true] if [object] is a [UtNull].

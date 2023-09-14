@@ -10,7 +10,7 @@
 ///
 /// !arg-type data UtUint8List
 /// !return-ref
-/// !return-type UtTiffReader UtTiffError
+/// !return-type UtTiffImage
 UtObject *
 ut_tiff_image_new(uint32_t width, uint32_t length,
                   UtTiffPhotometricInterpretation photometric_interpretation,
@@ -18,11 +18,11 @@ ut_tiff_image_new(uint32_t width, uint32_t length,
                   uint16_t bits_per_sample, uint16_t samples_per_pixel,
                   UtObject *data);
 
-/// Creates a new [UtTiffImage] from [data].
+/// Creates a new TIFF image from [data].
 ///
 /// !arg-type data UtUint8List
 /// !return-ref
-/// !return-type UtTiffReader UtTiffError
+/// !return-type UtTiffImage UtTiffError
 UtObject *ut_tiff_image_new_from_data(UtObject *data);
 
 /// Returns the width of the image in pixels.

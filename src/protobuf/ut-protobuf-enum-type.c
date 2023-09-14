@@ -41,14 +41,14 @@ UtObject *ut_protobuf_enum_type_new_take(UtObject *values_by_name) {
   return object;
 }
 
-UtObject *ut_protobuf_enum_type_get_values_by_name(UtObject *object) {
+UtObject *ut_protobuf_enum_type_lookup_values_by_name(UtObject *object) {
   assert(ut_object_is_protobuf_enum_type(object));
   UtProtobufEnumType *self = (UtProtobufEnumType *)object;
   return self->values_by_name;
 }
 
-bool ut_protobuf_enum_type_get_value(UtObject *object, const char *name,
-                                     int32_t *value) {
+bool ut_protobuf_enum_type_lookup_value(UtObject *object, const char *name,
+                                        int32_t *value) {
   assert(ut_object_is_protobuf_enum_type(object));
   UtProtobufEnumType *self = (UtProtobufEnumType *)object;
   UtObject *value_object = ut_map_lookup_string(self->values_by_name, name);
@@ -60,7 +60,7 @@ bool ut_protobuf_enum_type_get_value(UtObject *object, const char *name,
   return true;
 }
 
-char *ut_protobuf_enum_type_get_name(UtObject *object, int32_t value) {
+char *ut_protobuf_enum_type_lookup_name(UtObject *object, int32_t value) {
   assert(ut_object_is_protobuf_enum_type(object));
   UtProtobufEnumType *self = (UtProtobufEnumType *)object;
 

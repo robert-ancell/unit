@@ -4,7 +4,7 @@
 
 #pragma once
 
-/// Creates a new [UtColor] object containing [red], [green], [blue] and [alpha]
+/// Creates a color containing [red], [green], [blue] and [alpha]
 /// values. The values are in the range [0.0, 1.0] and represent the
 ///
 /// !return-type UtColor
@@ -12,7 +12,7 @@
 UtObject *ut_color_new_rgba(double red, double green, double blue,
                             double alpha);
 
-/// Creates a new [UtColor] object from a color hash.
+/// Creates a color from a color hash.
 /// [hex_string] is in the form `#rrggbb` where `rr`, `gg` and `bb` are the red,
 /// green and blue components in hexadecimal, e.g. `#E95420`
 ///

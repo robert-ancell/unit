@@ -4,7 +4,7 @@
 
 #pragma once
 
-/// Creates a new [UtUtf16Decoder] to decode UTF-16 code units from [input].
+/// Creates a new UTF-16 decoder to decode UTF-16 code units from [input].
 ///
 /// !arg-type input UtUint16List
 /// !return-type UtUtf16Decoder

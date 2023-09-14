@@ -4,7 +4,7 @@
 
 #pragma once
 
-/// Creates a new [UtUtf8Decoder] to decode UTF-8 data from [input].
+/// Creates a new UTF-8 decoder to decode UTF-8 data from [input].
 ///
 /// !arg-type input UtUint8List
 /// !return-type UtUtf8Decoder

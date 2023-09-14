@@ -4,13 +4,13 @@
 
 #pragma once
 
-/// Creates a new [UtObjectIdentifier] object.
+/// Creates a new object identifier object.
 ///
 /// !return-type UtObjectIdentifier
 /// !return-ref
 UtObject *ut_object_identifier_new(UtObject *values);
 
-/// Creates a new [UtObjectIdentifier] object.
+/// Creates a new object identifier object.
 ///
 /// !return-type UtObjectIdentifier
 /// !return-ref

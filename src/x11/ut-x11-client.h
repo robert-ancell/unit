@@ -364,12 +364,13 @@ typedef enum {
   UT_X11_PROPERTY_MODE_APPEND = 2
 } UtX11PropertyMode;
 
-/// Creates a new [UtX11Client] object.
+/// Creates a new X11 client.
 /// [event_callbacks] should be set with functions for the events you wish to
 /// consume. [error_callback] is used to detect errors returns from the X
 /// server.
 ///
 /// !return-ref
+/// !return-type UtX11Client
 UtObject *ut_x11_client_new(UtObject *callback_object,
                             const UtX11EventCallbacks *event_callbacks,
                             UtX11ClientErrorCallback error_callback);

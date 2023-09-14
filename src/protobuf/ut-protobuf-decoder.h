@@ -4,12 +4,16 @@
 
 #pragma once
 
-/// Creates a new [UtProtobufDecoder] to decode [data].
+/// Creates a new protobuf decoder to decode [data].
 ///
+/// !arg-type data UtUint8List
 /// !return-ref
+/// !return-type UtProtobufDecoder
 UtObject *ut_protobuf_decoder_new(UtObject *data);
 
-/// Decode message of [type]. [type] is an [UtProtobufMessageType].
+/// Decode message of [type].
+///
+/// !arg-type type UtProtobufMessageType
 UtObject *ut_protobuf_decoder_decode_message(UtObject *object, UtObject *type);
 
 /// Gets any error that occurred during decoding.

@@ -4,9 +4,10 @@
 
 #pragma once
 
-/// Creates a new [UtProtobufDefinitionParser].
+/// Creates a new protobuf definition parser.
 ///
 /// !return-ref
+/// !return-type UtProtobufDefinitionParser
 UtObject *ut_protobuf_definition_parser_new();
 
 bool ut_protobuf_definition_parser_parse(UtObject *object, const char *text);

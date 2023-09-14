@@ -4,9 +4,10 @@
 
 #pragma once
 
-/// Creates a new [UtProtobufMethodCall] object.
+/// Creates a new protobuf method call.
 ///
 /// !return-ref
+/// !return-type UtProtobufMethodCall
 UtObject *ut_protobuf_method_call_new(UtObject *request_type,
                                       UtObject *response_type);
 

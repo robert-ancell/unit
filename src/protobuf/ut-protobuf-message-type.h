@@ -4,16 +4,23 @@
 
 #pragma once
 
-/// Creates a new [UtProtobufMessageType] object.
+/// Creates a new protobuf message type containing [fields].
 ///
+/// !arg-type fields UtObjectList
 /// !return-ref
+/// !return-type UtProtobufMessageType
 UtObject *ut_protobuf_message_type_new(UtObject *fields);
 
-/// Creates a new [UtProtobufMessageType] object.
+/// Creates a new protobuf message type containing [fields].
 ///
+/// !arg-type fields UtObjectList
 /// !return-ref
+/// !return-type UtProtobufMessageType
 UtObject *ut_protobuf_message_type_new_take(UtObject *fields);
 
+/// Returns the fields in this message type.
+///
+/// !return-type UtObjectList
 UtObject *ut_protobuf_message_type_get_fields(UtObject *object);
 
 UtObject *ut_protobuf_message_type_get_field(UtObject *object,

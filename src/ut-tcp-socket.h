@@ -11,15 +11,17 @@
 /// !arg-type error UtError
 typedef void (*UtTcpSocketConnectCallback)(UtObject *object, UtObject *error);
 
-/// Creates a new [UtHttpClient] from an existing socket [fd].
+/// Creates a new TCP socket from an existing socket [fd].
 ///
 /// !return-ref
+/// !return-type UtTcpSocket
 UtObject *ut_tcp_socket_new_from_fd(UtObject *fd);
 
-/// Creates a new [UtHttpClient] to connect to [address] and [port].
+/// Creates a new TCP socket to connect to [address] and [port].
 ///
 /// !arg-type address UtIpv4Address UtIpv6Address UtUnixSocketAddress
 /// !return-ref
+/// !return-type UtTcpSocket
 UtObject *ut_tcp_socket_new(UtObject *address, uint16_t port);
 
 /// Connect the socket. The result of this is given in [callback].

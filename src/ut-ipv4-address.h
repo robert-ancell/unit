@@ -5,7 +5,7 @@
 
 #pragma once
 
-/// Creates a new [UtIpv4Address] with raw [address] value.
+/// Creates a new IPv4 address with raw [address] value.
 ///
 /// !return-ref
 /// !return-type UtIpv4Address

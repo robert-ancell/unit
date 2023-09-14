@@ -4,14 +4,16 @@
 
 #pragma once
 
-/// Creates a new [UtProtobufDefinition].
+/// Creates a new protobuf definition.
 ///
 /// !return-ref
+/// !return-type UtProtobufDefinition
 UtObject *ut_protobuf_definition_new(int syntax, UtObject *definitions);
 
-/// Creates a new [UtProtobufDefinition] from [text].
+/// Creates a new protobuf definition from [text].
 ///
 /// !return-ref
+/// !return-type UtProtobufDefinition
 UtObject *ut_protobuf_definition_new_from_text(const char *text);
 
 int ut_protobuf_definition_get_syntax(UtObject *object);

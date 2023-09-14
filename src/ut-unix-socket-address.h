@@ -4,9 +4,10 @@
 
 #pragma once
 
-/// Creates a new [UtUnixSocketAddress] for [path], e.g. "/tmp/example.socket".
+/// Creates a new unix socket address for [path], e.g. "/tmp/example.socket".
 ///
 /// !return-ref
+/// !return-type UtUnixSocketAddress
 UtObject *ut_unix_socket_address_new(const char *path);
 
 /// Returns the path this address is for.

@@ -4,7 +4,7 @@
 
 #pragma once
 
-/// Creates a new [UtUtf16Encoder] to encode Unicode code points from [input].
+/// Creates a new UTF-16 encoder to encode Unicode code points from [input].
 ///
 /// !arg-type input UtUint32List
 /// !return-type UtUtf16Encoder

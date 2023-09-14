@@ -4,7 +4,7 @@
 
 #pragma once
 
-/// Creates a new [UtTiffReader] to decode [data].
+/// Creates a new TIFF reader to decode [data].
 ///
 /// !arg-type data UtUint8List
 /// !return-ref

@@ -272,7 +272,8 @@ static void read_varint_field(UtProtobufDecoder *self, size_t data_length,
     }
   } else if (ut_object_is_protobuf_enum_type(type)) {
     int32_t enum_value = read_int32(self, data_length, offset);
-    ut_cstring_ref enum_name = ut_protobuf_enum_type_get_name(type, enum_value);
+    ut_cstring_ref enum_name =
+        ut_protobuf_enum_type_lookup_name(type, enum_value);
     if (enum_name == NULL) {
       enum_name = ut_cstring_new_printf("%d", enum_value);
     }
@@ -482,7 +483,8 @@ static UtObject *get_default_value(UtProtobufDecoder *self, UtObject *type) {
       return ut_uint8_list_new();
     }
   } else if (ut_object_is_protobuf_enum_type(type)) {
-    UtObject *values_by_name = ut_protobuf_enum_type_get_values_by_name(type);
+    UtObject *values_by_name =
+        ut_protobuf_enum_type_lookup_values_by_name(type);
     UtObjectRef keys = ut_map_get_keys(values_by_name);
     if (ut_list_get_length(keys) == 0) {
       set_error(self, "Unable to determine default enum value");

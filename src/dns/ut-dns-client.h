@@ -13,7 +13,7 @@
 /// !arg-type address UtIpAddress
 typedef void (*UtDnsLookupCallback)(UtObject *object, UtObject *address);
 
-/// Creates a new [UtDnsClient] to access the DNS server on [server_address] and
+/// Creates a new DNS client to access the DNS server on [server_address] and
 /// [port].
 ///
 /// !arg-type UtIpAddress

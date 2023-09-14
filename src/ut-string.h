@@ -20,56 +20,56 @@ typedef struct {
 
 extern int ut_string_id;
 
-/// Creates a new [UtString] object that contains [text].
+/// Creates a new string that contains [text].
 /// [text] is copied.
 ///
 /// !return-type UtString
 /// !return-ref
 UtObject *ut_string_new(const char *text);
 
-/// Creates a new [UtString] using printf [format].
+/// Creates a new string using printf [format].
 ///
 /// !return-type UtString
 /// !return-ref
 UtObject *ut_string_new_printf(const char *format, ...)
     __attribute__((format(printf, 1, 2)));
 
-/// Creates a new [UtString] object that contains [text].
+/// Creates a new string that contains [text].
 /// [text] is not copied and must remain for the lifetime of this object.
 ///
 /// !return-type UtString
 /// !return-ref
 UtObject *ut_string_new_constant(const char *text);
 
-/// Creates a new [UtString] object that contains the first [length] characters
+/// Creates a new string that contains the first [length] characters
 /// of [text].
 ///
 /// !return-type UtString
 /// !return-ref
 UtObject *ut_string_new_sized(const char *text, size_t length);
 
-/// Creates a new [UtString] from UTF-8 encoded data in [utf8].
+/// Creates a new string from UTF-8 encoded data in [utf8].
 ///
 /// !arg-type utf8 Uint8List
 /// !return-type UtString
 /// !return-ref
 UtObject *ut_string_new_from_utf8(UtObject *utf8);
 
-/// Creates a new [UtString] from UTF-16 [code_units].
+/// Creates a new string from UTF-16 [code_units].
 ///
 /// !arg-type code_units Uint16List
 /// !return-type UtString
 /// !return-ref
 UtObject *ut_string_new_from_utf16(UtObject *code_units);
 
-/// Creates a new [UtString] from ASCII encoded [characters].
+/// Creates a new string from ASCII encoded [characters].
 ///
 /// !arg-type characters Uint8List
 /// !return-type UtString
 /// !return-ref
 UtObject *ut_string_new_from_ascii(UtObject *characters);
 
-/// Creates a new [UtString] from ISO 8859-1 encoded [characters].
+/// Creates a new string from ISO 8859-1 encoded [characters].
 ///
 /// !arg-type characters Uint8List
 /// !return-type UtString

@@ -5,14 +5,16 @@
 
 #pragma once
 
-/// Creates a new [UtZlibEncoder] to encode the data from [input_stream].
+/// Creates a new ZLib encoder to encode the data from [input_stream].
 ///
+/// !return-ref
 /// !return-type UtZlibEncoder
 UtObject *ut_zlib_encoder_new(UtObject *input_stream);
 
-/// Creates a new [UtZlibEncoder] to encode the data from [input_stream] using
+/// Creates a new ZLib encoder to encode the data from [input_stream] using
 /// the given [compression_level] and [window_size].
 ///
+/// !return-ref
 /// !return-type UtZlibEncoder
 UtObject *ut_zlib_encoder_new_full(UtZlibCompressionLevel compression_level,
                                    size_t window_size, UtObject *input_stream);

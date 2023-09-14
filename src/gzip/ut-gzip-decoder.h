@@ -4,7 +4,7 @@
 
 #pragma once
 
-/// Creates a new [UtGzipDecoder] to decode the data from [input_stream].
+/// Creates a new GZip decoder to decode the data from [input_stream].
 ///
 /// !arg-type input_stream UtInputStream
 /// !return-ref

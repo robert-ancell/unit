@@ -406,12 +406,12 @@ static void test_enum() {
   ut_assert_non_null_object(enum1);
   ut_assert_true(ut_object_is_protobuf_enum_type(enum1));
   ut_assert_int_equal(
-      ut_map_get_length(ut_protobuf_enum_type_get_values_by_name(enum1)), 2);
+      ut_map_get_length(ut_protobuf_enum_type_lookup_values_by_name(enum1)), 2);
   int value1a;
-  ut_assert_true(ut_protobuf_enum_type_get_value(enum1, "APPLE", &value1a));
+  ut_assert_true(ut_protobuf_enum_type_lookup_value(enum1, "APPLE", &value1a));
   ut_assert_int_equal(value1a, 0);
   int value1b;
-  ut_assert_true(ut_protobuf_enum_type_get_value(enum1, "ORANGE", &value1b));
+  ut_assert_true(ut_protobuf_enum_type_lookup_value(enum1, "ORANGE", &value1b));
   ut_assert_int_equal(value1b, 1);
 
   // First element can be non zero in proto2.
