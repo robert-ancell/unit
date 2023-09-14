@@ -18,10 +18,17 @@ UtObject *ut_x11_screen_new(uint32_t root, uint32_t default_colormap,
                             uint16_t height_in_millimeters,
                             UtObject *root_visual, UtObject *visuals);
 
+/// Returns the window ID for the root window on this screen.
 uint32_t ut_x11_screen_get_root(UtObject *object);
 
+/// Returns the visual the root window on this screen.
+///
+/// !return-type UtX11Visual
 UtObject *ut_x11_screen_get_root_visual(UtObject *object);
 
+/// Returns the visuals on this screen.
+///
+/// !return-type UtObjectList
 UtObject *ut_x11_screen_get_visuals(UtObject *object);
 
 /// Returns [true] if [object] is a [UtX11Screen].

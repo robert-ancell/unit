@@ -12,6 +12,8 @@
 UtObject *ut_x11_rectangle_new(int16_t x, int16_t y, uint16_t width,
                                uint16_t height);
 
+/// Gets the dimensions of this rectangle and writes them into [x], [y], [width]
+/// and [height].
 void ut_x11_rectangle_get_dimensions(UtObject *object, int16_t *x, int16_t *y,
                                      uint16_t *width, uint16_t *height);
 

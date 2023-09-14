@@ -16,6 +16,7 @@ typedef void (*UtX11ClientBigRequestsEnableCallback)(
 UtObject *ut_x11_big_requests_extension_new(UtObject *client,
                                             uint8_t major_opcode);
 
+/// Enable the big requests extension.
 void ut_x11_big_requests_extension_enable(
     UtObject *object, UtObject *callback_object,
     UtX11ClientBigRequestsEnableCallback callback);
