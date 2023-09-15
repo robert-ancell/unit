@@ -4,9 +4,10 @@
 
 #pragma once
 
-/// Creates a new [UtAsn1PrintableStringType] object.
+/// Creates a new ASN.1 PrintableString type.
 ///
 /// !return-ref
+/// !return-type UtAsn1PrintableStringType
 UtObject *ut_asn1_printable_string_type_new();
 
 /// Returns [true] if [object] is a [UtAsn1PrintableStringType].

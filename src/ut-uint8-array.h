@@ -39,7 +39,10 @@ UtObject *ut_uint8_array_new_from_va_elements(size_t length, va_list ap);
 
 /// Creates a new array of unsigned 8 bit data in [hex], e.g. "6a54c3".
 /// Returns an error if [hex] contains invalid characters or not full 8 bit
-/// values. !return-type UtUint8Array UtError !return-ref
+/// values.
+///
+/// !return-ref
+/// !return-type UtUint8Array UtError
 UtObject *ut_uint8_array_new_from_hex_string(const char *hex);
 
 /// Returns [true] if [object] is a [UtUint8Array].

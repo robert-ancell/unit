@@ -5,8 +5,11 @@
 #pragma once
 
 /// Creates a new array that is a subset of [parent] starting at [start] and
-/// containing [length] elements. !arg-type parent UtInt64Array !return-type
-/// UtInt64Subarray !return-ref
+/// containing [length] elements.
+///
+/// !arg-type parent UtInt64Array
+/// !return-ref
+/// !return-type UtInt64Subarray
 UtObject *ut_int64_subarray_new(UtObject *parent, size_t start, size_t length);
 
 /// Returns [true] if [object] is a [UtInt64Subarray].

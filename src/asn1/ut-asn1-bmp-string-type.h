@@ -4,9 +4,10 @@
 
 #pragma once
 
-/// Creates a new [UtAsn1BmpStringType] object.
+/// Creates a new ASN.1 BMPString type.
 ///
 /// !return-ref
+/// !return-type UtAsn1BmpStringType
 UtObject *ut_asn1_bmp_string_type_new();
 
 /// Returns [true] if [object] is a [UtAsn1BmpStringType].

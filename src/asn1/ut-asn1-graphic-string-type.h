@@ -4,9 +4,10 @@
 
 #pragma once
 
-/// Creates a new [UtAsn1GraphicStringType] object.
+/// Creates a new ASN.1 GraphicString type.
 ///
 /// !return-ref
+/// !return-type UtAsn1GraphicStringType
 UtObject *ut_asn1_graphic_string_type_new();
 
 /// Returns [true] if [object] is a [UtAsn1GraphicStringType].

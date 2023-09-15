@@ -4,9 +4,10 @@
 
 #pragma once
 
-/// Creates a new [UtAsn1SetOfType] object containing objects with [type].
+/// Creates a new ASN.1 SET OF type containing objects with [type].
 ///
 /// !return-ref
+/// !return-type UtAsn1SetOfType
 UtObject *ut_asn1_set_of_type_new(UtObject *type);
 
 UtObject *ut_asn1_set_of_type_get_type(UtObject *object);

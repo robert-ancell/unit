@@ -4,9 +4,10 @@
 
 #pragma once
 
-/// Creates a new [UtAsn1GeneralStringType] object.
+/// Creates a new ASN.1 GeneralString type.
 ///
 /// !return-ref
+/// !return-type UtAsn1GeneralStringType
 UtObject *ut_asn1_general_string_type_new();
 
 /// Returns [true] if [object] is a [UtAsn1GeneralStringType].

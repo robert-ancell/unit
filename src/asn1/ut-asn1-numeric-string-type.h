@@ -4,9 +4,10 @@
 
 #pragma once
 
-/// Creates a new [UtAsn1NumericStringType] object.
+/// Creates a new ASN.1 NumericString type.
 ///
 /// !return-ref
+/// !return-type UtAsn1NumericStringType
 UtObject *ut_asn1_numeric_string_type_new();
 
 /// Returns [true] if [object] is a [UtAsn1NumericStringType].
