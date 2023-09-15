@@ -7,6 +7,7 @@
 /// Creates a new [UtAsn1ModuleDefinitionParser] object.
 ///
 /// !return-ref
+/// !return-type UtAsn1ModuleDefinitionParser
 UtObject *ut_asn1_module_definition_parser_new();
 
 bool ut_asn1_module_definition_parser_parse(UtObject *object, const char *text);

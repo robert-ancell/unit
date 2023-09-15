@@ -7,6 +7,7 @@
 /// Creates a new [UtAsn1TypeValue] object.
 ///
 /// !return-ref
+/// !return-type
 UtObject *ut_asn1_type_value_new(UtObject *type, UtObject *value);
 
 UtObject *ut_asn1_type_value_get_type(UtObject *object);

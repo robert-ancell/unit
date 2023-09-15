@@ -7,6 +7,7 @@
 /// Creates a new [UtAsn1ModuleDefinition].
 ///
 /// !return-ref
+/// !return-type UtAsn1ModuleDefinition
 UtObject *ut_asn1_module_definition_new(const char *identifier,
                                         UtObject *object_identifier,
                                         UtObject *assignments);
@@ -14,6 +15,7 @@ UtObject *ut_asn1_module_definition_new(const char *identifier,
 /// Creates a new [UtAsn1ModuleDefinition] from [text].
 ///
 /// !return-ref
+/// !return-type UtAsn1ModuleDefinition
 UtObject *ut_asn1_module_definition_new_from_text(const char *text);
 
 /// Returns the identifier for this module.

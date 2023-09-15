@@ -131,7 +131,7 @@ UtObject *ut_asn1_embedded_pdv_type_encode_value(UtObject *object,
   } else if (ut_object_is_asn1_embedded_identification_syntax(identification)) {
     identification_id = "syntax";
     identification_value = ut_object_ref(
-        ut_asn1_embedded_identification_syntax_get_value(identification));
+        ut_asn1_embedded_identification_syntax_get_identifier(identification));
   } else if (ut_object_is_asn1_embedded_identification_presentation_context_id(
                  identification)) {
     identification_id = "presentation-context-id";
@@ -154,8 +154,8 @@ UtObject *ut_asn1_embedded_pdv_type_encode_value(UtObject *object,
   } else if (ut_object_is_asn1_embedded_identification_transfer_syntax(
                  identification)) {
     identification_id = "transfer-syntax";
-    identification_value =
-        ut_object_ref(ut_asn1_embedded_identification_transfer_syntax_get_value(
+    identification_value = ut_object_ref(
+        ut_asn1_embedded_identification_transfer_syntax_get_identifier(
             identification));
   } else if (ut_object_is_asn1_embedded_identification_fixed(identification)) {
     identification_id = "fixed";

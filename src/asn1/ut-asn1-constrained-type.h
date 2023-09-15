@@ -7,6 +7,7 @@
 /// Creates a new [UtAsn1ConstrainedType] object.
 ///
 /// !return-ref
+/// !return-type UtAsn1ConstrainedType
 UtObject *ut_asn1_constrained_type_new(UtObject *type, UtObject *constraint);
 
 /// Creates a new [UtAsn1ConstrainedType] object.

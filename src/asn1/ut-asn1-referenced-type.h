@@ -8,6 +8,7 @@
 /// Creates a new [UtAsn1ReferencedType] object.
 ///
 /// !return-ref
+/// !return-type
 UtObject *ut_asn1_referenced_type_new(UtObject *type);
 
 UtObject *ut_asn1_referenced_type_get_type(UtObject *object);

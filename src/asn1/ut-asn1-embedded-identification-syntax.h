@@ -4,12 +4,18 @@
 
 #pragma once
 
-/// Creates a new [UtAsn1EmbeddedIdentificationSyntax] object.
+/// Creates a new ASN.1 syntax embedded identification with [identifier].
 ///
+/// !arg-type identifier UtObjectIdentifier
 /// !return-ref
-UtObject *ut_asn1_embedded_identification_syntax_new(UtObject *value);
+/// !return-type UtAsn1EmbeddedIdentificationSyntax
+UtObject *ut_asn1_embedded_identification_syntax_new(UtObject *identifier);
 
-UtObject *ut_asn1_embedded_identification_syntax_get_value(UtObject *syntax);
+/// Returns the identifier for this embedded identification.
+///
+/// !return-type UtObjectIdentifier
+UtObject *
+ut_asn1_embedded_identification_syntax_get_identifier(UtObject *syntax);
 
 /// Returns [true] if [object] is a [UtAsn1EmbeddedIdentificationSyntax].
 bool ut_object_is_asn1_embedded_identification_syntax(UtObject *object);

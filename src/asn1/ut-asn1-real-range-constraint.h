@@ -8,6 +8,7 @@
 /// Creates a new [UtAsn1RealRangeConstraint] object.
 ///
 /// !return-ref
+/// !return-type
 UtObject *ut_asn1_real_range_constraint_new(double lower, double upper);
 
 double ut_asn1_real_range_constraint_get_lower(UtObject *object);

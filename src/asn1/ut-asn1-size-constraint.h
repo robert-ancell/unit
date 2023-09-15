@@ -7,6 +7,7 @@
 /// Creates a new [UtAsn1SizeConstraint] object.
 ///
 /// !return-ref
+/// !return-type
 UtObject *ut_asn1_size_constraint_new(UtObject *constraint);
 
 UtObject *ut_asn1_size_constraint_get_constraint(UtObject *object);

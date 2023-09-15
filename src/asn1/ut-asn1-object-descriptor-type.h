@@ -7,6 +7,7 @@
 /// Creates a new [UtAsn1ObjectDescriptorType] object.
 ///
 /// !return-ref
+/// !return-type
 UtObject *ut_asn1_object_descriptor_type_new();
 
 /// Returns [true] if [object] is a [UtAsn1ObjectDescriptorType].

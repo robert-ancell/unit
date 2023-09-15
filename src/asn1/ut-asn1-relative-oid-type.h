@@ -7,6 +7,7 @@
 /// Creates a new [UtAsn1RelativeOidType] object.
 ///
 /// !return-ref
+/// !return-type
 UtObject *ut_asn1_relative_oid_type_new();
 
 /// Returns [true] if [object] is a [UtAsn1RelativeOidType].

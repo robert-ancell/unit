@@ -7,6 +7,7 @@
 /// Creates a new [UtAsn1ObjectIdentifierType] object.
 ///
 /// !return-ref
+/// !return-type
 UtObject *ut_asn1_object_identifier_type_new();
 
 /// Returns [true] if [object] is a [UtAsn1ObjectIdentifierType].

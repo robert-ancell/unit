@@ -4,9 +4,10 @@
 
 #pragma once
 
-/// Creates a new [UtAsn1EmbeddedIdentificationFixed] object.
+/// Creates a new ASN.1 fixed embedded identification.
 ///
 /// !return-ref
+/// !return-type UtAsn1EmbeddedIdentificationFixed
 UtObject *ut_asn1_embedded_identification_fixed_new();
 
 /// Returns [true] if [object] is a [UtAsn1EmbeddedIdentificationFixed].
