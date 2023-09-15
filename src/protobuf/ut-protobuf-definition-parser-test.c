@@ -89,7 +89,7 @@ static void test_message() {
   ut_assert_true(ut_object_is_protobuf_message_type(message2));
   ut_assert_int_equal(
       ut_map_get_length(ut_protobuf_message_type_get_fields(message2)), 2);
-  UtObject *field2a = ut_protobuf_message_type_get_field(message2, "name");
+  UtObject *field2a = ut_protobuf_message_type_lookup_field(message2, "name");
   ut_assert_non_null_object(field2a);
   ut_assert_int_equal(ut_protobuf_message_field_get_type(field2a),
                       UT_PROTOBUF_MESSAGE_FIELD_TYPE_IMPLICIT);
@@ -98,7 +98,7 @@ static void test_message() {
   ut_assert_true(ut_object_is_protobuf_primitive_type(type2a));
   ut_assert_int_equal(ut_protobuf_primitive_type_get_type(type2a),
                       UT_PROTOBUF_PRIMITIVE_STRING);
-  UtObject *field2b = ut_protobuf_message_type_get_field(message2, "age");
+  UtObject *field2b = ut_protobuf_message_type_lookup_field(message2, "age");
   ut_assert_non_null_object(field2b);
   ut_assert_int_equal(ut_protobuf_message_field_get_type(field2b),
                       UT_PROTOBUF_MESSAGE_FIELD_TYPE_IMPLICIT);
@@ -120,15 +120,15 @@ static void test_message() {
   UtObject *definition3 = ut_protobuf_definition_parser_get_definition(parser3);
   UtObject *message3 = ut_protobuf_definition_lookup(definition3, "Message");
   ut_assert_non_null_object(message3);
-  UtObject *field3a = ut_protobuf_message_type_get_field(message3, "value1");
+  UtObject *field3a = ut_protobuf_message_type_lookup_field(message3, "value1");
   ut_assert_non_null_object(field3a);
   ut_assert_int_equal(ut_protobuf_message_field_get_type(field3a),
                       UT_PROTOBUF_MESSAGE_FIELD_TYPE_REQUIRED);
-  UtObject *field3b = ut_protobuf_message_type_get_field(message3, "value2");
+  UtObject *field3b = ut_protobuf_message_type_lookup_field(message3, "value2");
   ut_assert_non_null_object(field3b);
   ut_assert_int_equal(ut_protobuf_message_field_get_type(field3b),
                       UT_PROTOBUF_MESSAGE_FIELD_TYPE_OPTIONAL);
-  UtObject *field3c = ut_protobuf_message_type_get_field(message3, "value3");
+  UtObject *field3c = ut_protobuf_message_type_lookup_field(message3, "value3");
   ut_assert_non_null_object(field3c);
   ut_assert_int_equal(ut_protobuf_message_field_get_type(field3c),
                       UT_PROTOBUF_MESSAGE_FIELD_TYPE_REPEATED);
@@ -145,15 +145,15 @@ static void test_message() {
   UtObject *definition4 = ut_protobuf_definition_parser_get_definition(parser4);
   UtObject *message4 = ut_protobuf_definition_lookup(definition4, "Message");
   ut_assert_non_null_object(message4);
-  UtObject *field4a = ut_protobuf_message_type_get_field(message4, "value1");
+  UtObject *field4a = ut_protobuf_message_type_lookup_field(message4, "value1");
   ut_assert_non_null_object(field4a);
   ut_assert_int_equal(ut_protobuf_message_field_get_type(field4a),
                       UT_PROTOBUF_MESSAGE_FIELD_TYPE_IMPLICIT);
-  UtObject *field4b = ut_protobuf_message_type_get_field(message4, "value2");
+  UtObject *field4b = ut_protobuf_message_type_lookup_field(message4, "value2");
   ut_assert_non_null_object(field4b);
   ut_assert_int_equal(ut_protobuf_message_field_get_type(field4b),
                       UT_PROTOBUF_MESSAGE_FIELD_TYPE_OPTIONAL);
-  UtObject *field4c = ut_protobuf_message_type_get_field(message4, "value3");
+  UtObject *field4c = ut_protobuf_message_type_lookup_field(message4, "value3");
   ut_assert_non_null_object(field4c);
   ut_assert_int_equal(ut_protobuf_message_field_get_type(field4c),
                       UT_PROTOBUF_MESSAGE_FIELD_TYPE_REPEATED);
@@ -177,7 +177,8 @@ static void test_message() {
   ut_assert_non_null_object(message5);
   UtObject *message5i = ut_protobuf_definition_lookup(definition5, "Person");
   ut_assert_non_null_object(message5i);
-  UtObject *field5a = ut_protobuf_message_type_get_field(message5, "teacher");
+  UtObject *field5a =
+      ut_protobuf_message_type_lookup_field(message5, "teacher");
   ut_assert_non_null_object(field5a);
   ut_assert_int_equal(ut_protobuf_message_field_get_type(field5a),
                       UT_PROTOBUF_MESSAGE_FIELD_TYPE_IMPLICIT);
@@ -185,7 +186,8 @@ static void test_message() {
   ut_assert_true(ut_object_is_protobuf_referenced_type(type5a));
   UtObject *type5ai = ut_protobuf_referenced_type_get_type(type5a);
   ut_assert_true(type5ai == message5i);
-  UtObject *field5b = ut_protobuf_message_type_get_field(message5, "students");
+  UtObject *field5b =
+      ut_protobuf_message_type_lookup_field(message5, "students");
   ut_assert_non_null_object(field5b);
   ut_assert_int_equal(ut_protobuf_message_field_get_type(field5b),
                       UT_PROTOBUF_MESSAGE_FIELD_TYPE_REPEATED);
@@ -214,7 +216,8 @@ static void test_message() {
   ut_assert_non_null_object(message6a);
   UtObject *message6b = ut_protobuf_definition_lookup(definition6, "Class");
   ut_assert_non_null_object(message6b);
-  UtObject *field6b = ut_protobuf_message_type_get_field(message6b, "teacher");
+  UtObject *field6b =
+      ut_protobuf_message_type_lookup_field(message6b, "teacher");
   ut_assert_non_null_object(field6b);
   UtObject *type6b = ut_protobuf_message_field_get_value_type(field6b);
   ut_assert_true(ut_object_is_protobuf_referenced_type(type6b));
@@ -242,7 +245,8 @@ static void test_message() {
   ut_assert_non_null_object(message7a);
   UtObject *message7b = ut_protobuf_definition_lookup(definition7, "School");
   ut_assert_non_null_object(message7b);
-  UtObject *field7b = ut_protobuf_message_type_get_field(message7b, "students");
+  UtObject *field7b =
+      ut_protobuf_message_type_lookup_field(message7b, "students");
   ut_assert_non_null_object(field7b);
   UtObject *type7b = ut_protobuf_message_field_get_value_type(field7b);
   ut_assert_true(ut_object_is_protobuf_referenced_type(type7b));
@@ -267,12 +271,12 @@ static void test_message() {
   ut_assert_non_null_object(message8a);
   UtObject *message8b = ut_protobuf_definition_lookup(definition8, "B");
   ut_assert_non_null_object(message8b);
-  UtObject *field8a = ut_protobuf_message_type_get_field(message8a, "b");
+  UtObject *field8a = ut_protobuf_message_type_lookup_field(message8a, "b");
   ut_assert_non_null_object(field8a);
   UtObject *type8a = ut_protobuf_message_field_get_value_type(field8a);
   ut_assert_true(ut_object_is_protobuf_referenced_type(type8a));
   ut_assert_true(ut_protobuf_referenced_type_get_type(type8a) == message8b);
-  UtObject *field8b = ut_protobuf_message_type_get_field(message8b, "a");
+  UtObject *field8b = ut_protobuf_message_type_lookup_field(message8b, "a");
   ut_assert_non_null_object(field8b);
   UtObject *type8b = ut_protobuf_message_field_get_value_type(field8b);
   ut_assert_true(ut_object_is_protobuf_referenced_type(type8b));

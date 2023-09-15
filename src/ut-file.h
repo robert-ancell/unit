@@ -12,10 +12,14 @@ typedef struct {
 
 extern int ut_file_id;
 
+/// Open this file for reading.
 void ut_file_open_read(UtObject *object);
 
+/// Open this file for writing.
+/// If [create] is true then the file will be created if it doesn't exist.
 void ut_file_open_write(UtObject *object, bool create);
 
+/// Close this file.
 void ut_file_close(UtObject *object);
 
 /// Returns [true] if [object] is a [UtFile].

@@ -18,6 +18,11 @@ typedef enum {
   UT_DBUS_MESSAGE_FLAG_ALLOW_INTERACTIVE_AUTHORIZATION = 0x04
 } UtDBusMessageFlag;
 
+/// Creates a new DBus message of [type].
+/// Use [UtDBusMessageType] for standard types.
+///
+/// !return-ref
+/// !return-type UtDbusMessage
 UtObject *ut_dbus_message_new(uint8_t type);
 
 UtObject *ut_dbus_message_new_method_call(const char *destination,

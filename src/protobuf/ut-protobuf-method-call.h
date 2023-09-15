@@ -6,13 +6,21 @@
 
 /// Creates a new protobuf method call.
 ///
+/// !arg-type request_type UtProtobufMessageType
+/// !arg-type response_type UtProtobufMessageType
 /// !return-ref
 /// !return-type UtProtobufMethodCall
 UtObject *ut_protobuf_method_call_new(UtObject *request_type,
                                       UtObject *response_type);
 
+/// Returns the request type in this method call.
+///
+/// !return-type UtProtobufMessageType
 UtObject *ut_protobuf_method_call_get_request_type(UtObject *object);
 
+/// Returns the response type in this method call.
+///
+/// !return-type UtProtobufMessageType
 UtObject *ut_protobuf_method_call_get_response_type(UtObject *object);
 
 /// Returns [true] if [object] is a [UtProtobufMethodCall].

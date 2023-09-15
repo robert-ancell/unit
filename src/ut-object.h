@@ -25,8 +25,15 @@ struct _UtObject {
   void *weak_references;
 };
 
+/// Creates a new object with [object_size].
+/// This function is only required when creating new object types.
+///
+/// !return-ref
+/// !return-type UtObject
 UtObject *ut_object_new(size_t object_size, UtObjectInterface *functions);
 
+/// Gets the interface functions that matches [interface_id] or NULL.
+/// This function is only required when creating new interface types.
 void *ut_object_get_interface(UtObject *object, void *interface_id);
 
 /// Returns the name of this type.
@@ -40,6 +47,7 @@ char *ut_object_to_string(UtObject *object);
 /// !arg-type other UtObject
 bool ut_object_equal(UtObject *object, UtObject *other);
 
+/// Returns a hash value for this object.
 int ut_object_get_hash(UtObject *object);
 
 /// Increase the reference count on this object.

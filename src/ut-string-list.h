@@ -8,7 +8,7 @@
 typedef struct {
   const char *(*get_element)(UtObject *object, size_t index);
   char **(*take_data)(UtObject *object);
-  void (*insert)(UtObject *object, size_t index, const char *item);
+  void (*insert)(UtObject *object, size_t index, const char *value);
 } UtStringListInterface;
 
 extern int ut_string_list_id;
@@ -37,14 +37,14 @@ const char *ut_string_list_get_element(UtObject *object, size_t index);
 char **ut_string_list_take_data(UtObject *object);
 
 /// Add [value] to the end of this list.
-void ut_string_list_append(UtObject *object, const char *item);
+void ut_string_list_append(UtObject *object, const char *value);
 
 /// Format a new string and add it to the end of this list.
 void ut_string_list_append_printf(UtObject *object, const char *format, ...)
     __attribute__((format(printf, 2, 3)));
 
 /// Add [value] to the start of this list.
-void ut_string_list_prepend(UtObject *object, const char *item);
+void ut_string_list_prepend(UtObject *object, const char *value);
 
 /// Format a new string and add it to the start of this list.
 void ut_string_list_prepend_printf(UtObject *object, const char *format, ...)
@@ -52,7 +52,7 @@ void ut_string_list_prepend_printf(UtObject *object, const char *format, ...)
 
 /// Insert [value] in this list at position [index]. The remaining elements will
 /// be moved down.
-void ut_string_list_insert(UtObject *object, size_t index, const char *item);
+void ut_string_list_insert(UtObject *object, size_t index, const char *value);
 
 /// Return a string containing the elements in this list with joined by
 /// [separator]. e.g. "one", "two", "three" and separator "," will make

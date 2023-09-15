@@ -45,15 +45,15 @@ UtObject *ut_protobuf_message_type_get_fields(UtObject *object) {
   return self->fields;
 }
 
-UtObject *ut_protobuf_message_type_get_field(UtObject *object,
-                                             const char *name) {
+UtObject *ut_protobuf_message_type_lookup_field(UtObject *object,
+                                                const char *name) {
   assert(ut_object_is_protobuf_message_type(object));
   UtProtobufMessageType *self = (UtProtobufMessageType *)object;
   return ut_map_lookup_string(self->fields, name);
 }
 
-const char *ut_protobuf_message_type_get_field_name(UtObject *object,
-                                                    uint32_t number) {
+const char *ut_protobuf_message_type_lookup_field_name(UtObject *object,
+                                                       uint32_t number) {
   assert(ut_object_is_protobuf_message_type(object));
   UtProtobufMessageType *self = (UtProtobufMessageType *)object;
 

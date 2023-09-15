@@ -49,8 +49,8 @@ double *ut_float64_list_take_data(UtObject *object) {
   return float64_list_interface->take_data(object);
 }
 
-void ut_float64_list_append(UtObject *object, double item) {
-  ut_float64_list_append_block(object, &item, 1);
+void ut_float64_list_append(UtObject *object, double value) {
+  ut_float64_list_append_block(object, &value, 1);
 }
 
 void ut_float64_list_append_block(UtObject *object, const double *data,
@@ -59,8 +59,8 @@ void ut_float64_list_append_block(UtObject *object, const double *data,
   ut_float64_list_insert_block(object, length, data, data_length);
 }
 
-void ut_float64_list_prepend(UtObject *object, double item) {
-  ut_float64_list_prepend_block(object, &item, 1);
+void ut_float64_list_prepend(UtObject *object, double value) {
+  ut_float64_list_prepend_block(object, &value, 1);
 }
 
 void ut_float64_list_prepend_block(UtObject *object, const double *data,
@@ -68,8 +68,8 @@ void ut_float64_list_prepend_block(UtObject *object, const double *data,
   ut_float64_list_insert_block(object, 0, data, data_length);
 }
 
-void ut_float64_list_insert(UtObject *object, size_t index, double item) {
-  ut_float64_list_insert_block(object, index, &item, 1);
+void ut_float64_list_insert(UtObject *object, size_t index, double value) {
+  ut_float64_list_insert_block(object, index, &value, 1);
 }
 
 void ut_float64_list_insert_block(UtObject *object, size_t index,

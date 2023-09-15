@@ -199,12 +199,6 @@ UtObject *ut_float64_array_new_from_va_elements(size_t length, va_list ap) {
   return object;
 }
 
-double *ut_float64_array_get_data(UtObject *object) {
-  assert(ut_object_is_float64_array(object));
-  UtFloat64Array *self = (UtFloat64Array *)object;
-  return self->data;
-}
-
 bool ut_object_is_float64_array(UtObject *object) {
   return ut_object_is_type(object, &object_interface);
 }

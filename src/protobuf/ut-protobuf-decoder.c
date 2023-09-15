@@ -589,8 +589,8 @@ UtObject *ut_protobuf_decoder_decode_message(UtObject *object, UtObject *type) {
 
     uint8_t wire_type = tag & 0x7;
     uint32_t number = tag >> 3;
-    const char *name = ut_protobuf_message_type_get_field_name(type, number);
-    UtObject *field = ut_protobuf_message_type_get_field(type, name);
+    const char *name = ut_protobuf_message_type_lookup_field_name(type, number);
+    UtObject *field = ut_protobuf_message_type_lookup_field(type, name);
 
     switch (wire_type) {
     case 0:

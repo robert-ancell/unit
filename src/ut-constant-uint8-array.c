@@ -17,6 +17,11 @@ static uint8_t ut_constant_uint8_array_get_element(UtObject *object,
   return self->data[index];
 }
 
+static const uint8_t *ut_constant_uint8_array_get_data(UtObject *object) {
+  UtConstantUint8Array *self = (UtConstantUint8Array *)object;
+  return self->data;
+}
+
 static uint8_t *ut_constant_uint8_array_take_data(UtObject *object) {
   UtConstantUint8Array *self = (UtConstantUint8Array *)object;
   uint8_t *copy = malloc(sizeof(uint8_t) * self->data_length);
@@ -105,12 +110,6 @@ UtObject *ut_constant_uint8_array_new(const uint8_t *data, size_t data_length) {
   self->data = data;
   self->data_length = data_length;
   return object;
-}
-
-const uint8_t *ut_constant_uint8_array_get_data(UtObject *object) {
-  assert(ut_object_is_constant_uint8_array(object));
-  UtConstantUint8Array *self = (UtConstantUint8Array *)object;
-  return self->data;
 }
 
 bool ut_object_is_constant_uint8_array(UtObject *object) {

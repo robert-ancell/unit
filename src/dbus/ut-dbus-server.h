@@ -4,8 +4,13 @@
 
 #pragma once
 
+/// Creates a new DBus server.
+///
+/// !return-ref
+/// !return-type UtDbusServer
 UtObject *ut_dbus_server_new();
 
+/// Start listening on unix socket [path].
 bool ut_dbus_server_listen_unix(UtObject *object, const char *path,
                                 UtObject **error);
 

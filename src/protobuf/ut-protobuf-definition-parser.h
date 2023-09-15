@@ -10,6 +10,7 @@
 /// !return-type UtProtobufDefinitionParser
 UtObject *ut_protobuf_definition_parser_new();
 
+/// Parse [text] and return true if is a valid protobuf definition.
 bool ut_protobuf_definition_parser_parse(UtObject *object, const char *text);
 
 /// Gets the definition decoded.

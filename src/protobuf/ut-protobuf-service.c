@@ -39,8 +39,8 @@ UtObject *ut_protobuf_service_get_method_calls(UtObject *object) {
   return self->method_calls;
 }
 
-UtObject *ut_protobuf_service_get_method_call(UtObject *object,
-                                              const char *name) {
+UtObject *ut_protobuf_service_lookup_method_call(UtObject *object,
+                                                 const char *name) {
   assert(ut_object_is_protobuf_service(object));
   UtProtobufService *self = (UtProtobufService *)object;
   return ut_map_lookup_string(self->method_calls, name);

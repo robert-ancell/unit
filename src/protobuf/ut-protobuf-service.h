@@ -16,8 +16,11 @@ UtObject *ut_protobuf_service_new(UtObject *method_calls);
 /// !return-type UtObjectList
 UtObject *ut_protobuf_service_get_method_calls(UtObject *object);
 
-UtObject *ut_protobuf_service_get_method_call(UtObject *object,
-                                              const char *name);
+/// Returns the method call that matches [name] or [NULL] if no method call.
+///
+/// !return-type UtProtobufMethodCall NULL
+UtObject *ut_protobuf_service_lookup_method_call(UtObject *object,
+                                                 const char *name);
 
 /// Returns [true] if [object] is a [UtProtobufService].
 bool ut_object_is_protobuf_service(UtObject *object);

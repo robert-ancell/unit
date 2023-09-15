@@ -199,12 +199,6 @@ UtObject *ut_float32_array_new_from_va_elements(size_t length, va_list ap) {
   return object;
 }
 
-float *ut_float32_array_get_data(UtObject *object) {
-  assert(ut_object_is_float32_array(object));
-  UtFloat32Array *self = (UtFloat32Array *)object;
-  return self->data;
-}
-
 bool ut_object_is_float32_array(UtObject *object) {
   return ut_object_is_type(object, &object_interface);
 }

@@ -16,6 +16,7 @@ UtObject *ut_protobuf_definition_new(int syntax, UtObject *definitions);
 /// !return-type UtProtobufDefinition
 UtObject *ut_protobuf_definition_new_from_text(const char *text);
 
+/// Returns the syntax this protobuf definition is using, either 2 or 3.
 int ut_protobuf_definition_get_syntax(UtObject *object);
 
 /// Returns the definitions.

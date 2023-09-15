@@ -45,8 +45,8 @@ int16_t *ut_int16_list_take_data(UtObject *object) {
   return int16_list_interface->take_data(object);
 }
 
-void ut_int16_list_append(UtObject *object, int16_t item) {
-  ut_int16_list_append_block(object, &item, 1);
+void ut_int16_list_append(UtObject *object, int16_t value) {
+  ut_int16_list_append_block(object, &value, 1);
 }
 
 void ut_int16_list_append_block(UtObject *object, const int16_t *data,
@@ -55,8 +55,8 @@ void ut_int16_list_append_block(UtObject *object, const int16_t *data,
   ut_int16_list_insert_block(object, length, data, data_length);
 }
 
-void ut_int16_list_prepend(UtObject *object, int16_t item) {
-  ut_int16_list_prepend_block(object, &item, 1);
+void ut_int16_list_prepend(UtObject *object, int16_t value) {
+  ut_int16_list_prepend_block(object, &value, 1);
 }
 
 void ut_int16_list_prepend_block(UtObject *object, const int16_t *data,
@@ -64,8 +64,8 @@ void ut_int16_list_prepend_block(UtObject *object, const int16_t *data,
   ut_int16_list_insert_block(object, 0, data, data_length);
 }
 
-void ut_int16_list_insert(UtObject *object, size_t index, int16_t item) {
-  ut_int16_list_insert_block(object, index, &item, 1);
+void ut_int16_list_insert(UtObject *object, size_t index, int16_t value) {
+  ut_int16_list_insert_block(object, index, &value, 1);
 }
 
 void ut_int16_list_insert_block(UtObject *object, size_t index,
