@@ -24,6 +24,11 @@ extern int ut_uint32_list_id;
 /// !return-ref
 UtObject *ut_uint32_list_new();
 
+/// Creates a new list that contains [length] unsigned 32 bit values.
+/// This creates a [UtUint32Array].
+///
+/// !return-ref
+/// !return-type UtUint32List
 UtObject *ut_uint32_list_new_from_elements(size_t length, ...);
 
 /// Returns the value at [index] of this list.
@@ -62,6 +67,8 @@ void ut_uint32_list_prepend_block(UtObject *object, const uint32_t *data,
 /// be moved down.
 void ut_uint32_list_insert(UtObject *object, size_t index, uint32_t value);
 
+/// Insert array [data] of length [data_length] in this list in position
+/// [index]. The remaining elements will be moved down.
 void ut_uint32_list_insert_block(UtObject *object, size_t index,
                                  const uint32_t *data, size_t data_length);
 

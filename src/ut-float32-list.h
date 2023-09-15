@@ -48,12 +48,14 @@ float *ut_float32_list_take_data(UtObject *object);
 /// Add [value] to the end of this list.
 void ut_float32_list_append(UtObject *object, float value);
 
+/// Add array [data] of size [data_length] to the end of this list.
 void ut_float32_list_append_block(UtObject *object, const float *data,
                                   size_t data_length);
 
 /// Add [value] to the start of this list.
 void ut_float32_list_prepend(UtObject *object, float value);
 
+/// Add array [data] of size [data_length] to the start of this list.
 void ut_float32_list_prepend_block(UtObject *object, const float *data,
                                    size_t data_length);
 
@@ -61,6 +63,8 @@ void ut_float32_list_prepend_block(UtObject *object, const float *data,
 /// be moved down.
 void ut_float32_list_insert(UtObject *object, size_t index, float value);
 
+/// Insert array [data] of length [data_length] in this list in position
+/// [index]. The remaining elements will be moved down.
 void ut_float32_list_insert_block(UtObject *object, size_t index,
                                   const float *data, size_t data_length);
 

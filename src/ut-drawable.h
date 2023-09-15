@@ -12,8 +12,14 @@ typedef struct {
 
 extern int ut_drawable_id;
 
+/// Clear the drawable to color.
+///
+/// !arg-type color UtColor
 void ut_drawable_clear(UtObject *object, UtObject *color);
 
+/// Draw a filled box of size [width]x[height] at [x],[y].
+///
+/// !arg-type color UtColor
 void ut_drawable_render_box(UtObject *object, double x, double y, double width,
                             double height, UtObject *color);
 

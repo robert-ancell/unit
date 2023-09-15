@@ -8,17 +8,27 @@
 #pragma once
 
 /// Creates a new array that contains unsigned 32 bit values.
-/// !return-type UtUint32Array
+///
 /// !return-ref
+/// !return-type UtUint32Array
 UtObject *ut_uint32_array_new();
 
 /// Creates a new array of [length] zeros.
-/// !return-type UtUint32Array
+///
 /// !return-ref
+/// !return-type UtUint32Array
 UtObject *ut_uint32_array_new_sized(size_t length);
 
+/// Creates a new list that contains [length] unsigned 32 bit values.
+///
+/// !return-ref
+/// !return-type UtUint32Array
 UtObject *ut_uint32_array_new_from_elements(size_t length, ...);
 
+/// Creates a new list that contains [length] unsigned 32 bit values.
+///
+/// !return-ref
+/// !return-type UtUint32Array
 UtObject *ut_uint32_array_new_from_va_elements(size_t length, va_list ap);
 
 /// Returns [true] if [object] is a [UtUint32Array].

@@ -4,6 +4,10 @@
 
 #pragma once
 
+/// Creates a new ordered hash table.
+///
+/// !return-ref
+/// !return-type UtOrderedHashTable
 UtObject *ut_ordered_hash_table_new();
 
 /// Returns [true] if [object] is a [UtOrderedHashTable].

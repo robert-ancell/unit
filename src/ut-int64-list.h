@@ -67,6 +67,8 @@ void ut_int64_list_prepend_block(UtObject *object, const int64_t *data,
 /// be moved down.
 void ut_int64_list_insert(UtObject *object, size_t index, int64_t value);
 
+/// Insert array [data] of length [data_length] in this list in position
+/// [index]. The remaining elements will be moved down.
 void ut_int64_list_insert_block(UtObject *object, size_t index,
                                 const int64_t *data, size_t data_length);
 

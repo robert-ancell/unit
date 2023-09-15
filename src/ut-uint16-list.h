@@ -24,8 +24,19 @@ extern int ut_uint16_list_id;
 /// !return-ref
 UtObject *ut_uint16_list_new();
 
+/// Creates a new list that contains [length] unsigned 16 bit values.
+/// This creates a [UtUint16Array].
+///
+/// !return-ref
+/// !return-type UtUint16List
 UtObject *ut_uint16_list_new_from_elements(size_t length, ...);
 
+/// Creates a new list of unsigned 16 bit data in [hex], e.g. "6a54c3af".
+/// Returns an error if [hex] contains invalid characters or not full 16 bit
+/// values.
+///
+/// !return-ref
+/// !return-type UtUint16List UtError
 UtObject *ut_uint16_list_new_from_hex_string(const char *hex);
 
 /// Returns the value at [index] of this list.
@@ -64,9 +75,13 @@ void ut_uint16_list_prepend_block(UtObject *object, const uint16_t *data,
 /// be moved down.
 void ut_uint16_list_insert(UtObject *object, size_t index, uint16_t value);
 
+/// Insert array [data] of length [data_length] in this list in position
+/// [index]. The remaining elements will be moved down.
 void ut_uint16_list_insert_block(UtObject *object, size_t index,
                                  const uint16_t *data, size_t data_length);
 
+/// Returns a string containing this list in hexadecimal form, e.g. "6a54c3af".
+/// When no longer required used [free] to release the memory.
 char *ut_uint16_list_to_hex_string(UtObject *object);
 
 /// Returns [true] if [object] is a [UtUint16List].

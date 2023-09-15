@@ -24,6 +24,11 @@ extern int ut_uint64_list_id;
 /// !return-ref
 UtObject *ut_uint64_list_new();
 
+/// Creates a new list that contains [length] unsigned 64 bit values.
+/// This creates a [UtUint64Array].
+///
+/// !return-ref
+/// !return-type UtUint64List
 UtObject *ut_uint64_list_new_from_elements(size_t length, ...);
 
 /// Returns the value at [index] of this list.
@@ -62,6 +67,8 @@ void ut_uint64_list_prepend_block(UtObject *object, const uint64_t *data,
 /// be moved down.
 void ut_uint64_list_insert(UtObject *object, size_t index, uint64_t value);
 
+/// Insert array [data] of length [data_length] in this list in position
+/// [index]. The remaining elements will be moved down.
 void ut_uint64_list_insert_block(UtObject *object, size_t index,
                                  const uint64_t *data, size_t data_length);
 
