@@ -4,10 +4,10 @@
 
 #pragma once
 
-/// Creates a new [UtAsn1ObjectIdentifierType] object.
+/// Creates a new ASN.1 OBJECT IDENTIFIER type.
 ///
 /// !return-ref
-/// !return-type
+/// !return-type UtAsn1ObjectIdentifierType
 UtObject *ut_asn1_object_identifier_type_new();
 
 /// Returns [true] if [object] is a [UtAsn1ObjectIdentifierType].

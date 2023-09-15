@@ -4,10 +4,10 @@
 
 #pragma once
 
-/// Creates a new [UtAsn1RelativeOidType] object.
+/// Creates a new ASN.1 RELATIVE-OID type.
 ///
 /// !return-ref
-/// !return-type
+/// !return-type UtAsn1RelativeOidType
 UtObject *ut_asn1_relative_oid_type_new();
 
 /// Returns [true] if [object] is a [UtAsn1RelativeOidType].

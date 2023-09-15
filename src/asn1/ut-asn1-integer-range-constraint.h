@@ -5,7 +5,7 @@
 
 #pragma once
 
-/// Creates a new ASN.1 integer range constraing from [lower] to [upper].
+/// Creates a new ASN.1 INTEGER range constraing from [lower] to [upper].
 ///
 /// !return-ref
 /// !return-type UtAsn1IntegerRangeConstraint

@@ -128,7 +128,7 @@ static void test_boolean_type_assignment() {
                                               "END");
   ut_assert_is_not_error(module1);
   UtObject *type1 =
-      ut_asn1_module_definition_get_assignment(module1, "BooleanType");
+      ut_asn1_module_definition_lookup_assignment(module1, "BooleanType");
   ut_assert_non_null_object(type1);
   ut_assert_true(ut_object_is_asn1_boolean_type(type1));
 
@@ -140,7 +140,7 @@ static void test_boolean_type_assignment() {
       "END");
   ut_assert_is_not_error(module2);
   UtObject *type2 =
-      ut_asn1_module_definition_get_assignment(module2, "BooleanType2");
+      ut_asn1_module_definition_lookup_assignment(module2, "BooleanType2");
   ut_assert_non_null_object(type2);
   ut_assert_true(ut_object_is_asn1_referenced_type(type2));
   ut_assert_true(
@@ -153,7 +153,7 @@ static void test_boolean_type_assignment() {
       "END");
   ut_assert_is_not_error(module3);
   UtObject *type3 =
-      ut_asn1_module_definition_get_assignment(module3, "BooleanType");
+      ut_asn1_module_definition_lookup_assignment(module3, "BooleanType");
   ut_assert_non_null_object(type3);
   ut_assert_true(ut_object_is_asn1_constrained_type(type3));
   ut_assert_true(
@@ -180,7 +180,7 @@ static void test_boolean_value_assignment() {
       "END");
   ut_assert_is_not_error(module1);
   UtObject *assignment1 =
-      ut_asn1_module_definition_get_assignment(module1, "booleanValue");
+      ut_asn1_module_definition_lookup_assignment(module1, "booleanValue");
   ut_assert_non_null_object(assignment1);
   ut_assert_true(
       ut_object_is_asn1_boolean_type(ut_asn1_type_value_get_type(assignment1)));
@@ -194,7 +194,7 @@ static void test_boolean_value_assignment() {
       "END");
   ut_assert_is_not_error(module2);
   UtObject *assignment2 =
-      ut_asn1_module_definition_get_assignment(module2, "booleanValue");
+      ut_asn1_module_definition_lookup_assignment(module2, "booleanValue");
   ut_assert_non_null_object(assignment2);
   ut_assert_true(
       ut_object_is_asn1_boolean_type(ut_asn1_type_value_get_type(assignment2)));
@@ -210,7 +210,7 @@ static void test_boolean_value_assignment() {
       "END");
   ut_assert_is_not_error(module3);
   UtObject *assignment3 =
-      ut_asn1_module_definition_get_assignment(module3, "booleanValue");
+      ut_asn1_module_definition_lookup_assignment(module3, "booleanValue");
   ut_assert_non_null_object(assignment3);
   UtObject *type3 = ut_asn1_type_value_get_type(assignment3);
   ut_assert_true(ut_object_is_asn1_referenced_type(type3));
@@ -228,7 +228,7 @@ static void test_boolean_value_assignment() {
       "END");
   ut_assert_is_not_error(module4);
   UtObject *assignment4 =
-      ut_asn1_module_definition_get_assignment(module4, "booleanValue2");
+      ut_asn1_module_definition_lookup_assignment(module4, "booleanValue2");
   ut_assert_non_null_object(assignment4);
   ut_assert_true(
       ut_object_is_asn1_boolean_type(ut_asn1_type_value_get_type(assignment4)));
@@ -265,7 +265,7 @@ static void test_integer_type_assignment() {
                                               "END");
   ut_assert_is_not_error(module1);
   UtObject *type1 =
-      ut_asn1_module_definition_get_assignment(module1, "IntegerType");
+      ut_asn1_module_definition_lookup_assignment(module1, "IntegerType");
   ut_assert_non_null_object(type1);
   ut_assert_true(ut_object_is_asn1_integer_type(type1));
 
@@ -277,7 +277,7 @@ static void test_integer_type_assignment() {
       "END");
   ut_assert_is_not_error(module2);
   UtObject *type2 =
-      ut_asn1_module_definition_get_assignment(module2, "IntegerType2");
+      ut_asn1_module_definition_lookup_assignment(module2, "IntegerType2");
   ut_assert_non_null_object(type2);
   ut_assert_true(ut_object_is_asn1_referenced_type(type2));
   ut_assert_true(
@@ -290,7 +290,7 @@ static void test_integer_type_assignment() {
       "END");
   ut_assert_is_not_error(module3);
   UtObject *type3 =
-      ut_asn1_module_definition_get_assignment(module3, "IntegerType");
+      ut_asn1_module_definition_lookup_assignment(module3, "IntegerType");
   ut_assert_non_null_object(type3);
   ut_assert_true(ut_object_is_asn1_constrained_type(type3));
   ut_assert_true(
@@ -308,7 +308,7 @@ static void test_integer_type_assignment() {
       "END");
   ut_assert_is_not_error(module4);
   UtObject *type4 =
-      ut_asn1_module_definition_get_assignment(module4, "IntegerType");
+      ut_asn1_module_definition_lookup_assignment(module4, "IntegerType");
   ut_assert_non_null_object(type4);
   ut_assert_true(ut_object_is_asn1_constrained_type(type4));
   ut_assert_true(
@@ -327,7 +327,7 @@ static void test_integer_type_assignment() {
       "END");
   ut_assert_is_not_error(module5);
   UtObject *type5 =
-      ut_asn1_module_definition_get_assignment(module5, "IntegerType");
+      ut_asn1_module_definition_lookup_assignment(module5, "IntegerType");
   ut_assert_non_null_object(type5);
   ut_assert_true(ut_object_is_asn1_constrained_type(type5));
   ut_assert_true(
@@ -346,7 +346,7 @@ static void test_integer_type_assignment() {
       "END");
   ut_assert_is_not_error(module6);
   UtObject *type6 =
-      ut_asn1_module_definition_get_assignment(module6, "IntegerType");
+      ut_asn1_module_definition_lookup_assignment(module6, "IntegerType");
   ut_assert_non_null_object(type6);
   ut_assert_true(ut_object_is_asn1_constrained_type(type6));
   ut_assert_true(
@@ -367,7 +367,7 @@ static void test_integer_type_assignment() {
       "END");
   ut_assert_is_not_error(module7);
   UtObject *type7 =
-      ut_asn1_module_definition_get_assignment(module7, "IntegerType");
+      ut_asn1_module_definition_lookup_assignment(module7, "IntegerType");
   ut_assert_non_null_object(type7);
   ut_assert_true(ut_object_is_asn1_constrained_type(type7));
   ut_assert_true(
@@ -386,7 +386,7 @@ static void test_integer_type_assignment() {
       "END");
   ut_assert_is_not_error(module8);
   UtObject *type8 =
-      ut_asn1_module_definition_get_assignment(module8, "IntegerType");
+      ut_asn1_module_definition_lookup_assignment(module8, "IntegerType");
   ut_assert_non_null_object(type8);
   ut_assert_true(ut_object_is_asn1_constrained_type(type8));
   ut_assert_true(
@@ -416,7 +416,7 @@ static void test_integer_type_assignment() {
       "END");
   ut_assert_is_not_error(module9);
   UtObject *type9 =
-      ut_asn1_module_definition_get_assignment(module9, "IntegerType");
+      ut_asn1_module_definition_lookup_assignment(module9, "IntegerType");
   ut_assert_non_null_object(type9);
   ut_assert_true(ut_object_is_asn1_constrained_type(type9));
   ut_assert_true(
@@ -466,7 +466,7 @@ static void test_integer_value_assignment() {
       "END");
   ut_assert_is_not_error(module1);
   UtObject *assignment1 =
-      ut_asn1_module_definition_get_assignment(module1, "integerValue");
+      ut_asn1_module_definition_lookup_assignment(module1, "integerValue");
   ut_assert_non_null_object(assignment1);
   ut_assert_true(
       ut_object_is_asn1_integer_type(ut_asn1_type_value_get_type(assignment1)));
@@ -480,7 +480,7 @@ static void test_integer_value_assignment() {
       "END");
   ut_assert_is_not_error(module2);
   UtObject *assignment2 =
-      ut_asn1_module_definition_get_assignment(module2, "integerValue");
+      ut_asn1_module_definition_lookup_assignment(module2, "integerValue");
   ut_assert_non_null_object(assignment2);
   ut_assert_true(
       ut_object_is_asn1_integer_type(ut_asn1_type_value_get_type(assignment2)));
@@ -496,7 +496,7 @@ static void test_integer_value_assignment() {
       "END");
   ut_assert_is_not_error(module3);
   UtObject *assignment3 =
-      ut_asn1_module_definition_get_assignment(module3, "integerValue");
+      ut_asn1_module_definition_lookup_assignment(module3, "integerValue");
   ut_assert_non_null_object(assignment3);
   UtObject *type3 = ut_asn1_type_value_get_type(assignment3);
   ut_assert_true(ut_object_is_asn1_referenced_type(type3));
@@ -514,7 +514,7 @@ static void test_integer_value_assignment() {
       "END");
   ut_assert_is_not_error(module4);
   UtObject *assignment4 =
-      ut_asn1_module_definition_get_assignment(module4, "integerValue2");
+      ut_asn1_module_definition_lookup_assignment(module4, "integerValue2");
   ut_assert_non_null_object(assignment4);
   ut_assert_true(
       ut_object_is_asn1_integer_type(ut_asn1_type_value_get_type(assignment4)));
@@ -530,7 +530,7 @@ static void test_bit_string_type_assignment() {
       "END");
   ut_assert_is_not_error(module1);
   UtObject *type1 =
-      ut_asn1_module_definition_get_assignment(module1, "BitStringType");
+      ut_asn1_module_definition_lookup_assignment(module1, "BitStringType");
   ut_assert_non_null_object(type1);
   ut_assert_true(ut_object_is_asn1_bit_string_type(type1));
 
@@ -542,7 +542,7 @@ static void test_bit_string_type_assignment() {
       "END");
   ut_assert_is_not_error(module2);
   UtObject *type2 =
-      ut_asn1_module_definition_get_assignment(module2, "BitStringType2");
+      ut_asn1_module_definition_lookup_assignment(module2, "BitStringType2");
   ut_assert_non_null_object(type2);
   ut_assert_true(ut_object_is_asn1_referenced_type(type2));
   ut_assert_true(ut_object_is_asn1_bit_string_type(
@@ -555,7 +555,7 @@ static void test_bit_string_type_assignment() {
       "END");
   ut_assert_is_not_error(module3);
   UtObject *type3 =
-      ut_asn1_module_definition_get_assignment(module3, "BitStringType");
+      ut_asn1_module_definition_lookup_assignment(module3, "BitStringType");
   ut_assert_non_null_object(type3);
   ut_assert_true(ut_object_is_asn1_constrained_type(type3));
   ut_assert_true(ut_object_is_asn1_bit_string_type(
@@ -582,7 +582,7 @@ static void test_bit_string_value_assignment() {
       "END");
   ut_assert_is_not_error(module1);
   UtObject *assignment1 =
-      ut_asn1_module_definition_get_assignment(module1, "bitStringValue");
+      ut_asn1_module_definition_lookup_assignment(module1, "bitStringValue");
   ut_assert_non_null_object(assignment1);
   ut_assert_true(ut_object_is_asn1_bit_string_type(
       ut_asn1_type_value_get_type(assignment1)));
@@ -597,7 +597,7 @@ static void test_bit_string_value_assignment() {
       "END");
   ut_assert_is_not_error(module2);
   UtObject *assignment2 =
-      ut_asn1_module_definition_get_assignment(module2, "bitStringValue");
+      ut_asn1_module_definition_lookup_assignment(module2, "bitStringValue");
   ut_assert_non_null_object(assignment2);
   ut_assert_true(ut_object_is_asn1_bit_string_type(
       ut_asn1_type_value_get_type(assignment2)));
@@ -613,7 +613,7 @@ static void test_bit_string_value_assignment() {
       "END");
   ut_assert_is_not_error(module3);
   UtObject *assignment3 =
-      ut_asn1_module_definition_get_assignment(module3, "bitStringValue");
+      ut_asn1_module_definition_lookup_assignment(module3, "bitStringValue");
   ut_assert_non_null_object(assignment3);
   ut_assert_true(ut_object_is_asn1_bit_string_type(
       ut_asn1_type_value_get_type(assignment3)));
@@ -629,7 +629,7 @@ static void test_bit_string_value_assignment() {
       "END");
   ut_assert_is_not_error(module4);
   UtObject *assignment4 =
-      ut_asn1_module_definition_get_assignment(module4, "bitStringValue");
+      ut_asn1_module_definition_lookup_assignment(module4, "bitStringValue");
   ut_assert_non_null_object(assignment4);
   UtObject *type4 = ut_asn1_type_value_get_type(assignment4);
   ut_assert_true(ut_object_is_asn1_referenced_type(type4));
@@ -647,7 +647,7 @@ static void test_bit_string_value_assignment() {
       "END");
   ut_assert_is_not_error(module5);
   UtObject *assignment5 =
-      ut_asn1_module_definition_get_assignment(module5, "bitStringValue2");
+      ut_asn1_module_definition_lookup_assignment(module5, "bitStringValue2");
   ut_assert_non_null_object(assignment5);
   ut_assert_true(ut_object_is_asn1_bit_string_type(
       ut_asn1_type_value_get_type(assignment5)));
@@ -663,7 +663,7 @@ static void test_octet_string_type_assignment() {
       "END");
   ut_assert_is_not_error(module1);
   UtObject *type1 =
-      ut_asn1_module_definition_get_assignment(module1, "OctetStringType");
+      ut_asn1_module_definition_lookup_assignment(module1, "OctetStringType");
   ut_assert_non_null_object(type1);
   ut_assert_true(ut_object_is_asn1_octet_string_type(type1));
 
@@ -675,7 +675,7 @@ static void test_octet_string_type_assignment() {
       "END");
   ut_assert_is_not_error(module2);
   UtObject *type2 =
-      ut_asn1_module_definition_get_assignment(module2, "OctetStringType2");
+      ut_asn1_module_definition_lookup_assignment(module2, "OctetStringType2");
   ut_assert_non_null_object(type2);
   ut_assert_true(ut_object_is_asn1_referenced_type(type2));
   ut_assert_true(ut_object_is_asn1_octet_string_type(
@@ -688,7 +688,7 @@ static void test_octet_string_type_assignment() {
       "END");
   ut_assert_is_not_error(module3);
   UtObject *type3 =
-      ut_asn1_module_definition_get_assignment(module3, "OctetStringType");
+      ut_asn1_module_definition_lookup_assignment(module3, "OctetStringType");
   ut_assert_non_null_object(type3);
   ut_assert_true(ut_object_is_asn1_constrained_type(type3));
   ut_assert_true(ut_object_is_asn1_octet_string_type(
@@ -716,7 +716,7 @@ static void test_octet_string_value_assignment() {
       "END");
   ut_assert_is_not_error(module1);
   UtObject *assignment1 =
-      ut_asn1_module_definition_get_assignment(module1, "octetStringValue");
+      ut_asn1_module_definition_lookup_assignment(module1, "octetStringValue");
   ut_assert_non_null_object(assignment1);
   ut_assert_true(ut_object_is_asn1_octet_string_type(
       ut_asn1_type_value_get_type(assignment1)));
@@ -731,7 +731,7 @@ static void test_octet_string_value_assignment() {
       "END");
   ut_assert_is_not_error(module2);
   UtObject *assignment2 =
-      ut_asn1_module_definition_get_assignment(module2, "octetStringValue");
+      ut_asn1_module_definition_lookup_assignment(module2, "octetStringValue");
   ut_assert_non_null_object(assignment2);
   ut_assert_true(ut_object_is_asn1_octet_string_type(
       ut_asn1_type_value_get_type(assignment2)));
@@ -746,7 +746,7 @@ static void test_octet_string_value_assignment() {
       "END");
   ut_assert_is_not_error(module3);
   UtObject *assignment3 =
-      ut_asn1_module_definition_get_assignment(module3, "octetStringValue");
+      ut_asn1_module_definition_lookup_assignment(module3, "octetStringValue");
   ut_assert_non_null_object(assignment3);
   ut_assert_true(ut_object_is_asn1_octet_string_type(
       ut_asn1_type_value_get_type(assignment3)));
@@ -759,7 +759,7 @@ static void test_octet_string_value_assignment() {
       "END");
   ut_assert_is_not_error(module4);
   UtObject *assignment4 =
-      ut_asn1_module_definition_get_assignment(module4, "octetStringValue");
+      ut_asn1_module_definition_lookup_assignment(module4, "octetStringValue");
   ut_assert_non_null_object(assignment4);
   ut_assert_true(ut_object_is_asn1_octet_string_type(
       ut_asn1_type_value_get_type(assignment4)));
@@ -774,7 +774,7 @@ static void test_octet_string_value_assignment() {
       "END");
   ut_assert_is_not_error(module5);
   UtObject *assignment5 =
-      ut_asn1_module_definition_get_assignment(module5, "octetStringValue");
+      ut_asn1_module_definition_lookup_assignment(module5, "octetStringValue");
   ut_assert_non_null_object(assignment5);
   ut_assert_true(ut_object_is_asn1_octet_string_type(
       ut_asn1_type_value_get_type(assignment5)));
@@ -789,7 +789,7 @@ static void test_octet_string_value_assignment() {
       "END");
   ut_assert_is_not_error(module6);
   UtObject *assignment6 =
-      ut_asn1_module_definition_get_assignment(module6, "octetStringValue");
+      ut_asn1_module_definition_lookup_assignment(module6, "octetStringValue");
   ut_assert_non_null_object(assignment6);
   ut_assert_true(ut_object_is_asn1_octet_string_type(
       ut_asn1_type_value_get_type(assignment6)));
@@ -805,7 +805,7 @@ static void test_octet_string_value_assignment() {
       "END");
   ut_assert_is_not_error(module7);
   UtObject *assignment7 =
-      ut_asn1_module_definition_get_assignment(module7, "octetStringValue");
+      ut_asn1_module_definition_lookup_assignment(module7, "octetStringValue");
   ut_assert_non_null_object(assignment7);
   ut_assert_true(ut_object_is_asn1_octet_string_type(
       ut_asn1_type_value_get_type(assignment7)));
@@ -820,7 +820,7 @@ static void test_octet_string_value_assignment() {
       "END");
   ut_assert_is_not_error(module8);
   UtObject *assignment8 =
-      ut_asn1_module_definition_get_assignment(module8, "octetStringValue");
+      ut_asn1_module_definition_lookup_assignment(module8, "octetStringValue");
   ut_assert_non_null_object(assignment8);
   ut_assert_true(ut_object_is_asn1_octet_string_type(
       ut_asn1_type_value_get_type(assignment8)));
@@ -836,7 +836,7 @@ static void test_octet_string_value_assignment() {
       "END");
   ut_assert_is_not_error(module9);
   UtObject *assignment9 =
-      ut_asn1_module_definition_get_assignment(module9, "octetStringValue");
+      ut_asn1_module_definition_lookup_assignment(module9, "octetStringValue");
   ut_assert_non_null_object(assignment9);
   UtObject *type9 = ut_asn1_type_value_get_type(assignment9);
   ut_assert_true(ut_object_is_asn1_referenced_type(type9));
@@ -853,8 +853,8 @@ static void test_octet_string_value_assignment() {
       "    octetStringValue2 OCTET STRING ::= octetStringValue1\n"
       "END");
   ut_assert_is_not_error(module10);
-  UtObject *assignment10 =
-      ut_asn1_module_definition_get_assignment(module10, "octetStringValue2");
+  UtObject *assignment10 = ut_asn1_module_definition_lookup_assignment(
+      module10, "octetStringValue2");
   ut_assert_non_null_object(assignment10);
   ut_assert_true(ut_object_is_asn1_octet_string_type(
       ut_asn1_type_value_get_type(assignment10)));
@@ -870,7 +870,7 @@ static void test_null_type_assignment() {
                                               "END");
   ut_assert_is_not_error(module1);
   UtObject *type1 =
-      ut_asn1_module_definition_get_assignment(module1, "NullType");
+      ut_asn1_module_definition_lookup_assignment(module1, "NullType");
   ut_assert_non_null_object(type1);
   ut_assert_true(ut_object_is_asn1_null_type(type1));
 
@@ -882,7 +882,7 @@ static void test_null_type_assignment() {
                                               "END");
   ut_assert_is_not_error(module2);
   UtObject *type2 =
-      ut_asn1_module_definition_get_assignment(module2, "NullType2");
+      ut_asn1_module_definition_lookup_assignment(module2, "NullType2");
   ut_assert_non_null_object(type2);
   ut_assert_true(ut_object_is_asn1_referenced_type(type2));
   ut_assert_true(
@@ -895,7 +895,7 @@ static void test_null_type_assignment() {
                                               "END");
   ut_assert_is_not_error(module3);
   UtObject *type3 =
-      ut_asn1_module_definition_get_assignment(module3, "NullType");
+      ut_asn1_module_definition_lookup_assignment(module3, "NullType");
   ut_assert_non_null_object(type3);
   ut_assert_true(ut_object_is_asn1_constrained_type(type3));
   ut_assert_true(
@@ -920,7 +920,7 @@ static void test_null_value_assignment() {
                                               "END");
   ut_assert_is_not_error(module1);
   UtObject *assignment1 =
-      ut_asn1_module_definition_get_assignment(module1, "nullValue");
+      ut_asn1_module_definition_lookup_assignment(module1, "nullValue");
   ut_assert_non_null_object(assignment1);
   ut_assert_true(
       ut_object_is_asn1_null_type(ut_asn1_type_value_get_type(assignment1)));
@@ -935,7 +935,7 @@ static void test_null_value_assignment() {
       "END");
   ut_assert_is_not_error(module2);
   UtObject *assignment2 =
-      ut_asn1_module_definition_get_assignment(module2, "nullValue");
+      ut_asn1_module_definition_lookup_assignment(module2, "nullValue");
   ut_assert_non_null_object(assignment2);
   UtObject *type2 = ut_asn1_type_value_get_type(assignment2);
   ut_assert_true(ut_object_is_asn1_referenced_type(type2));
@@ -952,7 +952,7 @@ static void test_null_value_assignment() {
       "END");
   ut_assert_is_not_error(module3);
   UtObject *assignment3 =
-      ut_asn1_module_definition_get_assignment(module3, "nullValue2");
+      ut_asn1_module_definition_lookup_assignment(module3, "nullValue2");
   ut_assert_non_null_object(assignment3);
   ut_assert_true(
       ut_object_is_asn1_null_type(ut_asn1_type_value_get_type(assignment3)));
@@ -966,8 +966,8 @@ static void test_object_identifier_type_assignment() {
       "    ObjectIdentifierType ::= OBJECT IDENTIFIER\n"
       "END");
   ut_assert_is_not_error(module1);
-  UtObject *type1 =
-      ut_asn1_module_definition_get_assignment(module1, "ObjectIdentifierType");
+  UtObject *type1 = ut_asn1_module_definition_lookup_assignment(
+      module1, "ObjectIdentifierType");
   ut_assert_non_null_object(type1);
   ut_assert_true(ut_object_is_asn1_object_identifier_type(type1));
 
@@ -978,7 +978,7 @@ static void test_object_identifier_type_assignment() {
       "    ObjectIdentifierType2 ::= ObjectIdentifierType1\n"
       "END");
   ut_assert_is_not_error(module2);
-  UtObject *type2 = ut_asn1_module_definition_get_assignment(
+  UtObject *type2 = ut_asn1_module_definition_lookup_assignment(
       module2, "ObjectIdentifierType2");
   ut_assert_non_null_object(type2);
   ut_assert_true(ut_object_is_asn1_referenced_type(type2));
@@ -991,8 +991,8 @@ static void test_object_identifier_type_assignment() {
       "    ObjectIdentifierType ::= OBJECT IDENTIFIER ({ 1 0 8571 1})\n"
       "END");
   ut_assert_is_not_error(module3);
-  UtObject *type3 =
-      ut_asn1_module_definition_get_assignment(module3, "ObjectIdentifierType");
+  UtObject *type3 = ut_asn1_module_definition_lookup_assignment(
+      module3, "ObjectIdentifierType");
   ut_assert_non_null_object(type3);
   ut_assert_true(ut_object_is_asn1_constrained_type(type3));
   ut_assert_true(ut_object_is_asn1_object_identifier_type(
@@ -1021,7 +1021,7 @@ static void test_object_identifier_value_assignment() {
       "application-context (1) } \n"
       "END");
   ut_assert_is_not_error(module1);
-  UtObject *assignment1 = ut_asn1_module_definition_get_assignment(
+  UtObject *assignment1 = ut_asn1_module_definition_lookup_assignment(
       module1, "objectIdentifierValue");
   ut_assert_non_null_object(assignment1);
   ut_assert_true(ut_object_is_asn1_object_identifier_type(
@@ -1037,7 +1037,7 @@ static void test_object_identifier_value_assignment() {
       "    objectIdentifierValue OBJECT IDENTIFIER ::= { 1 0 8571 1 } \n"
       "END");
   ut_assert_is_not_error(module2);
-  UtObject *assignment2 = ut_asn1_module_definition_get_assignment(
+  UtObject *assignment2 = ut_asn1_module_definition_lookup_assignment(
       module2, "objectIdentifierValue");
   ut_assert_non_null_object(assignment2);
   ut_assert_true(ut_object_is_asn1_object_identifier_type(
@@ -1054,7 +1054,7 @@ static void test_object_identifier_value_assignment() {
       "8571 application-context (1) } \n"
       "END");
   ut_assert_is_not_error(module3);
-  UtObject *assignment3 = ut_asn1_module_definition_get_assignment(
+  UtObject *assignment3 = ut_asn1_module_definition_lookup_assignment(
       module3, "objectIdentifierValue");
   ut_assert_non_null_object(assignment3);
   ut_assert_true(ut_object_is_asn1_object_identifier_type(
@@ -1071,7 +1071,7 @@ static void test_object_identifier_value_assignment() {
       "    objectIdentifierValue OBJECT IDENTIFIER ::= { baseValue 8571 1 }\n"
       "END");
   ut_assert_is_not_error(module4);
-  UtObject *assignment4 = ut_asn1_module_definition_get_assignment(
+  UtObject *assignment4 = ut_asn1_module_definition_lookup_assignment(
       module4, "objectIdentifierValue");
   ut_assert_non_null_object(assignment4);
   ut_assert_true(ut_object_is_asn1_object_identifier_type(
@@ -1089,7 +1089,7 @@ static void test_object_identifier_value_assignment() {
       "relativeOIDValue }\n"
       "END");
   ut_assert_is_not_error(module5);
-  UtObject *assignment5 = ut_asn1_module_definition_get_assignment(
+  UtObject *assignment5 = ut_asn1_module_definition_lookup_assignment(
       module5, "objectIdentifierValue");
   ut_assert_non_null_object(assignment5);
   ut_assert_true(ut_object_is_asn1_object_identifier_type(
@@ -1143,8 +1143,8 @@ static void test_object_descriptor_type_assignment() {
       "    ObjectDescriptorType ::= ObjectDescriptor\n"
       "END");
   ut_assert_is_not_error(module1);
-  UtObject *type1 =
-      ut_asn1_module_definition_get_assignment(module1, "ObjectDescriptorType");
+  UtObject *type1 = ut_asn1_module_definition_lookup_assignment(
+      module1, "ObjectDescriptorType");
   ut_assert_non_null_object(type1);
   ut_assert_true(ut_object_is_asn1_object_descriptor_type(type1));
 
@@ -1155,7 +1155,7 @@ static void test_object_descriptor_type_assignment() {
       "    ObjectDescriptorType2 ::= ObjectDescriptorType1\n"
       "END");
   ut_assert_is_not_error(module2);
-  UtObject *type2 = ut_asn1_module_definition_get_assignment(
+  UtObject *type2 = ut_asn1_module_definition_lookup_assignment(
       module2, "ObjectDescriptorType2");
   ut_assert_non_null_object(type2);
   ut_assert_true(ut_object_is_asn1_referenced_type(type2));
@@ -1168,8 +1168,8 @@ static void test_object_descriptor_type_assignment() {
       "    ObjectDescriptorType ::= ObjectDescriptor (\"Foo\")\n"
       "END");
   ut_assert_is_not_error(module3);
-  UtObject *type3 =
-      ut_asn1_module_definition_get_assignment(module3, "ObjectDescriptorType");
+  UtObject *type3 = ut_asn1_module_definition_lookup_assignment(
+      module3, "ObjectDescriptorType");
   ut_assert_non_null_object(type3);
   ut_assert_true(ut_object_is_asn1_constrained_type(type3));
   ut_assert_true(ut_object_is_asn1_object_descriptor_type(
@@ -1194,7 +1194,7 @@ static void test_object_descriptor_value_assignment() {
       "    objectDescriptorValue ObjectDescriptor ::= \"Foo\"\n"
       "END");
   ut_assert_is_not_error(module1);
-  UtObject *assignment1 = ut_asn1_module_definition_get_assignment(
+  UtObject *assignment1 = ut_asn1_module_definition_lookup_assignment(
       module1, "objectDescriptorValue");
   ut_assert_non_null_object(assignment1);
   ut_assert_true(ut_object_is_asn1_object_descriptor_type(
@@ -1210,7 +1210,7 @@ static void test_object_descriptor_value_assignment() {
       "    objectDescriptorValue ObjectDescriptorType ::= \"Foo\"\n"
       "END");
   ut_assert_is_not_error(module2);
-  UtObject *assignment2 = ut_asn1_module_definition_get_assignment(
+  UtObject *assignment2 = ut_asn1_module_definition_lookup_assignment(
       module2, "objectDescriptorValue");
   ut_assert_non_null_object(assignment2);
   UtObject *type2 = ut_asn1_type_value_get_type(assignment2);
@@ -1228,7 +1228,7 @@ static void test_object_descriptor_value_assignment() {
       "    objectDescriptorValue2 ObjectDescriptor ::= objectDescriptorValue1\n"
       "END");
   ut_assert_is_not_error(module3);
-  UtObject *assignment3 = ut_asn1_module_definition_get_assignment(
+  UtObject *assignment3 = ut_asn1_module_definition_lookup_assignment(
       module3, "objectDescriptorValue2");
   ut_assert_non_null_object(assignment3);
   ut_assert_true(ut_object_is_asn1_object_descriptor_type(
@@ -1245,7 +1245,7 @@ static void test_external_type_assignment() {
                                               "END");
   ut_assert_is_not_error(module1);
   UtObject *type1 =
-      ut_asn1_module_definition_get_assignment(module1, "ExternalType");
+      ut_asn1_module_definition_lookup_assignment(module1, "ExternalType");
   ut_assert_non_null_object(type1);
   ut_assert_true(ut_object_is_asn1_external_type(type1));
 
@@ -1257,7 +1257,7 @@ static void test_external_type_assignment() {
       "END");
   ut_assert_is_not_error(module2);
   UtObject *type2 =
-      ut_asn1_module_definition_get_assignment(module2, "ExternalType2");
+      ut_asn1_module_definition_lookup_assignment(module2, "ExternalType2");
   ut_assert_non_null_object(type2);
   ut_assert_true(ut_object_is_asn1_referenced_type(type2));
   UtObject *type2i = ut_asn1_referenced_type_get_type(type2);
@@ -1271,7 +1271,7 @@ static void test_external_value_assignment() {
   //     presentation-context-id 42, data-value: ''H }\n" "END");
   // ut_assert_is_not_error(module1);
   // UtObject *assignment1 =
-  //     ut_asn1_module_definition_get_assignment(module1, "externalValue");
+  //     ut_asn1_module_definition_lookup_assignment(module1, "externalValue");
   // ut_assert_non_null_object(assignment1);
   // ut_assert_true(ut_object_is_asn1_external_type(
   //     ut_asn1_type_value_get_type(assignment1)));
@@ -1286,7 +1286,7 @@ static void test_real_type_assignment() {
                                               "END");
   ut_assert_is_not_error(module1);
   UtObject *type1 =
-      ut_asn1_module_definition_get_assignment(module1, "RealType");
+      ut_asn1_module_definition_lookup_assignment(module1, "RealType");
   ut_assert_non_null_object(type1);
   ut_assert_true(ut_object_is_asn1_real_type(type1));
 
@@ -1298,7 +1298,7 @@ static void test_real_type_assignment() {
                                               "END");
   ut_assert_is_not_error(module2);
   UtObject *type2 =
-      ut_asn1_module_definition_get_assignment(module2, "RealType2");
+      ut_asn1_module_definition_lookup_assignment(module2, "RealType2");
   ut_assert_non_null_object(type2);
   ut_assert_true(ut_object_is_asn1_referenced_type(type2));
   ut_assert_true(
@@ -1311,7 +1311,7 @@ static void test_real_type_assignment() {
       "END");
   ut_assert_is_not_error(module3);
   UtObject *type3 =
-      ut_asn1_module_definition_get_assignment(module3, "RealType");
+      ut_asn1_module_definition_lookup_assignment(module3, "RealType");
   ut_assert_non_null_object(type3);
   ut_assert_true(ut_object_is_asn1_constrained_type(type3));
   ut_assert_true(
@@ -1329,7 +1329,7 @@ static void test_real_type_assignment() {
       "END");
   ut_assert_is_not_error(module4);
   UtObject *type4 =
-      ut_asn1_module_definition_get_assignment(module4, "RealType");
+      ut_asn1_module_definition_lookup_assignment(module4, "RealType");
   ut_assert_non_null_object(type4);
   ut_assert_true(ut_object_is_asn1_constrained_type(type4));
   ut_assert_true(
@@ -1359,7 +1359,7 @@ static void test_real_value_assignment() {
                                               "END");
   ut_assert_is_not_error(module1);
   UtObject *assignment1 =
-      ut_asn1_module_definition_get_assignment(module1, "realValue");
+      ut_asn1_module_definition_lookup_assignment(module1, "realValue");
   ut_assert_non_null_object(assignment1);
   ut_assert_true(
       ut_object_is_asn1_real_type(ut_asn1_type_value_get_type(assignment1)));
@@ -1374,7 +1374,7 @@ static void test_real_value_assignment() {
                                               "END");
   ut_assert_is_not_error(module2);
   UtObject *assignment2 =
-      ut_asn1_module_definition_get_assignment(module2, "realValue");
+      ut_asn1_module_definition_lookup_assignment(module2, "realValue");
   ut_assert_non_null_object(assignment2);
   ut_assert_true(
       ut_object_is_asn1_real_type(ut_asn1_type_value_get_type(assignment2)));
@@ -1389,7 +1389,7 @@ static void test_real_value_assignment() {
                                               "END");
   ut_assert_is_not_error(module3);
   UtObject *assignment3 =
-      ut_asn1_module_definition_get_assignment(module3, "realValue");
+      ut_asn1_module_definition_lookup_assignment(module3, "realValue");
   ut_assert_non_null_object(assignment3);
   ut_assert_true(
       ut_object_is_asn1_real_type(ut_asn1_type_value_get_type(assignment3)));
@@ -1403,7 +1403,7 @@ static void test_real_value_assignment() {
                                               "END");
   ut_assert_is_not_error(module4);
   UtObject *assignment4 =
-      ut_asn1_module_definition_get_assignment(module4, "realValue");
+      ut_asn1_module_definition_lookup_assignment(module4, "realValue");
   ut_assert_non_null_object(assignment4);
   ut_assert_true(
       ut_object_is_asn1_real_type(ut_asn1_type_value_get_type(assignment4)));
@@ -1417,7 +1417,7 @@ static void test_real_value_assignment() {
                                               "END");
   ut_assert_is_not_error(module5);
   UtObject *assignment5 =
-      ut_asn1_module_definition_get_assignment(module5, "realValue");
+      ut_asn1_module_definition_lookup_assignment(module5, "realValue");
   ut_assert_non_null_object(assignment5);
   ut_assert_true(
       ut_object_is_asn1_real_type(ut_asn1_type_value_get_type(assignment5)));
@@ -1431,7 +1431,7 @@ static void test_real_value_assignment() {
       "END");
   ut_assert_is_not_error(module6);
   UtObject *assignment6 =
-      ut_asn1_module_definition_get_assignment(module6, "realValue");
+      ut_asn1_module_definition_lookup_assignment(module6, "realValue");
   ut_assert_non_null_object(assignment6);
   ut_assert_true(
       ut_object_is_asn1_real_type(ut_asn1_type_value_get_type(assignment6)));
@@ -1446,7 +1446,7 @@ static void test_real_value_assignment() {
       "END");
   ut_assert_is_not_error(module7);
   UtObject *assignment7 =
-      ut_asn1_module_definition_get_assignment(module7, "realValue");
+      ut_asn1_module_definition_lookup_assignment(module7, "realValue");
   ut_assert_non_null_object(assignment7);
   ut_assert_true(
       ut_object_is_asn1_real_type(ut_asn1_type_value_get_type(assignment7)));
@@ -1460,7 +1460,7 @@ static void test_real_value_assignment() {
       "END");
   ut_assert_is_not_error(module8);
   UtObject *assignment8 =
-      ut_asn1_module_definition_get_assignment(module8, "realValue");
+      ut_asn1_module_definition_lookup_assignment(module8, "realValue");
   ut_assert_non_null_object(assignment8);
   ut_assert_true(
       ut_object_is_asn1_real_type(ut_asn1_type_value_get_type(assignment8)));
@@ -1474,7 +1474,7 @@ static void test_real_value_assignment() {
       "END");
   ut_assert_is_not_error(module9);
   UtObject *assignment9 =
-      ut_asn1_module_definition_get_assignment(module9, "realValue");
+      ut_asn1_module_definition_lookup_assignment(module9, "realValue");
   ut_assert_non_null_object(assignment9);
   ut_assert_true(
       ut_object_is_asn1_real_type(ut_asn1_type_value_get_type(assignment9)));
@@ -1490,7 +1490,7 @@ static void test_real_value_assignment() {
       "END");
   ut_assert_is_not_error(module10);
   UtObject *assignment10 =
-      ut_asn1_module_definition_get_assignment(module10, "realValue");
+      ut_asn1_module_definition_lookup_assignment(module10, "realValue");
   ut_assert_non_null_object(assignment10);
   UtObject *type10 = ut_asn1_type_value_get_type(assignment10);
   ut_assert_true(ut_object_is_asn1_referenced_type(type10));
@@ -1508,7 +1508,7 @@ static void test_real_value_assignment() {
       "END");
   ut_assert_is_not_error(module11);
   UtObject *assignment11 =
-      ut_asn1_module_definition_get_assignment(module11, "realValue2");
+      ut_asn1_module_definition_lookup_assignment(module11, "realValue2");
   ut_assert_non_null_object(assignment11);
   ut_assert_true(
       ut_object_is_asn1_real_type(ut_asn1_type_value_get_type(assignment11)));
@@ -1524,7 +1524,7 @@ static void test_enumerated_type_assignment() {
       "END");
   ut_assert_is_not_error(module1);
   UtObject *type1 =
-      ut_asn1_module_definition_get_assignment(module1, "EnumeratedType");
+      ut_asn1_module_definition_lookup_assignment(module1, "EnumeratedType");
   ut_assert_non_null_object(type1);
   ut_assert_true(ut_object_is_asn1_enumerated_type(type1));
   ut_assert_int_equal(ut_asn1_enumerated_type_lookup_value(type1, "red"), 0);
@@ -1538,7 +1538,7 @@ static void test_enumerated_type_assignment() {
       "END");
   ut_assert_is_not_error(module2);
   UtObject *type2 =
-      ut_asn1_module_definition_get_assignment(module2, "EnumeratedType");
+      ut_asn1_module_definition_lookup_assignment(module2, "EnumeratedType");
   ut_assert_non_null_object(type2);
   ut_assert_true(ut_object_is_asn1_enumerated_type(type2));
   ut_assert_int_equal(ut_asn1_enumerated_type_lookup_value(type1, "red"), 0);
@@ -1553,7 +1553,7 @@ static void test_enumerated_type_assignment() {
       "END");
   ut_assert_is_not_error(module3);
   UtObject *type3 =
-      ut_asn1_module_definition_get_assignment(module3, "EnumeratedType2");
+      ut_asn1_module_definition_lookup_assignment(module3, "EnumeratedType2");
   ut_assert_non_null_object(type3);
   ut_assert_true(ut_object_is_asn1_referenced_type(type3));
   UtObject *type3i = ut_asn1_referenced_type_get_type(type3);
@@ -1569,7 +1569,7 @@ static void test_enumerated_type_assignment() {
       "END");
   ut_assert_is_not_error(module4);
   UtObject *type4 =
-      ut_asn1_module_definition_get_assignment(module4, "EnumeratedType");
+      ut_asn1_module_definition_lookup_assignment(module4, "EnumeratedType");
   ut_assert_non_null_object(type4);
   ut_assert_true(ut_object_is_asn1_constrained_type(type4));
   ut_assert_true(ut_object_is_asn1_enumerated_type(
@@ -1603,7 +1603,7 @@ static void test_enumerated_value_assignment() {
       "END");
   ut_assert_is_not_error(module1);
   UtObject *assignment1 =
-      ut_asn1_module_definition_get_assignment(module1, "enumeratedValue");
+      ut_asn1_module_definition_lookup_assignment(module1, "enumeratedValue");
   ut_assert_non_null_object(assignment1);
   ut_assert_true(ut_object_is_asn1_enumerated_type(
       ut_asn1_type_value_get_type(assignment1)));
@@ -1619,7 +1619,7 @@ static void test_enumerated_value_assignment() {
       "END");
   ut_assert_is_not_error(module2);
   UtObject *assignment2 =
-      ut_asn1_module_definition_get_assignment(module2, "enumeratedValue");
+      ut_asn1_module_definition_lookup_assignment(module2, "enumeratedValue");
   ut_assert_non_null_object(assignment2);
   UtObject *type2 = ut_asn1_type_value_get_type(assignment2);
   ut_assert_true(ut_object_is_asn1_referenced_type(type2));
@@ -1638,7 +1638,7 @@ static void test_enumerated_value_assignment() {
       "END");
   ut_assert_is_not_error(module3);
   UtObject *assignment3 =
-      ut_asn1_module_definition_get_assignment(module3, "enumeratedValue2");
+      ut_asn1_module_definition_lookup_assignment(module3, "enumeratedValue2");
   ut_assert_non_null_object(assignment3);
   UtObject *type3 = ut_asn1_type_value_get_type(assignment3);
   ut_assert_true(ut_object_is_asn1_referenced_type(type3));
@@ -1664,7 +1664,7 @@ static void test_embedded_pdv_type_assignment() {
       "END");
   ut_assert_is_not_error(module1);
   UtObject *type1 =
-      ut_asn1_module_definition_get_assignment(module1, "EmbeddedPdvType");
+      ut_asn1_module_definition_lookup_assignment(module1, "EmbeddedPdvType");
   ut_assert_non_null_object(type1);
   ut_assert_true(ut_object_is_asn1_embedded_pdv_type(type1));
 
@@ -1676,7 +1676,7 @@ static void test_embedded_pdv_type_assignment() {
       "END");
   ut_assert_is_not_error(module2);
   UtObject *type2 =
-      ut_asn1_module_definition_get_assignment(module2, "EmbeddedPdvType2");
+      ut_asn1_module_definition_lookup_assignment(module2, "EmbeddedPdvType2");
   ut_assert_non_null_object(type2);
   ut_assert_true(ut_object_is_asn1_referenced_type(type2));
   UtObject *type2i = ut_asn1_referenced_type_get_type(type2);
@@ -1690,7 +1690,8 @@ static void test_embedded_pdv_value_assignment() {
   //     data-value: ''H }\n" "END");
   // ut_assert_is_not_error(module1);
   // UtObject *assignment1 =
-  //     ut_asn1_module_definition_get_assignment(module1, "embeddedPdvValue");
+  //     ut_asn1_module_definition_lookup_assignment(module1,
+  //     "embeddedPdvValue");
   // ut_assert_non_null_object(assignment1);
   // ut_assert_true(ut_object_is_asn1_embedded_pdv_type(
   //     ut_asn1_type_value_get_type(assignment1)));
@@ -1705,7 +1706,7 @@ static void test_utf8_string_type_assignment() {
       "END");
   ut_assert_is_not_error(module1);
   UtObject *type1 =
-      ut_asn1_module_definition_get_assignment(module1, "UTF8StringType");
+      ut_asn1_module_definition_lookup_assignment(module1, "UTF8StringType");
   ut_assert_non_null_object(type1);
   ut_assert_true(ut_object_is_asn1_utf8_string_type(type1));
 
@@ -1717,7 +1718,7 @@ static void test_utf8_string_type_assignment() {
       "END");
   ut_assert_is_not_error(module2);
   UtObject *type2 =
-      ut_asn1_module_definition_get_assignment(module2, "UTF8StringType2");
+      ut_asn1_module_definition_lookup_assignment(module2, "UTF8StringType2");
   ut_assert_non_null_object(type2);
   ut_assert_true(ut_object_is_asn1_referenced_type(type2));
   ut_assert_true(ut_object_is_asn1_utf8_string_type(
@@ -1730,7 +1731,7 @@ static void test_utf8_string_type_assignment() {
       "END");
   ut_assert_is_not_error(module3);
   UtObject *type3 =
-      ut_asn1_module_definition_get_assignment(module3, "UTF8StringType");
+      ut_asn1_module_definition_lookup_assignment(module3, "UTF8StringType");
   ut_assert_non_null_object(type3);
   ut_assert_true(ut_object_is_asn1_constrained_type(type3));
   ut_assert_true(ut_object_is_asn1_utf8_string_type(
@@ -1748,7 +1749,7 @@ static void test_utf8_string_type_assignment() {
       "END");
   ut_assert_is_not_error(module4);
   UtObject *type4 =
-      ut_asn1_module_definition_get_assignment(module4, "UTF8StringType");
+      ut_asn1_module_definition_lookup_assignment(module4, "UTF8StringType");
   ut_assert_non_null_object(type4);
   ut_assert_true(ut_object_is_asn1_constrained_type(type4));
   ut_assert_true(ut_object_is_asn1_utf8_string_type(
@@ -1776,7 +1777,7 @@ static void test_utf8_string_value_assignment() {
       "END");
   ut_assert_is_not_error(module1);
   UtObject *assignment1 =
-      ut_asn1_module_definition_get_assignment(module1, "utf8StringValue");
+      ut_asn1_module_definition_lookup_assignment(module1, "utf8StringValue");
   ut_assert_non_null_object(assignment1);
   ut_assert_true(ut_object_is_asn1_utf8_string_type(
       ut_asn1_type_value_get_type(assignment1)));
@@ -1791,7 +1792,7 @@ static void test_utf8_string_value_assignment() {
       "END");
   ut_assert_is_not_error(module2);
   UtObject *assignment2 =
-      ut_asn1_module_definition_get_assignment(module2, "utf8StringValue");
+      ut_asn1_module_definition_lookup_assignment(module2, "utf8StringValue");
   ut_assert_non_null_object(assignment2);
   ut_assert_true(ut_object_is_asn1_utf8_string_type(
       ut_asn1_type_value_get_type(assignment2)));
@@ -1806,7 +1807,7 @@ static void test_utf8_string_value_assignment() {
       "END");
   ut_assert_is_not_error(module3);
   UtObject *assignment3 =
-      ut_asn1_module_definition_get_assignment(module3, "utf8StringValue");
+      ut_asn1_module_definition_lookup_assignment(module3, "utf8StringValue");
   ut_assert_non_null_object(assignment3);
   ut_assert_true(ut_object_is_asn1_utf8_string_type(
       ut_asn1_type_value_get_type(assignment3)));
@@ -1822,7 +1823,7 @@ static void test_utf8_string_value_assignment() {
       "END");
   ut_assert_is_not_error(module4);
   UtObject *assignment4 =
-      ut_asn1_module_definition_get_assignment(module4, "utf8StringValue");
+      ut_asn1_module_definition_lookup_assignment(module4, "utf8StringValue");
   ut_assert_non_null_object(assignment4);
   UtObject *type4 = ut_asn1_type_value_get_type(assignment4);
   ut_assert_true(ut_object_is_asn1_referenced_type(type4));
@@ -1840,7 +1841,7 @@ static void test_utf8_string_value_assignment() {
       "END");
   ut_assert_is_not_error(module5);
   UtObject *assignment5 =
-      ut_asn1_module_definition_get_assignment(module5, "utf8StringValue2");
+      ut_asn1_module_definition_lookup_assignment(module5, "utf8StringValue2");
   ut_assert_non_null_object(assignment5);
   ut_assert_true(ut_object_is_asn1_utf8_string_type(
       ut_asn1_type_value_get_type(assignment5)));
@@ -1856,7 +1857,7 @@ static void test_relative_oid_type_assignment() {
       "END");
   ut_assert_is_not_error(module1);
   UtObject *type1 =
-      ut_asn1_module_definition_get_assignment(module1, "RelativeOidType");
+      ut_asn1_module_definition_lookup_assignment(module1, "RelativeOidType");
   ut_assert_non_null_object(type1);
   ut_assert_true(ut_object_is_asn1_relative_oid_type(type1));
 
@@ -1868,7 +1869,7 @@ static void test_relative_oid_type_assignment() {
       "END");
   ut_assert_is_not_error(module2);
   UtObject *type2 =
-      ut_asn1_module_definition_get_assignment(module2, "RelativeOidType2");
+      ut_asn1_module_definition_lookup_assignment(module2, "RelativeOidType2");
   ut_assert_non_null_object(type2);
   ut_assert_true(ut_object_is_asn1_referenced_type(type2));
   ut_assert_true(ut_object_is_asn1_relative_oid_type(
@@ -1881,7 +1882,7 @@ static void test_relative_oid_type_assignment() {
       "END");
   ut_assert_is_not_error(module3);
   UtObject *type3 =
-      ut_asn1_module_definition_get_assignment(module3, "RelativeOidType");
+      ut_asn1_module_definition_lookup_assignment(module3, "RelativeOidType");
   ut_assert_non_null_object(type3);
   ut_assert_true(ut_object_is_asn1_constrained_type(type3));
   ut_assert_true(ut_object_is_asn1_relative_oid_type(
@@ -1909,7 +1910,7 @@ static void test_relative_oid_value_assignment() {
       "END");
   ut_assert_is_not_error(module1);
   UtObject *assignment1 =
-      ut_asn1_module_definition_get_assignment(module1, "relativeOIDValue");
+      ut_asn1_module_definition_lookup_assignment(module1, "relativeOIDValue");
   ut_assert_non_null_object(assignment1);
   ut_assert_true(ut_object_is_asn1_relative_oid_type(
       ut_asn1_type_value_get_type(assignment1)));
@@ -1926,7 +1927,7 @@ static void test_relative_oid_value_assignment() {
       "END");
   ut_assert_is_not_error(module2);
   UtObject *assignment2 =
-      ut_asn1_module_definition_get_assignment(module2, "relativeOIDValue");
+      ut_asn1_module_definition_lookup_assignment(module2, "relativeOIDValue");
   ut_assert_non_null_object(assignment2);
   ut_assert_true(ut_object_is_asn1_relative_oid_type(
       ut_asn1_type_value_get_type(assignment2)));
@@ -1943,7 +1944,7 @@ static void test_relative_oid_value_assignment() {
       "END");
   ut_assert_is_not_error(module3);
   UtObject *assignment3 =
-      ut_asn1_module_definition_get_assignment(module3, "relativeOIDValue");
+      ut_asn1_module_definition_lookup_assignment(module3, "relativeOIDValue");
   ut_assert_non_null_object(assignment3);
   ut_assert_true(ut_object_is_asn1_relative_oid_type(
       ut_asn1_type_value_get_type(assignment3)));
@@ -1964,7 +1965,7 @@ static void test_sequence_type_assignment() {
       "END");
   ut_assert_is_not_error(module1);
   UtObject *type1 =
-      ut_asn1_module_definition_get_assignment(module1, "SequenceType");
+      ut_asn1_module_definition_lookup_assignment(module1, "SequenceType");
   ut_assert_non_null_object(type1);
   ut_assert_true(ut_object_is_asn1_sequence_type(type1));
   ut_assert_false(ut_asn1_sequence_type_get_extensible(type1));
@@ -1998,7 +1999,7 @@ static void test_sequence_type_assignment() {
       "END");
   ut_assert_is_not_error(module2);
   UtObject *type2 =
-      ut_asn1_module_definition_get_assignment(module2, "SequenceType");
+      ut_asn1_module_definition_lookup_assignment(module2, "SequenceType");
   ut_assert_non_null_object(type2);
   ut_assert_true(ut_object_is_asn1_sequence_type(type2));
   ut_assert_int_equal(
@@ -2015,7 +2016,7 @@ static void test_sequence_type_assignment() {
       "END");
   ut_assert_is_not_error(module3);
   UtObject *type3 =
-      ut_asn1_module_definition_get_assignment(module3, "SequenceType2");
+      ut_asn1_module_definition_lookup_assignment(module3, "SequenceType2");
   ut_assert_non_null_object(type3);
   ut_assert_true(ut_object_is_asn1_referenced_type(type3));
   ut_assert_true(
@@ -2031,7 +2032,7 @@ static void test_sequence_type_assignment() {
       "END");
   ut_assert_is_not_error(module4);
   UtObject *type4 =
-      ut_asn1_module_definition_get_assignment(module4, "SequenceType");
+      ut_asn1_module_definition_lookup_assignment(module4, "SequenceType");
   ut_assert_non_null_object(type4);
   ut_assert_true(ut_object_is_asn1_sequence_type(type4));
   ut_assert_int_equal(
@@ -2057,7 +2058,7 @@ static void test_sequence_type_assignment() {
       "END");
   ut_assert_is_not_error(module5);
   UtObject *type5 =
-      ut_asn1_module_definition_get_assignment(module5, "SequenceType");
+      ut_asn1_module_definition_lookup_assignment(module5, "SequenceType");
   ut_assert_non_null_object(type5);
   ut_assert_true(ut_object_is_asn1_sequence_type(type5));
   ut_assert_int_equal(
@@ -2082,7 +2083,7 @@ static void test_sequence_type_assignment() {
       "END");
   ut_assert_is_not_error(module6);
   UtObject *type6 =
-      ut_asn1_module_definition_get_assignment(module6, "SequenceType");
+      ut_asn1_module_definition_lookup_assignment(module6, "SequenceType");
   ut_assert_non_null_object(type6);
   ut_assert_true(ut_object_is_asn1_sequence_type(type6));
   ut_assert_true(ut_asn1_sequence_type_get_extensible(type6));
@@ -2097,7 +2098,7 @@ static void test_sequence_type_assignment() {
       "END");
   ut_assert_is_not_error(module7);
   UtObject *type7 =
-      ut_asn1_module_definition_get_assignment(module7, "SequenceType");
+      ut_asn1_module_definition_lookup_assignment(module7, "SequenceType");
   ut_assert_non_null_object(type7);
   ut_assert_true(ut_object_is_asn1_sequence_type(type7));
   ut_assert_true(ut_asn1_sequence_type_get_extensible(type7));
@@ -2171,7 +2172,7 @@ static void test_sequence_value_assignment() {
       "END");
   ut_assert_is_not_error(module1);
   UtObject *assignment1 =
-      ut_asn1_module_definition_get_assignment(module1, "sequenceValue");
+      ut_asn1_module_definition_lookup_assignment(module1, "sequenceValue");
   ut_assert_non_null_object(assignment1);
   ut_assert_true(ut_object_is_asn1_sequence_type(
       ut_asn1_type_value_get_type(assignment1)));
@@ -2195,7 +2196,7 @@ static void test_sequence_of_type_assignment() {
       "END");
   ut_assert_is_not_error(module1);
   UtObject *type1 =
-      ut_asn1_module_definition_get_assignment(module1, "SequenceOfType");
+      ut_asn1_module_definition_lookup_assignment(module1, "SequenceOfType");
   ut_assert_non_null_object(type1);
   ut_assert_true(ut_object_is_asn1_sequence_of_type(type1));
   ut_assert_true(
@@ -2209,7 +2210,7 @@ static void test_sequence_of_type_assignment() {
       "END");
   ut_assert_is_not_error(module2);
   UtObject *type2 =
-      ut_asn1_module_definition_get_assignment(module2, "SequenceOfType2");
+      ut_asn1_module_definition_lookup_assignment(module2, "SequenceOfType2");
   ut_assert_non_null_object(type2);
   ut_assert_true(ut_object_is_asn1_referenced_type(type2));
   UtObject *type2i = ut_asn1_referenced_type_get_type(type2);
@@ -2224,7 +2225,7 @@ static void test_sequence_of_type_assignment() {
       "END");
   ut_assert_is_not_error(module3);
   UtObject *type3 =
-      ut_asn1_module_definition_get_assignment(module3, "SequenceOfType");
+      ut_asn1_module_definition_lookup_assignment(module3, "SequenceOfType");
   ut_assert_non_null_object(type3);
   ut_assert_true(ut_object_is_asn1_constrained_type(type3));
   UtObject *constraint3 = ut_asn1_constrained_type_get_constraint(type3);
@@ -2257,7 +2258,7 @@ static void test_sequence_of_value_assignment() {
       "END");
   ut_assert_is_not_error(module1);
   UtObject *assignment1 =
-      ut_asn1_module_definition_get_assignment(module1, "sequenceOfValue");
+      ut_asn1_module_definition_lookup_assignment(module1, "sequenceOfValue");
   ut_assert_non_null_object(assignment1);
   UtObject *type1 = ut_asn1_type_value_get_type(assignment1);
   ut_assert_true(ut_object_is_asn1_sequence_of_type(type1));
@@ -2276,7 +2277,7 @@ static void test_sequence_of_value_assignment() {
       "END");
   ut_assert_is_not_error(module2);
   UtObject *assignment2 =
-      ut_asn1_module_definition_get_assignment(module2, "sequenceOfValue");
+      ut_asn1_module_definition_lookup_assignment(module2, "sequenceOfValue");
   ut_assert_non_null_object(assignment2);
   UtObject *type2 = ut_asn1_type_value_get_type(assignment2);
   ut_assert_true(ut_object_is_asn1_sequence_of_type(type2));
@@ -2292,7 +2293,7 @@ static void test_sequence_of_value_assignment() {
       "END");
   ut_assert_is_not_error(module3);
   UtObject *assignment3 =
-      ut_asn1_module_definition_get_assignment(module3, "sequenceOfValue");
+      ut_asn1_module_definition_lookup_assignment(module3, "sequenceOfValue");
   ut_assert_non_null_object(assignment3);
   UtObject *type3 = ut_asn1_type_value_get_type(assignment3);
   ut_assert_true(ut_object_is_asn1_referenced_type(type3));
@@ -2319,7 +2320,7 @@ static void test_set_type_assignment() {
       "END");
   ut_assert_is_not_error(module1);
   UtObject *type1 =
-      ut_asn1_module_definition_get_assignment(module1, "SetType");
+      ut_asn1_module_definition_lookup_assignment(module1, "SetType");
   ut_assert_non_null_object(type1);
   ut_assert_true(ut_object_is_asn1_set_type(type1));
 
@@ -2352,7 +2353,7 @@ static void test_set_type_assignment() {
                                               "END");
   ut_assert_is_not_error(module2);
   UtObject *type2 =
-      ut_asn1_module_definition_get_assignment(module2, "SetType");
+      ut_asn1_module_definition_lookup_assignment(module2, "SetType");
   ut_assert_non_null_object(type2);
   ut_assert_true(ut_object_is_asn1_set_type(type2));
   ut_assert_int_equal(ut_map_get_length(ut_asn1_set_type_get_components(type2)),
@@ -2369,7 +2370,7 @@ static void test_set_type_assignment() {
                                               "END");
   ut_assert_is_not_error(module3);
   UtObject *type3 =
-      ut_asn1_module_definition_get_assignment(module3, "SetType2");
+      ut_asn1_module_definition_lookup_assignment(module3, "SetType2");
   ut_assert_non_null_object(type3);
   ut_assert_true(ut_object_is_asn1_referenced_type(type3));
   ut_assert_true(
@@ -2385,7 +2386,7 @@ static void test_set_type_assignment() {
       "END");
   ut_assert_is_not_error(module4);
   UtObject *type4 =
-      ut_asn1_module_definition_get_assignment(module4, "SetType");
+      ut_asn1_module_definition_lookup_assignment(module4, "SetType");
   ut_assert_non_null_object(type4);
   ut_assert_true(ut_object_is_asn1_set_type(type4));
   ut_assert_int_equal(ut_map_get_length(ut_asn1_set_type_get_components(type4)),
@@ -2411,7 +2412,7 @@ static void test_set_type_assignment() {
       "END");
   ut_assert_is_not_error(module5);
   UtObject *type5 =
-      ut_asn1_module_definition_get_assignment(module5, "SetType");
+      ut_asn1_module_definition_lookup_assignment(module5, "SetType");
   ut_assert_non_null_object(type5);
   ut_assert_true(ut_object_is_asn1_set_type(type5));
   ut_assert_int_equal(ut_map_get_length(ut_asn1_set_type_get_components(type5)),
@@ -2436,7 +2437,7 @@ static void test_set_type_assignment() {
                                               "END");
   ut_assert_is_not_error(module6);
   UtObject *type6 =
-      ut_asn1_module_definition_get_assignment(module6, "SetType");
+      ut_asn1_module_definition_lookup_assignment(module6, "SetType");
   ut_assert_non_null_object(type6);
   ut_assert_true(ut_object_is_asn1_set_type(type6));
   ut_assert_true(ut_asn1_set_type_get_extensible(type6));
@@ -2451,7 +2452,7 @@ static void test_set_type_assignment() {
       "END");
   ut_assert_is_not_error(module7);
   UtObject *type7 =
-      ut_asn1_module_definition_get_assignment(module7, "SetType");
+      ut_asn1_module_definition_lookup_assignment(module7, "SetType");
   ut_assert_non_null_object(type7);
   ut_assert_true(ut_object_is_asn1_set_type(type7));
   ut_assert_true(ut_asn1_set_type_get_extensible(type7));
@@ -2523,7 +2524,7 @@ static void test_set_value_assignment() {
       "END");
   ut_assert_is_not_error(module1);
   UtObject *assignment1 =
-      ut_asn1_module_definition_get_assignment(module1, "setValue");
+      ut_asn1_module_definition_lookup_assignment(module1, "setValue");
   ut_assert_non_null_object(assignment1);
   ut_assert_true(
       ut_object_is_asn1_set_type(ut_asn1_type_value_get_type(assignment1)));
@@ -2547,7 +2548,7 @@ static void test_set_of_type_assignment() {
       "END");
   ut_assert_is_not_error(module1);
   UtObject *type1 =
-      ut_asn1_module_definition_get_assignment(module1, "SetOfType");
+      ut_asn1_module_definition_lookup_assignment(module1, "SetOfType");
   ut_assert_non_null_object(type1);
   ut_assert_true(ut_object_is_asn1_set_of_type(type1));
   ut_assert_true(
@@ -2561,7 +2562,7 @@ static void test_set_of_type_assignment() {
       "END");
   ut_assert_is_not_error(module2);
   UtObject *type2 =
-      ut_asn1_module_definition_get_assignment(module2, "SetOfType2");
+      ut_asn1_module_definition_lookup_assignment(module2, "SetOfType2");
   ut_assert_non_null_object(type2);
   ut_assert_true(ut_object_is_asn1_referenced_type(type2));
   UtObject *type2i = ut_asn1_referenced_type_get_type(type2);
@@ -2576,7 +2577,7 @@ static void test_set_of_type_assignment() {
       "END");
   ut_assert_is_not_error(module3);
   UtObject *type3 =
-      ut_asn1_module_definition_get_assignment(module3, "SetOfType");
+      ut_asn1_module_definition_lookup_assignment(module3, "SetOfType");
   ut_assert_non_null_object(type3);
   ut_assert_true(ut_object_is_asn1_constrained_type(type3));
   UtObject *constraint3 = ut_asn1_constrained_type_get_constraint(type3);
@@ -2609,7 +2610,7 @@ static void test_set_of_value_assignment() {
       "END");
   ut_assert_is_not_error(module1);
   UtObject *assignment1 =
-      ut_asn1_module_definition_get_assignment(module1, "setOfValue");
+      ut_asn1_module_definition_lookup_assignment(module1, "setOfValue");
   ut_assert_non_null_object(assignment1);
   UtObject *type1 = ut_asn1_type_value_get_type(assignment1);
   ut_assert_true(ut_object_is_asn1_set_of_type(type1));
@@ -2628,7 +2629,7 @@ static void test_set_of_value_assignment() {
       "END");
   ut_assert_is_not_error(module2);
   UtObject *assignment2 =
-      ut_asn1_module_definition_get_assignment(module2, "setOfValue");
+      ut_asn1_module_definition_lookup_assignment(module2, "setOfValue");
   ut_assert_non_null_object(assignment2);
   UtObject *type2 = ut_asn1_type_value_get_type(assignment2);
   ut_assert_true(ut_object_is_asn1_set_of_type(type2));
@@ -2644,7 +2645,7 @@ static void test_set_of_value_assignment() {
       "END");
   ut_assert_is_not_error(module3);
   UtObject *assignment3 =
-      ut_asn1_module_definition_get_assignment(module3, "setOfValue");
+      ut_asn1_module_definition_lookup_assignment(module3, "setOfValue");
   ut_assert_non_null_object(assignment3);
   UtObject *type3 = ut_asn1_type_value_get_type(assignment3);
   ut_assert_true(ut_object_is_asn1_referenced_type(type3));
@@ -2670,7 +2671,7 @@ static void test_choice_type_assignment() {
                                               "END");
   ut_assert_is_not_error(module1);
   UtObject *type1 =
-      ut_asn1_module_definition_get_assignment(module1, "ChoiceType");
+      ut_asn1_module_definition_lookup_assignment(module1, "ChoiceType");
   ut_assert_non_null_object(type1);
   ut_assert_true(ut_object_is_asn1_choice_type(type1));
   ut_assert_int_equal(
@@ -2693,7 +2694,7 @@ static void test_choice_type_assignment() {
       "END");
   ut_assert_is_not_error(module2);
   UtObject *type2 =
-      ut_asn1_module_definition_get_assignment(module2, "ChoiceType2");
+      ut_asn1_module_definition_lookup_assignment(module2, "ChoiceType2");
   ut_assert_non_null_object(type2);
   ut_assert_true(ut_object_is_asn1_referenced_type(type2));
   UtObject *type2i = ut_asn1_referenced_type_get_type(type2);
@@ -2728,7 +2729,7 @@ static void test_choice_type_assignment() {
       "END");
   ut_assert_is_not_error(module4);
   UtObject *type4 =
-      ut_asn1_module_definition_get_assignment(module4, "ChoiceType");
+      ut_asn1_module_definition_lookup_assignment(module4, "ChoiceType");
   ut_assert_non_null_object(type4);
   ut_assert_true(ut_object_is_asn1_choice_type(type4));
   ut_assert_int_equal(
@@ -2754,7 +2755,7 @@ static void test_choice_type_assignment() {
       "END");
   ut_assert_is_not_error(module5);
   UtObject *type5 =
-      ut_asn1_module_definition_get_assignment(module5, "ChoiceType");
+      ut_asn1_module_definition_lookup_assignment(module5, "ChoiceType");
   ut_assert_non_null_object(type5);
   ut_assert_true(ut_object_is_asn1_choice_type(type5));
   ut_assert_int_equal(
@@ -2779,7 +2780,7 @@ static void test_choice_type_assignment() {
                                               "END");
   ut_assert_is_not_error(module6);
   UtObject *type6 =
-      ut_asn1_module_definition_get_assignment(module6, "ChoiceType");
+      ut_asn1_module_definition_lookup_assignment(module6, "ChoiceType");
   ut_assert_non_null_object(type6);
   ut_assert_true(ut_object_is_asn1_choice_type(type6));
   ut_assert_true(ut_asn1_choice_type_get_extensible(type6));
@@ -2794,7 +2795,7 @@ static void test_choice_type_assignment() {
       "END");
   ut_assert_is_not_error(module7);
   UtObject *type7 =
-      ut_asn1_module_definition_get_assignment(module7, "ChoiceType");
+      ut_asn1_module_definition_lookup_assignment(module7, "ChoiceType");
   ut_assert_non_null_object(type7);
   ut_assert_true(ut_object_is_asn1_choice_type(type7));
   ut_assert_true(ut_asn1_choice_type_get_extensible(type7));
@@ -2880,7 +2881,7 @@ static void test_choice_value_assignment() {
                                               "END");
   ut_assert_is_not_error(module1);
   UtObject *assignment1 =
-      ut_asn1_module_definition_get_assignment(module1, "choiceValue");
+      ut_asn1_module_definition_lookup_assignment(module1, "choiceValue");
   ut_assert_non_null_object(assignment1);
   UtObject *type1 = ut_asn1_type_value_get_type(assignment1);
   ut_assert_true(ut_object_is_asn1_choice_type(type1));
@@ -2898,7 +2899,7 @@ static void test_choice_value_assignment() {
       "END");
   ut_assert_is_not_error(module2);
   UtObject *assignment2 =
-      ut_asn1_module_definition_get_assignment(module2, "choiceValue");
+      ut_asn1_module_definition_lookup_assignment(module2, "choiceValue");
   ut_assert_non_null_object(assignment2);
   UtObject *type2 = ut_asn1_type_value_get_type(assignment2);
   ut_assert_true(ut_object_is_asn1_referenced_type(type2));
@@ -2919,7 +2920,7 @@ static void test_choice_value_assignment() {
       "END");
   ut_assert_is_not_error(module3);
   UtObject *assignment3 =
-      ut_asn1_module_definition_get_assignment(module3, "choiceValue2");
+      ut_asn1_module_definition_lookup_assignment(module3, "choiceValue2");
   ut_assert_non_null_object(assignment3);
   UtObject *type3 = ut_asn1_type_value_get_type(assignment3);
   ut_assert_true(ut_object_is_asn1_referenced_type(type3));
@@ -2936,7 +2937,7 @@ static void test_numeric_string_type_assignment() {
       "END");
   ut_assert_is_not_error(module1);
   UtObject *type1 =
-      ut_asn1_module_definition_get_assignment(module1, "NumericStringType");
+      ut_asn1_module_definition_lookup_assignment(module1, "NumericStringType");
   ut_assert_non_null_object(type1);
   ut_assert_true(ut_object_is_asn1_numeric_string_type(type1));
 
@@ -2947,8 +2948,8 @@ static void test_numeric_string_type_assignment() {
       "    NumericStringType2 ::= NumericStringType1\n"
       "END");
   ut_assert_is_not_error(module2);
-  UtObject *type2 =
-      ut_asn1_module_definition_get_assignment(module2, "NumericStringType2");
+  UtObject *type2 = ut_asn1_module_definition_lookup_assignment(
+      module2, "NumericStringType2");
   ut_assert_non_null_object(type2);
   ut_assert_true(ut_object_is_asn1_referenced_type(type2));
   ut_assert_true(ut_object_is_asn1_numeric_string_type(
@@ -2961,8 +2962,8 @@ static void test_numeric_string_value_assignment() {
       "    numericStringValue NumericString ::= \"12345 67890\"\n"
       "END");
   ut_assert_is_not_error(module1);
-  UtObject *assignment1 =
-      ut_asn1_module_definition_get_assignment(module1, "numericStringValue");
+  UtObject *assignment1 = ut_asn1_module_definition_lookup_assignment(
+      module1, "numericStringValue");
   ut_assert_non_null_object(assignment1);
   ut_assert_true(ut_object_is_asn1_numeric_string_type(
       ut_asn1_type_value_get_type(assignment1)));
@@ -2977,8 +2978,8 @@ static void test_numeric_string_value_assignment() {
       "    numericStringValue NumericStringType ::= \"12345 67890\"\n"
       "END");
   ut_assert_is_not_error(module2);
-  UtObject *assignment2 =
-      ut_asn1_module_definition_get_assignment(module2, "numericStringValue");
+  UtObject *assignment2 = ut_asn1_module_definition_lookup_assignment(
+      module2, "numericStringValue");
   ut_assert_non_null_object(assignment2);
   UtObject *type2 = ut_asn1_type_value_get_type(assignment2);
   ut_assert_true(ut_object_is_asn1_referenced_type(type2));
@@ -2995,8 +2996,8 @@ static void test_numeric_string_value_assignment() {
       "    numericStringValue2 NumericString ::= numericStringValue1\n"
       "END");
   ut_assert_is_not_error(module3);
-  UtObject *assignment3 =
-      ut_asn1_module_definition_get_assignment(module3, "numericStringValue2");
+  UtObject *assignment3 = ut_asn1_module_definition_lookup_assignment(
+      module3, "numericStringValue2");
   ut_assert_non_null_object(assignment3);
   ut_assert_true(ut_object_is_asn1_numeric_string_type(
       ut_asn1_type_value_get_type(assignment3)));
@@ -3011,8 +3012,8 @@ static void test_printable_string_type_assignment() {
       "    PrintableStringType ::= PrintableString\n"
       "END");
   ut_assert_is_not_error(module1);
-  UtObject *type1 =
-      ut_asn1_module_definition_get_assignment(module1, "PrintableStringType");
+  UtObject *type1 = ut_asn1_module_definition_lookup_assignment(
+      module1, "PrintableStringType");
   ut_assert_non_null_object(type1);
   ut_assert_true(ut_object_is_asn1_printable_string_type(type1));
 
@@ -3023,8 +3024,8 @@ static void test_printable_string_type_assignment() {
       "    PrintableStringType2 ::= PrintableStringType1\n"
       "END");
   ut_assert_is_not_error(module2);
-  UtObject *type2 =
-      ut_asn1_module_definition_get_assignment(module2, "PrintableStringType2");
+  UtObject *type2 = ut_asn1_module_definition_lookup_assignment(
+      module2, "PrintableStringType2");
   ut_assert_non_null_object(type2);
   ut_assert_true(ut_object_is_asn1_referenced_type(type2));
   ut_assert_true(ut_object_is_asn1_printable_string_type(
@@ -3037,8 +3038,8 @@ static void test_printable_string_value_assignment() {
       "    printableStringValue PrintableString ::= \"Hello World\"\n"
       "END");
   ut_assert_is_not_error(module1);
-  UtObject *assignment1 =
-      ut_asn1_module_definition_get_assignment(module1, "printableStringValue");
+  UtObject *assignment1 = ut_asn1_module_definition_lookup_assignment(
+      module1, "printableStringValue");
   ut_assert_non_null_object(assignment1);
   ut_assert_true(ut_object_is_asn1_printable_string_type(
       ut_asn1_type_value_get_type(assignment1)));
@@ -3053,8 +3054,8 @@ static void test_printable_string_value_assignment() {
       "    printableStringValue PrintableStringType ::= \"Hello World\"\n"
       "END");
   ut_assert_is_not_error(module2);
-  UtObject *assignment2 =
-      ut_asn1_module_definition_get_assignment(module2, "printableStringValue");
+  UtObject *assignment2 = ut_asn1_module_definition_lookup_assignment(
+      module2, "printableStringValue");
   ut_assert_non_null_object(assignment2);
   UtObject *type2 = ut_asn1_type_value_get_type(assignment2);
   ut_assert_true(ut_object_is_asn1_referenced_type(type2));
@@ -3071,7 +3072,7 @@ static void test_printable_string_value_assignment() {
       "    printableStringValue2 PrintableString ::= printableStringValue1\n"
       "END");
   ut_assert_is_not_error(module3);
-  UtObject *assignment3 = ut_asn1_module_definition_get_assignment(
+  UtObject *assignment3 = ut_asn1_module_definition_lookup_assignment(
       module3, "printableStringValue2");
   ut_assert_non_null_object(assignment3);
   ut_assert_true(ut_object_is_asn1_printable_string_type(
@@ -3088,7 +3089,7 @@ static void test_ia5_string_type_assignment() {
       "END");
   ut_assert_is_not_error(module1);
   UtObject *type1 =
-      ut_asn1_module_definition_get_assignment(module1, "IA5StringType");
+      ut_asn1_module_definition_lookup_assignment(module1, "IA5StringType");
   ut_assert_non_null_object(type1);
   ut_assert_true(ut_object_is_asn1_ia5_string_type(type1));
 
@@ -3100,7 +3101,7 @@ static void test_ia5_string_type_assignment() {
       "END");
   ut_assert_is_not_error(module2);
   UtObject *type2 =
-      ut_asn1_module_definition_get_assignment(module2, "IA5StringType2");
+      ut_asn1_module_definition_lookup_assignment(module2, "IA5StringType2");
   ut_assert_non_null_object(type2);
   ut_assert_true(ut_object_is_asn1_referenced_type(type2));
   ut_assert_true(ut_object_is_asn1_ia5_string_type(
@@ -3114,7 +3115,7 @@ static void test_ia5_string_value_assignment() {
       "END");
   ut_assert_is_not_error(module1);
   UtObject *assignment1 =
-      ut_asn1_module_definition_get_assignment(module1, "ia5StringValue");
+      ut_asn1_module_definition_lookup_assignment(module1, "ia5StringValue");
   ut_assert_non_null_object(assignment1);
   ut_assert_true(ut_object_is_asn1_ia5_string_type(
       ut_asn1_type_value_get_type(assignment1)));
@@ -3130,7 +3131,7 @@ static void test_ia5_string_value_assignment() {
       "END");
   ut_assert_is_not_error(module2);
   UtObject *assignment2 =
-      ut_asn1_module_definition_get_assignment(module2, "ia5StringValue");
+      ut_asn1_module_definition_lookup_assignment(module2, "ia5StringValue");
   ut_assert_non_null_object(assignment2);
   UtObject *type2 = ut_asn1_type_value_get_type(assignment2);
   ut_assert_true(ut_object_is_asn1_referenced_type(type2));
@@ -3148,7 +3149,7 @@ static void test_ia5_string_value_assignment() {
       "END");
   ut_assert_is_not_error(module3);
   UtObject *assignment3 =
-      ut_asn1_module_definition_get_assignment(module3, "ia5StringValue2");
+      ut_asn1_module_definition_lookup_assignment(module3, "ia5StringValue2");
   ut_assert_non_null_object(assignment3);
   ut_assert_true(ut_object_is_asn1_ia5_string_type(
       ut_asn1_type_value_get_type(assignment3)));
@@ -3164,7 +3165,7 @@ static void test_utc_time_type_assignment() {
                                               "END");
   ut_assert_is_not_error(module1);
   UtObject *type1 =
-      ut_asn1_module_definition_get_assignment(module1, "UTCTimeType");
+      ut_asn1_module_definition_lookup_assignment(module1, "UTCTimeType");
   ut_assert_non_null_object(type1);
   ut_assert_true(ut_object_is_asn1_utc_time_type(type1));
 
@@ -3176,7 +3177,7 @@ static void test_utc_time_type_assignment() {
       "END");
   ut_assert_is_not_error(module2);
   UtObject *type2 =
-      ut_asn1_module_definition_get_assignment(module2, "UTCTimeType2");
+      ut_asn1_module_definition_lookup_assignment(module2, "UTCTimeType2");
   ut_assert_non_null_object(type2);
   ut_assert_true(ut_object_is_asn1_referenced_type(type2));
   ut_assert_true(
@@ -3190,7 +3191,7 @@ static void test_utc_time_value_assignment() {
       "END");
   ut_assert_is_not_error(module1);
   UtObject *assignment1 =
-      ut_asn1_module_definition_get_assignment(module1, "utcTimeValue");
+      ut_asn1_module_definition_lookup_assignment(module1, "utcTimeValue");
   ut_assert_non_null_object(assignment1);
   ut_assert_true(ut_object_is_asn1_utc_time_type(
       ut_asn1_type_value_get_type(assignment1)));
@@ -3212,7 +3213,7 @@ static void test_utc_time_value_assignment() {
       "END");
   ut_assert_is_not_error(module2);
   UtObject *assignment2 =
-      ut_asn1_module_definition_get_assignment(module2, "utcTimeValue");
+      ut_asn1_module_definition_lookup_assignment(module2, "utcTimeValue");
   ut_assert_non_null_object(assignment2);
   UtObject *type2 = ut_asn1_type_value_get_type(assignment2);
   ut_assert_true(ut_object_is_asn1_referenced_type(type2));
@@ -3236,7 +3237,7 @@ static void test_utc_time_value_assignment() {
       "END");
   ut_assert_is_not_error(module3);
   UtObject *assignment3 =
-      ut_asn1_module_definition_get_assignment(module3, "utcTimeValue2");
+      ut_asn1_module_definition_lookup_assignment(module3, "utcTimeValue2");
   ut_assert_non_null_object(assignment3);
   ut_assert_true(ut_object_is_asn1_utc_time_type(
       ut_asn1_type_value_get_type(assignment3)));
@@ -3257,8 +3258,8 @@ static void test_generalized_time_type_assignment() {
       "    GeneralizedTimeType ::= GeneralizedTime\n"
       "END");
   ut_assert_is_not_error(module1);
-  UtObject *type1 =
-      ut_asn1_module_definition_get_assignment(module1, "GeneralizedTimeType");
+  UtObject *type1 = ut_asn1_module_definition_lookup_assignment(
+      module1, "GeneralizedTimeType");
   ut_assert_non_null_object(type1);
   ut_assert_true(ut_object_is_asn1_generalized_time_type(type1));
 
@@ -3269,8 +3270,8 @@ static void test_generalized_time_type_assignment() {
       "    GeneralizedTimeType2 ::= GeneralizedTimeType1\n"
       "END");
   ut_assert_is_not_error(module2);
-  UtObject *type2 =
-      ut_asn1_module_definition_get_assignment(module2, "GeneralizedTimeType2");
+  UtObject *type2 = ut_asn1_module_definition_lookup_assignment(
+      module2, "GeneralizedTimeType2");
   ut_assert_non_null_object(type2);
   ut_assert_true(ut_object_is_asn1_referenced_type(type2));
   ut_assert_true(ut_object_is_asn1_generalized_time_type(
@@ -3283,8 +3284,8 @@ static void test_generalized_time_value_assignment() {
       "    generalizedTimeValue GeneralizedTime ::= \"20230824205806Z\"\n"
       "END");
   ut_assert_is_not_error(module1);
-  UtObject *assignment1 =
-      ut_asn1_module_definition_get_assignment(module1, "generalizedTimeValue");
+  UtObject *assignment1 = ut_asn1_module_definition_lookup_assignment(
+      module1, "generalizedTimeValue");
   ut_assert_non_null_object(assignment1);
   ut_assert_true(ut_object_is_asn1_generalized_time_type(
       ut_asn1_type_value_get_type(assignment1)));
@@ -3305,8 +3306,8 @@ static void test_generalized_time_value_assignment() {
       "    generalizedTimeValue GeneralizedTimeType ::= \"20230824205806Z\"\n"
       "END");
   ut_assert_is_not_error(module2);
-  UtObject *assignment2 =
-      ut_asn1_module_definition_get_assignment(module2, "generalizedTimeValue");
+  UtObject *assignment2 = ut_asn1_module_definition_lookup_assignment(
+      module2, "generalizedTimeValue");
   ut_assert_non_null_object(assignment2);
   UtObject *type2 = ut_asn1_type_value_get_type(assignment2);
   ut_assert_true(ut_object_is_asn1_referenced_type(type2));
@@ -3329,7 +3330,7 @@ static void test_generalized_time_value_assignment() {
       "    generalizedTimeValue2 GeneralizedTime ::= generalizedTimeValue1\n"
       "END");
   ut_assert_is_not_error(module3);
-  UtObject *assignment3 = ut_asn1_module_definition_get_assignment(
+  UtObject *assignment3 = ut_asn1_module_definition_lookup_assignment(
       module3, "generalizedTimeValue2");
   ut_assert_non_null_object(assignment3);
   ut_assert_true(ut_object_is_asn1_generalized_time_type(
@@ -3352,7 +3353,7 @@ static void test_graphic_string_type_assignment() {
       "END");
   ut_assert_is_not_error(module1);
   UtObject *type1 =
-      ut_asn1_module_definition_get_assignment(module1, "GraphicStringType");
+      ut_asn1_module_definition_lookup_assignment(module1, "GraphicStringType");
   ut_assert_non_null_object(type1);
   ut_assert_true(ut_object_is_asn1_graphic_string_type(type1));
 
@@ -3363,8 +3364,8 @@ static void test_graphic_string_type_assignment() {
       "    GraphicStringType2 ::= GraphicStringType1\n"
       "END");
   ut_assert_is_not_error(module2);
-  UtObject *type2 =
-      ut_asn1_module_definition_get_assignment(module2, "GraphicStringType2");
+  UtObject *type2 = ut_asn1_module_definition_lookup_assignment(
+      module2, "GraphicStringType2");
   ut_assert_non_null_object(type2);
   ut_assert_true(ut_object_is_asn1_referenced_type(type2));
   ut_assert_true(ut_object_is_asn1_graphic_string_type(
@@ -3377,8 +3378,8 @@ static void test_graphic_string_value_assignment() {
       "    graphicStringValue GraphicString ::= \"Hello World\"\n"
       "END");
   ut_assert_is_not_error(module1);
-  UtObject *assignment1 =
-      ut_asn1_module_definition_get_assignment(module1, "graphicStringValue");
+  UtObject *assignment1 = ut_asn1_module_definition_lookup_assignment(
+      module1, "graphicStringValue");
   ut_assert_non_null_object(assignment1);
   ut_assert_true(ut_object_is_asn1_graphic_string_type(
       ut_asn1_type_value_get_type(assignment1)));
@@ -3393,8 +3394,8 @@ static void test_graphic_string_value_assignment() {
       "    graphicStringValue GraphicStringType ::= \"Hello World\"\n"
       "END");
   ut_assert_is_not_error(module2);
-  UtObject *assignment2 =
-      ut_asn1_module_definition_get_assignment(module2, "graphicStringValue");
+  UtObject *assignment2 = ut_asn1_module_definition_lookup_assignment(
+      module2, "graphicStringValue");
   ut_assert_non_null_object(assignment2);
   UtObject *type2 = ut_asn1_type_value_get_type(assignment2);
   ut_assert_true(ut_object_is_asn1_referenced_type(type2));
@@ -3411,8 +3412,8 @@ static void test_graphic_string_value_assignment() {
       "    graphicStringValue2 GraphicString ::= graphicStringValue1\n"
       "END");
   ut_assert_is_not_error(module3);
-  UtObject *assignment3 =
-      ut_asn1_module_definition_get_assignment(module3, "graphicStringValue2");
+  UtObject *assignment3 = ut_asn1_module_definition_lookup_assignment(
+      module3, "graphicStringValue2");
   ut_assert_non_null_object(assignment3);
   ut_assert_true(ut_object_is_asn1_graphic_string_type(
       ut_asn1_type_value_get_type(assignment3)));
@@ -3428,7 +3429,7 @@ static void test_visible_string_type_assignment() {
       "END");
   ut_assert_is_not_error(module1);
   UtObject *type1 =
-      ut_asn1_module_definition_get_assignment(module1, "VisibleStringType");
+      ut_asn1_module_definition_lookup_assignment(module1, "VisibleStringType");
   ut_assert_non_null_object(type1);
   ut_assert_true(ut_object_is_asn1_visible_string_type(type1));
 
@@ -3439,8 +3440,8 @@ static void test_visible_string_type_assignment() {
       "    VisibleStringType2 ::= VisibleStringType1\n"
       "END");
   ut_assert_is_not_error(module2);
-  UtObject *type2 =
-      ut_asn1_module_definition_get_assignment(module2, "VisibleStringType2");
+  UtObject *type2 = ut_asn1_module_definition_lookup_assignment(
+      module2, "VisibleStringType2");
   ut_assert_non_null_object(type2);
   ut_assert_true(ut_object_is_asn1_referenced_type(type2));
   ut_assert_true(ut_object_is_asn1_visible_string_type(
@@ -3453,8 +3454,8 @@ static void test_visible_string_value_assignment() {
       "    visibleStringValue VisibleString ::= \"Hello World\"\n"
       "END");
   ut_assert_is_not_error(module1);
-  UtObject *assignment1 =
-      ut_asn1_module_definition_get_assignment(module1, "visibleStringValue");
+  UtObject *assignment1 = ut_asn1_module_definition_lookup_assignment(
+      module1, "visibleStringValue");
   ut_assert_non_null_object(assignment1);
   ut_assert_true(ut_object_is_asn1_visible_string_type(
       ut_asn1_type_value_get_type(assignment1)));
@@ -3469,8 +3470,8 @@ static void test_visible_string_value_assignment() {
       "    visibleStringValue VisibleStringType ::= \"Hello World\"\n"
       "END");
   ut_assert_is_not_error(module2);
-  UtObject *assignment2 =
-      ut_asn1_module_definition_get_assignment(module2, "visibleStringValue");
+  UtObject *assignment2 = ut_asn1_module_definition_lookup_assignment(
+      module2, "visibleStringValue");
   ut_assert_non_null_object(assignment2);
   UtObject *type2 = ut_asn1_type_value_get_type(assignment2);
   ut_assert_true(ut_object_is_asn1_referenced_type(type2));
@@ -3487,8 +3488,8 @@ static void test_visible_string_value_assignment() {
       "    visibleStringValue2 VisibleString ::= visibleStringValue1\n"
       "END");
   ut_assert_is_not_error(module3);
-  UtObject *assignment3 =
-      ut_asn1_module_definition_get_assignment(module3, "visibleStringValue2");
+  UtObject *assignment3 = ut_asn1_module_definition_lookup_assignment(
+      module3, "visibleStringValue2");
   ut_assert_non_null_object(assignment3);
   ut_assert_true(ut_object_is_asn1_visible_string_type(
       ut_asn1_type_value_get_type(assignment3)));
@@ -3504,7 +3505,7 @@ static void test_general_string_type_assignment() {
       "END");
   ut_assert_is_not_error(module1);
   UtObject *type1 =
-      ut_asn1_module_definition_get_assignment(module1, "GeneralStringType");
+      ut_asn1_module_definition_lookup_assignment(module1, "GeneralStringType");
   ut_assert_non_null_object(type1);
   ut_assert_true(ut_object_is_asn1_general_string_type(type1));
 
@@ -3515,8 +3516,8 @@ static void test_general_string_type_assignment() {
       "    GeneralStringType2 ::= GeneralStringType1\n"
       "END");
   ut_assert_is_not_error(module2);
-  UtObject *type2 =
-      ut_asn1_module_definition_get_assignment(module2, "GeneralStringType2");
+  UtObject *type2 = ut_asn1_module_definition_lookup_assignment(
+      module2, "GeneralStringType2");
   ut_assert_non_null_object(type2);
   ut_assert_true(ut_object_is_asn1_referenced_type(type2));
   ut_assert_true(ut_object_is_asn1_general_string_type(
@@ -3529,8 +3530,8 @@ static void test_general_string_value_assignment() {
       "    generalStringValue GeneralString ::= \"Hello World\"\n"
       "END");
   ut_assert_is_not_error(module1);
-  UtObject *assignment1 =
-      ut_asn1_module_definition_get_assignment(module1, "generalStringValue");
+  UtObject *assignment1 = ut_asn1_module_definition_lookup_assignment(
+      module1, "generalStringValue");
   ut_assert_non_null_object(assignment1);
   ut_assert_true(ut_object_is_asn1_general_string_type(
       ut_asn1_type_value_get_type(assignment1)));
@@ -3545,8 +3546,8 @@ static void test_general_string_value_assignment() {
       "    generalStringValue GeneralStringType ::= \"Hello World\"\n"
       "END");
   ut_assert_is_not_error(module2);
-  UtObject *assignment2 =
-      ut_asn1_module_definition_get_assignment(module2, "generalStringValue");
+  UtObject *assignment2 = ut_asn1_module_definition_lookup_assignment(
+      module2, "generalStringValue");
   ut_assert_non_null_object(assignment2);
   UtObject *type2 = ut_asn1_type_value_get_type(assignment2);
   ut_assert_true(ut_object_is_asn1_referenced_type(type2));
@@ -3563,8 +3564,8 @@ static void test_general_string_value_assignment() {
       "    generalStringValue2 GeneralString ::= generalStringValue1\n"
       "END");
   ut_assert_is_not_error(module3);
-  UtObject *assignment3 =
-      ut_asn1_module_definition_get_assignment(module3, "generalStringValue2");
+  UtObject *assignment3 = ut_asn1_module_definition_lookup_assignment(
+      module3, "generalStringValue2");
   ut_assert_non_null_object(assignment3);
   ut_assert_true(ut_object_is_asn1_general_string_type(
       ut_asn1_type_value_get_type(assignment3)));
@@ -3584,22 +3585,22 @@ static void test_tagged_type_assignment() {
   ut_assert_is_not_error(module1);
 
   UtObject *type1a =
-      ut_asn1_module_definition_get_assignment(module1, "ContextTaggedType");
+      ut_asn1_module_definition_lookup_assignment(module1, "ContextTaggedType");
   ut_assert_non_null_object(type1a);
   ut_assert_true(ut_object_is_asn1_tagged_type(type1a));
   ut_assert_int_equal(ut_asn1_tagged_type_get_class(type1a),
                       UT_ASN1_TAG_CLASS_CONTEXT_SPECIFIC);
   ut_assert_int_equal(ut_asn1_tagged_type_get_number(type1a), 42);
 
-  UtObject *type1b =
-      ut_asn1_module_definition_get_assignment(module1, "UniversalTaggedType");
+  UtObject *type1b = ut_asn1_module_definition_lookup_assignment(
+      module1, "UniversalTaggedType");
   ut_assert_non_null_object(type1b);
   ut_assert_true(ut_object_is_asn1_tagged_type(type1b));
   ut_assert_int_equal(ut_asn1_tagged_type_get_class(type1b),
                       UT_ASN1_TAG_CLASS_UNIVERSAL);
   ut_assert_int_equal(ut_asn1_tagged_type_get_number(type1b), 12);
 
-  UtObject *type1c = ut_asn1_module_definition_get_assignment(
+  UtObject *type1c = ut_asn1_module_definition_lookup_assignment(
       module1, "ApplicationTaggedType");
   ut_assert_non_null_object(type1c);
   ut_assert_true(ut_object_is_asn1_tagged_type(type1c));
@@ -3608,7 +3609,7 @@ static void test_tagged_type_assignment() {
   ut_assert_int_equal(ut_asn1_tagged_type_get_number(type1c), 123);
 
   UtObject *type1d =
-      ut_asn1_module_definition_get_assignment(module1, "PrivateTaggedType");
+      ut_asn1_module_definition_lookup_assignment(module1, "PrivateTaggedType");
   ut_assert_non_null_object(type1d);
   ut_assert_true(ut_object_is_asn1_tagged_type(type1d));
   ut_assert_int_equal(ut_asn1_tagged_type_get_class(type1d),
@@ -3625,19 +3626,19 @@ static void test_tagged_type_assignment() {
   ut_assert_is_not_error(module2);
 
   UtObject *type2a =
-      ut_asn1_module_definition_get_assignment(module2, "TaggedType1");
+      ut_asn1_module_definition_lookup_assignment(module2, "TaggedType1");
   ut_assert_non_null_object(type2a);
   ut_assert_true(ut_object_is_asn1_tagged_type(type2a));
   ut_assert_true(ut_asn1_tagged_type_get_is_explicit(type2a));
 
   UtObject *type2b =
-      ut_asn1_module_definition_get_assignment(module2, "TaggedType2");
+      ut_asn1_module_definition_lookup_assignment(module2, "TaggedType2");
   ut_assert_non_null_object(type2b);
   ut_assert_true(ut_object_is_asn1_tagged_type(type2b));
   ut_assert_true(ut_asn1_tagged_type_get_is_explicit(type2b));
 
   UtObject *type2c =
-      ut_asn1_module_definition_get_assignment(module2, "TaggedType3");
+      ut_asn1_module_definition_lookup_assignment(module2, "TaggedType3");
   ut_assert_non_null_object(type2c);
   ut_assert_true(ut_object_is_asn1_tagged_type(type2c));
   ut_assert_false(ut_asn1_tagged_type_get_is_explicit(type2c));
@@ -3652,19 +3653,19 @@ static void test_tagged_type_assignment() {
   ut_assert_is_not_error(module3);
 
   UtObject *type3a =
-      ut_asn1_module_definition_get_assignment(module3, "TaggedType1");
+      ut_asn1_module_definition_lookup_assignment(module3, "TaggedType1");
   ut_assert_non_null_object(type3a);
   ut_assert_true(ut_object_is_asn1_tagged_type(type3a));
   ut_assert_true(ut_asn1_tagged_type_get_is_explicit(type3a));
 
   UtObject *type3b =
-      ut_asn1_module_definition_get_assignment(module3, "TaggedType2");
+      ut_asn1_module_definition_lookup_assignment(module3, "TaggedType2");
   ut_assert_non_null_object(type3b);
   ut_assert_true(ut_object_is_asn1_tagged_type(type3b));
   ut_assert_true(ut_asn1_tagged_type_get_is_explicit(type3b));
 
   UtObject *type3c =
-      ut_asn1_module_definition_get_assignment(module3, "TaggedType3");
+      ut_asn1_module_definition_lookup_assignment(module3, "TaggedType3");
   ut_assert_non_null_object(type3c);
   ut_assert_true(ut_object_is_asn1_tagged_type(type3c));
   ut_assert_false(ut_asn1_tagged_type_get_is_explicit(type3c));
@@ -3679,19 +3680,19 @@ static void test_tagged_type_assignment() {
   ut_assert_is_not_error(module4);
 
   UtObject *type4a =
-      ut_asn1_module_definition_get_assignment(module4, "TaggedType1");
+      ut_asn1_module_definition_lookup_assignment(module4, "TaggedType1");
   ut_assert_non_null_object(type4a);
   ut_assert_true(ut_object_is_asn1_tagged_type(type4a));
   ut_assert_false(ut_asn1_tagged_type_get_is_explicit(type4a));
 
   UtObject *type4b =
-      ut_asn1_module_definition_get_assignment(module4, "TaggedType2");
+      ut_asn1_module_definition_lookup_assignment(module4, "TaggedType2");
   ut_assert_non_null_object(type4b);
   ut_assert_true(ut_object_is_asn1_tagged_type(type4b));
   ut_assert_true(ut_asn1_tagged_type_get_is_explicit(type4b));
 
   UtObject *type4c =
-      ut_asn1_module_definition_get_assignment(module4, "TaggedType3");
+      ut_asn1_module_definition_lookup_assignment(module4, "TaggedType3");
   ut_assert_non_null_object(type4c);
   ut_assert_true(ut_object_is_asn1_tagged_type(type4c));
   ut_assert_false(ut_asn1_tagged_type_get_is_explicit(type4c));
@@ -3706,19 +3707,19 @@ static void test_tagged_type_assignment() {
   ut_assert_is_not_error(module5);
 
   UtObject *type5a =
-      ut_asn1_module_definition_get_assignment(module5, "TaggedType1");
+      ut_asn1_module_definition_lookup_assignment(module5, "TaggedType1");
   ut_assert_non_null_object(type5a);
   ut_assert_true(ut_object_is_asn1_tagged_type(type5a));
   ut_assert_true(ut_asn1_tagged_type_get_is_explicit(type5a));
 
   UtObject *type5b =
-      ut_asn1_module_definition_get_assignment(module5, "TaggedType2");
+      ut_asn1_module_definition_lookup_assignment(module5, "TaggedType2");
   ut_assert_non_null_object(type5b);
   ut_assert_true(ut_object_is_asn1_tagged_type(type5b));
   ut_assert_true(ut_asn1_tagged_type_get_is_explicit(type5b));
 
   UtObject *type5c =
-      ut_asn1_module_definition_get_assignment(module5, "TaggedType3");
+      ut_asn1_module_definition_lookup_assignment(module5, "TaggedType3");
   ut_assert_non_null_object(type5c);
   ut_assert_true(ut_object_is_asn1_tagged_type(type5c));
   ut_assert_false(ut_asn1_tagged_type_get_is_explicit(type5c));
@@ -3733,7 +3734,7 @@ static void test_tagged_value_assignment() {
       "END");
   ut_assert_is_not_error(module1);
   UtObject *assignment1 =
-      ut_asn1_module_definition_get_assignment(module1, "integerValue");
+      ut_asn1_module_definition_lookup_assignment(module1, "integerValue");
   ut_assert_non_null_object(assignment1);
   UtObject *type1 = ut_asn1_type_value_get_type(assignment1);
   ut_assert_true(ut_object_is_asn1_tagged_type(type1));
@@ -3751,7 +3752,7 @@ static void test_tagged_value_assignment() {
       "END");
   ut_assert_is_not_error(module2);
   UtObject *assignment2 =
-      ut_asn1_module_definition_get_assignment(module2, "integerValue");
+      ut_asn1_module_definition_lookup_assignment(module2, "integerValue");
   ut_assert_non_null_object(assignment2);
   UtObject *type2 = ut_asn1_type_value_get_type(assignment2);
   ut_assert_true(ut_object_is_asn1_referenced_type(type2));
@@ -3771,7 +3772,7 @@ static void test_tagged_value_assignment() {
       "END");
   ut_assert_is_not_error(module3);
   UtObject *assignment3 =
-      ut_asn1_module_definition_get_assignment(module3, "integerValue2");
+      ut_asn1_module_definition_lookup_assignment(module3, "integerValue2");
   ut_assert_non_null_object(assignment3);
   UtObject *type3 = ut_asn1_type_value_get_type(assignment3);
   ut_assert_true(ut_object_is_asn1_tagged_type(type3));

@@ -63,8 +63,8 @@ UtObject *ut_asn1_module_definition_get_assignments(UtObject *object) {
   return self->assignments;
 }
 
-UtObject *ut_asn1_module_definition_get_assignment(UtObject *object,
-                                                   const char *reference) {
+UtObject *ut_asn1_module_definition_lookup_assignment(UtObject *object,
+                                                      const char *reference) {
   assert(ut_object_is_asn1_module_definition(object));
   UtAsn1ModuleDefinition *self = (UtAsn1ModuleDefinition *)object;
   return ut_map_lookup_string(self->assignments, reference);

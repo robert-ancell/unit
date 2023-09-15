@@ -4,10 +4,10 @@
 
 #pragma once
 
-/// Creates a new [UtAsn1ObjectDescriptorType] object.
+/// Creates a new ASN.1 ObjectDescriptor type.
 ///
 /// !return-ref
-/// !return-type
+/// !return-type UtAsn1ObjectDescriptorType
 UtObject *ut_asn1_object_descriptor_type_new();
 
 /// Returns [true] if [object] is a [UtAsn1ObjectDescriptorType].
