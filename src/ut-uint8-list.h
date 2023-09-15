@@ -43,7 +43,8 @@ UtObject *ut_uint8_list_new_from_elements(size_t length, ...);
 /// Returns an error if [hex] contains invalid characters or not full 8 bit
 /// values.
 ///
-/// !return-type UtUint8List UtError !return-ref
+/// !return-ref
+/// !return-type UtUint8List UtError
 UtObject *ut_uint8_list_new_from_hex_string(const char *hex);
 
 /// Returns the value at [index] of this list.
@@ -119,8 +120,8 @@ double ut_uint8_list_get_float64_be(UtObject *object, size_t index);
 /// Convert this list into an array, so the raw data can be accessed.
 /// If this list is already an array no conversion is performed.
 ///
-/// !return-type UtUint8Array.
 /// !return-ref
+/// !return-type UtUint8Array.
 UtObject *ut_uint8_list_get_array(UtObject *object);
 
 /// Returns the memory used for this list or [NULL] if this not supported.

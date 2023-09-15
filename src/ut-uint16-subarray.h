@@ -5,8 +5,11 @@
 #pragma once
 
 /// Creates a new array that is a subset of [parent] starting at [start] and
-/// containing [length] elements. !arg-type parent UtUint16Array !return-type
-/// UtUint16Subarray !return-ref
+/// containing [length] elements.
+///
+/// !arg-type parent UtUint16Array
+/// !return-ref
+/// !return-type UtUint16Subarray
 UtObject *ut_uint16_subarray_new(UtObject *parent, size_t start, size_t length);
 
 /// Returns [true] if [object] is a [UtUint16Subarray].
