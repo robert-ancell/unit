@@ -10,6 +10,7 @@
 /// !return-type UtDbusArray
 UtObject *ut_dbus_array_new(const char *value_signature);
 
+/// Returns the signature for the types in this array.
 const char *ut_dbus_array_get_value_signature(UtObject *object);
 
 /// Returns [true] if [object] is a [UtDbusArray].

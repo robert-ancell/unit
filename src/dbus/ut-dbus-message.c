@@ -4,8 +4,8 @@
 
 typedef struct {
   UtObject object;
-  uint8_t type;
-  uint8_t flags;
+  UtDBusMessageType type;
+  UtDBusMessageFlag flags;
   uint32_t serial;
   char *path;
   char *interface;
@@ -69,7 +69,7 @@ static UtObjectInterface object_interface = {
     .to_string = ut_dbus_message_to_string,
     .cleanup = ut_dbus_message_cleanup};
 
-UtObject *ut_dbus_message_new(uint8_t type) {
+UtObject *ut_dbus_message_new(UtDBusMessageType type) {
   UtObject *object = ut_object_new(sizeof(UtDBusMessage), &object_interface);
   UtDBusMessage *self = (UtDBusMessage *)object;
   self->type = type;
@@ -92,13 +92,13 @@ UtObject *ut_dbus_message_new_method_call(const char *destination,
 }
 
 UtObject *ut_dbus_message_new_method_return(uint32_t reply_serial,
-                                            UtObject *out_args) {
+                                            UtObject *args) {
   UtObject *object = ut_object_new(sizeof(UtDBusMessage), &object_interface);
   UtDBusMessage *self = (UtDBusMessage *)object;
   self->type = UT_DBUS_MESSAGE_TYPE_METHOD_RETURN;
   self->has_reply_serial = true;
   self->reply_serial = reply_serial;
-  self->args = ut_object_ref(out_args);
+  self->args = ut_object_ref(args);
   return object;
 }
 
@@ -129,13 +129,13 @@ UtDBusMessageType ut_dbus_message_get_type(UtObject *object) {
   return self->type;
 }
 
-void ut_dbus_message_set_flags(UtObject *object, uint8_t flags) {
+void ut_dbus_message_set_flags(UtObject *object, UtDBusMessageFlag flags) {
   assert(ut_object_is_dbus_message(object));
   UtDBusMessage *self = (UtDBusMessage *)object;
   self->flags = flags;
 }
 
-uint8_t ut_dbus_message_get_flags(UtObject *object) {
+UtDBusMessageFlag ut_dbus_message_get_flags(UtObject *object) {
   assert(ut_object_is_dbus_message(object));
   UtDBusMessage *self = (UtDBusMessage *)object;
   return self->flags;
@@ -226,11 +226,11 @@ const char *ut_dbus_message_get_error_name(UtObject *object) {
   return self->error_name;
 }
 
-void ut_dbus_message_set_reply_serial(UtObject *object, uint32_t reply_serial) {
+void ut_dbus_message_set_reply_serial(UtObject *object, uint32_t serial) {
   assert(ut_object_is_dbus_message(object));
   UtDBusMessage *self = (UtDBusMessage *)object;
   self->has_reply_serial = true;
-  self->reply_serial = reply_serial;
+  self->reply_serial = serial;
 }
 
 bool ut_dbus_message_has_reply_serial(UtObject *object) {
