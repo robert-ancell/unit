@@ -511,21 +511,33 @@ uint32_t ut_x11_client_create_gc(UtObject *object, uint32_t drawable);
 /// Frees [gc].
 void ut_x11_client_free_gc(UtObject *object, uint32_t gc);
 
+/// Clears rectangle of size [width]x[height] at position [x],[y] on [window].
+/// If [exposures] is true one or more exposure events are generated for this
+/// area.
 void ut_x11_client_clear_area(UtObject *object, uint32_t window, int16_t x,
                               int16_t y, uint16_t width, uint16_t height,
                               bool exposures);
 
+/// Copies a rectangle of size [width]x[height] from [src_drawable] to
+/// [dst_drawable].
 void ut_x11_client_copy_area(UtObject *object, uint32_t src_drawable,
                              uint32_t dst_drawable, uint32_t gc, int16_t src_x,
                              int16_t src_y, int16_t dst_x, int16_t dst_y,
                              uint16_t width, uint16_t height);
 
+/// Gets an image from [drawable].
+/// Calls [callback] with the returned image.
+///
+/// !arg-type data UtUint8List
 void ut_x11_client_get_image(UtObject *object, uint32_t drawable,
                              UtX11ImageFormat format, int16_t x, int16_t y,
                              uint16_t width, uint16_t height,
                              uint32_t plane_mask, UtObject *callback_object,
                              UtX11GetImageCallback callback);
 
+/// Puts an image contained in [data] into [drawable].
+///
+/// !arg-type data UtUint8List
 void ut_x11_client_put_image(UtObject *object, uint32_t drawable, uint32_t gc,
                              UtX11ImageFormat format, uint16_t width,
                              uint16_t height, uint8_t depth, int16_t dst_x,
@@ -553,19 +565,30 @@ uint32_t ut_x11_client_shm_attach(UtObject *object, uint32_t shmid,
 /// Detached a shared memory [segment].
 void ut_x11_client_shm_detach(UtObject *object, uint32_t segment);
 
+/// Returns a new pixmap of size [width]x[height] and [depth] created from a
+/// shared memory [segment]. The pixmap data starts at [offset] bytes in the
+/// segment.
 uint32_t ut_x11_client_shm_create_pixmap(UtObject *object, uint32_t drawable,
                                          uint16_t width, uint16_t height,
                                          uint8_t depth, uint32_t segment,
                                          uint32_t offset);
 
+/// Attaches a shared memory [fd].
+///
+/// !arg-type fd UtFileDescriptor
 uint32_t ut_x11_client_shm_attach_fd(UtObject *object, UtObject *fd,
                                      bool read_only);
 
+/// Returns a new shared memory segment of [size] bytes from the memory applied
+/// in [ut_x11_client_shm_attach_fd].
 uint32_t
 ut_x11_client_shm_create_segment(UtObject *object, uint32_t size,
                                  bool read_only, UtObject *callback_object,
                                  UtX11ShmCreateSegmentCallback callback);
 
+/// Select the input event [masks] to be applied to window.
+///
+/// !arg-type masks UtObjectList
 void ut_x11_client_select_input_events(UtObject *object, uint32_t window,
                                        UtObject *masks);
 
@@ -574,9 +597,12 @@ void ut_x11_client_query_device(UtObject *object, uint16_t device_id,
                                 UtObject *callback_object,
                                 UtX11QueryDeviceCallback callback);
 
+/// Sets the [device_id] that is in focus for [window].
 void ut_x11_client_set_focus(UtObject *object, uint32_t window,
                              uint32_t timestamp, uint16_t device_id);
 
+/// Gets the device that is in focus for [window].
+/// Calls [callback] when the device is returned.
 void ut_x11_client_get_focus(UtObject *object, uint16_t device_id,
                              UtObject *callback_object,
                              UtX11GetFocusCallback callback);
