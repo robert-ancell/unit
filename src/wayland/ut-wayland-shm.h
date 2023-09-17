@@ -130,10 +130,20 @@ UtObject *ut_wayland_shm_new(UtObject *client, uint32_t id);
 /// !return-type UtWaylandShm
 UtObject *ut_wayland_shm_new_from_registry(UtObject *registry, uint32_t name);
 
+/// Returns the supported image formats.
+///
+/// !return-ref
+/// !return-type UtUint32List
 UtObject *ut_wayland_shm_get_formats(UtObject *object);
 
+/// Returns true if image [format] is supported.
 bool ut_wayland_shm_has_format(UtObject *object, uint32_t format);
 
+/// Creates a shared memory pool using [fd] of [size] bytes.
+///
+/// !arg-type fd UtFileDescriptor
+/// !return-ref
+/// !return-type UtWaylandShmPool
 UtObject *ut_wayland_shm_create_pool(UtObject *object, UtObject *fd,
                                      int32_t size);
 

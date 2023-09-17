@@ -24,6 +24,8 @@ UtObject *ut_wayland_registry_new(UtObject *client, uint32_t id,
                                   UtObject *callback_object,
                                   const UtWaylandRegistryCallbacks *callbacks);
 
+/// Returns a new object ID that is bound to the well known [name].
+/// The object must match [interface] and [version].
 uint32_t ut_wayland_registry_bind(UtObject *object, uint32_t name,
                                   const char *interface, uint32_t version);
 

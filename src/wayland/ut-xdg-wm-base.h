@@ -33,12 +33,22 @@ ut_xdg_wm_base_new_from_registry(UtObject *registry, uint32_t name,
 /// Destroy this object.
 void ut_xdg_wm_base_destroy(UtObject *object);
 
+/// Returns a new positioner.
+///
+/// !return-ref
+/// !return-type UtXdgPositioner
 UtObject *ut_xdg_wm_base_create_positioner(UtObject *object);
 
+/// Returns a new XDG surface for [surface].
+///
+/// !arg-type surface UtWaylandSurface
+/// !return-ref
+/// !return-type UtXdgSurface
 UtObject *ut_xdg_wm_base_get_xdg_surface(UtObject *object, UtObject *surface,
                                          UtObject *callback_object,
                                          const UtXdgSurfaceCallbacks *callback);
 
+/// Response to a ping with [serial].
 void ut_xdg_wm_base_pong(UtObject *object, uint32_t serial);
 
 /// Returns [true] if [object] is a [UtXdgWmBase].

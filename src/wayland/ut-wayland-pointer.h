@@ -36,6 +36,11 @@ UtObject *ut_wayland_pointer_new(UtObject *client, uint32_t id,
                                  UtObject *callback_object,
                                  const UtWaylandPointerCallbacks *callbacks);
 
+/// Sets the cursor to [surface].
+/// [serial] is the last received serial number.
+/// The hotspot of the cursor is set with [hotspot_x],[hotspot_y].
+///
+/// !arg-type surface UtWaylandSurface
 void ut_wayland_pointer_set_cursor(UtObject *object, uint32_t serial,
                                    UtObject *surface, int32_t hotspot_x,
                                    int32_t hotspot_y);

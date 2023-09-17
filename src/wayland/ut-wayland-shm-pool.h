@@ -12,6 +12,10 @@
 /// !return-type UtWaylandShmPool
 UtObject *ut_wayland_shm_pool_new(UtObject *client, uint32_t id);
 
+/// Creates a new buffer from this pool.
+///
+/// !return-ref
+/// !return-type UtWaylandBuffer
 UtObject *ut_wayland_shm_pool_create_buffer(
     UtObject *object, int32_t offset, int32_t width, int32_t height,
     int32_t stride, uint32_t format, UtObject *callback_object,

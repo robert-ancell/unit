@@ -122,14 +122,14 @@ void ut_xdg_positioner_set_reactive(UtObject *object) {
                                  ut_wayland_encoder_get_data(payload));
 }
 
-void ut_xdg_positioner_set_parent_size(UtObject *object, int32_t parent_width,
-                                       int32_t parent_height) {
+void ut_xdg_positioner_set_parent_size(UtObject *object, int32_t width,
+                                       int32_t height) {
   assert(ut_object_is_xdg_positioner(object));
   UtXdgPositioner *self = (UtXdgPositioner *)object;
 
   UtObjectRef payload = ut_wayland_encoder_new();
-  ut_wayland_encoder_append_int(payload, parent_width);
-  ut_wayland_encoder_append_int(payload, parent_height);
+  ut_wayland_encoder_append_int(payload, width);
+  ut_wayland_encoder_append_int(payload, height);
   ut_wayland_client_send_request(self->client, self->id, 8,
                                  ut_wayland_encoder_get_data(payload));
 }
