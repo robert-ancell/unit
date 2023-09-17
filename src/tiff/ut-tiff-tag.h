@@ -187,6 +187,13 @@ uint8_t ut_tiff_tag_get_byte(UtObject *object, size_t index);
 /// Returns "" if this tag is not an ASCII tag.
 char *ut_tiff_tag_get_ascii(UtObject *object);
 
+/// Returns list of text inside this tag.
+/// Returns an empty list if this tag is not an ASCII tag.
+///
+/// !return-ref
+/// !return-type UtStringList
+UtObject *ut_tiff_tag_get_concatenated_ascii(UtObject *object);
+
 /// Returns the short at position [index] in this tag.
 /// Returns 0 if this tag is not a short tag.
 uint16_t ut_tiff_tag_get_short(UtObject *object, size_t index);

@@ -482,6 +482,15 @@ static char *get_ascii(UtObject *object, uint16_t id) {
   return ut_tiff_tag_get_ascii(tag);
 }
 
+static UtObject *get_concatenated_ascii(UtObject *object, uint16_t id) {
+  UtObject *tag = get_tag(object, id);
+  if (tag == NULL) {
+    return NULL;
+  }
+
+  return ut_tiff_tag_get_concatenated_ascii(tag);
+}
+
 static void ut_tiff_reader_cleanup(UtObject *object) {
   UtTiffReader *self = (UtTiffReader *)object;
   ut_object_unref(self->data);
@@ -596,10 +605,6 @@ char *ut_tiff_reader_get_page_name(UtObject *object) {
   return get_ascii(object, UT_TIFF_TAG_PAGE_NAME);
 }
 
-uint16_t ut_tiff_reader_get_gray_response_unit(UtObject *object) {
-  return get_short(object, UT_TIFF_TAG_GRAY_RESPONSE_UNIT);
-}
-
 uint16_t ut_tiff_reader_get_resolution_unit(UtObject *object) {
   return get_short(object, UT_TIFF_TAG_RESOLUTION_UNIT);
 }
@@ -635,11 +640,15 @@ uint32_t ut_tiff_reader_get_tile_length(UtObject *object) {
 }
 
 uint16_t ut_tiff_reader_get_ink_set(UtObject *object) {
-  return get_short_or_long(object, UT_TIFF_TAG_INK_SET);
+  return get_short(object, UT_TIFF_TAG_INK_SET);
 }
 
-char *ut_tiff_reader_get_ink_names(UtObject *object) {
-  return get_ascii(object, UT_TIFF_TAG_INK_NAMES);
+UtObject *ut_tiff_reader_get_ink_names(UtObject *object) {
+  return get_concatenated_ascii(object, UT_TIFF_TAG_INK_NAMES);
+}
+
+uint16_t ut_tiff_reader_get_number_of_inks(UtObject *object) {
+  return get_short(object, UT_TIFF_TAG_NUMBER_OF_INKS);
 }
 
 char *ut_tiff_reader_get_target_printer(UtObject *object) {

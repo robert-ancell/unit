@@ -98,6 +98,29 @@ char *ut_tiff_tag_get_ascii(UtObject *object) {
   return ut_string_take_text(string);
 }
 
+UtObject *ut_tiff_tag_get_concatenated_ascii(UtObject *object) {
+  assert(ut_object_is_tiff_tag(object));
+  UtTiffTag *self = (UtTiffTag *)object;
+  if (self->type != UT_TIFF_TAG_TYPE_ASCII) {
+    return ut_string_list_new();
+  }
+  UtObjectRef value = ut_string_list_new();
+  size_t offset = 0;
+  size_t data_length = ut_list_get_length(self->data);
+  while (offset < data_length) {
+    size_t end = offset;
+    while (end < data_length &&
+           ut_uint8_list_get_element(self->data, end) != 0) {
+      end++;
+    }
+    UtObjectRef d = ut_list_get_sublist(self->data, offset, end - offset + 1);
+    UtObjectRef string = ut_string_new_from_utf8(d); // FIXME: _from_ascii
+    ut_string_list_append(value, ut_string_get_text(d));
+    offset = end + 1;
+  }
+  return ut_object_ref(value);
+}
+
 uint16_t ut_tiff_tag_get_short(UtObject *object, size_t index) {
   assert(ut_object_is_tiff_tag(object));
   UtTiffTag *self = (UtTiffTag *)object;
