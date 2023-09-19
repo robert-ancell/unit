@@ -26,7 +26,7 @@ char *ut_cstring_new_sized(const char *value, size_t length);
 char *ut_cstring_new_printf(const char *format, ...)
     __attribute__((format(printf, 1, 2)));
 
-/// Creates a new C string using the vprintf [format].
+/// Creates a new C string using the vprintf [format] and [ap].
 /// Ths is useful if you have a function that takes variable arguments and needs
 /// to create a C string. If you already have the arguments, then use
 /// [ut_cstring_new_printf].

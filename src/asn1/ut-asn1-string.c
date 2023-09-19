@@ -146,7 +146,7 @@ UtObject *ut_asn1_encode_utc_time(UtObject *value) {
       ut_date_time_get_month(value), ut_date_time_get_day(value),
       ut_date_time_get_hour(value), ut_date_time_get_minutes(value),
       ut_date_time_get_seconds(value));
-  int utc_offset = ut_date_time_get_utc_offset(value);
+  int utc_offset = ut_date_time_get_utc_offset_minutes(value);
   if (utc_offset == 0) {
     ut_string_append(value_string, "Z");
   } else {
@@ -203,7 +203,7 @@ UtObject *ut_asn1_encode_generalized_time(UtObject *value) {
       ut_date_time_get_hour(value), ut_date_time_get_minutes(value),
       ut_date_time_get_seconds(value));
   // FIXME: Subseconds
-  int utc_offset = ut_date_time_get_utc_offset(value);
+  int utc_offset = ut_date_time_get_utc_offset_minutes(value);
   if (utc_offset == 0) {
     ut_string_append(value_string, "Z");
   } else {

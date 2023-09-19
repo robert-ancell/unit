@@ -39,14 +39,14 @@ char **ut_string_list_take_data(UtObject *object);
 /// Add [value] to the end of this list.
 void ut_string_list_append(UtObject *object, const char *value);
 
-/// Format a new string and add it to the end of this list.
+/// Make printf [format] text and add it to the end of this list.
 void ut_string_list_append_printf(UtObject *object, const char *format, ...)
     __attribute__((format(printf, 2, 3)));
 
 /// Add [value] to the start of this list.
 void ut_string_list_prepend(UtObject *object, const char *value);
 
-/// Format a new string and add it to the start of this list.
+/// Make printf [format] text and add it to the start of this list.
 void ut_string_list_prepend_printf(UtObject *object, const char *format, ...)
     __attribute__((format(printf, 2, 3)));
 

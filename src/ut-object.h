@@ -25,7 +25,7 @@ struct _UtObject {
   void *weak_references;
 };
 
-/// Creates a new object with [object_size].
+/// Creates a new object with [object_size] and [functions].
 /// This function is only required when creating new object types.
 ///
 /// !return-ref

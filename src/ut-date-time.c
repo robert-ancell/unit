@@ -11,7 +11,7 @@ typedef struct {
   unsigned int hour;
   unsigned int minutes;
   unsigned int seconds;
-  int utc_offset;
+  int utc_offset_minutes;
 } UtDateTime;
 
 static char *ut_date_time_to_string(UtObject *object) {
@@ -41,7 +41,7 @@ static UtObjectInterface object_interface = {.type_name = "UtDateTime",
 UtObject *ut_date_time_new(unsigned int year, unsigned int month,
                            unsigned int day, unsigned int hour,
                            unsigned int minutes, unsigned int seconds,
-                           int utc_offset) {
+                           int utc_offset_minutes) {
   UtObject *object = ut_object_new(sizeof(UtDateTime), &object_interface);
   UtDateTime *self = (UtDateTime *)object;
   assert(month >= 1 && month <= 12);
@@ -52,7 +52,7 @@ UtObject *ut_date_time_new(unsigned int year, unsigned int month,
   self->hour = hour;
   self->minutes = minutes;
   self->seconds = seconds;
-  self->utc_offset = utc_offset;
+  self->utc_offset_minutes = utc_offset_minutes;
   return object;
 }
 
@@ -98,10 +98,10 @@ unsigned int ut_date_time_get_seconds(UtObject *object) {
   return self->seconds;
 }
 
-int ut_date_time_get_utc_offset(UtObject *object) {
+int ut_date_time_get_utc_offset_minutes(UtObject *object) {
   assert(ut_object_is_date_time(object));
   UtDateTime *self = (UtDateTime *)object;
-  return self->utc_offset;
+  return self->utc_offset_minutes;
 }
 
 bool ut_object_is_date_time(UtObject *object) {

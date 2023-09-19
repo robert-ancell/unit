@@ -3203,7 +3203,7 @@ static void test_utc_time_value_assignment() {
   ut_assert_int_equal(ut_date_time_get_hour(value1), 20);
   ut_assert_int_equal(ut_date_time_get_minutes(value1), 58);
   ut_assert_int_equal(ut_date_time_get_seconds(value1), 6);
-  ut_assert_int_equal(ut_date_time_get_utc_offset(value1), 0);
+  ut_assert_int_equal(ut_date_time_get_utc_offset_minutes(value1), 0);
 
   // Referenced type.
   UtObjectRef module2 = ut_asn1_module_definition_new_from_text(
@@ -3227,7 +3227,7 @@ static void test_utc_time_value_assignment() {
   ut_assert_int_equal(ut_date_time_get_hour(value2), 20);
   ut_assert_int_equal(ut_date_time_get_minutes(value2), 58);
   ut_assert_int_equal(ut_date_time_get_seconds(value2), 6);
-  ut_assert_int_equal(ut_date_time_get_utc_offset(value2), 0);
+  ut_assert_int_equal(ut_date_time_get_utc_offset_minutes(value2), 0);
 
   // Referenced value.
   UtObjectRef module3 = ut_asn1_module_definition_new_from_text(
@@ -3249,7 +3249,7 @@ static void test_utc_time_value_assignment() {
   ut_assert_int_equal(ut_date_time_get_hour(value3), 20);
   ut_assert_int_equal(ut_date_time_get_minutes(value3), 58);
   ut_assert_int_equal(ut_date_time_get_seconds(value3), 6);
-  ut_assert_int_equal(ut_date_time_get_utc_offset(value3), 0);
+  ut_assert_int_equal(ut_date_time_get_utc_offset_minutes(value3), 0);
 }
 
 static void test_generalized_time_type_assignment() {
@@ -3297,7 +3297,7 @@ static void test_generalized_time_value_assignment() {
   ut_assert_int_equal(ut_date_time_get_hour(value1), 20);
   ut_assert_int_equal(ut_date_time_get_minutes(value1), 58);
   ut_assert_int_equal(ut_date_time_get_seconds(value1), 6);
-  ut_assert_int_equal(ut_date_time_get_utc_offset(value1), 0);
+  ut_assert_int_equal(ut_date_time_get_utc_offset_minutes(value1), 0);
 
   // Referenced type.
   UtObjectRef module2 = ut_asn1_module_definition_new_from_text(
@@ -3321,7 +3321,7 @@ static void test_generalized_time_value_assignment() {
   ut_assert_int_equal(ut_date_time_get_hour(value2), 20);
   ut_assert_int_equal(ut_date_time_get_minutes(value2), 58);
   ut_assert_int_equal(ut_date_time_get_seconds(value2), 6);
-  ut_assert_int_equal(ut_date_time_get_utc_offset(value2), 0);
+  ut_assert_int_equal(ut_date_time_get_utc_offset_minutes(value2), 0);
 
   // Referenced value.
   UtObjectRef module3 = ut_asn1_module_definition_new_from_text(
@@ -3343,7 +3343,7 @@ static void test_generalized_time_value_assignment() {
   ut_assert_int_equal(ut_date_time_get_hour(value3), 20);
   ut_assert_int_equal(ut_date_time_get_minutes(value3), 58);
   ut_assert_int_equal(ut_date_time_get_seconds(value3), 6);
-  ut_assert_int_equal(ut_date_time_get_utc_offset(value3), 0);
+  ut_assert_int_equal(ut_date_time_get_utc_offset_minutes(value3), 0);
 }
 
 static void test_graphic_string_type_assignment() {

@@ -1619,7 +1619,7 @@ static void test_utc_time() {
   ut_assert_int_equal(ut_date_time_get_hour(value1), 20);
   ut_assert_int_equal(ut_date_time_get_minutes(value1), 58);
   ut_assert_int_equal(ut_date_time_get_seconds(value1), 6);
-  ut_assert_int_equal(ut_date_time_get_utc_offset(value1), 0);
+  ut_assert_int_equal(ut_date_time_get_utc_offset_minutes(value1), 0);
 
   // With UTC offset - "230823205806+1200".
   UtObjectRef data2 = ut_uint8_list_new_from_hex_string(
@@ -1636,7 +1636,7 @@ static void test_utc_time() {
   ut_assert_int_equal(ut_date_time_get_hour(value2), 20);
   ut_assert_int_equal(ut_date_time_get_minutes(value2), 58);
   ut_assert_int_equal(ut_date_time_get_seconds(value2), 6);
-  ut_assert_int_equal(ut_date_time_get_utc_offset(value2), 720);
+  ut_assert_int_equal(ut_date_time_get_utc_offset_minutes(value2), 720);
 
   // Constructed form - "230823" "205806" "+1200".
   UtObjectRef data3 = ut_uint8_list_new_from_hex_string(
@@ -1650,7 +1650,7 @@ static void test_utc_time() {
   ut_assert_int_equal(ut_date_time_get_hour(value3), 20);
   ut_assert_int_equal(ut_date_time_get_minutes(value3), 58);
   ut_assert_int_equal(ut_date_time_get_seconds(value3), 6);
-  ut_assert_int_equal(ut_date_time_get_utc_offset(value3), 720);
+  ut_assert_int_equal(ut_date_time_get_utc_offset_minutes(value3), 720);
 
   // Decoded as object with type.
   UtObjectRef data4 = ut_uint8_list_new_from_hex_string(
@@ -1666,7 +1666,7 @@ static void test_utc_time() {
   ut_assert_int_equal(ut_date_time_get_hour(value4), 20);
   ut_assert_int_equal(ut_date_time_get_minutes(value4), 58);
   ut_assert_int_equal(ut_date_time_get_seconds(value4), 6);
-  ut_assert_int_equal(ut_date_time_get_utc_offset(value4), 720);
+  ut_assert_int_equal(ut_date_time_get_utc_offset_minutes(value4), 720);
 
   // Empty string not valid.
   UtObjectRef data5 = ut_uint8_list_new_from_hex_string("1700");
