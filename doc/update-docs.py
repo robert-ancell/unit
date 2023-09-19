@@ -701,16 +701,45 @@ def extract_links(doc):
 doc_text = ''
 functions.sort(key=lambda x: x.function.name)
 undocumented_functions = []
+undocumented_function_args = []
 for function in functions:
     doc_text += '\n'
     doc_text += function.function.name + '\n'
-    doc_text += make_doc(function.comments) + '\n'
+    doc = make_doc(function.comments)
+    doc_text += doc + '\n'
     if len(function.comments) == 0:
         undocumented_functions.append(function)
+        continue
+
+    links = extract_links(doc)
+    undocumented_args = []
+    for (i, arg) in enumerate(function.function.args):
+        if isinstance(function.function, FunctionDefinition):
+            (type, name) = arg
+        else:
+            type = ''
+            name = arg
+
+        # Methods don't need to document the object arg.
+        if i == 0 and name == 'object':
+            continue
+
+        # Skip variable args for now
+        if type == '...':
+            continue
+
+        # Skip callback objects for now
+        if name == 'callback_object':
+            continue
+
+        if name not in links:
+            undocumented_args.append(name)
+    if len(undocumented_args) > 0:
+        undocumented_function_args.append((function, undocumented_args))
 
 enums.sort(key=lambda x: x.name)
 undocumented_enums = []
-missing_enum_values = []
+undocumented_enum_values = []
 for enum in enums:
     doc_text += '\n'
     doc_text += enum.name + '\n'
@@ -718,14 +747,14 @@ for enum in enums:
     doc_text += doc + '\n'
     if len(enum.comments) == 0:
         undocumented_enums.append(enum)
-    else:
-        links = extract_links(doc)
-        missing_values = []
-        for (name, value) in enum.enum.values:
-            if name not in links:
-                missing_values.append(name)
-        if len(missing_values) > 0:
-            missing_enum_values.append((enum, missing_values))
+        continue
+    links = extract_links(doc)
+    undocumented_values = []
+    for (name, value) in enum.enum.values:
+        if name not in links:
+            undocumented_values.append(name)
+    if len(undocumented_values) > 0:
+        undocumented_enum_values.append((enum, undocumented_values))
 
 f = open('API.md', 'w')
 f.write(doc_text)
@@ -737,6 +766,11 @@ if len(undocumented_functions) > 0:
     print('Undocumented functions:')
     for function in undocumented_functions:
         print('  ' + function.function.name)
+if len(undocumented_function_args) > 0:
+    fully_documented = False
+    print('Undocumented function arguments:')
+    for (function, args) in undocumented_function_args:
+        print('  ' + function.function.name + ': ' + ', '.join(args))
 n_elements = len(functions)
 n_documented = n_elements - len(undocumented_functions)
 print('Documented %d/%d functions' % (n_documented, n_elements))
@@ -749,10 +783,10 @@ if len(undocumented_enums) > 0:
 n_elements = len(enums)
 n_documented = n_elements - len(undocumented_enums)
 print('Documented %d/%d enums' % (n_documented, n_elements))
-if len(missing_enum_values) > 0:
+if len(undocumented_enum_values) > 0:
     fully_documented = False
-    print('Missing enum values:')
-    for (enum, values) in missing_enum_values:
+    print('Undocumented enum values:')
+    for (enum, values) in undocumented_enum_values:
         print('  ' + enum.name + ': ' + ', '.join(values))
 
 if not fully_documented:
