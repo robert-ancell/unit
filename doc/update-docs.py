@@ -722,5 +722,5 @@ print('Documented %d/%d enums' % (n_documented, n_elements))
 if n_documented != n_elements:
     fully_documented = False
 
-if n_documented < len(functions):
+if not fully_documented:
     sys.exit(1)
