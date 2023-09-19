@@ -5,7 +5,8 @@
 
 #pragma once
 
-/// Creates a new HTTP response.
+/// Creates a new HTTP response with [status_code], [reason_phrase], [headers]
+/// and [body].
 ///
 /// !arg-type headers UtList
 /// !arg-type body UtUint8List

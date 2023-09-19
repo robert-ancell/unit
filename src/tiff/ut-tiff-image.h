@@ -48,7 +48,7 @@ uint16_t ut_tiff_image_get_samples_per_pixel(UtObject *object);
 /// Returns the row stride of the image data.
 size_t ut_tiff_image_get_row_stride(UtObject *object);
 
-/// Sets the color map for this image.
+/// Sets the [color_map] for this image.
 ///
 /// !arg-type color_map UtUint16List
 void ut_tiff_image_set_color_map(UtObject *object, UtObject *color_map);

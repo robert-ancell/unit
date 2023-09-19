@@ -25,7 +25,7 @@ UtObject *ut_int32_array_new_sized(size_t length);
 /// !return-type UtInt32Array
 UtObject *ut_int32_array_new_from_elements(size_t length, ...);
 
-/// Creates a new array that contains [length] signed 32 bit values.
+/// Creates a new array that contains [length] signed 32 bit values from [ap].
 ///
 /// !return-ref
 /// !return-type UtInt32Array

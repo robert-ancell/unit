@@ -12,7 +12,7 @@
 /// !return-type UtWaylandClient
 UtObject *ut_wayland_client_new();
 
-/// Connect the [object] to the Wayland server.
+/// Connect the to the Wayland server.
 void ut_wayland_client_connect(UtObject *object);
 
 /// Makes a sync request to the server.

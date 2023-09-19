@@ -31,7 +31,7 @@ UtObject *ut_uint8_array_new_from_data(const uint8_t *data, size_t data_length);
 /// !return-ref
 UtObject *ut_uint8_array_new_from_elements(size_t length, ...);
 
-/// Creates a new array of [length] values.
+/// Creates a new array of [length] values from [ap].
 ///
 /// !return-type UtUint8Array
 /// !return-ref

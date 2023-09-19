@@ -526,7 +526,7 @@ UtObject *ut_x11_client_new(UtObject *callback_object,
                             const UtX11EventCallbacks *event_callbacks,
                             UtX11ClientErrorCallback error_callback);
 
-/// Connect the [object] to the X server.
+/// Connect to the X server.
 /// [callback] is called when the connection is completed.
 void ut_x11_client_connect(UtObject *object, UtObject *callback_object,
                            UtX11ClientConnectCallback callback);

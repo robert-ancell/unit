@@ -24,7 +24,8 @@ UtObject *ut_float64_array_new_sized(size_t length);
 /// !return-type UtFloat64Array
 UtObject *ut_float64_array_new_from_elements(size_t length, ...);
 
-/// Creates a new array that contains [length] 64 bit floating point values.
+/// Creates a new array that contains [length] 64 bit floating point values from
+/// [ap].
 ///
 /// !return-ref
 /// !return-type UtFloat64Array

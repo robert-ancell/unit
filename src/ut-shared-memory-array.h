@@ -5,7 +5,7 @@
 
 #pragma once
 
-/// Creates a new shared memory array.
+/// Creates a new shared memory array of [length] bytes.
 ///
 /// !return-ref
 /// !return-type UtSharedMemoryArray

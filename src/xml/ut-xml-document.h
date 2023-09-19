@@ -16,11 +16,11 @@ UtObject *ut_xml_document_new(UtObject *root);
 /// !return-ref
 UtObject *ut_xml_document_new_from_text(const char *text);
 
-/// Returns the root element of [object].
+/// Returns the root element of this document.
 /// !return-type UtXmlElement
 UtObject *ut_xml_document_get_root(UtObject *object);
 
-/// Creates an XML representation of [object].
+/// Creates an XML representation of this document.
 /// !return-ref
 char *ut_xml_document_to_text(UtObject *object);
 

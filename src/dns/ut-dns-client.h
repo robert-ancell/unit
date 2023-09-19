@@ -21,12 +21,14 @@ typedef void (*UtDnsLookupCallback)(UtObject *object, UtObject *address);
 /// !return-ref
 UtObject *ut_dns_client_new(UtObject *server_address, uint16_t port);
 
-/// Perform an IPv4 address lookup for the host with [name] using [object].
+/// Perform an IPv4 address lookup for the host with [name].
+/// The responses are returned in [callback].
 void ut_dns_client_lookup_ipv4(UtObject *object, const char *name,
                                UtObject *callback_object,
                                UtDnsLookupCallback callback);
 
-/// Perform an IPv6 address lookup for the host with [name] using [object].
+/// Perform an IPv6 address lookup for the host with [name].
+/// The responses are returned in [callback].
 void ut_dns_client_lookup_ipv6(UtObject *object, const char *name,
                                UtObject *callback_object,
                                UtDnsLookupCallback callback);

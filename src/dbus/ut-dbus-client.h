@@ -36,7 +36,7 @@ void ut_dbus_client_set_method_call_handler(
 /// Returns the unique name for this client connection.
 const char *ut_dbus_client_get_unique_name(UtObject *object);
 
-/// Calls the method [interface].[name] on [object] at [destination] with
+/// Calls the method [interface].[name] on [path] at [destination] with
 /// optional [args]. When the reply is received [callback] is called.
 ///
 /// !arg-type args UtObjectList NULL

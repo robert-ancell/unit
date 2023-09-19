@@ -11,7 +11,7 @@
 /// !return-ref
 UtObject *ut_uint16_new(uint16_t value);
 
-/// Returns the value of [object].
+/// Returns the value in this object.
 uint16_t ut_uint16_get_value(UtObject *object);
 
 /// Returns [true] if [object] is a [UtUint16].

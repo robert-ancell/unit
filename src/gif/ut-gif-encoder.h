@@ -6,6 +6,7 @@
 
 /// Creates a new GIF encoder to write [images] to [output_stream].
 /// The overall dimnsions of the image are [width]x[height].
+/// Colors are provided in [global_color_table].
 ///
 /// !arg-type global_color_table UtUint8List
 /// !arg-type images UtObjectList

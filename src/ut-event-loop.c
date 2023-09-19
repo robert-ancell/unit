@@ -253,10 +253,10 @@ void ut_event_loop_add_worker_thread(UtThreadCallback thread_callback,
   assert(pthread_create(&thread->thread_id, NULL, thread_cb, thread) == 0);
 }
 
-void ut_event_loop_return(UtObject *object) {
+void ut_event_loop_return(UtObject *return_value) {
   EventLoop *loop = get_loop();
   assert(!loop->complete);
-  loop->return_value = ut_object_ref(object);
+  loop->return_value = ut_object_ref(return_value);
   loop->complete = true;
 }
 

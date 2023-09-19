@@ -57,10 +57,10 @@ void ut_event_loop_add_worker_thread(UtThreadCallback thread_callback,
                                      UtObject *callback_object,
                                      UtThreadResultCallback result_callback);
 
-/// Complete the event loop and return [object].
+/// Complete the event loop and return [return_value].
 ///
 /// !arg-type object UtObject NULL
-void ut_event_loop_return(UtObject *object);
+void ut_event_loop_return(UtObject *return_value);
 
 /// Run the event loop.
 /// This will return when [ut_event_loop_return] is called.

@@ -44,8 +44,10 @@ char *ut_cstring_new_lowercase(const char *value);
 /// !return-ref
 char *ut_cstring_new_uppercase(const char *value);
 
-/// Creates a new C string containing the provided strings joined together with
-/// [separator]. The supplied values are terminated by [NULL]. For example, the
+/// Creates a new C string containing the [NULL] terminated list of strings
+/// starting at [word0] joined together with [separator].
+///
+/// For example, the
 /// following will create a new string conatining `"a:b:c"`.
 /// ```c
 /// ut_cstring_ref text = ut_cstring_join(":", "a", "b", "c", NULL);
@@ -75,8 +77,8 @@ size_t ut_cstring_get_length(const char *value);
 /// Returns [true] if the contents of [value1] and [value2] are the same.
 bool ut_cstring_equal(const char *value1, const char *value2);
 
-/// Returns [true] if [value] starts with the [prefix].
+/// Returns [true] if [value] starts with [prefix].
 bool ut_cstring_starts_with(const char *value, const char *prefix);
 
-/// Returns [true] if [value] ends with the [prefix].
+/// Returns [true] if [value] ends with [suffix].
 bool ut_cstring_ends_with(const char *value, const char *suffix);

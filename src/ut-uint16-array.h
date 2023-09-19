@@ -25,7 +25,7 @@ UtObject *ut_uint16_array_new_sized(size_t length);
 /// !return-ref
 UtObject *ut_uint16_array_new_from_elements(size_t length, ...);
 
-/// Creates a new array of [length] values.
+/// Creates a new array of [length] values from [ap].
 ///
 /// !return-type UtUint16Array
 /// !return-ref

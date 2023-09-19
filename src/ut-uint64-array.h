@@ -25,7 +25,7 @@ UtObject *ut_uint64_array_new_sized(size_t length);
 /// !return-type UtUint64Array
 UtObject *ut_uint64_array_new_from_elements(size_t length, ...);
 
-/// Creates a new list that contains [length] unsigned 64 bit values.
+/// Creates a new list that contains [length] unsigned 64 bit values from [ap].
 ///
 /// !return-ref
 /// !return-type UtUint64Array

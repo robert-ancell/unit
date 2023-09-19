@@ -4,7 +4,8 @@
 
 #pragma once
 
-/// Creates a new list of unsigned 8 bit values with associated file desciptors.
+/// Creates a new list of unsigned 8 bit values from [data] with associated
+/// [fds].
 ///
 /// !arg-type data UtUint8List
 /// !arg-type fds UtObjectList

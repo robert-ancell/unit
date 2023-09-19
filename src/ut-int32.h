@@ -11,7 +11,7 @@
 /// !return-ref
 UtObject *ut_int32_new(int32_t value);
 
-/// Returns the value of [object].
+/// Returns the value in this object.
 int32_t ut_int32_get_value(UtObject *object);
 
 /// Returns [true] if [object] is a [UtInt32].

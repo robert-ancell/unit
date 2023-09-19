@@ -18,7 +18,7 @@ UtObject *ut_string_array_new();
 /// !return-type UtStringArray
 UtObject *ut_string_array_new_from_elements(const char *value, ...);
 
-/// Creates a new array from the list of strings [value].
+/// Creates a new array from the list of strings [value] from [ap].
 ///
 /// !return-ref
 /// !return-type UtStringArray

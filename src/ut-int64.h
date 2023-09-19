@@ -11,7 +11,7 @@
 /// !return-ref
 UtObject *ut_int64_new(int64_t value);
 
-/// Returns the value of [object].
+/// Returns the value in this object.
 int64_t ut_int64_get_value(UtObject *object);
 
 /// Returns [true] if [object] is a [UtInt64].
