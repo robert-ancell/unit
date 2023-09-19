@@ -74,16 +74,29 @@
 #define UT_X11_WM_CLASS 67
 #define UT_X11_WM_TRANSIENT_FOR 68
 
+/// State of X11 property notify event.
+/// - [UT_X11_PROPERTY_NOTIFY_STATE_NEW_VALUE] - Property set to new value.
+/// - [UT_X11_PROPERTY_NOTIFY_STATE_DELETE] - Property deleted.
 typedef enum {
   UT_X11_PROPERTY_NOTIFY_STATE_NEW_VALUE = 0,
   UT_X11_PROPERTY_NOTIFY_STATE_DELETE = 1
 } UtX11PropertyNotifyState;
 
+/// Reason for X11 device changed event:
+/// - [UT_X11_DEVICE_CHANGE_REASON_SLAVE_SWITCH] - Slave switch.
+/// - [UT_X11_DEVICE_CHANGE_REASON_DEVICE_CHANGE] - Device change.
 typedef enum {
   UT_X11_DEVICE_CHANGE_REASON_SLAVE_SWITCH = 1,
   UT_X11_DEVICE_CHANGE_REASON_DEVICE_CHANGE = 2
 } UtX11DeviceChangeReason;
 
+/// X11 input notify event mode:
+/// - [UT_X11_INPUT_NOTIFY_MODE_NORMAL] - Normal.
+/// - [UT_X11_INPUT_NOTIFY_MODE_GRAB] - Grab.
+/// - [UT_X11_INPUT_NOTIFY_MODE_UNGRAB] - Ungrab.
+/// - [UT_X11_INPUT_NOTIFY_MODE_WHILE_GRABBED] - While grabbed.
+/// - [UT_X11_INPUT_NOTIFY_MODE_PASSIVE_GRAB] - Passive grab.
+/// - [UT_X11_INPUT_NOTIFY_MODE_PASSIVE_UNGRAB] - Passive ungrab.
 typedef enum {
   UT_X11_INPUT_NOTIFY_MODE_NORMAL = 0,
   UT_X11_INPUT_NOTIFY_MODE_GRAB = 1,
@@ -93,6 +106,15 @@ typedef enum {
   UT_X11_INPUT_NOTIFY_MODE_PASSIVE_UNGRAB = 5
 } UtX11InputNotifyMode;
 
+/// Detail in X11 input notify event:
+/// - [UT_X11_INPUT_NOTIFY_DETAIL_ANCESTOR] - Ancestor.
+/// - [UT_X11_INPUT_NOTIFY_DETAIL_VIRTUAL] - Virtual.
+/// - [UT_X11_INPUT_NOTIFY_DETAIL_INFERIOR] - Inferior.
+/// - [UT_X11_INPUT_NOTIFY_DETAIL_NONLINEAR] - Nonlinear.
+/// - [UT_X11_INPUT_NOTIFY_DETAIL_NONLINEAR_VIRTUAL] - Nonlinear virtual.
+/// - [UT_X11_INPUT_NOTIFY_DETAIL_POINTER] - Pointer.
+/// - [UT_X11_INPUT_NOTIFY_DETAIL_POINTER_ROOT] - Pointe root.
+/// - [UT_X11_INPUT_NOTIFY_DETAIL_NONE] - None.
 typedef enum {
   UT_X11_INPUT_NOTIFY_DETAIL_ANCESTOR = 0,
   UT_X11_INPUT_NOTIFY_DETAIL_VIRTUAL = 1,
@@ -104,12 +126,19 @@ typedef enum {
   UT_X11_INPUT_NOTIFY_DETAIL_NONE = 7
 } UtX11InputNotifyDetail;
 
+/// Flags in X11 key events:
+/// - [UT_X11_KEY_EVENT_FLAG_REPEAT] - event is a key repeat.
 typedef enum { UT_X11_KEY_EVENT_FLAG_REPEAT = 0x00010000 } UtX11KeyEventFlag;
 
+/// Flags on X11 pointer events:
+/// [UT_X11_POINTER_EVENT_FLAG_EMULATED] - This event is emulated.
 typedef enum {
   UT_X11_POINTER_EVENT_FLAG_EMULATED = 0x00010000
 } UtX11PointerEventFlag;
 
+/// Flags on X11 touch events:
+/// - [UT_X11_TOUCH_EVENT_FLAG_PENDING_END] - Pending end.
+/// - [UT_X11_TOUCH_EVENT_FLAG_EMULATING_POINTER] - Emulating pointer.
 typedef enum {
   UT_X11_TOUCH_EVENT_FLAG_PENDING_END = 0x00010000,
   UT_X11_TOUCH_EVENT_FLAG_EMULATING_POINTER = 0x00020000
@@ -300,6 +329,17 @@ typedef void (*UtX11QueryCounterCallback)(UtObject *object,
                                           int64_t counter_value,
                                           UtObject *error);
 
+/// X11 events:
+/// - [UT_X11_EVENT_EXPOSURE] - Exposure event.
+/// - [UT_X11_EVENT_VISIBILITY_CHANGE] - Visibility change event.
+/// - [UT_X11_EVENT_STRUCTURE_NOTIFY] - Structure notify event.
+/// - [UT_X11_EVENT_RESIZE_REDIRECT] - Resize redirect event.
+/// - [UT_X11_EVENT_SUBSTRUCTURE_NOTIFY] - Substructure notify event.
+/// - [UT_X11_EVENT_SUBSTRUCTURE_REDIRECT] - Substructure redirect event.
+/// - [UT_X11_EVENT_FOCUS_CHANGE] - Focus change event.
+/// - [UT_X11_EVENT_PROPERTY_CHANGE] - Propert change event.
+/// - [UT_X11_EVENT_COLORMAP_CHANGE] - Colormap cange event.
+/// - [UT_X11_EVENT_OWNER_GRAB_BUTTON] - Owner grab button event.
 typedef enum {
   UT_X11_EVENT_EXPOSURE = 0x00008000,
   UT_X11_EVENT_VISIBILITY_CHANGE = 0x00010000,
@@ -316,6 +356,39 @@ typedef enum {
 #define UT_X11_DEVICE_ALL 0
 #define UT_X11_DEVICE_ALL_MASTER 1
 
+/// X11 input events:
+/// - [UT_X11_INPUT_EVENT_DEVICE_CHANGED] - Device changed event.
+/// - [UT_X11_INPUT_EVENT_KEY_PRESS] - Key press event.
+/// - [UT_X11_INPUT_EVENT_KEY_RELEASE] - Key release event.
+/// - [UT_X11_INPUT_EVENT_BUTTON_PRESS] - Button press event.
+/// - [UT_X11_INPUT_EVENT_BUTTON_RELEASE] - Button release event.
+/// - [UT_X11_INPUT_EVENT_MOTION] - Motion event.
+/// - [UT_X11_INPUT_EVENT_ENTER] - Enter event.
+/// - [UT_X11_INPUT_EVENT_LEAVE] - Leave event.
+/// - [UT_X11_INPUT_EVENT_FOCUS_IN] - Focus in event.
+/// - [UT_X11_INPUT_EVENT_FOCUS_OUT] - Focus out event.
+/// - [UT_X11_INPUT_EVENT_HIERARCHY] - Hierachy event.
+/// - [UT_X11_INPUT_EVENT_PROPERTY] - Property event.
+/// - [UT_X11_INPUT_EVENT_RAW_KEY_PRESS] - Raw key press event.
+/// - [UT_X11_INPUT_EVENT_RAW_KEY_RELEASE] - Raw key release event.
+/// - [UT_X11_INPUT_EVENT_RAW_BUTTON_PRESS] - Raw button press event.
+/// - [UT_X11_INPUT_EVENT_RAW_BUTTON_RELEASE] - Raw button release event.
+/// - [UT_X11_INPUT_EVENT_RAW_MOTION] - Raw motion event.
+/// - [UT_X11_INPUT_EVENT_TOUCH_BEGIN] - Touch begin event.
+/// - [UT_X11_INPUT_EVENT_TOUCH_UPDATE] - Touch update event.
+/// - [UT_X11_INPUT_EVENT_TOUCH_END] - Touch end event.
+/// - [UT_X11_INPUT_EVENT_TOUCH_OWNERSHIP] - Touch ownership event.
+/// - [UT_X11_INPUT_EVENT_RAW_TOUCH_BEGIN] - Raw touch being event.
+/// - [UT_X11_INPUT_EVENT_RAW_TOUCH_UPDATE] - Raw touch update event.
+/// - [UT_X11_INPUT_EVENT_RAW_TOUCH_END] - Raw touch end event.
+/// - [UT_X11_INPUT_EVENT_BARRIER_HIT] - Barrier hit event.
+/// - [UT_X11_INPUT_EVENT_BARRIER_LEAVE] - Barrier leave event.
+/// - [UT_X11_INPUT_EVENT_GESTURE_PINCH_BEGIN] - Gesture pinch begin event.
+/// - [UT_X11_INPUT_EVENT_GESTURE_PINCH_UPDATE] - Gesture pinch update event.
+/// - [UT_X11_INPUT_EVENT_GESTURE_PINCH_END] - Gesture pinch end event.
+/// - [UT_X11_INPUT_EVENT_SWIPE_PINCH_BEGIN] - Switch pinch begin event.
+/// - [UT_X11_INPUT_EVENT_SWIPE_PINCH_UPDATE] - Switch pinch update event.
+/// - [UT_X11_INPUT_EVENT_SWIPE_PINCH_END] - Switch pinch end event.
 typedef enum {
   UT_X11_INPUT_EVENT_DEVICE_CHANGED = 0x00000002,
   UT_X11_INPUT_EVENT_KEY_PRESS = 0x00000004,
@@ -352,12 +425,20 @@ typedef enum {
       0x100000000 // FIXME: Greater than 64 bits
 } UtX11InputEvent;
 
+/// X11 image formast:
+/// - [UT_X11_IMAGE_FORMAT_BITMAP] - Bitmap.
+/// - [UT_X11_IMAGE_FORMAT_XY_PIXMAP] - XY pixmap.
+/// - [UT_X11_IMAGE_FORMAT_Z_PIXMAP] - Z pixmap.
 typedef enum {
   UT_X11_IMAGE_FORMAT_BITMAP,
   UT_X11_IMAGE_FORMAT_XY_PIXMAP,
   UT_X11_IMAGE_FORMAT_Z_PIXMAP
 } UtX11ImageFormat;
 
+/// Mode when changing X11 properites.
+/// - [UT_X11_PROPERTY_MODE_REPLACE] - Replace this property.
+/// - [UT_X11_PROPERTY_MODE_PREPEND] - Prepend this property.
+/// - [UT_X11_PROPERTY_MODE_APPEND] - Append this property.
 typedef enum {
   UT_X11_PROPERTY_MODE_REPLACE = 0,
   UT_X11_PROPERTY_MODE_PREPEND = 1,

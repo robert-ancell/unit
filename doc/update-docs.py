@@ -43,7 +43,7 @@ class Define:
         return 'Define(' + \
             repr(self.name) + ', ' + \
             repr(self.args) + ', ' + \
-            repr(tokens) + ')'
+            repr(self.tokens) + ')'
 
 
 class Pragma:
@@ -634,9 +634,17 @@ class ApiFunction:
         self.comments = comments
 
 
+class ApiEnum:
+    def __init__(self, name, enum, comments):
+        self.name = name
+        self.enum = enum
+        self.comments = comments
+
+
 source_dir = '../src'
 statements = parse_header(source_dir + '/ut.h')
 functions = []
+enums = []
 for statement in statements:
     if isinstance(statement, Include):
         comments = []
@@ -650,11 +658,15 @@ for statement in statements:
                         comments.append(text)
                 else:
                     comments = []
+
             if isinstance(s, FunctionDefinition) and \
                not s.name.startswith('_'):
                 functions.append(ApiFunction(s, comments))
             elif isinstance(s, Define) and len(s.args) > 0:
                 functions.append(ApiFunction(s, comments))
+            elif isinstance(s, Typedef) and isinstance(s.value, Enum):
+                enums.append(ApiEnum(s.name, s.value, comments))
+
             if not isinstance(s, Comment):
                 comments = []
 
@@ -669,15 +681,40 @@ for function in functions:
     if len(function.comments) == 0:
         undocumented_functions.append(function)
 
+enums.sort(key=lambda x: x.name)
+undocumented_enums = []
+for enum in enums:
+    doc_text += '\n'
+    doc_text += enum.name + '\n'
+    for comment in enum.comments:
+        doc_text += comment + '\n'
+    if len(enum.comments) == 0:
+        undocumented_enums.append(enum)
+
 f = open('API.md', 'w')
 f.write(doc_text)
+
+fully_documented = True
 
 if len(undocumented_functions) > 0:
     print('Undocumented functions:')
     for function in undocumented_functions:
         print('  ' + function.function.name)
-n_documented = len(functions) - len(undocumented_functions)
-print('Documented %d/%d functions' % (n_documented, len(functions)))
+n_elements = len(functions)
+n_documented = n_elements - len(undocumented_functions)
+print('Documented %d/%d functions' % (n_documented, n_elements))
+if n_documented != n_elements:
+    fully_documented = False
+
+if len(undocumented_enums) > 0:
+    print('Undocumented enums:')
+    for enum in undocumented_enums:
+        print('  ' + enum.name)
+n_elements = len(enums)
+n_documented = n_elements - len(undocumented_enums)
+print('Documented %d/%d enums' % (n_documented, n_elements))
+if n_documented != n_elements:
+    fully_documented = False
 
 if n_documented < len(functions):
     sys.exit(1)

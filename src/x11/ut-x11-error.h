@@ -4,6 +4,38 @@
 
 #pragma once
 
+/// X11 error codes:
+/// - [UT_X11_ERROR_UNKNOWN] - Unknown error.
+/// - [UT_X11_ERROR_REQUEST] - Request error.
+/// - [UT_X11_ERROR_VALUE] - Value error.
+/// - [UT_X11_ERROR_WINDOW] - Window error.
+/// - [UT_X11_ERROR_PIXMAP] - Pixmap error.
+/// - [UT_X11_ERROR_ATOM] - Atom error.
+/// - [UT_X11_ERROR_CURSOR] - Cursor error.
+/// - [UT_X11_ERROR_FONT] - Font error.
+/// - [UT_X11_ERROR_MATCH] - Match error.
+/// - [UT_X11_ERROR_DRAWABLE] - Drawable error.
+/// - [UT_X11_ERROR_ACCESS] - Access error.
+/// - [UT_X11_ERROR_ALLOC] - Alloc error.
+/// - [UT_X11_ERROR_COLORMAP] - Colormap error.
+/// - [UT_X11_ERROR_GCONTEXT] - Graphics context error.
+/// - [UT_X11_ERROR_ID_CHOICE] - ID choice error.
+/// - [UT_X11_ERROR_NAME] - Name error.
+/// - [UT_X11_ERROR_LENGTH] - Length error.
+/// - [UT_X11_ERROR_IMPLEMENTATION] - Implementation error.
+/// - [UT_X11_ERROR_BAD_SEGMENT] - Segment error.
+/// - [UT_X11_ERROR_INPUT_DEVICE] - Input device error.
+/// - [UT_X11_ERROR_INPUT_EVENT] - Input event error.
+/// - [UT_X11_ERROR_INPUT_MODE] - Input mode error.
+/// - [UT_X11_ERROR_INPUT_DEVICE_BUSY] - Input device busy error.
+/// - [UT_X11_ERROR_INPUT_CLASS] - Input class error.
+/// - [UT_X11_ERROR_COUNTER] - Counter error.
+/// - [UT_X11_ERROR_ALARM] - Alarm error.
+/// - [UT_X11_ERROR_BAD_REGION] - Region error.
+/// - [UT_X11_ERROR_BAD_OUTPUT] - Output error.
+/// - [UT_X11_ERROR_BAD_CRTC] - CRTC error.
+/// - [UT_X11_ERROR_BAD_MODE] - Mode error.
+/// - [UT_X11_ERROR_BAD_PROVIDER] - Provider error.
 typedef enum {
   UT_X11_ERROR_UNKNOWN,
   UT_X11_ERROR_REQUEST,
