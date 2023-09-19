@@ -670,6 +670,7 @@ for statement in statements:
             if not isinstance(s, Comment):
                 comments = []
 
+
 def make_doc(comments):
     doc = ''
     for c in comments:
@@ -677,6 +678,7 @@ def make_doc(comments):
     while doc.endswith('\n'):
         doc = doc[:-1]
     return doc
+
 
 doc_text = ''
 functions.sort(key=lambda x: x.function.name)
