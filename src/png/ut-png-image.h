@@ -5,6 +5,13 @@
 
 #pragma once
 
+/// Type of color used in a PNG image:
+/// - [UT_PNG_COLOR_TYPE_GREYSCALE] - single channel greyscale.
+/// - [UT_PNG_COLOR_TYPE_TRUECOLOR] - three channel RGB.
+/// - [UT_PNG_COLOR_TYPE_INDEXED_COLOR] - single chanel indexes into a RGB
+/// palette.
+/// - [UT_PNG_COLOR_TYPE_GREYSCALE_WITH_ALPHA] - two channel greyscale and
+/// alpha. = [UT_PNG_COLOR_TYPE_TRUECOLOR_WITH_ALPHA] - four channel RGBA.
 typedef enum {
   UT_PNG_COLOR_TYPE_GREYSCALE,
   UT_PNG_COLOR_TYPE_TRUECOLOR,

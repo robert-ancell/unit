@@ -378,7 +378,7 @@ UtObject *ut_tiff_image_new_from_data(UtObject *data) {
     break;
   default:
   case UT_TIFF_PHOTOMETRIC_INTERPRETATION_TRANSPARENCY_MASK:
-  case UT_TIFF_PHOTOMETRIC_INTERPRETATION_CMYK:
+  case UT_TIFF_PHOTOMETRIC_INTERPRETATION_SEPERATED:
   case UT_TIFF_PHOTOMETRIC_INTERPRETATION_YCBCR:
   case UT_TIFF_PHOTOMETRIC_INTERPRETATION_CIELAB:
     return ut_tiff_error_new("Unsupported TIFF photometric interpretation");

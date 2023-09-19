@@ -5,6 +5,11 @@
 
 #pragma once
 
+/// DBus message types:
+/// - [UT_DBUS_MESSAGE_TYPE_METHOD_CALL] - a method call request.
+/// - [UT_DBUS_MESSAGE_TYPE_METHOD_RETURN] - a response to a method call.
+/// - [UT_DBUS_MESSAGE_TYPE_ERROR] - an error response to a method call.
+/// - [UT_DBUS_MESSAGE_TYPE_SIGNAL] - a signal emission.
 typedef enum {
   UT_DBUS_MESSAGE_TYPE_METHOD_CALL = 1,
   UT_DBUS_MESSAGE_TYPE_METHOD_RETURN = 2,
@@ -12,6 +17,13 @@ typedef enum {
   UT_DBUS_MESSAGE_TYPE_SIGNAL = 4
 } UtDBusMessageType;
 
+/// DBus message flags:
+/// - [UT_DBUS_MESSAGE_FLAG_NO_REPLY_EXPECTED] - no reply is expected to this
+/// message.
+/// - [UT_DBUS_MESSAGE_FLAG_NO_AUTO_START] - this message should not cause any
+/// service to autostart.
+/// - [UT_DBUS_MESSAGE_FLAG_ALLOW_INTERACTIVE_AUTHORIZATION] - the message
+/// sender is able to use interactive authorization for this request.
 typedef enum {
   UT_DBUS_MESSAGE_FLAG_NO_REPLY_EXPECTED = 0x01,
   UT_DBUS_MESSAGE_FLAG_NO_AUTO_START = 0x02,

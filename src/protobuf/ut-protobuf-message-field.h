@@ -4,6 +4,16 @@
 
 #pragma once
 
+/// Types of protobuf message fields.
+/// - [UT_PROTOBUF_MESSAGE_FIELD_TYPE_IMPLICIT] - field is sent zero or more
+/// times, and has a default value if not sent.
+/// - [UT_PROTOBUF_MESSAGE_FIELD_TYPE_REQUIRED] - field is required to be sent
+/// exactly once.
+/// - [UT_PROTOBUF_MESSAGE_FIELD_TYPE_OPTIONAL] - field is sent zero or more
+/// times, and has a default value if not sent. The client can tell if the field
+/// was sent.
+/// - [UT_PROTOBUF_MESSAGE_FIELD_TYPE_REPEATED] - field is sent zero or more
+/// times, all values are stored in order received.
 typedef enum {
   UT_PROTOBUF_MESSAGE_FIELD_TYPE_IMPLICIT,
   UT_PROTOBUF_MESSAGE_FIELD_TYPE_REQUIRED,

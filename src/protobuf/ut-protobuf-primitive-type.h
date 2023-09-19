@@ -4,6 +4,22 @@
 
 #pragma once
 
+/// Primitive protobuf types:
+/// - [UT_PROTOBUF_PRIMITIVE_DOUBLE] - double type.
+/// - [UT_PROTOBUF_PRIMITIVE_FLOAT] - float type.
+/// - [UT_PROTOBUF_PRIMITIVE_INT32] - int32 type.
+/// - [UT_PROTOBUF_PRIMITIVE_INT64] - int64 type.
+/// - [UT_PROTOBUF_PRIMITIVE_UINT32] - uint32 type.
+/// - [UT_PROTOBUF_PRIMITIVE_UINT64] - uint64 type.
+/// - [UT_PROTOBUF_PRIMITIVE_SINT32] - sint32 type.
+/// - [UT_PROTOBUF_PRIMITIVE_SINT64] - sint64 type.
+/// - [UT_PROTOBUF_PRIMITIVE_FIXED32] - fixed32 type.
+/// - [UT_PROTOBUF_PRIMITIVE_FIXED64] - fixed64 type.
+/// - [UT_PROTOBUF_PRIMITIVE_SFIXED32] - sfixed32 type.
+/// - [UT_PROTOBUF_PRIMITIVE_SFIXED64] - sfixed64 type.
+/// - [UT_PROTOBUF_PRIMITIVE_BOOL] - bool type.
+/// - [UT_PROTOBUF_PRIMITIVE_STRING] - string type.
+/// - [UT_PROTOBUF_PRIMITIVE_BYTES] - bytes type.
 typedef enum {
   UT_PROTOBUF_PRIMITIVE_DOUBLE,
   UT_PROTOBUF_PRIMITIVE_FLOAT,

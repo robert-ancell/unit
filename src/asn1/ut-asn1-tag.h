@@ -2,6 +2,12 @@
 
 #include "ut-object.h"
 
+/// ASN.1 tag type:
+/// - [UT_ASN1_TAG_CLASS_UNIVERSAL] - a standard tag as defined in
+/// [UtAsn1TagUniversal].
+/// - [UT_ASN1_TAG_CLASS_APPLICATION] - a tag scoped to this application.
+/// - [UT_ASN1_TAG_CLASS_CONTEXT_SPECIFIC] - a tag scoped to this element.
+/// - [UT_ASN1_TAG_CLASS_PRIVATE] - a private tag.
 typedef enum {
   UT_ASN1_TAG_CLASS_UNIVERSAL,
   UT_ASN1_TAG_CLASS_APPLICATION,
@@ -9,6 +15,36 @@ typedef enum {
   UT_ASN1_TAG_CLASS_PRIVATE
 } UtAsn1TagClass;
 
+/// ASN.1 universal tag numbers.
+/// - [UT_ASN1_TAG_UNIVERSAL_BOOLEAN] - tag for BOOLEAN type.
+/// - [UT_ASN1_TAG_UNIVERSAL_INTEGER] - tag for INTEGER type.
+/// - [UT_ASN1_TAG_UNIVERSAL_BIT_STRING] - tag for BIT STRING type.
+/// - [UT_ASN1_TAG_UNIVERSAL_OCTET_STRING] - tag for OCTET STRING type.
+/// - [UT_ASN1_TAG_UNIVERSAL_NULL] - tag for NULL type.
+/// - [UT_ASN1_TAG_UNIVERSAL_OBJECT_IDENTIFIER] - tag for OBJECT IDENTIFIER
+/// type.
+/// - [UT_ASN1_TAG_UNIVERSAL_OBJECT_DESCRIPTOR] - tag for ObjectDescriptor type.
+/// - [UT_ASN1_TAG_UNIVERSAL_EXTERNAL] - tag for EXTERNAL type.
+/// - [UT_ASN1_TAG_UNIVERSAL_REAL] - tag for REAL type.
+/// - [UT_ASN1_TAG_UNIVERSAL_ENUMERATED] - tag for ENUMERATED type.
+/// - [UT_ASN1_TAG_UNIVERSAL_EMBEDDED_PDV] - tag for EMBEDDED PDV type.
+/// - [UT_ASN1_TAG_UNIVERSAL_UTF8_STRING] - tag for UTF8String type.
+/// - [UT_ASN1_TAG_UNIVERSAL_RELATIVE_OID] - tag for RELATIVE-OID type.
+/// - [UT_ASN1_TAG_UNIVERSAL_SEQUENCE] - tag for SEQUENCE type.
+/// - [UT_ASN1_TAG_UNIVERSAL_SET] - tag for SET type.
+/// - [UT_ASN1_TAG_UNIVERSAL_NUMERIC_STRING] - tag for NumericString type.
+/// - [UT_ASN1_TAG_UNIVERSAL_PRINTABLE_STRING] - tag for Printabletring type.
+/// - [UT_ASN1_TAG_UNIVERSAL_TELETEX_STRING] - tag for TeletexString type.
+/// - [UT_ASN1_TAG_UNIVERSAL_VIDEOTEX_STRING] - tag for VideotexString type.
+/// - [UT_ASN1_TAG_UNIVERSAL_IA5_STRING] - tag for IA5String type.
+/// - [UT_ASN1_TAG_UNIVERSAL_UTC_TIME] - tag for UTCTime type.
+/// - [UT_ASN1_TAG_UNIVERSAL_GENERALIZED_TIME] - tag for GeneralizedTime type.
+/// - [UT_ASN1_TAG_UNIVERSAL_GRAPHIC_STRING] - tag for GraphicsString type.
+/// - [UT_ASN1_TAG_UNIVERSAL_VISIBLE_STRING] - tag for VisibleString type.
+/// - [UT_ASN1_TAG_UNIVERSAL_GENERAL_STRING] - tag for GeneralString type.
+/// - [UT_ASN1_TAG_UNIVERSAL_UNIVERSAL_STRING] - tag for UniversalString type.
+/// - [UT_ASN1_TAG_UNIVERSAL_CHARACTER_STRING] - tag for CHARACTER STRING type.
+/// - [UT_ASN1_TAG_UNIVERSAL_BMP_STRING] - tag for BMPString type.
 typedef enum {
   UT_ASN1_TAG_UNIVERSAL_BOOLEAN = 1,
   UT_ASN1_TAG_UNIVERSAL_INTEGER = 2,
