@@ -680,6 +680,24 @@ def make_doc(comments):
     return doc
 
 
+def extract_links(doc):
+    links = []
+    link = None
+    for c in doc:
+        if c == '[':
+            link = ''
+        elif link is not None:
+            if c == ']':
+                links.append(link)
+                link = None
+            else:
+                link += c
+
+    assert link is None
+
+    return links
+
+
 doc_text = ''
 functions.sort(key=lambda x: x.function.name)
 undocumented_functions = []
@@ -692,12 +710,22 @@ for function in functions:
 
 enums.sort(key=lambda x: x.name)
 undocumented_enums = []
+missing_enum_values = []
 for enum in enums:
     doc_text += '\n'
     doc_text += enum.name + '\n'
-    doc_text += make_doc(enum.comments) + '\n'
+    doc = make_doc(enum.comments)
+    doc_text += doc + '\n'
     if len(enum.comments) == 0:
         undocumented_enums.append(enum)
+    else:
+        links = extract_links(doc)
+        missing_values = []
+        for (name, value) in enum.enum.values:
+            if name not in links:
+                missing_values.append(name)
+        if len(missing_values) > 0:
+            missing_enum_values.append((enum, missing_values))
 
 f = open('API.md', 'w')
 f.write(doc_text)
@@ -705,24 +733,27 @@ f.write(doc_text)
 fully_documented = True
 
 if len(undocumented_functions) > 0:
+    fully_documented = False
     print('Undocumented functions:')
     for function in undocumented_functions:
         print('  ' + function.function.name)
 n_elements = len(functions)
 n_documented = n_elements - len(undocumented_functions)
 print('Documented %d/%d functions' % (n_documented, n_elements))
-if n_documented != n_elements:
-    fully_documented = False
 
 if len(undocumented_enums) > 0:
+    fully_documented = False
     print('Undocumented enums:')
     for enum in undocumented_enums:
         print('  ' + enum.name)
 n_elements = len(enums)
 n_documented = n_elements - len(undocumented_enums)
 print('Documented %d/%d enums' % (n_documented, n_elements))
-if n_documented != n_elements:
+if len(missing_enum_values) > 0:
     fully_documented = False
+    print('Missing enum values:')
+    for (enum, values) in missing_enum_values:
+        print('  ' + enum.name + ': ' + ', '.join(values))
 
 if not fully_documented:
     sys.exit(1)

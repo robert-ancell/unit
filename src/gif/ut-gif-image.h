@@ -5,7 +5,13 @@
 
 #pragma once
 
-/// The action to take when rendering the next GIF image.
+/// The action to take when rendering the next GIF image:
+/// - [UT_GIF_DISPOSAL_METHOD_NONE] - No action performed.
+/// - [UT_GIF_DISPOSAL_METHOD_DO_NOT_DISPOSE] - Keep image.
+/// - [UT_GIF_DISPOSAL_METHOD_RESTORE_TO_BACKGROUND] - Restore area under image
+/// to background.
+/// - [UT_GIF_DISPOSAL_METHOD_RESTORE_TO_PREVIOUS] - Restore area under image to
+/// previous image.
 typedef enum {
   UT_GIF_DISPOSAL_METHOD_NONE,
   UT_GIF_DISPOSAL_METHOD_DO_NOT_DISPOSE,

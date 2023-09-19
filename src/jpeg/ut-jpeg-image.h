@@ -7,8 +7,8 @@
 
 /// Units used in pixel density:
 /// - [UT_JPEG_DENSITY_UNITS_NONE] - units not specified.
-/// - [UT_JPEG_DENSITY_UNITS_PER_INCH] - dots per inch.
-/// - [UT_JPEG_DENSITY_UNITS_PER_CENTIMETER] - dots per centimeter.
+/// - [UT_JPEG_DENSITY_UNITS_DOTS_PER_INCH] - dots per inch.
+/// - [UT_JPEG_DENSITY_UNITS_DOTS_PER_CENTIMETER] - dots per centimeter.
 typedef enum {
   UT_JPEG_DENSITY_UNITS_NONE,
   UT_JPEG_DENSITY_UNITS_DOTS_PER_INCH,
