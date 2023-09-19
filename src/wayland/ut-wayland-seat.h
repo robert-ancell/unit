@@ -8,6 +8,10 @@
 
 #pragma once
 
+/// Capabilities of this seat:
+/// - [UT_WAYLAND_SEAT_CAPABILITY_POINTER] - Has pointer input.
+/// - [UT_WAYLAND_SEAT_CAPABILITY_KEYBOARD] - Has keyboard input.
+/// - [UT_WAYLAND_SEAT_CAPABILITY_TOUCH] - Has touch input.
 typedef enum {
   UT_WAYLAND_SEAT_CAPABILITY_POINTER = 1 << 0,
   UT_WAYLAND_SEAT_CAPABILITY_KEYBOARD = 1 << 1,
