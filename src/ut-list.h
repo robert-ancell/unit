@@ -27,7 +27,7 @@ extern int ut_list_id;
 UtObject *ut_list_new();
 
 /// Creates a new object that implements [UtList] and contains a [NULL]
-/// terminated lists of elements starting at [item0].
+/// terminated list of elements starting at [item0].
 /// ```c
 /// UtObjectRef list = ut_list_new_from_elements(item0, item1, item2, NULL);
 /// ```
@@ -36,7 +36,7 @@ UtObject *ut_list_new();
 UtObject *ut_list_new_from_elements(UtObject *item0, ...);
 
 /// Creates a new object that implements [UtList] and contains a [NULL]
-/// terminated lists of elements starting at [item0].
+/// terminated list of elements starting at [item0].
 /// ```c
 /// UtObjectRef list = ut_list_new_from_elements_take(ut_string_new("Hello"),
 /// ut_string_new("World"), NULL);
