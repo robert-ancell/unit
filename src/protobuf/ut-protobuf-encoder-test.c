@@ -523,7 +523,7 @@ static void test_enum() {
   UtObjectRef message =
       ut_protobuf_message_type_new_take(ut_map_new_string_from_elements_take(
           "value",
-          ut_protobuf_message_field_new_take(
+          ut_protobuf_message_field_new_implicit_take(
               ut_protobuf_enum_type_new_take(
                   ut_map_new_string_from_elements_take(
                       "ZERO", ut_int32_new(0), "ONE", ut_int32_new(1), "TWO",

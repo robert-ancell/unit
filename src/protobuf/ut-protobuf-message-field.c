@@ -51,8 +51,8 @@ UtObject *ut_protobuf_message_field_new_repeated(UtObject *value_type,
                                        value_type, number);
 }
 
-UtObject *ut_protobuf_message_field_new_take(UtObject *value_type,
-                                             uint32_t number) {
+UtObject *ut_protobuf_message_field_new_implicit_take(UtObject *value_type,
+                                                      uint32_t number) {
   UtObject *object = ut_protobuf_message_field_new(
       UT_PROTOBUF_MESSAGE_FIELD_TYPE_IMPLICIT, value_type, number);
   ut_object_unref(value_type);
@@ -74,7 +74,7 @@ UtObject *ut_protobuf_message_field_new_repeated_take(UtObject *value_type,
 }
 
 UtObject *ut_protobuf_message_field_new_double(uint32_t number) {
-  return ut_protobuf_message_field_new_take(
+  return ut_protobuf_message_field_new_implicit_take(
       ut_protobuf_primitive_type_new_double(), number);
 }
 
@@ -89,7 +89,7 @@ UtObject *ut_protobuf_message_field_new_repeated_double(uint32_t number) {
 }
 
 UtObject *ut_protobuf_message_field_new_float(uint32_t number) {
-  return ut_protobuf_message_field_new_take(
+  return ut_protobuf_message_field_new_implicit_take(
       ut_protobuf_primitive_type_new_float(), number);
 }
 
@@ -104,7 +104,7 @@ UtObject *ut_protobuf_message_field_new_repeated_float(uint32_t number) {
 }
 
 UtObject *ut_protobuf_message_field_new_int32(uint32_t number) {
-  return ut_protobuf_message_field_new_take(
+  return ut_protobuf_message_field_new_implicit_take(
       ut_protobuf_primitive_type_new_int32(), number);
 }
 
@@ -119,7 +119,7 @@ UtObject *ut_protobuf_message_field_new_repeated_int32(uint32_t number) {
 }
 
 UtObject *ut_protobuf_message_field_new_int64(uint32_t number) {
-  return ut_protobuf_message_field_new_take(
+  return ut_protobuf_message_field_new_implicit_take(
       ut_protobuf_primitive_type_new_int64(), number);
 }
 
@@ -134,7 +134,7 @@ UtObject *ut_protobuf_message_field_new_repeated_int64(uint32_t number) {
 }
 
 UtObject *ut_protobuf_message_field_new_uint32(uint32_t number) {
-  return ut_protobuf_message_field_new_take(
+  return ut_protobuf_message_field_new_implicit_take(
       ut_protobuf_primitive_type_new_uint32(), number);
 }
 
@@ -149,7 +149,7 @@ UtObject *ut_protobuf_message_field_new_repeated_uint32(uint32_t number) {
 }
 
 UtObject *ut_protobuf_message_field_new_uint64(uint32_t number) {
-  return ut_protobuf_message_field_new_take(
+  return ut_protobuf_message_field_new_implicit_take(
       ut_protobuf_primitive_type_new_uint64(), number);
 }
 
@@ -164,7 +164,7 @@ UtObject *ut_protobuf_message_field_new_repeated_uint64(uint32_t number) {
 }
 
 UtObject *ut_protobuf_message_field_new_sint32(uint32_t number) {
-  return ut_protobuf_message_field_new_take(
+  return ut_protobuf_message_field_new_implicit_take(
       ut_protobuf_primitive_type_new_sint32(), number);
 }
 
@@ -179,7 +179,7 @@ UtObject *ut_protobuf_message_field_new_repeated_sint32(uint32_t number) {
 }
 
 UtObject *ut_protobuf_message_field_new_sint64(uint32_t number) {
-  return ut_protobuf_message_field_new_take(
+  return ut_protobuf_message_field_new_implicit_take(
       ut_protobuf_primitive_type_new_sint64(), number);
 }
 
@@ -194,7 +194,7 @@ UtObject *ut_protobuf_message_field_new_repeated_sint64(uint32_t number) {
 }
 
 UtObject *ut_protobuf_message_field_new_fixed32(uint32_t number) {
-  return ut_protobuf_message_field_new_take(
+  return ut_protobuf_message_field_new_implicit_take(
       ut_protobuf_primitive_type_new_fixed32(), number);
 }
 
@@ -209,7 +209,7 @@ UtObject *ut_protobuf_message_field_new_repeated_fixed32(uint32_t number) {
 }
 
 UtObject *ut_protobuf_message_field_new_fixed64(uint32_t number) {
-  return ut_protobuf_message_field_new_take(
+  return ut_protobuf_message_field_new_implicit_take(
       ut_protobuf_primitive_type_new_fixed64(), number);
 }
 
@@ -224,7 +224,7 @@ UtObject *ut_protobuf_message_field_new_repeated_fixed64(uint32_t number) {
 }
 
 UtObject *ut_protobuf_message_field_new_sfixed32(uint32_t number) {
-  return ut_protobuf_message_field_new_take(
+  return ut_protobuf_message_field_new_implicit_take(
       ut_protobuf_primitive_type_new_sfixed32(), number);
 }
 
@@ -239,7 +239,7 @@ UtObject *ut_protobuf_message_field_new_repeated_sfixed32(uint32_t number) {
 }
 
 UtObject *ut_protobuf_message_field_new_sfixed64(uint32_t number) {
-  return ut_protobuf_message_field_new_take(
+  return ut_protobuf_message_field_new_implicit_take(
       ut_protobuf_primitive_type_new_sfixed64(), number);
 }
 
@@ -254,7 +254,7 @@ UtObject *ut_protobuf_message_field_new_repeated_sfixed64(uint32_t number) {
 }
 
 UtObject *ut_protobuf_message_field_new_bool(uint32_t number) {
-  return ut_protobuf_message_field_new_take(
+  return ut_protobuf_message_field_new_implicit_take(
       ut_protobuf_primitive_type_new_bool(), number);
 }
 
@@ -269,7 +269,7 @@ UtObject *ut_protobuf_message_field_new_repeated_bool(uint32_t number) {
 }
 
 UtObject *ut_protobuf_message_field_new_string(uint32_t number) {
-  return ut_protobuf_message_field_new_take(
+  return ut_protobuf_message_field_new_implicit_take(
       ut_protobuf_primitive_type_new_string(), number);
 }
 
@@ -284,7 +284,7 @@ UtObject *ut_protobuf_message_field_new_repeated_string(uint32_t number) {
 }
 
 UtObject *ut_protobuf_message_field_new_bytes(uint32_t number) {
-  return ut_protobuf_message_field_new_take(
+  return ut_protobuf_message_field_new_implicit_take(
       ut_protobuf_primitive_type_new_bytes(), number);
 }
 

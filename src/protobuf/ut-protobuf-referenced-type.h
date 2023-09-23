@@ -13,7 +13,7 @@ UtObject *ut_protobuf_referenced_type_new(const char *name);
 /// Returns the name used in this reference.
 const char *ut_protobuf_referenced_type_get_name(UtObject *object);
 
-/// Set the type this reference points to.
+/// Set the [type] this reference points to.
 ///
 /// !arg-type type UtProtobufPrimitiveType UtProtobufMessageType
 /// UtProtobufEnumType

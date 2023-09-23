@@ -21,313 +21,321 @@ typedef enum {
   UT_PROTOBUF_MESSAGE_FIELD_TYPE_REPEATED
 } UtProtobufMessageFieldType;
 
-/// Creates a new protobuf message field of [type], [value_type] and [number].
+/// Creates a new protobuf message field of [type] with [number] conatining
+/// [value_type].
 ///
 /// !return-ref
 /// !return-type UtProtobufMessageField
 UtObject *ut_protobuf_message_field_new(UtProtobufMessageFieldType type,
                                         UtObject *value_type, uint32_t number);
 
-/// Creates a new protobuf message field.
+/// Creates a new protobuf optional message field with [number] containing
+/// [value_type].
 ///
 /// !return-ref
 /// !return-type UtProtobufMessageField
 UtObject *ut_protobuf_message_field_new_optional(UtObject *value_type,
                                                  uint32_t number);
 
-/// Creates a new protobuf message field.
+/// Creates a new protobuf repeated message field with [number] containing
+/// [value_type].
 ///
 /// !return-ref
 /// !return-type UtProtobufMessageField
 UtObject *ut_protobuf_message_field_new_repeated(UtObject *value_type,
                                                  uint32_t number);
 
-/// Creates a new protobuf message field.
+/// Creates a new protobuf implicit message field with [number] containing
+/// [value_type].
 ///
 /// !return-ref
 /// !return-type UtProtobufMessageField
-UtObject *ut_protobuf_message_field_new_take(UtObject *value_type,
-                                             uint32_t number);
+UtObject *ut_protobuf_message_field_new_implicit_take(UtObject *value_type,
+                                                      uint32_t number);
 
-/// Creates a new protobuf message field.
+/// Creates a new protobuf optional message field with [number] containing
+/// [value_type].
 ///
 /// !return-ref
 /// !return-type UtProtobufMessageField
 UtObject *ut_protobuf_message_field_new_optional_take(UtObject *value_type,
                                                       uint32_t number);
 
-/// Creates a new protobuf message field.
+/// Creates a new protobuf repeated message field with [number] containing
+/// [value_type].
 ///
 /// !return-ref
 /// !return-type UtProtobufMessageField
 UtObject *ut_protobuf_message_field_new_repeated_take(UtObject *value_type,
                                                       uint32_t number);
 
-/// Creates a new protobuf message field.
+/// Creates a new protobuf message field of type `double` with [number].
 ///
 /// !return-ref
 /// !return-type UtProtobufMessageField
 UtObject *ut_protobuf_message_field_new_double(uint32_t number);
 
-/// Creates a new protobuf message field.
+/// Creates a new protobuf message field of type `optional double` with
+/// [number].
 ///
 /// !return-ref
 /// !return-type UtProtobufMessageField
 UtObject *ut_protobuf_message_field_new_optional_double(uint32_t number);
 
-/// Creates a new protobuf message field.
+/// Creates a new protobuf message field of type `repeated double` with
+/// [number].
 ///
 /// !return-ref
 /// !return-type UtProtobufMessageField
 UtObject *ut_protobuf_message_field_new_repeated_double(uint32_t number);
 
-/// Creates a new protobuf message field.
+/// Creates a new protobuf message field with [number].
 ///
 /// !return-ref
 /// !return-type UtProtobufMessageField
 UtObject *ut_protobuf_message_field_new_float(uint32_t number);
 
-/// Creates a new protobuf message field.
+/// Creates a new protobuf message field with [number].
 ///
 /// !return-ref
 /// !return-type UtProtobufMessageField
 UtObject *ut_protobuf_message_field_new_optional_float(uint32_t number);
 
-/// Creates a new protobuf message field.
+/// Creates a new protobuf message field with [number].
 ///
 /// !return-ref
 /// !return-type UtProtobufMessageField
 UtObject *ut_protobuf_message_field_new_repeated_float(uint32_t number);
 
-/// Creates a new protobuf message field.
+/// Creates a new protobuf message field with [number].
 ///
 /// !return-ref
 /// !return-type UtProtobufMessageField
 UtObject *ut_protobuf_message_field_new_int32(uint32_t number);
 
-/// Creates a new protobuf message field.
+/// Creates a new protobuf message field with [number].
 ///
 /// !return-ref
 /// !return-type UtProtobufMessageField
 UtObject *ut_protobuf_message_field_new_optional_int32(uint32_t number);
 
-/// Creates a new protobuf message field.
+/// Creates a new protobuf message field with [number].
 ///
 /// !return-ref
 /// !return-type UtProtobufMessageField
 UtObject *ut_protobuf_message_field_new_repeated_int32(uint32_t number);
 
-/// Creates a new protobuf message field.
+/// Creates a new protobuf message field with [number].
 ///
 /// !return-ref
 /// !return-type UtProtobufMessageField
 UtObject *ut_protobuf_message_field_new_int64(uint32_t number);
 
-/// Creates a new protobuf message field.
+/// Creates a new protobuf message field with [number].
 ///
 /// !return-ref
 /// !return-type UtProtobufMessageField
 UtObject *ut_protobuf_message_field_new_optional_int64(uint32_t number);
 
-/// Creates a new protobuf message field.
+/// Creates a new protobuf message field with [number].
 ///
 /// !return-ref
 /// !return-type UtProtobufMessageField
 UtObject *ut_protobuf_message_field_new_repeated_int64(uint32_t number);
 
-/// Creates a new protobuf message field.
+/// Creates a new protobuf message field with [number].
 ///
 /// !return-ref
 /// !return-type UtProtobufMessageField
 UtObject *ut_protobuf_message_field_new_uint32(uint32_t number);
 
-/// Creates a new protobuf message field.
+/// Creates a new protobuf message field with [number].
 ///
 /// !return-ref
 /// !return-type UtProtobufMessageField
 UtObject *ut_protobuf_message_field_new_optional_uint32(uint32_t number);
 
-/// Creates a new protobuf message field.
+/// Creates a new protobuf message field with [number].
 ///
 /// !return-ref
 /// !return-type UtProtobufMessageField
 UtObject *ut_protobuf_message_field_new_repeated_uint32(uint32_t number);
 
-/// Creates a new protobuf message field.
+/// Creates a new protobuf message field with [number].
 ///
 /// !return-ref
 /// !return-type UtProtobufMessageField
 UtObject *ut_protobuf_message_field_new_uint64(uint32_t number);
 
-/// Creates a new protobuf message field.
+/// Creates a new protobuf message field with [number].
 ///
 /// !return-ref
 /// !return-type UtProtobufMessageField
 UtObject *ut_protobuf_message_field_new_optional_uint64(uint32_t number);
 
-/// Creates a new protobuf message field.
+/// Creates a new protobuf message field with [number].
 ///
 /// !return-ref
 /// !return-type UtProtobufMessageField
 UtObject *ut_protobuf_message_field_new_repeated_uint64(uint32_t number);
 
-/// Creates a new protobuf message field.
+/// Creates a new protobuf message field with [number].
 ///
 /// !return-ref
 /// !return-type UtProtobufMessageField
 UtObject *ut_protobuf_message_field_new_sint32(uint32_t number);
 
-/// Creates a new protobuf message field.
+/// Creates a new protobuf message field with [number].
 ///
 /// !return-ref
 /// !return-type UtProtobufMessageField
 UtObject *ut_protobuf_message_field_new_optional_sint32(uint32_t number);
 
-/// Creates a new protobuf message field.
+/// Creates a new protobuf message field with [number].
 ///
 /// !return-ref
 /// !return-type UtProtobufMessageField
 UtObject *ut_protobuf_message_field_new_repeated_sint32(uint32_t number);
 
-/// Creates a new protobuf message field.
+/// Creates a new protobuf message field with [number].
 ///
 /// !return-ref
 /// !return-type UtProtobufMessageField
 UtObject *ut_protobuf_message_field_new_sint64(uint32_t number);
 
-/// Creates a new protobuf message field.
+/// Creates a new protobuf message field with [number].
 ///
 /// !return-ref
 /// !return-type UtProtobufMessageField
 UtObject *ut_protobuf_message_field_new_optional_sint64(uint32_t number);
 
-/// Creates a new protobuf message field.
+/// Creates a new protobuf message field with [number].
 ///
 /// !return-ref
 /// !return-type UtProtobufMessageField
 UtObject *ut_protobuf_message_field_new_repeated_sint64(uint32_t number);
 
-/// Creates a new protobuf message field.
+/// Creates a new protobuf message field with [number].
 ///
 /// !return-ref
 /// !return-type UtProtobufMessageField
 UtObject *ut_protobuf_message_field_new_fixed32(uint32_t number);
 
-/// Creates a new protobuf message field.
+/// Creates a new protobuf message field with [number].
 ///
 /// !return-ref
 /// !return-type UtProtobufMessageField
 UtObject *ut_protobuf_message_field_new_optional_fixed32(uint32_t number);
 
-/// Creates a new protobuf message field.
+/// Creates a new protobuf message field with [number].
 ///
 /// !return-ref
 /// !return-type UtProtobufMessageField
 UtObject *ut_protobuf_message_field_new_repeated_fixed32(uint32_t number);
 
-/// Creates a new protobuf message field.
+/// Creates a new protobuf message field with [number].
 ///
 /// !return-ref
 /// !return-type UtProtobufMessageField
 UtObject *ut_protobuf_message_field_new_fixed64(uint32_t number);
 
-/// Creates a new protobuf message field.
+/// Creates a new protobuf message field with [number].
 ///
 /// !return-ref
 /// !return-type UtProtobufMessageField
 UtObject *ut_protobuf_message_field_new_optional_fixed64(uint32_t number);
 
-/// Creates a new protobuf message field.
+/// Creates a new protobuf message field with [number].
 ///
 /// !return-ref
 /// !return-type UtProtobufMessageField
 UtObject *ut_protobuf_message_field_new_repeated_fixed64(uint32_t number);
 
-/// Creates a new protobuf message field.
+/// Creates a new protobuf message field with [number].
 ///
 /// !return-ref
 /// !return-type UtProtobufMessageField
 UtObject *ut_protobuf_message_field_new_sfixed32(uint32_t number);
 
-/// Creates a new protobuf message field.
+/// Creates a new protobuf message field with [number].
 ///
 /// !return-ref
 /// !return-type UtProtobufMessageField
 UtObject *ut_protobuf_message_field_new_optional_sfixed32(uint32_t number);
 
-/// Creates a new protobuf message field.
+/// Creates a new protobuf message field with [number].
 ///
 /// !return-ref
 /// !return-type UtProtobufMessageField
 UtObject *ut_protobuf_message_field_new_repeated_sfixed32(uint32_t number);
 
-/// Creates a new protobuf message field.
+/// Creates a new protobuf message field with [number].
 ///
 /// !return-ref
 /// !return-type UtProtobufMessageField
 UtObject *ut_protobuf_message_field_new_sfixed64(uint32_t number);
 
-/// Creates a new protobuf message field.
+/// Creates a new protobuf message field with [number].
 ///
 /// !return-ref
 /// !return-type UtProtobufMessageField
 UtObject *ut_protobuf_message_field_new_optional_sfixed64(uint32_t number);
 
-/// Creates a new protobuf message field.
+/// Creates a new protobuf message field with [number].
 ///
 /// !return-ref
 /// !return-type UtProtobufMessageField
 UtObject *ut_protobuf_message_field_new_repeated_sfixed64(uint32_t number);
 
-/// Creates a new protobuf message field.
+/// Creates a new protobuf message field with [number].
 ///
 /// !return-ref
 /// !return-type UtProtobufMessageField
 UtObject *ut_protobuf_message_field_new_bool(uint32_t number);
 
-/// Creates a new protobuf message field.
+/// Creates a new protobuf message field with [number].
 ///
 /// !return-ref
 /// !return-type UtProtobufMessageField
 UtObject *ut_protobuf_message_field_new_optional_bool(uint32_t number);
 
-/// Creates a new protobuf message field.
+/// Creates a new protobuf message field with [number].
 ///
 /// !return-ref
 /// !return-type UtProtobufMessageField
 UtObject *ut_protobuf_message_field_new_repeated_bool(uint32_t number);
 
-/// Creates a new protobuf message field.
+/// Creates a new protobuf message field with [number].
 ///
 /// !return-ref
 /// !return-type UtProtobufMessageField
 UtObject *ut_protobuf_message_field_new_string(uint32_t number);
 
-/// Creates a new protobuf message field.
+/// Creates a new protobuf message field with [number].
 ///
 /// !return-ref
 /// !return-type UtProtobufMessageField
 UtObject *ut_protobuf_message_field_new_optional_string(uint32_t number);
 
-/// Creates a new protobuf message field.
+/// Creates a new protobuf message field with [number].
 ///
 /// !return-ref
 /// !return-type UtProtobufMessageField
 UtObject *ut_protobuf_message_field_new_repeated_string(uint32_t number);
 
-/// Creates a new protobuf message field.
+/// Creates a new protobuf message field with [number].
 ///
 /// !return-ref
 /// !return-type UtProtobufMessageField
 UtObject *ut_protobuf_message_field_new_bytes(uint32_t number);
 
-/// Creates a new protobuf message field.
+/// Creates a new protobuf message field with [number].
 ///
 /// !return-ref
 /// !return-type UtProtobufMessageField
 UtObject *ut_protobuf_message_field_new_optional_bytes(uint32_t number);
 
-/// Creates a new protobuf message field.
+/// Creates a new protobuf message field with [number].
 ///
 /// !return-ref
 /// !return-type UtProtobufMessageField

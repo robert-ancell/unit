@@ -4,7 +4,7 @@
 
 #pragma once
 
-/// Creates a new protobuf service.
+/// Creates a new protobuf service containing [method_calls].
 ///
 /// !arg-type method_calls UtObjectList
 /// !return-ref

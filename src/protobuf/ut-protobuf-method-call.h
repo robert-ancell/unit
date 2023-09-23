@@ -4,7 +4,8 @@
 
 #pragma once
 
-/// Creates a new protobuf method call.
+/// Creates a new protobuf method call that takes [request_type] and returns
+/// [response_type].
 ///
 /// !arg-type request_type UtProtobufMessageType
 /// !arg-type response_type UtProtobufMessageType

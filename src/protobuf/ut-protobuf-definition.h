@@ -4,8 +4,10 @@
 
 #pragma once
 
-/// Creates a new protobuf definition.
+/// Creates a new protobuf definition using [syntax] (2 or 3) and containing
+/// [definitions].
 ///
+/// !arg-type definitions UtMap
 /// !return-ref
 /// !return-type UtProtobufDefinition
 UtObject *ut_protobuf_definition_new(int syntax, UtObject *definitions);
@@ -20,6 +22,8 @@ UtObject *ut_protobuf_definition_new_from_text(const char *text);
 int ut_protobuf_definition_get_syntax(UtObject *object);
 
 /// Returns the definitions.
+///
+/// !return-type UtMap
 UtObject *ut_protobuf_definition_get_definitions(UtObject *object);
 
 /// Gets the definition called [name].
