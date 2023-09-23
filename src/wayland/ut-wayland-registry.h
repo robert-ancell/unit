@@ -15,7 +15,8 @@ typedef struct {
   UtWaylandRegistryGlobalRemoveCallback global_remove;
 } UtWaylandRegistryCallbacks;
 
-/// Creates a new Wayland registry object.
+/// Creates a new Wayland registry object with [id] on [client].
+/// The functions in [callbacks] will be called for any events for this object.
 ///
 /// !arg-type client UtWaylandClient
 /// !return-ref

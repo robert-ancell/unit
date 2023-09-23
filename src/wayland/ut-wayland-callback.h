@@ -7,7 +7,8 @@
 typedef void (*UtWaylandCallbackDoneCallback)(UtObject *object,
                                               uint32_t callback_data);
 
-/// Creates a new Wayland callback object.
+/// Creates a new Wayland callback object with [id] on [client].
+/// [done_callback] will be called when this callback is done.
 ///
 /// !arg-type client UtWaylandClient
 /// !return-ref

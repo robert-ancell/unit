@@ -5,7 +5,7 @@
 
 #pragma once
 
-/// Creates a new Wayland region object.
+/// Creates a new Wayland region object with [id] on [client].
 ///
 /// !arg-type client UtWaylandClient
 /// !return-ref

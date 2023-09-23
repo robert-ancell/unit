@@ -16,7 +16,8 @@ typedef struct {
   UtWaylandDisplayDeleteIdCallback delete_id;
 } UtWaylandDisplayCallbacks;
 
-/// Creates a new Wayland display object.
+/// Creates a new Wayland display object on [client].
+/// The functions in [callbacks] will be called for any events for this object.
 ///
 /// !arg-type client UtWaylandClient
 /// !return-ref
@@ -25,6 +26,7 @@ UtObject *ut_wayland_display_new(UtObject *client, UtObject *callback_object,
                                  const UtWaylandDisplayCallbacks *callbacks);
 
 /// Makes a sync request to the server.
+/// [done_callback] will be called when this sync is complete.
 ///
 /// !return-ref
 /// !return-type UtWaylandCallback
@@ -32,6 +34,8 @@ UtObject *ut_wayland_display_sync(UtObject *object, UtObject *callback_object,
                                   UtWaylandCallbackDoneCallback done_callback);
 
 /// Returns the registry for this display.
+/// The functions in [callbacks] will be called for any events for this
+/// registry.
 ///
 /// !return-ref
 /// !return-type UtWaylandRegistry

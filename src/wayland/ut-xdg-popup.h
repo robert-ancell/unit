@@ -18,7 +18,8 @@ typedef struct {
   UtXdgPopupRepositionedCallback repositioned;
 } UtXdgPopupCallbacks;
 
-/// Creates a new XDG popup object.
+/// Creates a new XDG popup object with [id] on [client].
+/// The functions in [callbacks] will be called for any events for this object.
 ///
 /// !arg-type client UtWaylandClient
 /// !return-ref

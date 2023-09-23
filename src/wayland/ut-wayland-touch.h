@@ -31,7 +31,8 @@ typedef struct {
   UtWaylandTouchOrientationCallback orientation;
 } UtWaylandTouchCallbacks;
 
-/// Creates a new Wayland touch object.
+/// Creates a new Wayland touch object with [id] on [client].
+/// The functions in [callbacks] will be called for any events for this object.
 ///
 /// !arg-type client UtWaylandClient
 /// !return-ref

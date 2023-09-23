@@ -7,7 +7,8 @@
 
 typedef void (*UtWaylandBufferReleaseCallback)(UtObject *object);
 
-/// Creates a new Wayland buffer object.
+/// Creates a new Wayland buffer object with [id] on [client].
+/// [release_callback] will be called when this buffer is released.
 ///
 /// !arg-type client UtWaylandClient
 /// !return-ref

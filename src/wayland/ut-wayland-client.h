@@ -16,6 +16,7 @@ UtObject *ut_wayland_client_new();
 void ut_wayland_client_connect(UtObject *object);
 
 /// Makes a sync request to the server.
+/// [done_callback] will be called when this sync completes.
 ///
 /// !return-ref
 /// !return-type UtWaylandCallback
@@ -23,6 +24,7 @@ UtObject *ut_wayland_client_sync(UtObject *object, UtObject *callback_object,
                                  UtWaylandCallbackDoneCallback done_callback);
 
 /// Returns the registry for this client.
+/// The functions in [callbacks] will be called for any events for this object.
 ///
 /// !return-ref
 /// !return-type UtWaylandRegistry

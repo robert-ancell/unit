@@ -5,7 +5,7 @@
 
 #pragma once
 
-/// Creates a new XDG positioner object.
+/// Creates a new XDG positioner object with [id] on [client].
 ///
 /// !arg-type client UtWaylandClient
 /// !return-ref
@@ -31,7 +31,7 @@ void ut_xdg_positioner_set_anchor(UtObject *object, uint32_t anchor);
 /// Sets the [gravity] for this positioner.
 void ut_xdg_positioner_set_gravity(UtObject *object, uint32_t gravity);
 
-/// Sets the adjustment to be done when constrained.
+/// Sets the [constraint_adjustment] to be done when constrained.
 void ut_xdg_positioner_set_constraint_adjustment(
     UtObject *object, uint32_t constraint_adjustment);
 

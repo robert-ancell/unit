@@ -27,7 +27,8 @@ typedef struct {
   UtWaylandSeatNameCallback name;
 } UtWaylandSeatCallbacks;
 
-/// Creates a new Wayland seat object.
+/// Creates a new Wayland seat object with [id] on [client].
+/// The functions in [callbacks] will be called for any events for this object.
 ///
 /// !arg-type client UtWaylandClient
 /// !return-ref
@@ -36,7 +37,8 @@ UtObject *ut_wayland_seat_new(UtObject *client, uint32_t id,
                               UtObject *callback_object,
                               const UtWaylandSeatCallbacks *callbacks);
 
-/// Creates a new Wayland seat object from [registry].
+/// Creates a new Wayland seat object with well known [name] from [registry].
+/// The functions in [callbacks] will be called for any events for this object.
 ///
 /// !arg-type registry UtWaylandRegistry
 /// !return-ref
@@ -47,6 +49,7 @@ ut_wayland_seat_new_from_registry(UtObject *registry, uint32_t name,
                                   const UtWaylandSeatCallbacks *callbacks);
 
 /// Returns the pointer object.
+/// The functions in [callbacks] will be called for any events for this object.
 ///
 /// !return-ref
 /// !return-type UtWaylandPointer
@@ -55,6 +58,7 @@ ut_wayland_seat_get_pointer(UtObject *object, UtObject *callback_object,
                             const UtWaylandPointerCallbacks *callbacks);
 
 /// Returns the keyboard object.
+/// The functions in [callbacks] will be called for any events for this object.
 ///
 /// !return-ref
 /// !return-type UtWaylandKeyboard
@@ -63,6 +67,7 @@ ut_wayland_seat_get_keyboard(UtObject *object, UtObject *callback_object,
                              const UtWaylandKeyboardCallbacks *callbacks);
 
 /// Returns the touch object.
+/// The functions in [callbacks] will be called for any events for this object.
 ///
 /// !return-ref
 /// !return-type UtWaylandTouch

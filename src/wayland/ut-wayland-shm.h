@@ -225,14 +225,15 @@ typedef enum {
   UT_WAYLAND_SHM_FORMAT_abgr16161616 = 0x38344241
 } UtWaylandShmFormat;
 
-/// Creates a new Wayland shared memory object.
+/// Creates a new Wayland shared memory object with [id] on [client].
 ///
 /// !arg-type client UtWaylandClient
 /// !return-ref
 /// !return-type UtWaylandShm
 UtObject *ut_wayland_shm_new(UtObject *client, uint32_t id);
 
-/// Creates a new Wayland shared memory object from [registry].
+/// Creates a new Wayland shared memory object with well known [name] from
+/// [registry].
 ///
 /// !arg-type registry UtWaylandRegistry
 /// !return-ref

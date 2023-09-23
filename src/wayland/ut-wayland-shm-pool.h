@@ -5,14 +5,18 @@
 
 #pragma once
 
-/// Creates a new Wayland shared memory pool extension object.
+/// Creates a new Wayland shared memory pool extension object with [id] on
+/// [client].
 ///
 /// !arg-type client UtWaylandClient
 /// !return-ref
 /// !return-type UtWaylandShmPool
 UtObject *ut_wayland_shm_pool_new(UtObject *client, uint32_t id);
 
-/// Creates a new buffer from this pool.
+/// Creates a new buffer of size [width]x[height] in [format] from this pool.
+/// The data for the buffer starts at [offset] bytes in the pool and each row is
+/// length [stride] bytes. [release_callback] is called when this buffer is
+/// released.
 ///
 /// !return-ref
 /// !return-type UtWaylandBuffer

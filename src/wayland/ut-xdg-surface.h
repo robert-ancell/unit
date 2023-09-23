@@ -14,7 +14,8 @@ typedef struct {
   UtXdgSurfaceConfigureCallback configure;
 } UtXdgSurfaceCallbacks;
 
-/// Creates a new XDG surface object.
+/// Creates a new XDG surface object with [id] on [client].
+/// The functions in [callbacks] will be called for any events for this object.
 ///
 /// !arg-type client UtWaylandClient
 /// !return-ref
@@ -27,6 +28,7 @@ UtObject *ut_xdg_surface_new(UtObject *client, uint32_t id,
 void ut_xdg_surface_destroy(UtObject *object);
 
 /// Creates a toplevel surface object for this surface.
+/// The functions in [callbacks] will be called for any events for this object.
 ///
 /// !return-ref
 /// !return-type UtXdgToplevel
@@ -36,6 +38,7 @@ UtObject *ut_xdg_surface_get_toplevel(UtObject *object,
 
 /// Creates a popup surface object for this surface.
 /// The popup comes from [parent] and is placed according to [positioner].
+/// The functions in [callbacks] will be called for any events for this object.
 ///
 /// !arg-type parent UtXdgSurface
 /// !arg-type positioner UtXdgPositioner

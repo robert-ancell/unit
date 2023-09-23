@@ -16,7 +16,8 @@ typedef struct {
   UtWaylandSurfaceLeaveCallback leave;
 } UtWaylandSurfaceCallbacks;
 
-/// Creates a new Wayland surface object.
+/// Creates a new Wayland surface object with [id] on [client].
+/// The functions in [callbacks] will be called for any events for this object.
 ///
 /// !arg-type client UtWaylandClient
 /// !return-ref
@@ -29,6 +30,8 @@ UtObject *ut_wayland_surface_new(UtObject *client, uint32_t id,
 void ut_wayland_surface_destroy(UtObject *object);
 
 /// Attaches [buffer] to this surface.
+/// [x],[y] is the location in the buffer of the current upper left corner of
+/// the surface.
 ///
 /// !arg-type buffer UtWaylandBuffer
 void ut_wayland_surface_attach(UtObject *object, UtObject *buffer, int32_t x,
@@ -40,6 +43,7 @@ void ut_wayland_surface_damage(UtObject *object, int32_t x, int32_t y,
                                int32_t width, int32_t height);
 
 /// Renders a frame on this surface.
+/// [done_callback] is called when this render completes.
 ///
 /// !return-ref
 /// !return-type UtWaylandCallback

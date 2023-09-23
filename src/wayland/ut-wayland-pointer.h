@@ -27,7 +27,8 @@ typedef struct {
   UtWaylandPointerFrameCallback frame;
 } UtWaylandPointerCallbacks;
 
-/// Creates a new Wayland pointer object.
+/// Creates a new Wayland pointer object with [id] on [client].
+/// The functions in [callbacks] will be called for any events for this object.
 ///
 /// !arg-type client UtWaylandClient
 /// !return-ref

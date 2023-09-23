@@ -27,7 +27,8 @@ typedef struct {
   UtWaylandOutputDescriptionCallback description;
 } UtWaylandOutputCallbacks;
 
-/// Creates a new Wayland output object.
+/// Creates a new Wayland output object with [id] on [client].
+/// The functions in [callbacks] will be called for any events for this object.
 ///
 /// !arg-type client UtWaylandClient
 /// !return-ref

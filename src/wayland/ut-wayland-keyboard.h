@@ -34,7 +34,8 @@ typedef struct {
   UtWaylandKeyboardRepeatInfoCallback repeat_info;
 } UtWaylandKeyboardCallbacks;
 
-/// Creates a new Wayland keyboard object.
+/// Creates a new Wayland keyboard object with [id] on [client].
+/// The functions in [callbacks] will be called for any events for this object.
 ///
 /// !arg-type client UtWaylandClient
 /// !return-ref

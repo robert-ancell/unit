@@ -6,14 +6,15 @@
 
 #pragma once
 
-/// Creates a new Wayland compositor object.
+/// Creates a new Wayland compositor object with [id] on [client].
 ///
 /// !arg-type client UtWaylandClient
 /// !return-ref
 /// !return-type UtWaylandCompositor
 UtObject *ut_wayland_compositor_new(UtObject *client, uint32_t id);
 
-/// Creates a new Wayland compositor object from [registry].
+/// Creates a new Wayland compositor object with well known [name] from
+/// [registry].
 ///
 /// !arg-type registry UtWaylandRegistry
 /// !return-ref
@@ -22,6 +23,7 @@ UtObject *ut_wayland_compositor_new_from_registry(UtObject *registry,
                                                   uint32_t name);
 
 /// Returns a new surface.
+/// The functions in [callbacks] will be called for any events for this surface.
 ///
 /// !return-ref
 /// !return-type UtWaylandSurface
