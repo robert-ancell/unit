@@ -6,7 +6,9 @@
 
 #pragma once
 
-/// Creates a new TIFF image with dimensions [width] and [length].
+/// Creates a new TIFF image of size [width]x[length] from [data].
+/// The data is interpreted using [photometric_interpretation],
+/// [planar_configuration], [bits_per_sample] and [samples_per_pixel].
 ///
 /// !arg-type data UtUint8List
 /// !return-ref
