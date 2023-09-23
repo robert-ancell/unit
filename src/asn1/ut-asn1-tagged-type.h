@@ -5,15 +5,21 @@
 
 #pragma once
 
-/// Creates a new ASN.1 tagged type.
+/// Creates a new ASN.1 tagged type that tags [type] with [class] and [number].
+/// If [is_explicit] is [true] the tag of [type] will be encoded as well as the
+/// new tag.
 ///
+/// !arg-type type UtObject
 /// !return-ref
 /// !return-type UtAsn1TaggedType
 UtObject *ut_asn1_tagged_type_new(UtAsn1TagClass class, unsigned int number,
                                   bool is_explicit, UtObject *type);
 
-/// Creates a new ASN.1 tagged type.
+/// Creates a new ASN.1 tagged type that tags [type] with [class] and [number].
+/// If [is_explicit] is [true] the tag of [type] will be encoded as well as the
+/// new tag.
 ///
+/// !arg-type type UtObject
 /// !return-ref
 /// !return-type UtAsn1TaggedType
 UtObject *ut_asn1_tagged_type_new_take(UtAsn1TagClass class,

@@ -15,7 +15,7 @@ UtObject *ut_asn1_embedded_identification_syntax_new(UtObject *identifier);
 ///
 /// !return-type UtObjectIdentifier
 UtObject *
-ut_asn1_embedded_identification_syntax_get_identifier(UtObject *syntax);
+ut_asn1_embedded_identification_syntax_get_identifier(UtObject *object);
 
 /// Returns [true] if [object] is a [UtAsn1EmbeddedIdentificationSyntax].
 bool ut_object_is_asn1_embedded_identification_syntax(UtObject *object);

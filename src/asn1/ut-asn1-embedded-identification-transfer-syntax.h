@@ -17,7 +17,7 @@ ut_asn1_embedded_identification_transfer_syntax_new(UtObject *identifier);
 ///
 /// !return-type UtObjectIdentifier
 UtObject *ut_asn1_embedded_identification_transfer_syntax_get_identifier(
-    UtObject *syntax);
+    UtObject *object);
 
 /// Returns [true] if [object] is a
 /// [UtAsn1EmbeddedIdentificationTransferSyntax].

@@ -46,13 +46,13 @@ size_t ut_asn1_ber_encoder_encode_octet_string(UtObject *object,
 /// Encode NULL.
 size_t ut_asn1_ber_encoder_encode_null(UtObject *object);
 
-/// Encode [value] as an OBJECT IDENTIFIER.
+/// Encode [identifier] as an OBJECT IDENTIFIER.
 ///
 /// !arg-type identifier UtObjectIdentifier
 size_t ut_asn1_ber_encoder_encode_object_identifier(UtObject *object,
                                                     UtObject *identifier);
 
-/// Encode [value] as an ObjectDescriptor.
+/// Encode [descriptor] as an ObjectDescriptor.
 size_t ut_asn1_ber_encoder_encode_object_descriptor(UtObject *object,
                                                     const char *descriptor);
 

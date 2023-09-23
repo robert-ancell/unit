@@ -5,6 +5,8 @@
 #pragma once
 
 /// Creates a new ASN.1 ENUMERATED type with [values_by_name].
+/// If [extensible] is [true] then then encoded forms of this eumeration may
+/// contain values not in [values_by_name].
 ///
 /// !return-ref
 /// !return-type UtAsn1EnumeratedType
