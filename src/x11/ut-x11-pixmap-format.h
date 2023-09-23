@@ -4,7 +4,8 @@
 
 #pragma once
 
-/// Creates a new X11 pixmap format.
+/// Creates a new X11 pixmap format with [depth] and [bits_per_pixel].
+/// Each line is padded to [scanline_pad] bits (8, 16, or 32).
 ///
 /// !return-ref
 /// !return-type UtX11PimapFormat

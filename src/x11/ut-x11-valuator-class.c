@@ -31,6 +31,48 @@ UtObject *ut_x11_valuator_class_new(uint16_t number, uint32_t label, double min,
   return object;
 }
 
+uint16_t ut_x11_valuator_class_get_number(UtObject *object) {
+  assert(ut_object_is_x11_valuator_class(object));
+  UtX11ValuatorClass *self = (UtX11ValuatorClass *)object;
+  return self->number;
+}
+
+uint32_t ut_x11_valuator_class_get_label(UtObject *object) {
+  assert(ut_object_is_x11_valuator_class(object));
+  UtX11ValuatorClass *self = (UtX11ValuatorClass *)object;
+  return self->label;
+}
+
+double ut_x11_valuator_class_get_min(UtObject *object) {
+  assert(ut_object_is_x11_valuator_class(object));
+  UtX11ValuatorClass *self = (UtX11ValuatorClass *)object;
+  return self->min;
+}
+
+double ut_x11_valuator_class_get_max(UtObject *object) {
+  assert(ut_object_is_x11_valuator_class(object));
+  UtX11ValuatorClass *self = (UtX11ValuatorClass *)object;
+  return self->max;
+}
+
+double ut_x11_valuator_class_get_value(UtObject *object) {
+  assert(ut_object_is_x11_valuator_class(object));
+  UtX11ValuatorClass *self = (UtX11ValuatorClass *)object;
+  return self->value;
+}
+
+uint32_t ut_x11_valuator_class_get_resolution(UtObject *object) {
+  assert(ut_object_is_x11_valuator_class(object));
+  UtX11ValuatorClass *self = (UtX11ValuatorClass *)object;
+  return self->resolution;
+}
+
+uint8_t ut_x11_valuator_class_get_mode(UtObject *object) {
+  assert(ut_object_is_x11_valuator_class(object));
+  UtX11ValuatorClass *self = (UtX11ValuatorClass *)object;
+  return self->mode;
+}
+
 bool ut_object_is_x11_valuator_class(UtObject *object) {
   return ut_object_is_type(object, &object_interface);
 }

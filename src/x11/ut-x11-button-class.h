@@ -5,7 +5,7 @@
 
 #pragma once
 
-/// Creates a new X11 button class.
+/// Creates a new X11 button class with [state] and [labels].
 ///
 /// !arg-type state UtUint32List
 /// !arg-type labels UtUint32List

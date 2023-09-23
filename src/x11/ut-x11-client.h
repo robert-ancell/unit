@@ -551,15 +551,18 @@ UtObject *ut_x11_client_get_screens(UtObject *object);
 
 /// Returns a new ID for a window of dimensions [width]x[height] pixels and
 /// offset [x],[y] pixels from the root window.
+/// The events this window receives are set in [event_mask].
 uint32_t ut_x11_client_create_window(UtObject *object, int16_t x, int16_t y,
                                      uint16_t width, uint16_t height,
                                      uint32_t event_mask);
 
 /// Change attributes on [window].
+/// The events this window receives are set in [event_mask].
 void ut_x11_client_change_window_attributes(UtObject *object, uint32_t window,
                                             uint32_t event_mask);
 
 /// Get attributes on [window].
+/// Calls [callback] with the attributes.
 void ut_x11_client_get_window_attributes(
     UtObject *object, uint32_t window, UtObject *callback_object,
     UtX11GetWindowAttributesCallback callback);
@@ -593,50 +596,63 @@ void ut_x11_client_configure_window(UtObject *object, uint32_t window,
                                     uint16_t height);
 
 /// Intern an atom with [name].
+/// If [only_if_exists] is true, this call will do nothing if the atom doesn't
+/// exist already. Calls [callback] with the atom value.
 void ut_x11_client_intern_atom(UtObject *object, const char *name,
                                bool only_if_exists, UtObject *callback_object,
                                UtX11InternAtomCallback callback);
 
 /// Gets the name of [atom].
+/// [callback] is called when the result is returned.
 void ut_x11_client_get_atom_name(UtObject *object, uint32_t atom,
                                  UtObject *callback_object,
                                  UtX11GetAtomNameCallback callback);
 
-/// Change [property] of [window].
-void ut_x11_client_change_property_uint8(UtObject *object, uint32_t window,
-                                         uint32_t property,
-                                         UtX11PropertyMode mode, uint32_t type,
-                                         UtObject *value);
+/// Set an unsigned 8 bit [property] of [window] to [value].
+/// [type] contains the atom name for this value.
+///
+/// !arg-type value UtUint8List
+void ut_x11_client_set_property_uint8(UtObject *object, uint32_t window,
+                                      uint32_t property, uint32_t type,
+                                      UtObject *value);
 
-/// Change [property] of [window].
-void ut_x11_client_change_property_uint16(UtObject *object, uint32_t window,
-                                          uint32_t property,
-                                          UtX11PropertyMode mode, uint32_t type,
-                                          UtObject *value);
+/// Set an unsigned 16 bit [property] of [window] to [value].
+/// [type] contains the atom name for this value.
+///
+/// !arg-type value UtUint16List
+void ut_x11_client_set_property_uint16(UtObject *object, uint32_t window,
+                                       uint32_t property, uint32_t type,
+                                       UtObject *value);
 
-/// Change [property] of [window].
-void ut_x11_client_change_property_uint32(UtObject *object, uint32_t window,
-                                          uint32_t property,
-                                          UtX11PropertyMode mode, uint32_t type,
-                                          UtObject *value);
+/// Set an unsigned 32 bit [property] of [window] to [value].
+/// [type] contains the atom name for this value.
+///
+/// !arg-type value UtUint32List
+void ut_x11_client_set_property_uint32(UtObject *object, uint32_t window,
+                                       uint32_t property, uint32_t type,
+                                       UtObject *value);
 
-/// Change [property] of [window].
-void ut_x11_client_change_property_string(UtObject *object, uint32_t window,
-                                          uint32_t property,
-                                          UtX11PropertyMode mode,
-                                          const char *value);
+/// Set a string [property] of [window] to [value].
+void ut_x11_client_set_property_string(UtObject *object, uint32_t window,
+                                       uint32_t property, const char *value);
 
 /// Delete [property] of [window].
 void ut_x11_client_delete_property(UtObject *object, uint32_t window,
                                    uint32_t property);
 
 /// Get [property] of [window].
+/// If [type] is non-zero, the property must match the supplied type.
+/// Calls [callback] with the property.
 void ut_x11_client_get_property(UtObject *object, uint32_t window,
                                 uint32_t property, uint32_t type,
                                 UtObject *callback_object,
                                 UtX11GetPropertyCallback callback);
 
 /// Get [property] of [window].
+/// If [type] is non-zero, the property must match the supplied type.
+/// The returned value is a slice of the property starting at [long_offset] and
+/// limited to [long_length] bytes. If [delete] is [true], the property will be
+/// deleted. Calls [callback] with the property.
 void ut_x11_client_get_property_full(UtObject *object, uint32_t window,
                                      uint32_t property, uint32_t type,
                                      uint32_t long_offset, uint32_t long_length,
@@ -644,11 +660,13 @@ void ut_x11_client_get_property_full(UtObject *object, uint32_t window,
                                      UtX11GetPropertyCallback callback);
 
 /// Get properties of [window].
+/// Calls [callback] with the properties.
 void ut_x11_client_list_properties(UtObject *object, uint32_t window,
                                    UtObject *callback_object,
                                    UtX11ListPropertiesCallback callback);
 
-/// Returns a new ID for a pixmap of dimentions [witdth]x[height] pixels.
+/// Returns a new ID for a pixmap for use on [drawable] of dimensions
+/// [width]x[height] pixels and [depth].
 uint32_t ut_x11_client_create_pixmap(UtObject *object, uint32_t drawable,
                                      uint16_t width, uint16_t height,
                                      uint8_t depth);
@@ -670,14 +688,16 @@ void ut_x11_client_clear_area(UtObject *object, uint32_t window, int16_t x,
                               bool exposures);
 
 /// Copies a rectangle of size [width]x[height] from [src_drawable] to
-/// [dst_drawable].
+/// [dst_drawable] using [gc]. The area is taken from the location
+/// [src_x],[src_y] and written to [dst_x],[dst_y].
 void ut_x11_client_copy_area(UtObject *object, uint32_t src_drawable,
                              uint32_t dst_drawable, uint32_t gc, int16_t src_x,
                              int16_t src_y, int16_t dst_x, int16_t dst_y,
                              uint16_t width, uint16_t height);
 
-/// Gets an image from [drawable].
-/// Calls [callback] with the returned image.
+/// Gets an image from [drawable] of size [width]x[height] at locations [x],[y]
+/// in [drawable]. Only the planes matching [plane_mask] are returned. Calls
+/// [callback] with the returned image in [format].
 ///
 /// !arg-type data UtUint8List
 void ut_x11_client_get_image(UtObject *object, uint32_t drawable,
@@ -686,7 +706,9 @@ void ut_x11_client_get_image(UtObject *object, uint32_t drawable,
                              uint32_t plane_mask, UtObject *callback_object,
                              UtX11GetImageCallback callback);
 
-/// Puts an image contained in [data] into [drawable].
+/// Puts an image of size [width]x[height] contained in [data] into [drawable]
+/// at [dst_x],[dst_y] using [gc]. The image data is the provided [format] and
+/// [depth].
 ///
 /// !arg-type data UtUint8List
 void ut_x11_client_put_image(UtObject *object, uint32_t drawable, uint32_t gc,
@@ -694,12 +716,14 @@ void ut_x11_client_put_image(UtObject *object, uint32_t drawable, uint32_t gc,
                              uint16_t height, uint8_t depth, int16_t dst_x,
                              int16_t dst_y, UtObject *data);
 
-/// Query if the extension with [name] is available.
+/// Gets information of the the extension with [name].
+/// Calls [callback] with the extension information.
 void ut_x11_client_query_extension(UtObject *object, const char *name,
                                    UtObject *callback_object,
                                    UtX11QueryExtensionCallback callback);
 
 /// Get the extensions available on the X server.
+/// Calls [callback] with the extensions.
 void ut_x11_client_list_extensions(UtObject *object, UtObject *callback_object,
                                    UtX11ListExtensionsCallback callback);
 
@@ -710,55 +734,61 @@ void ut_x11_client_bell(UtObject *object);
 void ut_x11_client_kill_client(UtObject *object, uint32_t resource);
 
 /// Returns a new shared memory segment ID for shared memory in [shmid].
+/// Access to the memory can be limited by setting [read_only] to true.
 uint32_t ut_x11_client_shm_attach(UtObject *object, uint32_t shmid,
                                   bool read_only);
 
 /// Detached a shared memory [segment].
 void ut_x11_client_shm_detach(UtObject *object, uint32_t segment);
 
-/// Returns a new pixmap of size [width]x[height] and [depth] created from a
-/// shared memory [segment]. The pixmap data starts at [offset] bytes in the
-/// segment.
+/// Returns a new pixmap for use on [drawable] of size [width]x[height] and
+/// [depth] created from a shared memory [segment]. The pixmap data starts at
+/// [offset] bytes in the segment.
 uint32_t ut_x11_client_shm_create_pixmap(UtObject *object, uint32_t drawable,
                                          uint16_t width, uint16_t height,
                                          uint8_t depth, uint32_t segment,
                                          uint32_t offset);
 
 /// Attaches a shared memory [fd].
-///
+/// Access to the memory can be limited by setting [read_only] to true.
 /// !arg-type fd UtFileDescriptor
 uint32_t ut_x11_client_shm_attach_fd(UtObject *object, UtObject *fd,
                                      bool read_only);
 
 /// Returns a new shared memory segment of [size] bytes from the memory applied
-/// in [ut_x11_client_shm_attach_fd].
+/// in [ut_x11_client_shm_attach_fd]. Access to the memory can be limited by
+/// setting [read_only] to true. Calls [callback] with the file descriptor for
+/// this segment.
 uint32_t
 ut_x11_client_shm_create_segment(UtObject *object, uint32_t size,
                                  bool read_only, UtObject *callback_object,
                                  UtX11ShmCreateSegmentCallback callback);
 
-/// Select the input event [masks] to be applied to window.
+/// Select the input event [masks] to be applied to [window].
 ///
 /// !arg-type masks UtObjectList
 void ut_x11_client_select_input_events(UtObject *object, uint32_t window,
                                        UtObject *masks);
 
 /// Queries input device with [device_id].
+/// Calls [callback] with the input device information.
 void ut_x11_client_query_device(UtObject *object, uint16_t device_id,
                                 UtObject *callback_object,
                                 UtX11QueryDeviceCallback callback);
 
 /// Sets the [device_id] that is in focus for [window].
+/// [timestamp] is the timestamp of the event that triggered this focus change.
 void ut_x11_client_set_focus(UtObject *object, uint32_t window,
                              uint32_t timestamp, uint16_t device_id);
 
-/// Gets the device that is in focus for [window].
-/// Calls [callback] when the device is returned.
+/// Gets the window that is in focus for [device_id].
+/// Calls [callback] with the device.
 void ut_x11_client_get_focus(UtObject *object, uint16_t device_id,
                              UtObject *callback_object,
                              UtX11GetFocusCallback callback);
 
 /// Get the system counters on the X server.
+/// Calls [callback] with the counters.
 void ut_x11_client_list_system_counters(
     UtObject *object, UtObject *callback_object,
     UtX11ListSystemCountersCallback callback);
@@ -775,6 +805,7 @@ void ut_x11_client_change_counter(UtObject *object, uint32_t counter,
                                   int64_t amount);
 
 /// Query information about [counter].
+/// Calls [callback] with the counter information.
 void ut_x11_client_query_counter(UtObject *object, uint32_t counter,
                                  UtObject *callback_object,
                                  UtX11QueryCounterCallback callback);

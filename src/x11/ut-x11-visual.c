@@ -45,6 +45,30 @@ uint8_t ut_x11_visual_get_depth(UtObject *object) {
   return self->depth;
 }
 
+uint8_t ut_x11_visual_get_bits_per_rgb_value(UtObject *object) {
+  assert(ut_object_is_x11_visual(object));
+  UtX11Visual *self = (UtX11Visual *)object;
+  return self->bits_per_rgb_value;
+}
+
+uint32_t ut_x11_visual_get_red_mask(UtObject *object) {
+  assert(ut_object_is_x11_visual(object));
+  UtX11Visual *self = (UtX11Visual *)object;
+  return self->red_mask;
+}
+
+uint32_t ut_x11_visual_get_green_mask(UtObject *object) {
+  assert(ut_object_is_x11_visual(object));
+  UtX11Visual *self = (UtX11Visual *)object;
+  return self->green_mask;
+}
+
+uint32_t ut_x11_visual_get_blue_mask(UtObject *object) {
+  assert(ut_object_is_x11_visual(object));
+  UtX11Visual *self = (UtX11Visual *)object;
+  return self->blue_mask;
+}
+
 bool ut_object_is_x11_visual(UtObject *object) {
   return ut_object_is_type(object, &object_interface);
 }

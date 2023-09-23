@@ -4,7 +4,15 @@
 
 #pragma once
 
-/// Creates a new X11 screen.
+/// Creates a new X11 screen containing:
+/// - a [root] window.
+/// - a [default_colormap].
+/// - the [current_input_masks].
+/// - the values for a [white_pixel] and [black_pixel].
+/// - dimensions of [width_in_pixels]x[height_in_pixels].
+/// - physical dimensions of [width_in_millimeters]x[height_in_millimeters].
+/// - available [visuals], with [root_visual] specifing the one that [root] is
+/// using.
 ///
 /// !arg-type root_visual UtX11Visual
 /// !arg-type visuals UtObjectList

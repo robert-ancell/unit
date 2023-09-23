@@ -5,7 +5,8 @@
 
 #pragma once
 
-/// Creates a new X11 device info.
+/// Creates a new X11 device info with [id], [name], [type], [attachment],
+/// [classes] and [enabled].
 ///
 /// !arg-type classes UtObjectList
 /// !return-ref

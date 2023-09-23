@@ -5,7 +5,7 @@
 
 #pragma once
 
-/// Creates a new X11 touch class.
+/// Creates a new X11 touch class with [mode] that allows [num_touches].
 ///
 /// !return-ref
 /// !return-type UtX11TouchClass

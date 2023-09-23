@@ -5,7 +5,7 @@
 
 #pragma once
 
-/// Creates a new X11 input event mask.
+/// Creates a new X11 input event mask for [device_id] containing [value].
 ///
 /// !return-ref
 /// !return-type UtX11InputEventMask

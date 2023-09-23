@@ -5,7 +5,7 @@
 
 #pragma once
 
-/// Creates a new X11 rectangle.
+/// Creates a new X11 rectangle of size [width]x[height] at locataion [x],[y].
 ///
 /// !return-ref
 /// !return-type UtX11Rectangle

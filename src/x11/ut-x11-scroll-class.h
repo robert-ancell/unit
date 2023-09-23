@@ -5,7 +5,8 @@
 
 #pragma once
 
-/// Creates a new X11 scroll class.
+/// Creates a new X11 scroll class with [number], [scroll_type], [flags] and
+/// [increment].
 ///
 /// !return-ref
 /// !return-type UtX11ScrollClass

@@ -5,7 +5,7 @@
 
 #pragma once
 
-/// Creates a new X11 unknown input class.
+/// Creates a new X11 unknown input class of [type].
 ///
 /// !return-ref
 /// !return-type UtX11UnknownInputClass
