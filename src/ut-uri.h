@@ -5,7 +5,8 @@
 
 #pragma once
 
-/// Creates a new URI.
+/// Creates a new URI in the form
+/// [scheme]://[user_info]@[host]:[port][path]?[query]#[fragment].
 ///
 /// !return-ref
 /// !return-type UtUri
