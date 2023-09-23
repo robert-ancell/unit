@@ -5,14 +5,16 @@
 
 #pragma once
 
-/// Creates a DBus struct that contains [value].
+/// Creates a DBus struct that contains a [NULL] terminated list of values
+/// starting at [value0].
 ///
 /// !arg-type value0 UtObject
 /// !return-ref
 /// !return-type UtDbusStruct
 UtObject *ut_dbus_struct_new(UtObject *value0, ...);
 
-/// Creates a DBus struct that contains [value].
+/// Creates a DBus struct that contains a [NULL] terminated list of values
+/// starting at [value0].
 ///
 /// !arg-type value0 UtObject
 /// !return-ref
