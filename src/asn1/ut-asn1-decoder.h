@@ -19,6 +19,8 @@ extern int ut_asn1_decoder_id;
 UtObject *ut_asn1_decoder_decode_value(UtObject *object, UtObject *type);
 
 /// Gets any error that occurred during decoding.
+///
+/// !return-type UtAsn1Error
 UtObject *ut_asn1_decoder_get_error(UtObject *object);
 
 /// Returns [true] if [object] is a [UtAsn1Decoder].

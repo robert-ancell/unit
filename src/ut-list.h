@@ -21,22 +21,25 @@ typedef struct {
 
 extern int ut_list_id;
 
-/// Creates a new object that implements [UtList].
+/// Creates a new list that contains objects.
+/// This creates a [UtObjectArray].
 ///
 /// !return-ref
+/// !return-type UtList
 UtObject *ut_list_new();
 
-/// Creates a new object that implements [UtList] and contains a [NULL]
-/// terminated list of elements starting at [item0].
+/// Creates a new list that contains contains a [NULL] terminated list of
+/// objects starting at [item0]. This creates a [UtObjectArray].
 /// ```c
 /// UtObjectRef list = ut_list_new_from_elements(item0, item1, item2, NULL);
 /// ```
 ///
 /// !return-ref
+/// !return-type UtList
 UtObject *ut_list_new_from_elements(UtObject *item0, ...);
 
-/// Creates a new object that implements [UtList] and contains a [NULL]
-/// terminated list of elements starting at [item0].
+/// Creates a new list that contains contains a [NULL] terminated list of
+/// objects starting at [item0]. This creates a [UtObjectArray].
 /// ```c
 /// UtObjectRef list = ut_list_new_from_elements_take(ut_string_new("Hello"),
 /// ut_string_new("World"), NULL);
@@ -45,6 +48,7 @@ UtObject *ut_list_new_from_elements(UtObject *item0, ...);
 /// !take-ref item0
 /// !take-ref ...
 /// !return-ref
+/// !return-type UtList
 UtObject *ut_list_new_from_elements_take(UtObject *item0, ...);
 
 /// Gets the number of elements in this list.
@@ -53,16 +57,19 @@ size_t ut_list_get_length(UtObject *object);
 /// Gets the element at the given [index] in this list.
 ///
 /// !return-ref
+/// !return-type UtObject
 UtObject *ut_list_get_element(UtObject *object, size_t index);
 
 /// Gets the first element in this list.
 ///
 /// !return-ref
+/// !return-type UtObject
 UtObject *ut_list_get_first(UtObject *object);
 
 /// Gets the last element in this list.
 ///
 /// !return-ref
+/// !return-type UtObject
 UtObject *ut_list_get_last(UtObject *object);
 
 /// Creates a new list containing [count] elements from [start] in this list.
@@ -73,12 +80,14 @@ UtObject *ut_list_get_last(UtObject *object);
 /// not valid will trigger assertions.
 ///
 /// !return-ref
+/// !return-type UtList
 UtObject *ut_list_get_sublist(UtObject *object, size_t start, size_t count);
 
 /// Creates a new list containing the same contents as this list.
 /// If this list was immutable, the new list will be mutable.
 ///
 /// !return-ref
+/// !return-type UtList
 UtObject *ut_list_copy(UtObject *object);
 
 /// Returns [true] if the contents of this list can be changed.

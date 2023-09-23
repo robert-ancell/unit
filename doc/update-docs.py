@@ -629,8 +629,9 @@ def parse_header(filename):
 
 
 class ApiFunction:
-    def __init__(self, function, comments):
+    def __init__(self, function, tags, comments):
         self.function = function
+        self.tags = tags
         self.comments = comments
 
 
@@ -648,22 +649,26 @@ enums = []
 for statement in statements:
     if isinstance(statement, Include):
         comments = []
+        tags = []
         for s in parse_header(source_dir + '/' + statement.path):
             if isinstance(s, Comment):
                 if s.text.startswith('/'):
                     text = s.text[1:]
                     if text.startswith(' '):
                         text = text[1:]
-                    if not text.startswith('!'):
+                    if text.startswith('!'):
+                        tags.append(text[1:])
+                    else:
                         comments.append(text)
                 else:
                     comments = []
+                    tags = []
 
             if isinstance(s, FunctionDefinition) and \
                not s.name.startswith('_'):
-                functions.append(ApiFunction(s, comments))
+                functions.append(ApiFunction(s, tags, comments))
             elif isinstance(s, Define) and len(s.args) > 0:
-                functions.append(ApiFunction(s, comments))
+                functions.append(ApiFunction(s, tags, comments))
             elif isinstance(s, Typedef) and isinstance(s.value, Enum):
                 enums.append(ApiEnum(s.name, s.value, comments))
 
@@ -698,10 +703,19 @@ def extract_links(doc):
     return links
 
 
+def get_return_type(tags):
+    prefix = 'return-type '
+    for tag in tags:
+        if tag.startswith(prefix):
+            return tag[len(prefix):]
+    return None
+
+
 doc_text = ''
 functions.sort(key=lambda x: x.function.name)
 undocumented_functions = []
 undocumented_function_args = []
+undocumented_return_values = []
 for function in functions:
     doc_text += '\n'
     doc_text += function.function.name + '\n'
@@ -737,6 +751,12 @@ for function in functions:
     if len(undocumented_args) > 0:
         undocumented_function_args.append((function, undocumented_args))
 
+    if isinstance(function.function, FunctionDefinition) and \
+       isinstance(function.function.return_type, Type) and \
+       function.function.return_type.name == 'UtObject*':
+        if get_return_type(function.tags) is None:
+            undocumented_return_values.append(function)
+
 enums.sort(key=lambda x: x.name)
 undocumented_enums = []
 undocumented_enum_values = []
@@ -771,6 +791,11 @@ if len(undocumented_function_args) > 0:
     print('Undocumented function arguments:')
     for (function, args) in undocumented_function_args:
         print('  ' + function.function.name + ': ' + ', '.join(args))
+if len(undocumented_return_values) > 0:
+    fully_documented = False
+    print('Undocumented return values:')
+    for function in undocumented_return_values:
+        print('  ' + function.function.name)
 n_elements = len(functions)
 n_documented = n_elements - len(undocumented_functions)
 print('Documented %d/%d functions' % (n_documented, n_elements))
