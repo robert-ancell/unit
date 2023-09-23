@@ -7,6 +7,7 @@
 
 /// Creates a new ZLib encoder to encode the data from [input_stream].
 ///
+/// !arg-type input_stream UtInputStream
 /// !return-ref
 /// !return-type UtZlibEncoder
 UtObject *ut_zlib_encoder_new(UtObject *input_stream);
@@ -14,6 +15,7 @@ UtObject *ut_zlib_encoder_new(UtObject *input_stream);
 /// Creates a new ZLib encoder to encode the data from [input_stream] using
 /// the given [compression_level] and [window_size].
 ///
+/// !arg-type input_stream UtInputStream
 /// !return-ref
 /// !return-type UtZlibEncoder
 UtObject *ut_zlib_encoder_new_full(UtZlibCompressionLevel compression_level,

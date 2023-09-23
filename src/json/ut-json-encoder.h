@@ -11,9 +11,14 @@
 UtObject *ut_json_encoder_new();
 
 /// Returns a JSON encoded representation of [message].
-/// Message can be a combination of [UtString], [UtInt64], [UtFloat64], [UtMap],
-/// [UtList], [UtBoolean], [UtNull].
 ///
+/// !arg-type message UtString
+/// !arg-type message UtInt64
+/// !arg-type message UtFloat64
+/// !arg-type message UtMap
+/// !arg-type message UtList
+/// !arg-type message UtBoolean
+/// !arg-type message UtNull
 /// !return-type UtJsonEncoder
 /// !return-ref
 char *ut_json_encoder_encode(UtObject *object, UtObject *message);

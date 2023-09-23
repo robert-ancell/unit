@@ -52,6 +52,9 @@ int ut_object_get_hash(UtObject *object);
 
 /// Increase the reference count on this object.
 /// Returns [NULL] if [object] is [NULL].
+///
+/// !return-ref
+/// !return-type UtObject NULL
 UtObject *ut_object_ref(UtObject *object);
 
 /// Decrease the reference count on this object.

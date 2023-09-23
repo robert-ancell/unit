@@ -5,7 +5,9 @@
 #pragma once
 
 /// Creates a new date time for day [year], [month], [day] and time [hour],
-/// [minutes], [seconds], offset [utc_offset_minutes] from UTC. !return-ref
+/// [minutes], [seconds], offset [utc_offset_minutes] from UTC.
+///
+/// !return-ref
 /// !return-type UtDateTime
 UtObject *ut_date_time_new(unsigned int year, unsigned int month,
                            unsigned int day, unsigned int hour,
@@ -13,7 +15,10 @@ UtObject *ut_date_time_new(unsigned int year, unsigned int month,
                            int utc_offset_minutes);
 
 /// Creates a new date time for day [year], [month], [day] and time [hour],
-/// [minutes], [seconds] in UTC. !return-ref !return-type UtDateTime
+/// [minutes], [seconds] in UTC.
+///
+/// !return-ref
+/// !return-type UtDateTime
 UtObject *ut_date_time_new_utc(unsigned int year, unsigned int month,
                                unsigned int day, unsigned int hour,
                                unsigned int minutes, unsigned int seconds);

@@ -8,6 +8,7 @@ typedef void (*UtJpegDecodeCallback)(UtObject *object);
 
 /// Creates a new JPEG decoder to read an image from [input_stream].
 ///
+/// !arg-type input_stream UtInputStream
 /// !return-ref
 /// !return-type UtJpegDecoder
 UtObject *ut_jpeg_decoder_new(UtObject *input_stream);

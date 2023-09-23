@@ -16,7 +16,7 @@ typedef void (*UtDnsLookupCallback)(UtObject *object, UtObject *address);
 /// Creates a new DNS client to access the DNS server on [server_address] and
 /// [port].
 ///
-/// !arg-type UtIpAddress
+/// !arg-type server_address UtIpAddress
 /// !return-type UtDnsClient
 /// !return-ref
 UtObject *ut_dns_client_new(UtObject *server_address, uint16_t port);

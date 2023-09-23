@@ -674,6 +674,7 @@ for statement in statements:
 
             if not isinstance(s, Comment):
                 comments = []
+                tags = []
 
 
 def make_doc(comments):
@@ -711,11 +712,20 @@ def get_return_type(tags):
     return None
 
 
+def get_arg_type(tags, name):
+    prefix = 'arg-type %s ' % name
+    for tag in tags:
+        if tag.startswith(prefix):
+            return tag[len(prefix):]
+    return None
+
+
 doc_text = ''
 functions.sort(key=lambda x: x.function.name)
 undocumented_functions = []
 undocumented_function_args = []
-undocumented_return_values = []
+undocumented_function_arg_types = []
+undocumented_function_return_types = []
 for function in functions:
     doc_text += '\n'
     doc_text += function.function.name + '\n'
@@ -727,6 +737,7 @@ for function in functions:
 
     links = extract_links(doc)
     undocumented_args = []
+    undocumented_arg_types = []
     for (i, arg) in enumerate(function.function.args):
         if isinstance(function.function, FunctionDefinition):
             (type, name) = arg
@@ -748,14 +759,22 @@ for function in functions:
 
         if name not in links:
             undocumented_args.append(name)
+
+        if isinstance(type, Type) and type.name == 'UtObject*' and \
+           get_arg_type(function.tags, name) is None:
+            undocumented_arg_types.append(name)
+
     if len(undocumented_args) > 0:
         undocumented_function_args.append((function, undocumented_args))
+    if len(undocumented_arg_types) > 0:
+        undocumented_function_arg_types.append(
+            (function, undocumented_arg_types))
 
     if isinstance(function.function, FunctionDefinition) and \
        isinstance(function.function.return_type, Type) and \
        function.function.return_type.name == 'UtObject*':
         if get_return_type(function.tags) is None:
-            undocumented_return_values.append(function)
+            undocumented_function_return_types.append(function)
 
 enums.sort(key=lambda x: x.name)
 undocumented_enums = []
@@ -791,10 +810,15 @@ if len(undocumented_function_args) > 0:
     print('Undocumented function arguments:')
     for (function, args) in undocumented_function_args:
         print('  ' + function.function.name + ': ' + ', '.join(args))
-if len(undocumented_return_values) > 0:
+if len(undocumented_function_arg_types) > 0:
     fully_documented = False
-    print('Undocumented return values:')
-    for function in undocumented_return_values:
+    print('Undocumented function argument types:')
+    for (function, args) in undocumented_function_arg_types:
+        print('  ' + function.function.name + ': ' + ', '.join(args))
+if len(undocumented_function_return_types) > 0:
+    fully_documented = False
+    print('Undocumented function return types:')
+    for function in undocumented_function_return_types:
         print('  ' + function.function.name)
 n_elements = len(functions)
 n_documented = n_elements - len(undocumented_functions)

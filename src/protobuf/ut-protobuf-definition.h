@@ -27,6 +27,11 @@ int ut_protobuf_definition_get_syntax(UtObject *object);
 UtObject *ut_protobuf_definition_get_definitions(UtObject *object);
 
 /// Gets the definition called [name].
+///
+/// !return-type UtProtobufMessageType
+/// !return-type UtProtobufEnumType
+/// !return-type UtProtobufService
+/// !return-type NULL
 UtObject *ut_protobuf_definition_lookup(UtObject *object, const char *name);
 
 /// Returns [true] if [object] is a [UtProtobufDefinition].

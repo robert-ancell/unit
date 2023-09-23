@@ -14,9 +14,13 @@ UtObject *ut_protobuf_decoder_new(UtObject *data);
 /// Decode message of [type].
 ///
 /// !arg-type type UtProtobufMessageType
+/// !return-ref
+/// !return-type UtMap
 UtObject *ut_protobuf_decoder_decode_message(UtObject *object, UtObject *type);
 
 /// Gets any error that occurred during decoding.
+///
+/// !return-type UtProtobufError NULL
 UtObject *ut_protobuf_decoder_get_error(UtObject *object);
 
 /// Returns [true] if [object] is a [UtProtobufDecoder].

@@ -18,6 +18,7 @@ UtObject *ut_asn1_embedded_pdv_type_get_associated_type(UtObject *object);
 
 /// Encodes [value] into a form suitable for encoding with the associated type.
 ///
+/// !arg-type value UtAsn1EmbeddedValue
 /// !return-ref
 /// !return-type UtMap
 UtObject *ut_asn1_embedded_pdv_type_encode_value(UtObject *object,

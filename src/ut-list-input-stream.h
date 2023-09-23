@@ -6,6 +6,7 @@
 
 /// Creates an input stream containing a fixed [list] of data.
 ///
+/// !arg-type list UtList
 /// !return-ref
 /// !return-type UtListInputStream
 UtObject *ut_list_input_stream_new(UtObject *list);

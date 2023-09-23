@@ -7,6 +7,7 @@
 /// Creates a new JPEG encoder to write [image] to [output_stream].
 ///
 /// !arg-type image UtJpegImage
+/// !arg-type output_stream UtOutputStream
 /// !return-ref
 /// !return-type UtJpegEncoder
 UtObject *ut_jpeg_encoder_new(UtObject *image, UtObject *output_stream);

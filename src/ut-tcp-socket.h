@@ -13,6 +13,7 @@ typedef void (*UtTcpSocketConnectCallback)(UtObject *object, UtObject *error);
 
 /// Creates a new TCP socket from an existing socket [fd].
 ///
+/// !arg-type fd UtFileDescriptor
 /// !return-ref
 /// !return-type UtTcpSocket
 UtObject *ut_tcp_socket_new_from_fd(UtObject *fd);
@@ -30,7 +31,7 @@ void ut_tcp_socket_connect(UtObject *object, UtObject *callback_object,
 
 /// Returns the address this socket is connected to.
 ///
-/// !retrun-type address UtIpv4Address UtIpv6Address UtUnixSocketAddress
+/// !return-type address UtIpv4Address UtIpv6Address UtUnixSocketAddress
 UtObject *ut_tcp_socket_get_address(UtObject *object);
 
 /// Returns the port this socket is connected to on the server.

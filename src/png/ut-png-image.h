@@ -55,7 +55,7 @@ void ut_png_image_set_palette(UtObject *object, UtObject *palette);
 
 /// Returns the RGB palette for this image or [NULL] if it has none.
 ///
-/// !returng-type UtUint8List NULL
+/// !return-type UtUint8List NULL
 UtObject *ut_png_image_get_palette(UtObject *object);
 
 /// Sets the RGB [background_color].

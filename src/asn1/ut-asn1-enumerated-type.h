@@ -8,6 +8,7 @@
 /// If [extensible] is [true] then then encoded forms of this eumeration may
 /// contain values not in [values_by_name].
 ///
+/// !arg-type values_by_name UtMap
 /// !return-ref
 /// !return-type UtAsn1EnumeratedType
 UtObject *ut_asn1_enumerated_type_new(UtObject *values_by_name,

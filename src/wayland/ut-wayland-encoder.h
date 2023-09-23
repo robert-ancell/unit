@@ -20,10 +20,14 @@ void ut_wayland_encoder_append_int(UtObject *object, int32_t value);
 void ut_wayland_encoder_append_string(UtObject *object, const char *value);
 
 /// Adds a [wayland_object] to this message.
+///
+/// !arg-type wayland_object UtWaylandObject
 void ut_wayland_encoder_append_object(UtObject *object,
                                       UtObject *wayland_object);
 
 /// Adds a [fd] to this message.
+///
+/// !arg-type fd UtFileDescriptor
 void ut_wayland_encoder_append_fd(UtObject *object, UtObject *fd);
 
 /// Returns the encoded data.

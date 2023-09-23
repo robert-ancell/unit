@@ -51,7 +51,7 @@ void ut_event_loop_cancel_watch(UtObject *watch);
 /// [thread_data] is passed to the new thread.
 /// When the thread completes, [result_callback] is called.
 ///
-/// !arg-type thread-data UtObject NULL.
+/// !arg-type thread_data UtObject NULL.
 void ut_event_loop_add_worker_thread(UtThreadCallback thread_callback,
                                      UtObject *thread_data,
                                      UtObject *callback_object,
@@ -59,7 +59,7 @@ void ut_event_loop_add_worker_thread(UtThreadCallback thread_callback,
 
 /// Complete the event loop and return [return_value].
 ///
-/// !arg-type object UtObject NULL
+/// !arg-type return_value UtObject NULL
 void ut_event_loop_return(UtObject *return_value);
 
 /// Run the event loop.

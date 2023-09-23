@@ -14,9 +14,13 @@ UtObject *ut_protobuf_definition_parser_new();
 bool ut_protobuf_definition_parser_parse(UtObject *object, const char *text);
 
 /// Gets the definition decoded.
+///
+/// !return-type UtProtobufDefinition
 UtObject *ut_protobuf_definition_parser_get_definition(UtObject *object);
 
 /// Gets any error that occurred during decoding.
+///
+/// !return-type UtProtobufError NULL
 UtObject *ut_protobuf_definition_parser_get_error(UtObject *object);
 
 /// Returns [true] if [object] is a [UtProtobufDefinitionParser].

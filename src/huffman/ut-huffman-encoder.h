@@ -14,7 +14,7 @@ UtObject *ut_huffman_encoder_new(UtObject *symbol_weights);
 
 /// Creates a new Huffman encoder with canonical encoding using [code_widths].
 ///
-/// !arg-type code_width UtUint8List
+/// !arg-type code_widths UtUint8List
 /// !return-ref
 /// !return-type UtHuffmanEncoder
 UtObject *ut_huffman_encoder_new_canonical(UtObject *code_widths);

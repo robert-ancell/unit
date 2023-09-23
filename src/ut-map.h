@@ -32,6 +32,7 @@ UtObject *ut_map_new_unordered();
 
 /// Creates a new map containing the provided [key] [value] pairs.
 ///
+/// !arg-type value UtObject
 /// !return-ref
 /// !return-type UtMap
 UtObject *ut_map_new_string_from_elements(const char *key, UtObject *value,
@@ -40,6 +41,7 @@ UtObject *ut_map_new_string_from_elements(const char *key, UtObject *value,
 /// Creates a new map containing the provided [key] [value] pairs.
 /// The values must pass in references.
 ///
+/// !arg-type value UtObject
 /// !return-ref
 /// !return-type UtMap
 UtObject *ut_map_new_string_from_elements_take(const char *key, UtObject *value,
@@ -80,6 +82,7 @@ void ut_map_insert_string_take(UtObject *object, const char *key,
 /// Get the value referenced by [key] in this map, or [NULL] if no element with
 /// that key.
 ///
+/// !arg-type key UtObject
 /// !return-type UtObject NULL
 UtObject *ut_map_lookup(UtObject *object, UtObject *key);
 

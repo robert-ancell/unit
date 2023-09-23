@@ -31,6 +31,8 @@ const char *ut_asn1_module_definition_get_identifier(UtObject *object);
 UtObject *ut_asn1_module_definition_get_object_identifier(UtObject *object);
 
 /// Returns the assignments in this module.
+///
+/// !return-type UtMap
 UtObject *ut_asn1_module_definition_get_assignments(UtObject *object);
 
 /// Returns the assignment with [name] or [NULL] if no assignment is set.

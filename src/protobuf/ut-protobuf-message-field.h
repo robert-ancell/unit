@@ -21,9 +21,12 @@ typedef enum {
   UT_PROTOBUF_MESSAGE_FIELD_TYPE_REPEATED
 } UtProtobufMessageFieldType;
 
-/// Creates a new protobuf message field of [type] with [number] conatining
+/// Creates a new protobuf message field of [type] with [number] containing
 /// [value_type].
 ///
+/// !arg-type value_type UtProtobufPrimitiveType
+/// !arg-type value_type UtProtobufMessageType
+/// !arg-type value_type UtProtobufEnumType
 /// !return-ref
 /// !return-type UtProtobufMessageField
 UtObject *ut_protobuf_message_field_new(UtProtobufMessageFieldType type,
@@ -32,6 +35,9 @@ UtObject *ut_protobuf_message_field_new(UtProtobufMessageFieldType type,
 /// Creates a new protobuf optional message field with [number] containing
 /// [value_type].
 ///
+/// !arg-type value_type UtProtobufPrimitiveType
+/// !arg-type value_type UtProtobufMessageType
+/// !arg-type value_type UtProtobufEnumType
 /// !return-ref
 /// !return-type UtProtobufMessageField
 UtObject *ut_protobuf_message_field_new_optional(UtObject *value_type,
@@ -40,6 +46,9 @@ UtObject *ut_protobuf_message_field_new_optional(UtObject *value_type,
 /// Creates a new protobuf repeated message field with [number] containing
 /// [value_type].
 ///
+/// !arg-type value_type UtProtobufPrimitiveType
+/// !arg-type value_type UtProtobufMessageType
+/// !arg-type value_type UtProtobufEnumType
 /// !return-ref
 /// !return-type UtProtobufMessageField
 UtObject *ut_protobuf_message_field_new_repeated(UtObject *value_type,
@@ -48,6 +57,9 @@ UtObject *ut_protobuf_message_field_new_repeated(UtObject *value_type,
 /// Creates a new protobuf implicit message field with [number] containing
 /// [value_type].
 ///
+/// !arg-type value_type UtProtobufPrimitiveType
+/// !arg-type value_type UtProtobufMessageType
+/// !arg-type value_type UtProtobufEnumType
 /// !return-ref
 /// !return-type UtProtobufMessageField
 UtObject *ut_protobuf_message_field_new_implicit_take(UtObject *value_type,
@@ -56,6 +68,9 @@ UtObject *ut_protobuf_message_field_new_implicit_take(UtObject *value_type,
 /// Creates a new protobuf optional message field with [number] containing
 /// [value_type].
 ///
+/// !arg-type value_type UtProtobufPrimitiveType
+/// !arg-type value_type UtProtobufMessageType
+/// !arg-type value_type UtProtobufEnumType
 /// !return-ref
 /// !return-type UtProtobufMessageField
 UtObject *ut_protobuf_message_field_new_optional_take(UtObject *value_type,
@@ -64,6 +79,9 @@ UtObject *ut_protobuf_message_field_new_optional_take(UtObject *value_type,
 /// Creates a new protobuf repeated message field with [number] containing
 /// [value_type].
 ///
+/// !arg-type value_type UtProtobufPrimitiveType
+/// !arg-type value_type UtProtobufMessageType
+/// !arg-type value_type UtProtobufEnumType
 /// !return-ref
 /// !return-type UtProtobufMessageField
 UtObject *ut_protobuf_message_field_new_repeated_take(UtObject *value_type,
@@ -346,8 +364,9 @@ UtProtobufMessageFieldType ut_protobuf_message_field_get_type(UtObject *object);
 
 /// Returns the type this field is.
 ///
-/// !return-type UtProtobufPrimitiveType UtProtobufMessageType
-/// UtProtobufEnumType
+/// !return-type UtProtobufPrimitiveType
+/// !return-type UtProtobufMessageType
+/// !return-type UtProtobufEnumType
 UtObject *ut_protobuf_message_field_get_value_type(UtObject *object);
 
 /// Returns the number of this field.

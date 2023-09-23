@@ -7,12 +7,14 @@
 
 /// Creates a new ASN.1 optional [type].
 ///
+/// !arg-type type UtAsn1Type
 /// !return-ref
 /// !return-type UtAsn1OptionalType
 UtObject *ut_asn1_optional_type_new(UtObject *type);
 
 /// Creates a new ASN.1 optional [type].
 ///
+/// !arg-type type UtAsn1Type
 /// !return-ref
 /// !return-type UtAsn1OptionalType
 UtObject *ut_asn1_optional_type_new_take(UtObject *type);

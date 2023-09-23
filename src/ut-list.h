@@ -34,6 +34,7 @@ UtObject *ut_list_new();
 /// UtObjectRef list = ut_list_new_from_elements(item0, item1, item2, NULL);
 /// ```
 ///
+/// !arg-type item0 UtObject
 /// !return-ref
 /// !return-type UtList
 UtObject *ut_list_new_from_elements(UtObject *item0, ...);
@@ -46,6 +47,7 @@ UtObject *ut_list_new_from_elements(UtObject *item0, ...);
 /// ```
 ///
 /// !take-ref item0
+/// !arg-type item0 UtObject
 /// !take-ref ...
 /// !return-ref
 /// !return-type UtList
@@ -95,6 +97,8 @@ UtObject *ut_list_copy(UtObject *object);
 bool ut_list_is_mutable(UtObject *object);
 
 /// Adds an [item] to the end of this list.
+///
+/// !arg-type item UtObject
 void ut_list_append(UtObject *object, UtObject *item);
 
 /// Adds an [item] to the end of this list and takes the reference.
@@ -104,13 +108,18 @@ void ut_list_append(UtObject *object, UtObject *item);
 /// ```
 ///
 /// !take-ref item
+/// !arg-type item UtObject
 void ut_list_append_take(UtObject *object, UtObject *item);
 
 /// Adds the contents of [list] to the end of this list.
 /// The data is copied.
+///
+/// !arg-type list UtList
 void ut_list_append_list(UtObject *object, UtObject *list);
 
 /// Adds an [item] to the start of this list.
+///
+/// !arg-type item UtObject
 void ut_list_prepend(UtObject *object, UtObject *item);
 
 /// Adds an [item] to the start of this list and takes the reference.
@@ -120,15 +129,20 @@ void ut_list_prepend(UtObject *object, UtObject *item);
 /// ```
 ///
 /// !take-ref item
+/// !arg-type item UtObject
 void ut_list_prepend_take(UtObject *object, UtObject *item);
 
 /// Adds the contents of [list] to the start of this list.
 /// The data is copied.
+///
+/// !arg-type list UtList
 void ut_list_prepend_list(UtObject *object, UtObject *list);
 
 /// Adds an [item] in position [index] of this list.
 /// Existing items will be moved to make space for this item so the list will
 /// always grow in size by 1.
+///
+/// !arg-type item UtObject
 void ut_list_insert(UtObject *object, size_t index, UtObject *item);
 
 /// Adds an [item] in position [index] of this list.
@@ -139,11 +153,14 @@ void ut_list_insert(UtObject *object, size_t index, UtObject *item);
 /// ```
 ///
 /// !take-ref item
+/// !arg-type item UtObject
 void ut_list_insert_take(UtObject *object, size_t index, UtObject *item);
 
 /// Insert items from [list] into this list at position [index].
 /// Existing items will be moved to make space for this item so the list will
 /// always grow in size by the size of [list].
+///
+/// !arg-type list UtList
 void ut_list_insert_list(UtObject *object, size_t index, UtObject *list);
 
 /// Remove [count] elements from this list starting at the position [index].

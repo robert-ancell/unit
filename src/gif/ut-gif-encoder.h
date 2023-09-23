@@ -19,6 +19,7 @@ UtObject *ut_gif_encoder_new(uint16_t width, uint16_t height,
 
 /// Creates a new GIF encoder to write a single [image] to [output_stream].
 ///
+/// !arg-type image UtGifImage
 /// !arg-type output_stream UtOutputStream
 /// !return-ref
 /// !return-type UtGifEncoder

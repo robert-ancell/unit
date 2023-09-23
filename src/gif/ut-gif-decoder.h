@@ -8,6 +8,7 @@ typedef void (*UtGifDecodeCallback)(UtObject *object);
 
 /// Creates a new GIF decoder to read an image from [input_stream].
 ///
+/// !arg-type input_stream UtInputStream
 /// !return-ref
 /// !return-type UtGifDecoder
 UtObject *ut_gif_decoder_new(UtObject *input_stream);
