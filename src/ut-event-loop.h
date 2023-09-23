@@ -23,7 +23,7 @@ UtObject *ut_event_loop_add_delay(time_t seconds, UtObject *callback_object,
 UtObject *ut_event_loop_add_timer(time_t seconds, UtObject *callback_object,
                                   UtEventLoopCallback callback);
 
-/// Cancels a previously started timer.
+/// Cancels a previously started [timer].
 ///
 /// !arg-type timer UtObject
 void ut_event_loop_cancel_timer(UtObject *timer);
@@ -42,7 +42,7 @@ UtObject *ut_event_loop_add_read_watch(UtObject *fd, UtObject *callback_object,
 UtObject *ut_event_loop_add_write_watch(UtObject *fd, UtObject *callback_object,
                                         UtEventLoopCallback callback);
 
-/// Cancels a previously registered watch.
+/// Cancels a previously registered [watch].
 ///
 /// !arg-type watch UtObject
 void ut_event_loop_cancel_watch(UtObject *watch);
