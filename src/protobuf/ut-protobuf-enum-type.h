@@ -13,7 +13,7 @@ UtObject *ut_protobuf_enum_type_new(UtObject *values_by_name);
 
 /// Creates a new protobuf enum type and takes a reference to [values_by_name].
 ///
-/// !take_ref values_by_name
+/// !take-ref values_by_name
 /// !arg-type values_by_name UtMap
 /// !return-ref
 /// !return-type UtProtobufEnumType

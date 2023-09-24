@@ -648,6 +648,22 @@ class ApiEnum:
         self.comments = comments
 
 
+def validate_tag(tag):
+    name = tag[0]
+    if name == 'return-type':
+        return len(tag) >= 2
+    elif name == 'return-ref':
+        return len(tag) == 1
+    elif name == 'return-element-type':
+        return len(tag) >= 2
+    elif name == 'take-ref':
+        return len(tag) == 2
+    elif name == 'arg-type':
+        return len(tag) >= 3
+    else:
+        return False
+
+
 source_dir = '../src'
 statements = parse_header(source_dir + '/ut.h')
 functions = []
@@ -663,7 +679,10 @@ for statement in statements:
                     if text.startswith(' '):
                         text = text[1:]
                     if text.startswith('!'):
-                        tags.append(text[1:].split())
+                        tag = text[1:].split()
+                        if not validate_tag(tag):
+                            print('Invalid tag %s' % tag)
+                        tags.append(tag)
                     else:
                         comments.append(text)
                 else:
