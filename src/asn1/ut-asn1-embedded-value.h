@@ -12,7 +12,7 @@
 /// !arg-type identification UtAsn1EmbeddedIdentificationPresentationContextId
 /// !arg-type identification UtAsn1EmbeddedIdentificationContextNegotiation
 /// !arg-type identification UtAsn1EmbeddedIdentificationTransferSyntax
-/// !arg-type UtAsn1EmbeddedIdentificationFixed
+/// !arg-type identification UtAsn1EmbeddedIdentificationFixed
 /// !arg-type data_value UtUint8List
 /// !return-ref
 /// !return-type UtAsn1EmbeddedValue

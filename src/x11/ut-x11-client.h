@@ -698,8 +698,6 @@ void ut_x11_client_copy_area(UtObject *object, uint32_t src_drawable,
 /// Gets an image from [drawable] of size [width]x[height] at locations [x],[y]
 /// in [drawable]. Only the planes matching [plane_mask] are returned. Calls
 /// [callback] with the returned image in [format].
-///
-/// !arg-type data UtUint8List
 void ut_x11_client_get_image(UtObject *object, uint32_t drawable,
                              UtX11ImageFormat format, int16_t x, int16_t y,
                              uint16_t width, uint16_t height,
