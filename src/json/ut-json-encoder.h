@@ -19,8 +19,6 @@ UtObject *ut_json_encoder_new();
 /// !arg-type message UtList
 /// !arg-type message UtBoolean
 /// !arg-type message UtNull
-/// !return-type UtJsonEncoder
-/// !return-ref
 char *ut_json_encoder_encode(UtObject *object, UtObject *message);
 
 /// Returns [true] if [object] is a [UtJsonEncoder].

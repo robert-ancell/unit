@@ -712,6 +712,13 @@ def get_return_type(tags):
     return None
 
 
+def has_return_ref(tags):
+    for tag in tags:
+        if tag == 'return-ref':
+            return True
+    return False
+
+
 def get_arg_type(tags, name):
     prefix = 'arg-type %s ' % name
     for tag in tags:
@@ -726,6 +733,7 @@ undocumented_functions = []
 undocumented_function_args = []
 undocumented_function_arg_types = []
 undocumented_function_return_types = []
+invalid_function_return_types = []
 for function in functions:
     doc_text += '\n'
     doc_text += function.function.name + '\n'
@@ -764,17 +772,28 @@ for function in functions:
            get_arg_type(function.tags, name) is None:
             undocumented_arg_types.append(name)
 
+    # FIXME: Check don't have arg-type tag(s) for args that don't exist
+
     if len(undocumented_args) > 0:
         undocumented_function_args.append((function, undocumented_args))
     if len(undocumented_arg_types) > 0:
         undocumented_function_arg_types.append(
             (function, undocumented_arg_types))
 
+    type_name = None
     if isinstance(function.function, FunctionDefinition) and \
-       isinstance(function.function.return_type, Type) and \
-       function.function.return_type.name == 'UtObject*':
+       isinstance(function.function.return_type, Type):
+        type_name = function.function.return_type.name
+    if type_name == 'UtObject*':
         if get_return_type(function.tags) is None:
             undocumented_function_return_types.append(function)
+    elif type_name == 'char*':
+        if get_return_type(function.tags) is not None:
+            invalid_function_return_types.append(function)
+    else:
+        if get_return_type(function.tags) is not None or \
+           has_return_ref(function.tags):
+            invalid_function_return_types.append(function)
 
 enums.sort(key=lambda x: x.name)
 undocumented_enums = []
@@ -819,6 +838,11 @@ if len(undocumented_function_return_types) > 0:
     fully_documented = False
     print('Undocumented function return types:')
     for function in undocumented_function_return_types:
+        print('  ' + function.function.name)
+if len(invalid_function_return_types) > 0:
+    fully_documented = False
+    print('Invalid function return types:')
+    for function in invalid_function_return_types:
         print('  ' + function.function.name)
 n_elements = len(functions)
 n_documented = n_elements - len(undocumented_functions)
