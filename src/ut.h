@@ -109,6 +109,7 @@
 #include "tiff/ut-tiff-image.h"
 #include "tiff/ut-tiff-reader.h"
 #include "tiff/ut-tiff-tag.h"
+#include "tls/ut-tls-client.h"
 #include "ut-assert.h"
 #include "ut-base64.h"
 #include "ut-bit-list.h"

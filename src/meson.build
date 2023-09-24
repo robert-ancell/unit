@@ -122,6 +122,7 @@ ut_sources = [
   'tiff/ut-tiff-image.c',
   'tiff/ut-tiff-reader.c',
   'tiff/ut-tiff-tag.c',
+  'tls/ut-tls-client.c',
   'ut-assert.c',
   'ut-base64.c',
   'ut-bit-list.c',
