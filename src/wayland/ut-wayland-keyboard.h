@@ -39,7 +39,7 @@ typedef struct {
 ///
 /// !arg-type client UtWaylandClient
 /// !return-ref
-/// !return-type UtWaylanddKeyboard
+/// !return-type UtWaylandKeyboard
 UtObject *ut_wayland_keyboard_new(UtObject *client, uint32_t id,
                                   UtObject *callback_object,
                                   const UtWaylandKeyboardCallbacks *callbacks);
