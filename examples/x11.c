@@ -208,9 +208,8 @@ static void intern_atom_cb(UtObject *object, uint32_t atom, UtObject *error) {
   if (ut_cstring_equal(ut_string_get_text(name), "WM_DELETE_WINDOW")) {
     UtObjectRef protocols =
         ut_uint32_list_new_from_elements(1, get_atom("WM_DELETE_WINDOW"));
-    ut_x11_client_set_property_uint32(
-        client, window, get_atom("WM_PROTOCOLS"),
-        UT_X11_ATOM, protocols);
+    ut_x11_client_set_property_uint32(client, window, get_atom("WM_PROTOCOLS"),
+                                      UT_X11_ATOM, protocols);
   }
 }
 
@@ -266,7 +265,7 @@ static void connect_cb(UtObject *object, UtObject *error) {
   ut_list_append(masks, mask);
   ut_x11_client_select_input_events(client, window, masks);
 
-  ut_x11_client_set_property_string(client, window, UT_X11_WM_NAME,"UT");
+  ut_x11_client_set_property_string(client, window, UT_X11_WM_NAME, "UT");
 
   ut_x11_client_map_window(client, window);
 }
