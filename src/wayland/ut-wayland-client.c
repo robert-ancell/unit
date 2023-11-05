@@ -35,10 +35,11 @@ static void decode_event(UtWaylandClient *self, uint32_t id, uint16_t code,
   if (object != NULL) {
     if (!ut_wayland_object_decode_event(object, code, data)) {
       // printf("%s::%d %s\n", ut_wayland_object_get_interface(object), code,
-      // ut_object_to_string(data));
+      // ut_object_to_string(ut_wayland_decoder_get_data(data)));
     }
   } else {
-    // printf("%d::%d %s\n", id, code, ut_object_to_string(data));
+    // printf("%d::%d %s\n", id, code,
+    // ut_object_to_string(ut_wayland_decoder_get_data(data)));
   }
 }
 

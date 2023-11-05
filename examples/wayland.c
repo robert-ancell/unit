@@ -1,6 +1,16 @@
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
+#include <GL/gl.h>
 #include <assert.h>
+#include <drm/drm.h>
+#include <drm/drm_fourcc.h>
+#include <fcntl.h>
+#include <gbm.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/ioctl.h>
+
+#include <errno.h>
 
 #include "ut.h"
 
@@ -10,14 +20,22 @@ static size_t height = 480;
 static UtObject *client = NULL;
 static UtObject *registry = NULL;
 static UtObject *compositor = NULL;
+static UtObject *drm = NULL;
 static UtObject *shm = NULL;
 static UtObject *seat = NULL;
 static UtObject *pointer = NULL;
 static UtObject *keyboard = NULL;
 static UtObject *touch = NULL;
 static UtObject *wm_base = NULL;
+static UtObject *linux_dmabuf = NULL;
 static UtObject *surface = NULL;
 static UtObject *xdg_surface = NULL;
+
+static int drm_fd = -1;
+static struct gbm_device *gbm_device = NULL;
+static struct gbm_surface *gbm_surface = NULL;
+static struct gbm_bo *gbm_bo = NULL;
+static UtObject *params = NULL;
 
 static void release_cb(UtObject *object) {}
 
@@ -47,11 +65,20 @@ static UtObject *draw_frame(UtObject *object) {
   return ut_object_ref(buffer);
 }
 
+static void drm_authenticated_cb(UtObject *object) {
+  printf("wl_drm::authenticated\n");
+}
+
+static UtWaylandDrmCallbacks drm_callbacks = {.authenticated =
+                                                  drm_authenticated_cb};
+
 static void configure_cb(UtObject *object, uint32_t serial) {
   ut_xdg_surface_ack_configure(xdg_surface, serial);
-  UtObjectRef buffer = draw_frame(object);
-  ut_wayland_surface_attach(surface, buffer, 0, 0);
-  ut_wayland_surface_commit(surface);
+  if (drm == NULL) {
+    UtObjectRef buffer = draw_frame(object);
+    ut_wayland_surface_attach(surface, buffer, 0, 0);
+    ut_wayland_surface_commit(surface);
+  }
 }
 
 static UtXdgSurfaceCallbacks xdg_surface_callbacks = {.configure =
@@ -167,8 +194,105 @@ static UtXdgToplevelCallbacks toplevel_callbacks = {.close = toplevel_close_cb};
 
 static UtWaylandSurfaceCallbacks surface_callbacks = {};
 
+static void buffer_created_cb(UtObject *object, uint32_t id) {
+  printf("Buffer\n");
+  UtObjectRef buffer = ut_wayland_buffer_new(client, id, object, release_cb);
+
+  // FIXME: Render first
+  ut_wayland_surface_attach(surface, buffer, 0, 0);
+  ut_wayland_surface_commit(surface);
+}
+
+static void buffer_failed_cb(UtObject *object) { printf("Buffer failed\n"); }
+
+static UtWaylandLinuxBufferParamsCallbacks buffer_params_callbacks = {
+    .created = buffer_created_cb, .failed = buffer_failed_cb};
+
+static void egl_debug_cb(EGLenum error, const char *command, EGLint messageType,
+                         EGLLabelKHR threadLabel, EGLLabelKHR objectLabel,
+                         const char *message) {
+  printf("Debug: %s: %s\n", command, message);
+}
+
 static void sync_cb(UtObject *object, uint32_t callback_data) {
   printf("Connected\n");
+
+  if (drm != NULL) {
+    printf("%s\n", ut_wayland_drm_get_device(drm));
+
+    drm_fd = open(ut_wayland_drm_get_device(drm), O_RDWR | O_CLOEXEC);
+
+    gbm_device = gbm_create_device(drm_fd);
+    gbm_surface = gbm_surface_create(gbm_device, width, height,
+                                     GBM_FORMAT_XRGB8888, GBM_BO_USE_RENDERING);
+    if (gbm_surface == NULL) {
+      printf("Failed to create GBM surface\n");
+    }
+
+    PFNEGLDEBUGMESSAGECONTROLKHRPROC eglDebugMessageControlKHR =
+        (PFNEGLDEBUGMESSAGECONTROLKHRPROC)eglGetProcAddress(
+            "eglDebugMessageControl");
+    EGLAttrib debug_attribs[] = {EGL_DEBUG_MSG_INFO_KHR,
+                                 EGL_TRUE,
+                                 EGL_DEBUG_MSG_WARN_KHR,
+                                 EGL_TRUE,
+                                 EGL_DEBUG_MSG_ERROR_KHR,
+                                 EGL_TRUE,
+                                 EGL_DEBUG_MSG_CRITICAL_KHR,
+                                 EGL_TRUE,
+                                 EGL_NONE};
+    assert(eglDebugMessageControlKHR(egl_debug_cb, debug_attribs) == EGL_SUCCESS);
+
+    EGLDisplay *egl_display =
+        eglGetPlatformDisplay(EGL_PLATFORM_GBM_MESA, gbm_device, NULL);
+    if (egl_display == EGL_NO_DISPLAY) {
+      printf("Failed to create EGL display: 0x%x\n", eglGetError());
+    }
+    assert(eglInitialize(egl_display, NULL, NULL) == EGL_SUCCESS);
+
+    const EGLint config_attribs[] = {EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT,
+                                     EGL_NONE};
+    EGLConfig egl_configs[1024];
+    EGLConfig egl_config = NULL;
+    EGLint n_config_matches = 0;
+    assert(eglChooseConfig(egl_display, config_attribs, egl_configs, 1024,
+                           &n_config_matches));
+    for (EGLint i = 0; i < n_config_matches; i++) {
+      EGLint visual_id;
+      eglGetConfigAttrib(egl_display, egl_configs[i], EGL_NATIVE_VISUAL_ID,
+                         &visual_id);
+      if (visual_id == GBM_FORMAT_XRGB8888) {
+        egl_config = egl_configs[i];
+        break;
+      }
+    }
+    assert(egl_config != NULL);
+
+    assert(eglBindAPI(EGL_OPENGL_API) == EGL_SUCCESS);
+
+    EGLSurface *egl_surface = eglCreatePlatformWindowSurface(
+        egl_display, egl_config, gbm_surface, NULL);
+    if (egl_surface == EGL_NO_SURFACE) {
+      printf("Failed to create EGL surface: 0x%x\n", eglGetError());
+    }
+
+    eglMakeCurrent(egl_display, egl_surface, NULL, NULL);
+    glClearColor(0.7, 0.2, 0.2, 1.0);
+    glClear(GL_COLOR_BUFFER_BIT);
+    eglSwapBuffers(egl_display, egl_surface);
+
+    // FIXME: Need to call gbm_surface_release_buffer later
+    gbm_bo = gbm_surface_lock_front_buffer(gbm_surface);
+    if (gbm_bo == NULL) {
+      printf("Failed to lock GBM front buffer: 0x%x\n", eglGetError());
+    }
+    params = ut_wayland_linux_dmabuf_create_params(linux_dmabuf, object,
+                                                   &buffer_params_callbacks);
+    UtObjectRef fd = ut_file_descriptor_new(gbm_bo_get_fd(gbm_bo));
+    ut_wayland_linux_buffer_params_add(params, fd, 0, 0, width * 4, 0);
+    ut_wayland_linux_buffer_params_create(params, width, height,
+                                          DRM_FORMAT_XRGB8888, 0);
+  }
 
   surface = ut_wayland_compositor_create_surface(compositor, object,
                                                  &surface_callbacks);
@@ -179,6 +303,13 @@ static void sync_cb(UtObject *object, uint32_t callback_data) {
       ut_xdg_surface_get_toplevel(xdg_surface, object, &toplevel_callbacks);
   ut_xdg_toplevel_set_title(toplevel, "Test Window");
   ut_wayland_surface_commit(surface);
+
+  printf("~Connected\n");
+}
+
+static void registry_sync_cb(UtObject *object, uint32_t callback_data) {
+  // Registry complete, await each object that was made from the registry.
+  UtObjectRef callback = ut_wayland_client_sync(client, object, sync_cb);
 }
 
 static void ping_cb(UtObject *object, uint32_t serial) {
@@ -192,6 +323,9 @@ static void global_cb(UtObject *object, uint32_t name, const char *interface,
   printf("%d %s %d\n", name, interface, version);
   if (strcmp(interface, "wl_compositor") == 0) {
     compositor = ut_wayland_compositor_new_from_registry(registry, name);
+  } else if (strcmp(interface, "wl_drm") == 0) {
+    drm = ut_wayland_drm_new_from_registry(registry, name, object,
+                                           &drm_callbacks);
   } else if (strcmp(interface, "wl_shm") == 0) {
     shm = ut_wayland_shm_new_from_registry(registry, name);
   } else if (strcmp(interface, "wl_seat") == 0) {
@@ -200,6 +334,8 @@ static void global_cb(UtObject *object, uint32_t name, const char *interface,
   } else if (strcmp(interface, "xdg_wm_base") == 0) {
     wm_base = ut_xdg_wm_base_new_from_registry(registry, name, object,
                                                &wm_base_callbacks);
+  } else if (strcmp(interface, "zwp_linux_dmabuf_v1") == 0) {
+    linux_dmabuf = ut_wayland_linux_dmabuf_new_from_registry(registry, name);
   }
 }
 
@@ -212,21 +348,25 @@ int main(int argc, char **argv) {
   UtObjectRef dummy_object = ut_null_new();
   registry =
       ut_wayland_client_get_registry(client, dummy_object, &registry_callbacks);
-  UtObjectRef callback = ut_wayland_client_sync(client, dummy_object, sync_cb);
+  UtObjectRef callback =
+      ut_wayland_client_sync(client, dummy_object, registry_sync_cb);
 
   ut_event_loop_run();
 
   ut_object_unref(registry);
   ut_object_unref(compositor);
+  ut_object_unref(drm);
   ut_object_unref(shm);
   ut_object_unref(seat);
   ut_object_unref(pointer);
   ut_object_unref(keyboard);
   ut_object_unref(touch);
   ut_object_unref(wm_base);
+  ut_object_unref(linux_dmabuf);
   ut_object_unref(surface);
   ut_object_unref(xdg_surface);
   ut_object_unref(client);
+  ut_object_unref(params);
 
   return 0;
 }

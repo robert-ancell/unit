@@ -30,5 +30,6 @@ executable('x11',
 
 executable('wayland',
            'wayland.c',
+           dependencies: [gbm_dep, egl_dep, gl_dep],
            include_directories: ut_include,
            link_with: ut_lib)
