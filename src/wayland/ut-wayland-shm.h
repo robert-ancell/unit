@@ -242,7 +242,6 @@ UtObject *ut_wayland_shm_new_from_registry(UtObject *registry, uint32_t name);
 
 /// Returns the supported image formats.
 ///
-/// !return-ref
 /// !return-type UtUint32List
 UtObject *ut_wayland_shm_get_formats(UtObject *object);
 
