@@ -84,7 +84,7 @@ void ut_x11_buffer_append_value_int16(UtObject *object, int16_t value) {
 }
 
 void ut_x11_buffer_append_list(UtObject *object, UtObject *value) {
-  ut_list_append_list(object, value);
+  ut_list_append_list(ut_uint8_array_with_fds_get_data(object), value);
 }
 
 void ut_x11_buffer_append_string8(UtObject *object, const char *value) {

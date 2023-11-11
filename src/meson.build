@@ -242,6 +242,8 @@ ut_sources = [
   'wayland/ut-xdg-surface.c',
   'wayland/ut-xdg-toplevel.c',
   'wayland/ut-xdg-wm-base.c',
+  'x11/ut-x11-auth-file-decoder.c',
+  'x11/ut-x11-auth-record.c',
   'x11/ut-x11-big-requests-extension.c',
   'x11/ut-x11-buffer.c',
   'x11/ut-x11-button-class.c',

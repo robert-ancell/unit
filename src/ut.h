@@ -216,6 +216,8 @@
 #include "wayland/ut-xdg-surface.h"
 #include "wayland/ut-xdg-toplevel.h"
 #include "wayland/ut-xdg-wm-base.h"
+#include "x11/ut-x11-auth-file-decoder.h"
+#include "x11/ut-x11-auth-record.h"
 #include "x11/ut-x11-big-requests-extension.h"
 #include "x11/ut-x11-button-class.h"
 #include "x11/ut-x11-client.h"

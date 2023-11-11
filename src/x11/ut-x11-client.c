@@ -76,6 +76,15 @@ struct _UtX11Client {
   UtObject object;
   UtObject *socket;
 
+  // Display number being connected to.
+  int display_number;
+
+  UtObject *authorization_decoder;
+
+  // Authorization data to be sent.
+  char *authorization_name;
+  UtObject *authorization_data;
+
   UtObject *extensions;
   UtObject *core;
   UtObject *shape_extension;
@@ -746,19 +755,50 @@ static void connect_cb(UtObject *object, UtObject *error) {
   ut_x11_buffer_append_padding(setup, 1);
   ut_x11_buffer_append_card16(setup, 11); // Protocol major version.
   ut_x11_buffer_append_card16(setup, 0);  // Protocol minor version.
-  ut_x11_buffer_append_card16(setup, 0);  // Authorizaton protocol name length.
-  ut_x11_buffer_append_card16(setup, 0);  // Authorizaton protocol data length.
+  ut_x11_buffer_append_card16(setup,
+                              ut_cstring_get_length(self->authorization_name));
+  ut_x11_buffer_append_card16(setup,
+                              ut_list_get_length(self->authorization_data));
   ut_x11_buffer_append_padding(setup, 2);
-  // Authorization protocol name.
+  ut_x11_buffer_append_string8(setup, self->authorization_name);
   ut_x11_buffer_append_align_padding(setup, 4);
-  // Authorization protocol data.
+  ut_x11_buffer_append_list(setup, self->authorization_data);
   ut_x11_buffer_append_align_padding(setup, 4);
 
   ut_output_stream_write(self->socket, setup);
 }
 
+static void auth_cb(UtObject *object) {
+  UtX11Client *self = (UtX11Client *)object;
+
+  UtObject *records =
+      ut_x11_auth_file_decoder_get_records(self->authorization_decoder);
+  size_t records_length = ut_list_get_length(records);
+  for (size_t i = 0; i < records_length; i++) {
+    UtObject *record = ut_object_list_get_element(records, i);
+
+    // FIXME: Should check address matches hostname
+    if (ut_x11_auth_record_get_family(record) == UT_X11_AUTH_FAMILY_LOCAL) {
+      ut_cstring_set(&self->authorization_name,
+                     ut_x11_auth_record_get_name(record));
+      ut_object_set(&self->authorization_data,
+                    ut_x11_auth_record_get_data(record));
+      break;
+    }
+  }
+
+  ut_cstring_ref socket_path =
+      ut_cstring_new_printf("/tmp/.X11-unix/X%d", self->display_number);
+  UtObjectRef address = ut_unix_socket_address_new(socket_path);
+  self->socket = ut_tcp_socket_new(address, 0);
+  ut_tcp_socket_connect(self->socket, object, connect_cb);
+  ut_input_stream_read(self->socket, object, read_cb);
+}
+
 static void ut_x11_client_init(UtObject *object) {
   UtX11Client *self = (UtX11Client *)object;
+  self->authorization_name = ut_cstring_new("");
+  self->authorization_data = ut_uint8_list_new();
   self->extensions = ut_object_list_new();
   self->requests = ut_object_list_new();
 }
@@ -775,6 +815,9 @@ static void ut_x11_client_cleanup(UtObject *object) {
   }
 
   ut_object_unref(self->socket);
+  ut_object_unref(self->authorization_decoder);
+  free(self->authorization_name);
+  ut_object_unref(self->authorization_data);
   ut_object_unref(self->extensions);
   ut_object_unref(self->core);
   ut_object_unref(self->shape_extension);
@@ -813,6 +856,16 @@ void ut_x11_client_connect(UtObject *object, UtObject *callback_object,
   assert(ut_object_is_x11_client(object));
   UtX11Client *self = (UtX11Client *)object;
 
+  assert(callback != NULL);
+
+  assert(self->connect_callback == NULL);
+  ut_object_weak_ref(callback_object, &self->connect_callback_object);
+  self->connect_callback = callback;
+
+  self->core =
+      ut_x11_core_new(object, self->callback_object, self->event_callbacks);
+  ut_list_append(self->extensions, self->core);
+
   const char *display = getenv("DISPLAY");
   if (display == NULL) {
     // FIXME: Generate error
@@ -827,24 +880,24 @@ void ut_x11_client_connect(UtObject *object, UtObject *callback_object,
   size_t divider_index = divider - display;
 
   ut_cstring_ref host = ut_cstring_new_substring(display, 0, divider_index);
-  int display_number = atoi(divider + 1);
+  self->display_number = atoi(divider + 1);
 
-  assert(callback != NULL);
+  const char *authority = getenv("XAUTHORITY");
+  ut_cstring_ref home_authority = NULL;
+  if (authority == NULL) {
+    const char *home = getenv("HOME");
+    if (home == NULL) {
+      // FIXME: Generate error
+      return;
+    }
+    home_authority = ut_cstring_new_printf("%s/.Xauthority", home);
+    authority = home_authority;
+  }
 
-  assert(self->connect_callback == NULL);
-  ut_object_weak_ref(callback_object, &self->connect_callback_object);
-  self->connect_callback = callback;
-
-  self->core =
-      ut_x11_core_new(object, self->callback_object, self->event_callbacks);
-  ut_list_append(self->extensions, self->core);
-
-  ut_cstring_ref socket_path =
-      ut_cstring_new_printf("/tmp/.X11-unix/X%d", display_number);
-  UtObjectRef address = ut_unix_socket_address_new(socket_path);
-  self->socket = ut_tcp_socket_new(address, 0);
-  ut_tcp_socket_connect(self->socket, object, connect_cb);
-  ut_input_stream_read(self->socket, object, read_cb);
+  UtObjectRef file = ut_local_file_new(authority);
+  ut_file_open_read(file);
+  self->authorization_decoder = ut_x11_auth_file_decoder_new(file);
+  ut_x11_auth_file_decoder_decode(self->authorization_decoder, object, auth_cb);
 }
 
 const char *ut_x11_client_get_vendor(UtObject *object) {
