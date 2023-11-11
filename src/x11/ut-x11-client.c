@@ -383,6 +383,7 @@ static size_t decode_setup_failed(UtX11Client *self, UtObject *data) {
   }
   ut_cstring_ref reason =
       ut_x11_buffer_get_string8(data, &offset, reason_length);
+  ut_x11_buffer_get_align_padding(data, &offset, 4);
 
   UtObjectRef error = ut_error_new_take(
       ut_cstring_new_printf("Failed to connect to X server: %s", reason));
