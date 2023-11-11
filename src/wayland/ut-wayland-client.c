@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <unistd.h>
 
 #include "ut-wayland-client-private.h"
 #include "ut-wayland-object-private.h"
@@ -122,7 +123,21 @@ static UtObjectInterface object_interface = {.type_name = "UtWaylandClient",
 UtObject *ut_wayland_client_new() {
   UtObject *object = ut_object_new(sizeof(UtWaylandClient), &object_interface);
   UtWaylandClient *self = (UtWaylandClient *)object;
-  UtObjectRef address = ut_unix_socket_address_new("/run/user/1000/wayland-0");
+
+  const char *wayland_display = getenv("WAYLAND_DISPLAY");
+  if (wayland_display == NULL) {
+    wayland_display = "wayland-0";
+  }
+  const char *runtime_dir = getenv("XDG_RUNTIME_DIR");
+  ut_cstring_ref dir = NULL;
+  if (runtime_dir == NULL) {
+    uid_t uid = getuid();
+    dir = ut_cstring_new_printf("/run/user/%d", uid);
+    runtime_dir = dir;
+  }
+  ut_cstring_ref path =
+      ut_cstring_new_printf("%s/%s", runtime_dir, wayland_display);
+  UtObjectRef address = ut_unix_socket_address_new(path);
   self->socket = ut_tcp_socket_new(address, 0);
   return object;
 }
