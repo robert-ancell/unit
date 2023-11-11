@@ -20,6 +20,8 @@ void ut_x11_auth_file_decoder_decode(UtObject *object,
                                      UtX11AuthFileDecodeCallback callback);
 
 /// Returns the records decoded.
+///
+/// !return-type UtObjectList
 UtObject *ut_x11_auth_file_decoder_get_records(UtObject *object);
 
 /// Returns [true] if [object] is a [UtX11AuthFileDecoder].

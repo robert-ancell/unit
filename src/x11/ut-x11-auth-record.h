@@ -8,6 +8,9 @@
 #define UT_X11_AUTH_FAMILY_WILD 65535
 
 /// Creates a new X11 authorization record.
+/// Records match based on an [address] (of type [family]) and a [display].
+/// The authorization scheme in use for this record is given with [name] and
+/// [data].
 ///
 /// !arg-type address UtUint8List
 /// !arg-type data UtUint8List
