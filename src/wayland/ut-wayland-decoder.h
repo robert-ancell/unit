@@ -11,6 +11,11 @@
 /// !return-type UtWaylandDecoder
 UtObject *ut_wayland_decoder_new(UtObject *data);
 
+/// Returns the data used in this decoder.
+///
+/// !return-type UtUint8List
+UtObject *ut_wayland_decoder_get_data(UtObject *object);
+
 /// Returns a uint value read from this decoder.
 uint32_t ut_wayland_decoder_get_uint(UtObject *object);
 

@@ -37,6 +37,12 @@ UtObject *ut_wayland_decoder_new(UtObject *data) {
   return object;
 }
 
+UtObject *ut_wayland_decoder_get_data(UtObject *object) {
+  assert(ut_object_is_wayland_decoder(object));
+  UtWaylandDecoder *self = (UtWaylandDecoder *)object;
+  return self->data;
+}
+
 uint32_t ut_wayland_decoder_get_uint(UtObject *object) {
   assert(ut_object_is_wayland_decoder(object));
   UtWaylandDecoder *self = (UtWaylandDecoder *)object;
