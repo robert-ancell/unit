@@ -367,7 +367,7 @@ UtObject *ut_event_loop_run() {
       i++;
     }
     size_t write_watches_length = ut_list_get_length(self->write_watches);
-    for (size_t i = 0; i < write_watches_length; i++) {
+    for (size_t i = 0; i < write_watches_length;) {
       FdWatch *watch =
           (FdWatch *)ut_object_list_get_element(self->write_watches, i);
       if (watch->cancelled || watch->callback_object == NULL) {
