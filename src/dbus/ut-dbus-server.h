@@ -10,7 +10,7 @@
 /// !return-type UtDbusServer
 UtObject *ut_dbus_server_new();
 
-/// Start listening on unix socket [path]. If fails returns false and sets
+/// Start listening on unix socket [path]. If fails returns [false] and sets
 /// [error].
 bool ut_dbus_server_listen_unix(UtObject *object, const char *path,
                                 UtObject **error);

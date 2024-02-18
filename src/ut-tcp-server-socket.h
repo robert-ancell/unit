@@ -31,7 +31,7 @@ UtObject *ut_tcp_server_socket_new_ipv6(uint16_t port);
 UtObject *ut_tcp_server_socket_new_unix(const char *path);
 
 /// Listen for incoming connections. Each new connection is reported in
-/// [callback]. If fails returns false and sets [error].
+/// [callback]. If fails returns [false] and sets [error].
 bool ut_tcp_server_socket_listen(UtObject *object, UtObject *callback_object,
                                  UtTcpServerSocketListenCallback callback,
                                  UtObject **error);
