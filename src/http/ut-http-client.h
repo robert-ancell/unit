@@ -5,7 +5,7 @@
 #pragma once
 
 /// Method to handle a received HTTP [response].
-typedef void (*UtHttpResponseCallback)(UtObject *object, UtObject *response);
+typedef void (*UtHttpResponseCallback)(UtObject *object, UtObject *request, UtObject *response);
 
 /// Creates a new HTTP client.
 ///
