@@ -130,7 +130,7 @@ static size_t read_cb(UtObject *object, UtObject *data, bool complete) {
         ut_http_message_decoder_get_body(request->message_decoder));
 
     if (request->callback_object != NULL && request->callback != NULL) {
-      request->callback(request->callback_object, object, response);
+      request->callback(request->callback_object, response);
     }
   }
 
@@ -144,7 +144,7 @@ static void connect_cb(UtObject *object, UtObject *error) {
 
   if (error != NULL) {
     if (request->callback_object != NULL && request->callback != NULL) {
-      request->callback(request->callback_object, object, error);
+      request->callback(request->callback_object, error);
     }
     ut_request_unref(object);
     return;

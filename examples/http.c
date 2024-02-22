@@ -12,7 +12,7 @@ static size_t body_cb(UtObject *object, UtObject *data, bool complete) {
   return ut_list_get_length(data);
 }
 
-static void response_cb(UtObject *object, UtObject *request,  UtObject *response) {
+static void response_cb(UtObject *object, UtObject *response) {
   // You get a system error for "Connection refused"
   if (ut_object_implements_error(response)) {
     fprintf(stderr, "%s\n", ut_error_get_description(response));
