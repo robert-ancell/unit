@@ -1,5 +1,5 @@
-#include <stdio.h>
 #include <assert.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "ut.h"
@@ -16,12 +16,8 @@ static size_t body_cb(UtObject *url_obj, UtObject *data, bool complete) {
   counter++;
 
   if (complete) {
-    ut_http_client_send_request(client,
-      "GET",
-      ut_string_get_text(url_obj),
-      NULL,
-      url_obj,
-      response_cb);
+    ut_http_client_send_request(client, "GET", ut_string_get_text(url_obj),
+                                NULL, url_obj, response_cb);
   }
 
   return ut_list_get_length(data);
@@ -36,15 +32,14 @@ static void response_cb(UtObject *url_obj, UtObject *response) {
   }
 
   int status = ut_http_response_get_status_code(response);
-  if (status!= 200) {
+  if (status != 200) {
     fprintf(stderr, "%s\n", ut_http_response_get_reason_phrase(response));
     UtObjectRef return_code = ut_int32_new(2);
     ut_event_loop_return(return_code);
     return;
   }
 
-  ut_input_stream_read_all(ut_http_response_get_body(response),
-                           url_obj,
+  ut_input_stream_read_all(ut_http_response_get_body(response), url_obj,
                            body_cb);
 }
 
@@ -59,8 +54,7 @@ int main(int argc, char **argv) {
   client = ut_http_client_new();
 
   UtObject *url_obj = ut_string_new(url);
-  ut_http_client_send_request(client, "GET", url, NULL,url_obj,
-                              response_cb);
+  ut_http_client_send_request(client, "GET", url, NULL, url_obj, response_cb);
 
   UtObjectRef return_code = ut_event_loop_run();
   return ut_int32_get_value(return_code);
