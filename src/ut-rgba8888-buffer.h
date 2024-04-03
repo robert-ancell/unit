@@ -5,7 +5,7 @@
 
 #pragma once
 
-/// Creates a new RGBA buffer with dimensions [width]x[height] containing 8 bit
+/// Creates a new RGBA buffer with size [width]x[height] containing 8 bit
 /// samples.
 ///
 /// !return-ref
