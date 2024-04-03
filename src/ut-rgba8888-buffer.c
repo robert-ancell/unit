@@ -32,6 +32,20 @@ static uint8_t quantize_channel(double value) {
   return (int)v;
 }
 
+static size_t get_offset(UtRgba8888Buffer *self, size_t x, size_t y) {
+  return (y * self->width * 4) + (x * 4);
+}
+
+static void set_pixel(UtRgba8888Buffer *self, uint8_t *data, size_t x, size_t y,
+                      uint8_t red8, uint8_t green8, uint8_t blue8,
+                      uint8_t alpha8) {
+  size_t i = get_offset(self, x, y);
+  data[i + 0] = red8;
+  data[i + 1] = green8;
+  data[i + 2] = blue8;
+  data[i + 3] = alpha8;
+}
+
 static void render_box(UtRgba8888Buffer *self, size_t left, size_t top,
                        size_t right, size_t bottom, UtObject *color) {
   uint8_t red8 = quantize_channel(ut_color_get_red(color));
@@ -126,6 +140,32 @@ UtObject *ut_rgba8888_buffer_new(size_t width, size_t height) {
   self->data = ut_uint8_array_new();
   ut_list_resize(self->data, width * height * 4);
   return object;
+}
+
+void ut_rgba8888_buffer_set_pixel(UtObject *object, size_t x, size_t y,
+                                  uint8_t red, uint8_t green, uint8_t blue,
+                                  uint8_t alpha) {
+  ut_assert_true(ut_object_is_rgba8888_buffer(object));
+  UtRgba8888Buffer *self = (UtRgba8888Buffer *)object;
+  uint8_t *data = ut_uint8_list_get_writable_data(self->data);
+  set_pixel(self, data, x, y, red, green, blue, alpha);
+}
+
+void ut_rgba8888_buffer_get_pixel(UtObject *object, size_t x, size_t y,
+                                  uint8_t *red, uint8_t *green, uint8_t *blue,
+                                  uint8_t *alpha) {
+  ut_assert_true(ut_object_is_rgba8888_buffer(object));
+  UtRgba8888Buffer *self = (UtRgba8888Buffer *)object;
+  uint8_t *data = ut_uint8_list_get_writable_data(self->data);
+  if (x >= self->width || y >= self->height) {
+    *red = *green = *blue = *alpha = 0;
+    return;
+  }
+  size_t i = get_offset(self, x, y);
+  *red = data[i + 0];
+  *green = data[i + 1];
+  *blue = data[i + 2];
+  *alpha = data[i + 3];
 }
 
 bool ut_object_is_rgba8888_buffer(UtObject *object) {
