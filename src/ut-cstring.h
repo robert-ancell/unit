@@ -54,7 +54,7 @@ char *ut_cstring_new_uppercase(const char *value);
 /// ```
 ///
 /// !return-ref
-char *ut_cstring_new_from_words(const char *separator, const char *word0, ...);
+char *ut_cstring_new_join(const char *separator, const char *word0, ...);
 
 /// Sets [string] to be a new C string containing [value].
 /// If [string] already contains a value, it will be unreferenced first.
@@ -82,3 +82,9 @@ bool ut_cstring_starts_with(const char *value, const char *prefix);
 
 /// Returns [true] if [value] ends with [suffix].
 bool ut_cstring_ends_with(const char *value, const char *suffix);
+
+/// Splits [value] into strings divided by [separator].
+///
+/// !return-ref
+/// !return-type UtStringList
+UtObject *ut_cstring_split(const char *value, const char *separator);

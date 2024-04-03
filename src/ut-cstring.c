@@ -57,7 +57,7 @@ char *ut_cstring_new_uppercase(const char *value) {
   return result;
 }
 
-char *ut_cstring_new_from_words(const char *separator, const char *word0, ...) {
+char *ut_cstring_new_join(const char *separator, const char *word0, ...) {
   if (separator == NULL) {
     separator = "";
   }
@@ -155,4 +155,28 @@ bool ut_cstring_ends_with(const char *value, const char *suffix) {
     return false;
   }
   return ut_cstring_starts_with(value + value_length - suffix_length, suffix);
+}
+
+UtObject *ut_cstring_split(const char *value, const char *separator) {
+  size_t separator_length = ut_cstring_get_length(separator);
+  UtObject *result = ut_string_list_new();
+
+  if (*value == '\0') {
+    return result;
+  }
+
+  const char *c = value;
+  while (true) {
+    size_t length = 0;
+    while (*(c + length) != '\0' &&
+           !ut_cstring_starts_with(c + length, separator)) {
+      length++;
+    }
+    ut_string_list_append_printf(result, "%.*s", (int)length, c);
+    c += length;
+    if (*c == '\0') {
+      return result;
+    }
+    c += separator_length;
+  }
 }
