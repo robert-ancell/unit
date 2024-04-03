@@ -633,4 +633,4 @@ test('DBus Client', dbus_client_test)
 drawable_test = executable('ut-drawable-test',
                            'ut-drawable-test.c',
                            link_with: ut_lib)
-#test('Drawable', drawable_test)
+test('Drawable', drawable_test)
