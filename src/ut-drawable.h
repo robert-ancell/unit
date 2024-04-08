@@ -31,5 +31,13 @@ void ut_drawable_render_box(UtObject *object, double x, double y, double width,
 void ut_drawable_render_mesh(UtObject *object, UtObject *verticies,
                              UtObject *triangles, UtObject *color);
 
+/// Draws a line through [verticies] with [width] pixels and filled with
+/// [color].
+///
+/// !arg-type verticies UtFloat64List
+/// !arg-type color UtColor
+void ut_drawable_render_line(UtObject *object, UtObject *verticies,
+                             double width, UtObject *color);
+
 /// Returns [true] if [object] is a [UtDrawable].
 bool ut_object_implements_drawable(UtObject *object);

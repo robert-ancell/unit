@@ -71,7 +71,19 @@ static void test_mesh(size_t width, size_t height, const char *verticies_text,
   ut_assert_cstring_equal(buffer_text, expected_buffer_text);
 }
 
-int main(int argc, char **argv) {
+static void test_line(size_t width, size_t height, const char *verticies_text,
+                      double line_width, const char *color_text,
+                      const char *expected_buffer_text) {
+  UtObjectRef buffer = ut_rgba8888_buffer_new(width, height);
+  UtObjectRef verticies = parse_verticies(verticies_text);
+  UtObjectRef color = ut_color_new_from_hex_string(color_text);
+
+  ut_drawable_render_line(buffer, verticies, line_width, color);
+  ut_cstring_ref buffer_text = buffer_to_text(buffer);
+  ut_assert_cstring_equal(buffer_text, expected_buffer_text);
+}
+
+static void test_clear() {
   UtObjectRef clear_buffer = ut_rgba8888_buffer_new(1, 1);
   UtObjectRef clear_color = ut_color_new_from_hex_string("#77216f");
   ut_drawable_clear(clear_buffer, clear_color);
@@ -81,7 +93,9 @@ int main(int argc, char **argv) {
   ut_assert_int_equal(g, 0x21);
   ut_assert_int_equal(b, 0x6f);
   ut_assert_int_equal(a, 0xff);
+}
 
+static void test_meshes() {
   // FIXME: Anti-clockwise
 
   // Triangle with all diagonal lines:
@@ -272,6 +286,80 @@ int main(int argc, char **argv) {
   test_mesh(1, 1, "0,0.5,1,0.5,1,0.5", "0,1,2", "#ffffff", " ");
   test_mesh(1, 1, "0,0,1,1,1,1", "0,1,2", "#ffffff", " ");
   test_mesh(1, 1, "0,1,1,0,1,0", "0,1,2", "#ffffff", " ");
+}
+
+static void test_lines() {
+  // Empty lines:
+  test_line(5, 5, "", 1, "#ffffff",
+            "     "
+            "     "
+            "     "
+            "     "
+            "     ");
+  test_line(5, 5, "0,0", 1, "#ffffff",
+            "     "
+            "     "
+            "     "
+            "     "
+            "     ");
+
+  // Orthogonal lines:
+  test_line(5, 5, "1,0.5,4,0.5", 1, "#ffffff",
+            " WWW "
+            "     "
+            "     "
+            "     "
+            "     ");
+  test_line(5, 5, "1,2.5,4,2.5", 1, "#ffffff",
+            "     "
+            "     "
+            " WWW "
+            "     "
+            "     ");
+  test_line(5, 5, "1,1,4,1", 2, "#ffffff",
+            " WWW "
+            " WWW "
+            "     "
+            "     "
+            "     ");
+  test_line(5, 5, "1,2.5,4,2.5", 3, "#ffffff",
+            "     "
+            " WWW "
+            " WWW "
+            " WWW "
+            "     ");
+  test_line(5, 5, "0.5,1,0.5,4", 1, "#ffffff",
+            "     "
+            "W    "
+            "W    "
+            "W    "
+            "     ");
+  test_line(5, 5, "2.5,1,2.5,4", 1, "#ffffff",
+            "     "
+            "  W  "
+            "  W  "
+            "  W  "
+            "     ");
+  test_line(5, 5, "1,1,1,4", 2, "#ffffff",
+            "     "
+            "WW   "
+            "WW   "
+            "WW   "
+            "     ");
+  test_line(5, 5, "2.5,1,2.5,4", 3, "#ffffff",
+            "     "
+            " WWW "
+            " WWW "
+            " WWW "
+            "     ");
+
+  // FIXME: Diagonal lines:
+}
+
+int main(int argc, char **argv) {
+  test_clear();
+  test_meshes();
+  test_lines();
 
   return 0;
 }
