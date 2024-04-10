@@ -28,6 +28,11 @@ executable('gif2pnm',
            include_directories: ut_include,
            link_with: ut_lib)
 
+executable('tvg2pnm',
+           'tvg2pnm.c',
+           include_directories: ut_include,
+           link_with: ut_lib)
+
 executable('x11',
            'x11.c',
            include_directories: ut_include,
