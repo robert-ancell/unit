@@ -21,7 +21,7 @@ void ut_gif_decoder_decode(UtObject *object, UtObject *callback_object,
 /// Starts decoding an image that has all data available.
 ///
 /// !return-ref
-/// !return-type UtGifImage UtGifError
+/// !return-type UtObjectList UtGifError
 UtObject *ut_gif_decoder_decode_sync(UtObject *object);
 
 /// Returns the first error that occurred during decoding or [NULL] if no error
