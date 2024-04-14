@@ -23,6 +23,13 @@ void ut_drawable_clear(UtObject *object, UtObject *color);
 void ut_drawable_render_box(UtObject *object, float x, float y, float width,
                             float height, UtObject *color);
 
+/// Draw a filled polygon made up of [verticies] filled with [color].
+///
+/// !arg-type verticies UtFloat32List
+/// !arg-type color UtColor
+void ut_drawable_render_polygon(UtObject *object, UtObject *verticies,
+                                UtObject *color);
+
 /// Draws [triangles] using [verticies] filled with [color].
 ///
 /// !arg-type verticies UtFloat32List

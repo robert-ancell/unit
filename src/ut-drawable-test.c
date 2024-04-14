@@ -71,6 +71,18 @@ static void test_mesh(size_t width, size_t height, const char *verticies_text,
   ut_assert_cstring_equal(buffer_text, expected_buffer_text);
 }
 
+static void test_polygon(size_t width, size_t height,
+                         const char *verticies_text, const char *color_text,
+                         const char *expected_buffer_text) {
+  UtObjectRef buffer = ut_rgba8888_buffer_new(width, height);
+  UtObjectRef verticies = parse_verticies(verticies_text);
+  UtObjectRef color = ut_color_new_from_hex_string(color_text);
+
+  ut_drawable_render_polygon(buffer, verticies, color);
+  ut_cstring_ref buffer_text = buffer_to_text(buffer);
+  ut_assert_cstring_equal(buffer_text, expected_buffer_text);
+}
+
 int main(int argc, char **argv) {
   UtObjectRef clear_buffer = ut_rgba8888_buffer_new(1, 1);
   UtObjectRef clear_color = ut_color_new_from_hex_string("#77216f");
@@ -272,6 +284,18 @@ int main(int argc, char **argv) {
   test_mesh(1, 1, "0,0.5,1,0.5,1,0.5", "0,1,2", "#ffffff", " ");
   test_mesh(1, 1, "0,0,1,1,1,1", "0,1,2", "#ffffff", " ");
   test_mesh(1, 1, "0,1,1,0,1,0", "0,1,2", "#ffffff", " ");
+
+  test_polygon(10, 10, "4,1,6,1,9,9,8,9,5,5,2,9,1,9", "#ffffff",
+	       "          "
+	       "    WW    "
+	       "   WWWW   "
+	       "   WWWW   "
+	       "   WWWW   "
+	       "  WWWWWW  "
+	       "  WW  WW  "
+	       "  WW  WW  "
+	       " WW    WW "
+	       "          ");
 
   return 0;
 }
