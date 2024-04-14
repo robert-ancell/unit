@@ -11,8 +11,8 @@ typedef struct {
   UtObject *data;
 } UtRgba8888Buffer;
 
-static uint8_t quantize_channel(double value) {
-  double v = value * 255.0;
+static uint8_t quantize_channel(float value) {
+  float v = value * 255.0;
   if (v > 255.0) {
     v = 255.0;
   }
@@ -85,15 +85,15 @@ static void ut_rgba8888_buffer_clear(UtObject *object, UtObject *color) {
   }
 }
 
-static void get_vertex(UtObject *verticies, uint16_t index, double *x,
-                       double *y) {
-  *x = ut_float64_list_get_element(verticies, index * 2);
-  *y = ut_float64_list_get_element(verticies, (index * 2) + 1);
+static void get_vertex(UtObject *verticies, uint16_t index, float *x,
+                       float *y) {
+  *x = ut_float32_list_get_element(verticies, index * 2);
+  *y = ut_float32_list_get_element(verticies, (index * 2) + 1);
 }
 
 static void get_triangle(UtObject *verticies, UtObject *triangles, size_t index,
-                         double *x0, double *y0, double *x1, double *y1,
-                         double *x2, double *y2) {
+                         float *x0, float *y0, float *x1, float *y1, float *x2,
+                         float *y2) {
   uint16_t v0 = ut_uint16_list_get_element(triangles, index * 3);
   uint16_t v1 = ut_uint16_list_get_element(triangles, (index * 3) + 1);
   uint16_t v2 = ut_uint16_list_get_element(triangles, (index * 3) + 2);
@@ -103,17 +103,17 @@ static void get_triangle(UtObject *verticies, UtObject *triangles, size_t index,
   get_vertex(verticies, v2, x2, y2);
 }
 
-static void swap_coords(double *x0, double *y0, double *x1, double *y1) {
-  double tx = *x0;
+static void swap_coords(float *x0, float *y0, float *x1, float *y1) {
+  float tx = *x0;
   *x0 = *x1;
   *x1 = tx;
-  double ty = *y0;
+  float ty = *y0;
   *y0 = *y1;
   *y1 = ty;
 }
 
-static void render_row(UtRgba8888Buffer *self, uint8_t *data, double x0,
-                       double x1, size_t y, uint8_t red8, uint8_t green8,
+static void render_row(UtRgba8888Buffer *self, uint8_t *data, float x0,
+                       float x1, size_t y, uint8_t red8, uint8_t green8,
                        uint8_t blue8, uint8_t alpha8) {
   size_t x0_i = (size_t)(x0 + 0.5);
   size_t x1_i = (size_t)(x1 + 0.5);
@@ -126,7 +126,7 @@ static void render_triangle(UtRgba8888Buffer *self, uint8_t *data,
                             UtObject *verticies, UtObject *triangles,
                             size_t index, uint8_t red8, uint8_t green8,
                             uint8_t blue8, uint8_t alpha8) {
-  double x0, y0, x1, y1, x2, y2;
+  float x0, y0, x1, y1, x2, y2;
   get_triangle(verticies, triangles, index, &x0, &y0, &x1, &y1, &x2, &y2);
 
   // Order top to bottom.
@@ -144,7 +144,7 @@ static void render_triangle(UtRgba8888Buffer *self, uint8_t *data,
 
   size_t y0_i = (size_t)(y0 + 0.5);
   size_t y1_i = (size_t)(y1 + 0.5);
-  double m_left, m_right;
+  float m_left, m_right;
 
   if (y0 != y1 && y0 != y2) {
     if (x1 < x2) {
@@ -155,9 +155,9 @@ static void render_triangle(UtRgba8888Buffer *self, uint8_t *data,
       m_right = (x1 - x0) / (y1 - y0);
     }
     for (size_t y = y0_i; y < y1_i; y++) {
-      double dy = (y + 0.5) - y0;
-      double x_left = x0 + (m_left * dy);
-      double x_right = x0 + (m_right * dy);
+      float dy = (y + 0.5) - y0;
+      float x_left = x0 + (m_left * dy);
+      float x_right = x0 + (m_right * dy);
       render_row(self, data, x_left, x_right, y, red8, green8, blue8, alpha8);
     }
   }
@@ -172,9 +172,9 @@ static void render_triangle(UtRgba8888Buffer *self, uint8_t *data,
     }
     size_t y2_i = (size_t)(y2 + 0.5);
     for (size_t y = y1_i; y < y2_i; y++) {
-      double dy = y2 - (y + 0.5);
-      double x_left = x2 + (m_left * dy);
-      double x_right = x2 + (m_right * dy);
+      float dy = y2 - (y + 0.5);
+      float x_left = x2 + (m_left * dy);
+      float x_right = x2 + (m_right * dy);
       render_row(self, data, x_left, x_right, y, red8, green8, blue8, alpha8);
     }
   }

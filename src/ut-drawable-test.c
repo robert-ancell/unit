@@ -3,12 +3,12 @@
 static double parse_double(const char *text) { return strtod(text, NULL); }
 
 static UtObject *parse_verticies(const char *text) {
-  UtObject *verticies = ut_float64_list_new();
+  UtObject *verticies = ut_float32_list_new();
   UtObjectRef values = ut_cstring_split(text, ",");
   size_t values_length = ut_list_get_length(values);
   for (size_t i = 0; i < values_length; i++) {
     const char *value = ut_string_list_get_element(values, i);
-    ut_float64_list_append(verticies, parse_double(value));
+    ut_float32_list_append(verticies, parse_double(value));
   }
   return verticies;
 }

@@ -20,12 +20,12 @@ void ut_drawable_clear(UtObject *object, UtObject *color);
 /// Draw a filled box of size [width]x[height] at [x],[y] filled with [color].
 ///
 /// !arg-type color UtColor
-void ut_drawable_render_box(UtObject *object, double x, double y, double width,
-                            double height, UtObject *color);
+void ut_drawable_render_box(UtObject *object, float x, float y, float width,
+                            float height, UtObject *color);
 
 /// Draws [triangles] using [verticies] filled with [color].
 ///
-/// !arg-type verticies UtFloat64List
+/// !arg-type verticies UtFloat32List
 /// !arg-type triangles UtUint16List
 /// !arg-type color UtColor
 void ut_drawable_render_mesh(UtObject *object, UtObject *verticies,

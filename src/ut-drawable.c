@@ -11,10 +11,10 @@ void ut_drawable_clear(UtObject *object, UtObject *color) {
   drawable_interface->clear(object, color);
 }
 
-void ut_drawable_render_box(UtObject *object, double x, double y, double width,
-                            double height, UtObject *color) {
+void ut_drawable_render_box(UtObject *object, float x, float y, float width,
+                            float height, UtObject *color) {
 
-  UtObjectRef verticies = ut_float64_list_new_from_elements(
+  UtObjectRef verticies = ut_float32_list_new_from_elements(
       8, x, y, x + width, y, x + width, y + height, x, y + height);
   UtObjectRef triangles = ut_uint16_list_new_from_elements(6, 0, 1, 2, 0, 2, 3);
   ut_drawable_render_mesh(object, verticies, triangles, color);
