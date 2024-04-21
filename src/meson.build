@@ -176,6 +176,7 @@ ut_sources = [
   'ut-map.c',
   'ut-map-item.c',
   'ut-memory-mapped-file.c',
+  'ut-mesh.c',
   'ut-null.c',
   'ut-object.c',
   'ut-object-array.c',

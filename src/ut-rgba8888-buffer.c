@@ -180,9 +180,7 @@ static void render_triangle(UtRgba8888Buffer *self, uint8_t *data,
   }
 }
 
-static void ut_rgba8888_buffer_render_mesh(UtObject *object,
-                                           UtObject *verticies,
-                                           UtObject *triangles,
+static void ut_rgba8888_buffer_render_mesh(UtObject *object, UtObject *mesh,
                                            UtObject *color) {
   UtRgba8888Buffer *self = (UtRgba8888Buffer *)object;
 
@@ -193,8 +191,8 @@ static void ut_rgba8888_buffer_render_mesh(UtObject *object,
   uint8_t blue8 = quantize_channel(ut_color_get_blue(color));
   uint8_t alpha8 = quantize_channel(ut_color_get_alpha(color));
 
-  // FIXME: Validate size_t verticies_length = ut_list_get_length(verticies);
-
+  UtObject *verticies = ut_mesh_get_verticies(mesh);
+  UtObject *triangles = ut_mesh_get_triangles(mesh);
   size_t n_triangles = ut_list_get_length(triangles) / 3;
   for (size_t i = 0; i < n_triangles; i++) {
     render_triangle(self, data, verticies, triangles, i, red8, green8, blue8,

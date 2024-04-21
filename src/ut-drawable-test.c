@@ -64,9 +64,10 @@ static void test_mesh(size_t width, size_t height, const char *verticies_text,
   UtObjectRef buffer = ut_rgba8888_buffer_new(width, height);
   UtObjectRef verticies = parse_verticies(verticies_text);
   UtObjectRef triangles = parse_triangles(triangles_text);
+  UtObjectRef mesh = ut_mesh_new(verticies, triangles);
   UtObjectRef color = ut_color_new_from_hex_string(color_text);
 
-  ut_drawable_render_mesh(buffer, verticies, triangles, color);
+  ut_drawable_render_mesh(buffer, mesh, color);
   ut_cstring_ref buffer_text = buffer_to_text(buffer);
   ut_assert_cstring_equal(buffer_text, expected_buffer_text);
 }

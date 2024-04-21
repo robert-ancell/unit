@@ -156,6 +156,7 @@
 #include "ut-map-item.h"
 #include "ut-map.h"
 #include "ut-memory-mapped-file.h"
+#include "ut-mesh.h"
 #include "ut-null.h"
 #include "ut-object-array.h"
 #include "ut-object-identifier.h"
