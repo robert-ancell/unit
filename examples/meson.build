@@ -1,5 +1,5 @@
-executable('process',
-           'process.c',
+executable('subprocess',
+           'subprocess.c',
            include_directories: ut_include,
            link_with: ut_lib)
 

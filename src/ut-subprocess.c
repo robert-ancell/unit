@@ -12,7 +12,7 @@ typedef struct {
 
   // Method called when process completes.
   UtObject *callback_object;
-  UtProcessCompleteCallback callback;
+  UtSubprocessCompleteCallback callback;
 
   // Pipe to send back return status.
   int status_pipe[2];
@@ -25,10 +25,10 @@ typedef struct {
 
   // Status returned.
   int status;
-} UtProcess;
+} UtSubprocess;
 
 static void status_cb(UtObject *object) {
-  UtProcess *self = (UtProcess *)object;
+  UtSubprocess *self = (UtSubprocess *)object;
 
   read(self->status_pipe[1], &self->status,
        sizeof(self->status)); // FIXME: Handle error
@@ -39,14 +39,14 @@ static void status_cb(UtObject *object) {
   }
 }
 
-static char *ut_process_to_string(UtObject *object) {
-  UtProcess *self = (UtProcess *)object;
+static char *ut_subprocess_to_string(UtObject *object) {
+  UtSubprocess *self = (UtSubprocess *)object;
   ut_cstring_ref argv_string = ut_object_to_string(self->argv);
-  return ut_cstring_new_printf("<UtProcess>(%s)", argv_string);
+  return ut_cstring_new_printf("<UtSubprocess>(%s)", argv_string);
 }
 
-static void ut_process_cleanup(UtObject *object) {
-  UtProcess *self = (UtProcess *)object;
+static void ut_subprocess_cleanup(UtObject *object) {
+  UtSubprocess *self = (UtSubprocess *)object;
   ut_object_unref(self->argv);
   ut_object_weak_unref(&self->callback_object);
   close(self->status_pipe[0]);
@@ -54,22 +54,23 @@ static void ut_process_cleanup(UtObject *object) {
   ut_object_unref(self->status_watch);
 }
 
-static UtObjectInterface object_interface = {.type_name = "UtProcess",
-                                             .to_string = ut_process_to_string,
-                                             .cleanup = ut_process_cleanup};
+static UtObjectInterface object_interface = {.type_name = "UtSubprocess",
+                                             .to_string =
+                                                 ut_subprocess_to_string,
+                                             .cleanup = ut_subprocess_cleanup};
 
-UtObject *ut_process_new(UtObject *argv) {
+UtObject *ut_subprocess_new(UtObject *argv) {
   assert(ut_list_get_length(argv) > 0);
-  UtObject *object = ut_object_new(sizeof(UtProcess), &object_interface);
-  UtProcess *self = (UtProcess *)object;
+  UtObject *object = ut_object_new(sizeof(UtSubprocess), &object_interface);
+  UtSubprocess *self = (UtSubprocess *)object;
   self->argv = ut_object_ref(argv);
   return object;
 }
 
-void ut_process_run(UtObject *object, UtObject *callback_object,
-                    UtProcessCompleteCallback callback) {
+void ut_subprocess_run(UtObject *object, UtObject *callback_object,
+                       UtSubprocessCompleteCallback callback) {
   assert(ut_object_is_process(object));
-  UtProcess *self = (UtProcess *)object;
+  UtSubprocess *self = (UtSubprocess *)object;
 
   assert(self->pid == 0);
 
@@ -115,21 +116,21 @@ void ut_process_run(UtObject *object, UtObject *callback_object,
   free(argv);
 }
 
-int ut_process_get_exit_status(UtObject *object) {
+int ut_subprocess_get_exit_status(UtObject *object) {
   assert(ut_object_is_process(object));
-  UtProcess *self = (UtProcess *)object;
+  UtSubprocess *self = (UtSubprocess *)object;
   return WIFEXITED(self->status) ? WEXITSTATUS(self->status) : 0;
 }
 
-bool ut_process_get_terminated(UtObject *object) {
+bool ut_subprocess_get_terminated(UtObject *object) {
   assert(ut_object_is_process(object));
-  UtProcess *self = (UtProcess *)object;
+  UtSubprocess *self = (UtSubprocess *)object;
   return WIFSIGNALED(self->status);
 }
 
-int ut_process_get_termination_signal(UtObject *object) {
+int ut_subprocess_get_termination_signal(UtObject *object) {
   assert(ut_object_is_process(object));
-  UtProcess *self = (UtProcess *)object;
+  UtSubprocess *self = (UtSubprocess *)object;
   return WIFSIGNALED(self->status) ? WTERMSIG(self->status) : 0;
 }
 
