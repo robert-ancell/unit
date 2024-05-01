@@ -185,6 +185,7 @@ ut_sources = [
   'ut-object-subarray.c',
   'ut-ordered-hash-table.c',
   'ut-output-stream.c',
+  'ut-process.c',
   'ut-rgba8888-buffer.c',
   'ut-shared-memory-array.c',
   'ut-shared-memory-subarray.c',

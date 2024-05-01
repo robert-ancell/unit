@@ -164,6 +164,7 @@
 #include "ut-object.h"
 #include "ut-ordered-hash-table.h"
 #include "ut-output-stream.h"
+#include "ut-process.h"
 #include "ut-rgba8888-buffer.h"
 #include "ut-shared-memory-array.h"
 #include "ut-string-array.h"

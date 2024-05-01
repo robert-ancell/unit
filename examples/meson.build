@@ -1,3 +1,8 @@
+executable('process',
+           'process.c',
+           include_directories: ut_include,
+           link_with: ut_lib)
+
 executable('http',
            'http.c',
            include_directories: ut_include,
