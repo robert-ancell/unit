@@ -21,5 +21,6 @@ jobs:
 
       - name: Verify Python formatting
         run: |
+          sudo apt-get update
           sudo apt-get install pycodestyle
           pycodestyle --show-source doc/update-docs.py

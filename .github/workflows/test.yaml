@@ -14,7 +14,9 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Install dependencies
-        run: sudo apt-get install meson ninja-build valgrind
+        run: |
+          sudo apt-get update
+          sudo apt-get install meson ninja-build valgrind
 
       - name: Meson
         run: meson _build
