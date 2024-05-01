@@ -25,7 +25,15 @@ UtObject *ut_mesh_get_triangles(UtObject *object);
 /// Get the number of triangles in this mesh.
 size_t ut_mesh_get_n_triangles(UtObject *object);
 
-/// Returns the co-ordinates of the triangles with [index].
+/// Returns the co-ordinates of the triangles with [index] in [x0],[y0]
+/// [x1],[y1] [x2],[y2].
+///
+/// !arg-direction x0 out
+/// !arg-direction y0 out
+/// !arg-direction x1 out
+/// !arg-direction y1 out
+/// !arg-direction x2 out
+/// !arg-direction y2 out
 void ut_mesh_get_triangle(UtObject *object, size_t index, float *x0, float *y0,
                           float *x1, float *y1, float *x2, float *y2);
 
