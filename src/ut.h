@@ -239,6 +239,7 @@
 #include "x11/ut-x11-visual.h"
 #include "xml/ut-xml-document.h"
 #include "xml/ut-xml-element.h"
+#include "yaml/ut-yaml.h"
 #include "zlib/ut-zlib-decoder.h"
 #include "zlib/ut-zlib-encoder.h"
 #include "zlib/ut-zlib-error.h"

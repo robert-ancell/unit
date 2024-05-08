@@ -278,6 +278,7 @@ ut_sources = [
   'x11/ut-x11-xinput-extension.c',
   'xml/ut-xml-document.c',
   'xml/ut-xml-element.c',
+  'yaml/ut-yaml.c',
   'zlib/ut-zlib-decoder.c',
   'zlib/ut-zlib-encoder.c',
   'zlib/ut-zlib-error.c'
@@ -421,6 +422,11 @@ json_test = executable('ut-json-test',
                        'json/ut-json-test.c',
                        link_with: ut_lib)
 test('JSON', json_test)
+
+yaml_test = executable('ut-yaml-test',
+                       'yaml/ut-yaml-test.c',
+                       link_with: ut_lib)
+test('YAML', yaml_test)
 
 asn1_module_definition_parser_test = executable('ut-asn1-module-definition-parser-test',
                                                 'asn1/ut-asn1-module-definition-parser-test.c',
