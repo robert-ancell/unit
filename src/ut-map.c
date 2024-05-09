@@ -141,6 +141,26 @@ char *_ut_map_to_string(UtObject *object) {
   return ut_string_take_text(string);
 }
 
+bool _ut_map_equal(UtObject *object, UtObject *other) {
+  if (!ut_object_implements_map(other)) {
+    return false;
+  }
+  if (ut_map_get_length(object) != ut_map_get_length(other)) {
+    return false;
+  }
+  UtObjectRef keys = ut_map_get_keys(object);
+  size_t keys_length = ut_list_get_length(keys);
+  for (size_t i = 0; i < keys_length; i++) {
+    UtObject *key = ut_object_list_get_element(keys, i);
+    UtObject *value1 = ut_map_lookup(object, key);
+    UtObject *value2 = ut_map_lookup(other, key);
+    if (value1 == NULL || value2 == NULL || !ut_object_equal(value1, value2)) {
+      return false;
+    }
+  }
+  return true;
+}
+
 bool ut_object_implements_map(UtObject *object) {
   return ut_object_get_interface(object, &ut_map_id) != NULL;
 }

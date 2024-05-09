@@ -180,6 +180,7 @@ static void ut_ordered_hash_table_cleanup(UtObject *object) {
 static UtObjectInterface object_interface = {
     .type_name = "UtOrderedHashTable",
     .to_string = _ut_map_to_string,
+    .equal = _ut_map_equal,
     .cleanup = ut_ordered_hash_table_cleanup,
     .interfaces = {{&ut_map_id, &map_interface}, {NULL, NULL}}};
 
