@@ -8,28 +8,13 @@ static bool is_newline(char c) { return c == '\n'; }
 
 static bool is_comment(char c) { return c == '#'; }
 
-// FIXME: Replace with indent matches
-static bool is_sequence_item(const char *text, size_t *offset, size_t indent) {
-  for (size_t i = 0; i < indent; i++) {
-    if (!is_whitespace(text[*offset + i])) {
-      return false;
-    }
-  }
-  if (text[*offset + indent] != '-') {
-    return false;
-  }
-
-  *offset += indent + 1;
-  return true;
-}
-
 static bool indent_matches(const char *text, size_t *offset, size_t indent) {
   for (size_t i = 0; i < indent; i++) {
-    if (!is_whitespace(text[*offset + i])) {
+    if (text[*offset + i] != ' ') {
       return false;
     }
   }
-  if (is_whitespace(text[*offset + indent])) {
+  if (text[*offset + indent] == ' ') {
     return false;
   }
 
@@ -37,17 +22,20 @@ static bool indent_matches(const char *text, size_t *offset, size_t indent) {
   return true;
 }
 
-static UtObject *decode_sequence(const char *text, size_t *offset,
-                                 size_t indent) {
-  UtObjectRef value = ut_list_new();
-  do {
-    UtObjectRef v = decode_node(text, offset, indent);
-    ut_list_append(value, v);
+static bool decode_sequence_item(const char *text, size_t *offset,
+                                 size_t indent, UtObject **value) {
+  size_t o = *offset;
+  if (!indent_matches(text, &o, indent)) {
+    return false;
+  }
+  if (text[o] != '-') {
+    return false;
+  }
+  o++;
 
-    if (!is_sequence_item(text, offset, indent)) {
-      return ut_object_ref(value);
-    }
-  } while (true);
+  *value = decode_node(text, &o, indent + (o - *offset));
+  *offset = o;
+  return true;
 }
 
 static bool decode_mapping_item(const char *text, size_t *offset, size_t indent,
@@ -69,7 +57,7 @@ static bool decode_mapping_item(const char *text, size_t *offset, size_t indent,
   }
   o++;
 
-  UtObjectRef v = decode_node(text, &o, indent);
+  UtObjectRef v = decode_node(text, &o, indent + (o - *offset));
   if (v == NULL) {
     return false;
   }
@@ -88,11 +76,15 @@ static UtObject *decode_folded(const char *text, size_t *offset) {
   return NULL;
 }
 
+// FIXME: Use line_start instead of indent?
 static UtObject *decode_node(const char *text, size_t *offset, size_t indent) {
+  size_t node_start = *offset;
+  size_t child_indent = indent;
+
   // Skip leading whitespace.
   while (is_whitespace(text[*offset])) {
     (*offset)++;
-    indent++;
+    child_indent++;
   }
 
   if (text[*offset] == '|') {
@@ -105,7 +97,14 @@ static UtObject *decode_node(const char *text, size_t *offset, size_t indent) {
     // FIXME
   } else if (text[*offset] == '-') {
     (*offset)++;
-    return decode_sequence(text, offset, indent);
+    UtObjectRef value = decode_node(text, offset, +(*offset - node_start));
+    UtObjectRef sequence = ut_list_new();
+    ut_list_append(sequence, value);
+    UtObject *item;
+    while (decode_sequence_item(text, offset, child_indent, &item)) {
+      ut_list_append(sequence, item);
+    }
+    return ut_object_ref(sequence);
   }
 
   size_t start = *offset;
@@ -125,13 +124,14 @@ static UtObject *decode_node(const char *text, size_t *offset, size_t indent) {
         ut_cstring_new_sized(text + key_start, key_end - key_start);
     (*offset)++;
 
-    UtObjectRef value = decode_node(text, offset, indent);
+    UtObjectRef value =
+        decode_node(text, offset, indent + (*offset - node_start));
 
     UtObjectRef map = ut_map_new();
     ut_map_insert_string(map, key, value);
     char *k;
     UtObject *v;
-    while (decode_mapping_item(text, offset, indent, &k, &v)) {
+    while (decode_mapping_item(text, offset, child_indent, &k, &v)) {
       ut_map_insert_string(map, k, v);
     }
 
