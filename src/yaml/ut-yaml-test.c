@@ -29,8 +29,8 @@ int main(int argc, char **argv) {
               ut_list_new_from_elements_take(ut_string_new("foo"), NULL));
   test_decode("foo bar",
               ut_list_new_from_elements_take(ut_string_new("foo bar"), NULL));
-  // test_decode("\nfoo",
-  //             ut_list_new_from_elements_take(ut_string_new("foo"), NULL));
+  test_decode("\nfoo",
+              ut_list_new_from_elements_take(ut_string_new("foo"), NULL));
   // test_decode("foo\nbar",
   //             ut_list_new_from_elements_take(ut_string_new("foo bar"),
   //             NULL));
@@ -68,6 +68,10 @@ int main(int argc, char **argv) {
                       "one", ut_string_new("1"), "two", ut_string_new("2"),
                       "three", ut_string_new("3"), NULL),
                   NULL));
+  test_decode("name:\nfoo", ut_list_new_from_elements_take(
+                                ut_map_new_string_from_elements_take(
+                                    "name", ut_string_new("foo"), NULL),
+                                NULL));
 
   // Map of sequences
 #if 0
