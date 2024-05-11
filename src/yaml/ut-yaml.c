@@ -79,12 +79,10 @@ static UtObject *decode_folded(const char *text, size_t *offset) {
 // FIXME: Use line_start instead of indent?
 static UtObject *decode_node(const char *text, size_t *offset, size_t indent) {
   size_t node_start = *offset;
-  size_t child_indent = indent;
 
   // Skip leading whitespace.
   while (is_whitespace(text[*offset])) {
     (*offset)++;
-    child_indent++;
   }
 
   if (text[*offset] == '|') {
@@ -96,8 +94,10 @@ static UtObject *decode_node(const char *text, size_t *offset, size_t indent) {
   } else if (text[*offset] == '"' || text[*offset] == '\'') {
     // FIXME
   } else if (text[*offset] == '-') {
+    size_t child_indent = indent + (*offset - node_start);
     (*offset)++;
-    UtObjectRef value = decode_node(text, offset, +(*offset - node_start));
+    UtObjectRef value =
+        decode_node(text, offset, indent + (*offset - node_start));
     UtObjectRef sequence = ut_list_new();
     ut_list_append(sequence, value);
     UtObject *item;
@@ -131,6 +131,7 @@ static UtObject *decode_node(const char *text, size_t *offset, size_t indent) {
     ut_map_insert_string(map, key, value);
     char *k;
     UtObject *v;
+    size_t child_indent = indent + (start - node_start);
     while (decode_mapping_item(text, offset, child_indent, &k, &v)) {
       ut_map_insert_string(map, k, v);
     }
