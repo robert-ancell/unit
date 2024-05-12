@@ -100,8 +100,18 @@ static UtObject *decode_node(const char *text, size_t *offset, size_t indent) {
   } else if (text[*offset] == '"') {
     (*offset)++;
     node_value = ut_string_new("");
-    while (text[*offset] != '\0' && text[*offset] != '\"') {
-      ut_string_append_code_point(node_value, text[*offset]);
+    bool in_escape = false;
+    while (text[*offset] != '\0') {
+      if (in_escape) {
+        ut_string_append_code_point(node_value, text[*offset]); // FIXME
+        in_escape = false;
+      } else if (text[*offset] == '\\') {
+        in_escape = true;
+      } else if (text[*offset] == '\"') {
+        break;
+      } else {
+        ut_string_append_code_point(node_value, text[*offset]);
+      }
       (*offset)++;
     }
     ut_assert_true(text[*offset] == '\"');
@@ -109,7 +119,15 @@ static UtObject *decode_node(const char *text, size_t *offset, size_t indent) {
   } else if (text[*offset] == '\'') {
     (*offset)++;
     node_value = ut_string_new("");
-    while (text[*offset] != '\0' && text[*offset] != '\'') {
+
+    while (text[*offset] != '\0') {
+      if (text[*offset] == '\'') {
+        if (text[*offset + 1] == '\'') {
+          (*offset)++;
+        } else {
+          break;
+        }
+      }
       ut_string_append_code_point(node_value, text[*offset]);
       (*offset)++;
     }
