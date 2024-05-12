@@ -98,11 +98,23 @@ static UtObject *decode_node(const char *text, size_t *offset, size_t indent) {
     (*offset)++;
     return decode_folded(text, offset);
   } else if (text[*offset] == '"') {
-    // FIXME
-    ut_assert_true(false);
+    (*offset)++;
+    node_value = ut_string_new("");
+    while (text[*offset] != '\0' && text[*offset] != '\"') {
+      ut_string_append_code_point(node_value, text[*offset]);
+      (*offset)++;
+    }
+    ut_assert_true(text[*offset] == '\"');
+    (*offset)++;
   } else if (text[*offset] == '\'') {
-    // FIXME
-    ut_assert_true(false);
+    (*offset)++;
+    node_value = ut_string_new("");
+    while (text[*offset] != '\0' && text[*offset] != '\'') {
+      ut_string_append_code_point(node_value, text[*offset]);
+      (*offset)++;
+    }
+    ut_assert_true(text[*offset] == '\'');
+    (*offset)++;
   } else if (text[*offset] == '-') {
     size_t child_indent = indent + (*offset - start);
     (*offset)++;

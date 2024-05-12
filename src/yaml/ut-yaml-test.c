@@ -47,13 +47,15 @@ int main(int argc, char **argv) {
   //             NULL));
 
   // Quotes
-#if 0
   test_decode("\"foo\"",
               ut_list_new_from_elements_take(ut_string_new("foo"), NULL));
+#if 0
   test_decode("\"f\\\"oo\"",
               ut_list_new_from_elements_take(ut_string_new("f\"oo"), NULL));
+#endif
   test_decode("'foo'",
               ut_list_new_from_elements_take(ut_string_new("foo"), NULL));
+#if 0
   test_decode("'f''oo'",
               ut_list_new_from_elements_take(ut_string_new("f'oo"), NULL));
 #endif
