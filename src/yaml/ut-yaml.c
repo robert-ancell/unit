@@ -78,30 +78,35 @@ static UtObject *decode_folded(const char *text, size_t *offset) {
 
 // FIXME: Use line_start instead of indent?
 static UtObject *decode_node(const char *text, size_t *offset, size_t indent) {
-  size_t node_start = *offset;
+  size_t start = *offset;
 
   // Skip leading whitespace.
   while (is_whitespace(text[*offset]) || text[*offset] == '\n') {
     if (text[*offset] == '\n') {
-      node_start = *offset + 1;
+      start = *offset + 1;
       indent = 0;
     }
     (*offset)++;
   }
 
+  size_t node_start = *offset;
+  UtObjectRef node_value = NULL;
   if (text[*offset] == '|') {
     (*offset)++;
     return decode_literal(text, offset);
   } else if (text[*offset] == '>') {
     (*offset)++;
     return decode_folded(text, offset);
-  } else if (text[*offset] == '"' || text[*offset] == '\'') {
+  } else if (text[*offset] == '"') {
     // FIXME
+    ut_assert_true(false);
+  } else if (text[*offset] == '\'') {
+    // FIXME
+    ut_assert_true(false);
   } else if (text[*offset] == '-') {
-    size_t child_indent = indent + (*offset - node_start);
+    size_t child_indent = indent + (*offset - start);
     (*offset)++;
-    UtObjectRef value =
-        decode_node(text, offset, indent + (*offset - node_start));
+    UtObjectRef value = decode_node(text, offset, indent + (*offset - start));
     UtObjectRef sequence = ut_list_new();
     ut_list_append(sequence, value);
     UtObject *item;
@@ -109,17 +114,21 @@ static UtObject *decode_node(const char *text, size_t *offset, size_t indent) {
       ut_list_append(sequence, item);
     }
     return ut_object_ref(sequence);
+  } else {
+    while (text[*offset] != '\0' && !is_newline(text[*offset]) &&
+           !is_comment(text[*offset]) && text[*offset] != ':') {
+      (*offset)++;
+    }
+    size_t end = *offset;
+    // Trim trailing whitespace.
+    while (end > node_start && is_whitespace(text[end - 1])) {
+      end--;
+    }
+    node_value = ut_string_new_sized(text + node_start, end - node_start);
   }
-
-  size_t start = *offset;
-  while (text[*offset] != '\0' && !is_newline(text[*offset]) &&
-         !is_comment(text[*offset]) && text[*offset] != ':') {
-    (*offset)++;
-  }
-  size_t end = *offset;
 
   if (text[*offset] == ':') {
-    size_t key_start = start;
+    size_t key_start = node_start;
     size_t key_end = *offset;
     while (key_end > key_start && is_whitespace(text[key_end - 1])) {
       key_end--;
@@ -128,14 +137,13 @@ static UtObject *decode_node(const char *text, size_t *offset, size_t indent) {
         ut_cstring_new_sized(text + key_start, key_end - key_start);
     (*offset)++;
 
-    UtObjectRef value =
-        decode_node(text, offset, indent + (*offset - node_start));
+    UtObjectRef value = decode_node(text, offset, indent + (*offset - start));
 
     UtObjectRef map = ut_map_new();
     ut_map_insert_string(map, key, value);
     char *k;
     UtObject *v;
-    size_t child_indent = indent + (start - node_start);
+    size_t child_indent = indent + (node_start - start);
     while (decode_mapping_item(text, offset, child_indent, &k, &v)) {
       ut_map_insert_string(map, k, v);
     }
@@ -154,12 +162,7 @@ static UtObject *decode_node(const char *text, size_t *offset, size_t indent) {
     (*offset)++;
   }
 
-  // Trim trailing whitespace.
-  while (end > start && is_whitespace(text[end - 1])) {
-    end--;
-  }
-
-  return ut_string_new_sized(text + start, end - start);
+  return ut_object_ref(node_value);
 }
 
 UtObject *ut_yaml_decode(const char *text) {

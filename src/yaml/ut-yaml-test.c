@@ -40,9 +40,8 @@ int main(int argc, char **argv) {
               ut_list_new_from_elements_take(ut_string_new("foo"), NULL));
   test_decode("\nfoo\n",
               ut_list_new_from_elements_take(ut_string_new("foo"), NULL));
-  test_decode("foo  bar", ut_list_new_from_elements_take(
-                              ut_string_new("foo  bar"),
-                              NULL)); // FIXME: Check if double space
+  test_decode("foo  bar",
+              ut_list_new_from_elements_take(ut_string_new("foo  bar"), NULL));
   // test_decode("foo\nbar",
   //             ut_list_new_from_elements_take(ut_string_new("foo bar"),
   //             NULL));
