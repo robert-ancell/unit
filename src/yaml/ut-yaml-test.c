@@ -9,6 +9,11 @@ static void test_decode(const char *yaml, UtObject *expected) {
   ut_object_unref(expected);
 }
 
+#if 0
+static void test_decode_error(const char *yaml) {
+}
+#endif
+
 int main(int argc, char **argv) {
   // Empty documents
   test_decode("", ut_list_new_from_elements(ut_string_new(""), NULL));
@@ -31,9 +36,38 @@ int main(int argc, char **argv) {
               ut_list_new_from_elements_take(ut_string_new("foo bar"), NULL));
   test_decode("\nfoo",
               ut_list_new_from_elements_take(ut_string_new("foo"), NULL));
+  test_decode("\n\nfoo",
+              ut_list_new_from_elements_take(ut_string_new("foo"), NULL));
+  test_decode("\nfoo\n",
+              ut_list_new_from_elements_take(ut_string_new("foo"), NULL));
+  test_decode("foo  bar", ut_list_new_from_elements_take(
+                              ut_string_new("foo  bar"),
+                              NULL)); // FIXME: Check if double space
   // test_decode("foo\nbar",
   //             ut_list_new_from_elements_take(ut_string_new("foo bar"),
   //             NULL));
+
+  // Quotes
+#if 0
+  test_decode("\"foo\"",
+              ut_list_new_from_elements_take(ut_string_new("foo"), NULL));
+  test_decode("\"f\\\"oo\"",
+              ut_list_new_from_elements_take(ut_string_new("f\"oo"), NULL));
+  test_decode("'foo'",
+              ut_list_new_from_elements_take(ut_string_new("foo"), NULL));
+  test_decode("'f''oo'",
+              ut_list_new_from_elements_take(ut_string_new("f'oo"), NULL));
+#endif
+#if 0
+  test_decode_error("\"foo");
+  test_decode_error("foo\"");
+  test_decode_error("f\"oo");
+  test_decode_error("\"f\"oo\"");
+  test_decode_error("'foo");
+  test_decode_error("foo'");
+  test_decode_error("f'oo");
+  test_decode_error("'f'oo'");
+#endif
 
   // Comments
   test_decode("# Comment",
@@ -74,7 +108,6 @@ int main(int argc, char **argv) {
                                 NULL));
 
   // Map of sequences
-#if 0
   test_decode("english:\n"
               "- one\n"
               "- two\n"
@@ -95,6 +128,10 @@ int main(int argc, char **argv) {
                           ut_string_new("drei"), NULL),
                       NULL),
                   NULL));
+#if 0
+  test_decode_error("english: - one\n"
+		    "         - two\n"
+		    "         - three");
 #endif
 
   // Sequence of maps

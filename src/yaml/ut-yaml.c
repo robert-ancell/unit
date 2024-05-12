@@ -82,10 +82,11 @@ static UtObject *decode_node(const char *text, size_t *offset, size_t indent) {
 
   // Skip leading whitespace.
   while (is_whitespace(text[*offset]) || text[*offset] == '\n') {
-    (*offset)++;
     if (text[*offset] == '\n') {
+      node_start = *offset + 1;
       indent = 0;
     }
+    (*offset)++;
   }
 
   if (text[*offset] == '|') {
