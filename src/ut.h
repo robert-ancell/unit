@@ -161,6 +161,7 @@
 #include "ut-object-array.h"
 #include "ut-object-identifier.h"
 #include "ut-object-list.h"
+#include "ut-object-pair.h"
 #include "ut-object.h"
 #include "ut-ordered-hash-table.h"
 #include "ut-output-stream.h"

@@ -182,6 +182,7 @@ ut_sources = [
   'ut-object-array.c',
   'ut-object-identifier.c',
   'ut-object-list.c',
+  'ut-object-pair.c',
   'ut-object-subarray.c',
   'ut-ordered-hash-table.c',
   'ut-output-stream.c',

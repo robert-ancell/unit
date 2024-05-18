@@ -11,6 +11,14 @@ typedef struct {
 
 extern int ut_map_item_id;
 
+/// Creates a new map item.
+///
+/// !arg-type key Object
+/// !arg-type value Object
+/// !return-ref
+/// !return-type UtOrderedHashTable
+UtObject *ut_map_item_new(UtObject *key, UtObject *value);
+
 /// Gets the key this item is using.
 ///
 /// !return-type UtObject

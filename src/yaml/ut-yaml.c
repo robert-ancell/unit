@@ -1,205 +1,240 @@
 #include "ut.h"
 
-static UtObject *decode_node(const char *text, size_t *offset, size_t indent);
+typedef enum {
+  PARENT_TYPE_NONE,
+  PARENT_TYPE_SEQUENCE,
+  PARENT_TYPE_MAPPING
+} ParentType;
+
+static UtObject *decode_node(const char *text, size_t *offset,
+                             ParentType parent_type, size_t parent_indent);
 
 static bool is_whitespace(char c) { return c == ' ' || c == '\t'; }
 
 static bool is_newline(char c) { return c == '\n'; }
 
-static bool is_comment(char c) { return c == '#'; }
+static bool is_whitespace_or_newline(char c) {
+  return is_whitespace(c) || is_newline(c);
+}
 
-static bool indent_matches(const char *text, size_t *offset, size_t indent) {
-  for (size_t i = 0; i < indent; i++) {
-    if (text[*offset + i] != ' ') {
-      return false;
+// Returns the number of characters the current offset is from the start of the
+// line.
+static size_t get_indent(const char *text, size_t offset) {
+  if (offset == 0) {
+    return 0;
+  }
+
+  if (text[offset] == '\n') {
+    offset--;
+  }
+
+  size_t indent = 0;
+  while (offset > 0) {
+    if (text[offset - 1] == '\n') {
+      return indent;
     }
-  }
-  if (text[*offset + indent] == ' ') {
-    return false;
+    offset--;
+    indent++;
   }
 
-  *offset += indent;
-  return true;
+  return 0;
 }
 
-static bool decode_sequence_item(const char *text, size_t *offset,
-                                 size_t indent, UtObject **value) {
-  size_t o = *offset;
-  if (!indent_matches(text, &o, indent)) {
-    return false;
-  }
-  if (text[o] != '-') {
-    return false;
-  }
-  o++;
+static bool get_quoted(const char *text, size_t *offset) {
+  if (text[*offset] == '"') {
+    while (text[*offset] != '\0' && text[*offset] != '"') {
+      (*offset)++;
+    }
 
-  *value = decode_node(text, &o, indent + (o - *offset));
-  *offset = o;
-  return true;
+    if (text[*offset] != '"') {
+      // ...
+    }
+    (*offset)++;
+    return true;
+  } else if (text[*offset] == '\'') {
+    while (text[*offset] != '\0' && text[*offset] != '\'') {
+      (*offset)++;
+    }
+
+    if (text[*offset] != '\'') {
+      // ...
+    }
+    (*offset)++;
+    return true;
+  } else {
+    return false;
+  }
 }
 
-static bool decode_mapping_item(const char *text, size_t *offset, size_t indent,
-                                char **key, UtObject **value) {
-  size_t o = *offset;
-  if (!indent_matches(text, &o, indent)) {
-    return false;
-  }
+static bool is_sequence_start(const char *text, size_t offset) {
+  return text[offset] == '-' && (is_whitespace_or_newline(text[offset + 1]) ||
+                                 text[offset + 1] == '\0');
+}
 
-  size_t key_start = o;
-  while (text[o] != '\0' && !is_newline(text[o]) && !is_comment(text[o]) &&
-         text[o] != ':') {
+static bool get_next_sequence_item(const char *text, size_t *offset,
+                                   size_t indent) {
+  size_t o = *offset;
+
+  // Skip leading whitespace
+  while (text[o] != '\0' && is_whitespace_or_newline(text[o])) {
     o++;
   }
-  size_t key_end = o;
 
-  if (text[o] != ':') {
+  if (!is_sequence_start(text, o) || get_indent(text, o) != indent) {
     return false;
   }
-  o++;
 
-  UtObjectRef v = decode_node(text, &o, indent + (o - *offset));
-  if (v == NULL) {
+  *offset = o + 1;
+  return true;
+}
+
+static bool get_next_mapping_item(const char *text, size_t *offset,
+                                  size_t indent) {
+  size_t o = *offset;
+
+  // Skip leading whitespace
+  while (text[o] != '\0' && is_whitespace_or_newline(text[o])) {
+    o++;
+  }
+
+  if (get_indent(text, o) != indent) {
     return false;
   }
 
   *offset = o;
-  *key = ut_cstring_new_sized(text + key_start, key_end - key_start);
-  *value = ut_object_ref(v);
   return true;
 }
 
-static UtObject *decode_literal(const char *text, size_t *offset) {
-  return NULL;
+// FIXME: Replace ' \n ' with ' '
+// FIXME: Translate quoted values
+static UtObject *get_node_value(const char *text, size_t length) {
+  // Skip leading whitespace
+  size_t start = 0;
+  while (length > 0 && is_whitespace_or_newline(text[start])) {
+    start++;
+    length--;
+  }
+
+  // Skip trailing whitespace
+  while (length > 0 && is_whitespace_or_newline(text[start + length - 1])) {
+    length--;
+  }
+
+  return ut_string_new_sized(text + start, length);
 }
 
-static UtObject *decode_folded(const char *text, size_t *offset) {
-  return NULL;
+static bool get_first_word(const char *text, size_t *offset) {
+  bool quoted = get_quoted(text, offset);
+  if (!quoted) {
+    // Read the first word
+    // FIXME: Only allow scalar/mapping key characters
+    while (text[*offset] != '\0' && !is_whitespace(text[*offset]) &&
+           text[*offset] != ':' && !is_newline(text[*offset])) {
+      (*offset)++;
+    }
+  }
+
+  // Skip trailing whitespace
+  while (text[*offset] != '\0' && is_whitespace(text[*offset])) {
+    (*offset)++;
+  }
+
+  return quoted;
 }
 
-// FIXME: Use line_start instead of indent?
-static UtObject *decode_node(const char *text, size_t *offset, size_t indent) {
+static UtObject *decode_node(const char *text, size_t *offset,
+                             ParentType parent_type, size_t parent_indent) {
+  printf("decode_node %d(%zi) '%s'\n", parent_type, parent_indent,
+         text + *offset);
+
   size_t start = *offset;
 
-  // Skip leading whitespace.
-  while (is_whitespace(text[*offset]) || text[*offset] == '\n') {
-    if (text[*offset] == '\n') {
-      start = *offset + 1;
-      indent = 0;
-    }
+  // Skip leading whitespace / newlines
+  while (text[*offset] != '\0' && (is_whitespace_or_newline(text[*offset]))) {
     (*offset)++;
   }
+  size_t indent = get_indent(text, *offset);
 
-  size_t node_start = *offset;
-  UtObjectRef node_value = NULL;
-  if (text[*offset] == '|') {
-    (*offset)++;
-    return decode_literal(text, offset);
-  } else if (text[*offset] == '>') {
-    (*offset)++;
-    return decode_folded(text, offset);
-  } else if (text[*offset] == '"') {
-    (*offset)++;
-    node_value = ut_string_new("");
-    bool in_escape = false;
-    while (text[*offset] != '\0') {
-      if (in_escape) {
-        ut_string_append_code_point(node_value, text[*offset]); // FIXME
-        in_escape = false;
-      } else if (text[*offset] == '\\') {
-        in_escape = true;
-      } else if (text[*offset] == '\"') {
-        break;
-      } else {
-        ut_string_append_code_point(node_value, text[*offset]);
-      }
-      (*offset)++;
-    }
-    ut_assert_true(text[*offset] == '\"');
-    (*offset)++;
-  } else if (text[*offset] == '\'') {
-    (*offset)++;
-    node_value = ut_string_new("");
+  // Empty sequence item
+  size_t o = *offset;
+  if (parent_type == PARENT_TYPE_SEQUENCE &&
+      get_next_sequence_item(text, &o, parent_indent)) {
+    return get_node_value(text + start, *offset - start);
+  }
 
-    while (text[*offset] != '\0') {
-      if (text[*offset] == '\'') {
-        if (text[*offset + 1] == '\'') {
-          (*offset)++;
-        } else {
-          break;
-        }
-      }
-      ut_string_append_code_point(node_value, text[*offset]);
-      (*offset)++;
-    }
-    ut_assert_true(text[*offset] == '\'');
-    (*offset)++;
-  } else if (text[*offset] == '-') {
-    size_t child_indent = indent + (*offset - start);
-    (*offset)++;
-    UtObjectRef value = decode_node(text, offset, indent + (*offset - start));
+  // Sequence
+  if (is_sequence_start(text, *offset)) {
     UtObjectRef sequence = ut_list_new();
-    ut_list_append(sequence, value);
-    UtObject *item;
-    while (decode_sequence_item(text, offset, child_indent, &item)) {
-      ut_list_append(sequence, item);
+    while (get_next_sequence_item(text, offset, indent)) {
+      ut_list_append_take(
+          sequence, decode_node(text, offset, PARENT_TYPE_SEQUENCE, indent));
     }
+
     return ut_object_ref(sequence);
-  } else {
-    while (text[*offset] != '\0' && !is_newline(text[*offset]) &&
-           !is_comment(text[*offset]) && text[*offset] != ':') {
-      (*offset)++;
-    }
-    size_t end = *offset;
-    // Trim trailing whitespace.
-    while (end > node_start && is_whitespace(text[end - 1])) {
-      end--;
-    }
-    node_value = ut_string_new_sized(text + node_start, end - node_start);
   }
 
+  bool quoted = get_first_word(text, offset);
+
+  // Check if mapping key
+  // FIXME: Abort if parent is map of the same indent
   if (text[*offset] == ':') {
-    size_t key_start = node_start;
-    size_t key_end = *offset;
-    while (key_end > key_start && is_whitespace(text[key_end - 1])) {
-      key_end--;
-    }
-    ut_cstring_ref key =
-        ut_cstring_new_sized(text + key_start, key_end - key_start);
+    printf("mapping\n");
+    UtObjectRef key = get_node_value(text + start, *offset - start);
     (*offset)++;
+    UtObjectRef value = decode_node(text, offset, PARENT_TYPE_MAPPING, indent);
 
-    UtObjectRef value = decode_node(text, offset, indent + (*offset - start));
-
-    UtObjectRef map = ut_map_new();
-    ut_map_insert_string(map, key, value);
-    char *k;
-    UtObject *v;
-    size_t child_indent = indent + (node_start - start);
-    while (decode_mapping_item(text, offset, child_indent, &k, &v)) {
-      ut_map_insert_string(map, k, v);
+    if (parent_type == PARENT_TYPE_MAPPING) {
+      return ut_object_ref(value);
     }
 
-    return ut_object_ref(map);
+    UtObjectRef mapping = ut_map_new();
+    ut_map_insert(mapping, key, value);
+    while (get_next_mapping_item(text, offset, indent)) {
+      size_t key2_start = *offset;
+      size_t o = *offset;
+      get_first_word(text, &o);
+      if (text[o] != ':') {
+        break;
+      }
+      *offset = o;
+      UtObjectRef key2 =
+          get_node_value(text + key2_start, *offset - key2_start);
+      (*offset++);
+      UtObjectRef value2 =
+          decode_node(text, offset, PARENT_TYPE_MAPPING, indent);
+      ut_map_insert(mapping, key2, value2);
+    }
+
+    return ut_object_ref(mapping);
   }
 
-  // Skip comments
-  if (is_comment(text[*offset])) {
-    while (text[*offset] != '\0' && !is_newline(text[*offset])) {
+  // Read remaining data
+  if (!quoted) {
+    while (text[*offset] != '\0') {
+      size_t o = *offset;
+      if (parent_type == PARENT_TYPE_SEQUENCE &&
+          get_next_sequence_item(text, &o, parent_indent)) {
+        break;
+      }
+      if (parent_type == PARENT_TYPE_MAPPING &&
+          get_next_mapping_item(text, &o, parent_indent)) {
+        break;
+      }
+
       (*offset)++;
     }
   }
 
-  if (is_newline(text[*offset])) {
-    (*offset)++;
-  }
-
-  return ut_object_ref(node_value);
+  return get_node_value(text + start, *offset - start);
 }
 
 UtObject *ut_yaml_decode(const char *text) {
+  printf("yaml_decode '%s'\n", text);
   UtObjectRef documents = ut_list_new();
 
   size_t offset = 0;
-  ut_list_append_take(documents, decode_node(text, &offset, 0));
+  ut_list_append_take(documents,
+                      decode_node(text, &offset, PARENT_TYPE_NONE, 0));
 
   return ut_object_ref(documents);
 }

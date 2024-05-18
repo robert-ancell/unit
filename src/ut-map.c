@@ -71,6 +71,10 @@ void ut_map_insert_take(UtObject *object, UtObject *key, UtObject *value) {
   ut_object_unref(value);
 }
 
+void ut_map_insert_item(UtObject *object, UtObject *item) {
+  ut_map_insert(object, ut_map_item_get_key(item), ut_map_item_get_value(item));
+}
+
 void ut_map_insert_string(UtObject *object, const char *key, UtObject *value) {
   UtObjectRef key_object = ut_string_new(key);
   ut_map_insert(object, key_object, value);

@@ -65,6 +65,12 @@ void ut_map_insert(UtObject *object, UtObject *key, UtObject *value);
 /// !arg-type value UtObject
 void ut_map_insert_take(UtObject *object, UtObject *key, UtObject *value);
 
+/// Insert [item] into the map.
+/// If an existing entry containins this key it will be replaced.
+///
+/// !arg-type item UtMapItem
+void ut_map_insert_item(UtObject *object, UtObject *item);
+
 /// Insert [key]/[value] into the map.
 /// If an existing entry containins this key it will be replaced.
 ///
