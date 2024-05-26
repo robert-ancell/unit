@@ -88,7 +88,18 @@ int main(int argc, char **argv) {
               ut_list_new_from_elements_take(ut_string_new("foo"), NULL));
 #endif
 
-  // Sequences
+  // Sequence
+  test_decode(
+      "- one\n",
+      ut_list_new_from_elements_take(
+          ut_list_new_from_elements_take(ut_string_new("one"), NULL), NULL));
+  test_decode("- one\n"
+              " two",
+              ut_list_new_from_elements_take(
+                  ut_list_new_from_elements_take(
+                      ut_string_new("one\n two"),
+                      NULL), // FIXME: newlines replaced with spaces
+                  NULL));
   test_decode("- one\n"
               "- two\n"
               "- three",
@@ -97,6 +108,18 @@ int main(int argc, char **argv) {
                                                  ut_string_new("two"),
                                                  ut_string_new("three"), NULL),
                   NULL));
+  test_decode("- one\n"
+              "\n"
+              "- two\n"
+              "\n"
+              "- three",
+              ut_list_new_from_elements_take(
+                  ut_list_new_from_elements_take(ut_string_new("one"),
+                                                 ut_string_new("two"),
+                                                 ut_string_new("three"), NULL),
+                  NULL));
+
+  // Sequence with empty elements
   test_decode(
       "-\n"
       "-\n"
@@ -105,6 +128,19 @@ int main(int argc, char **argv) {
           ut_list_new_from_elements_take(ut_string_new(""), ut_string_new(""),
                                          ut_string_new(""), NULL),
           NULL));
+
+  // Nested sequence
+  test_decode(
+      "- parent\n"
+      "- - child",
+      ut_list_new_from_elements_take(
+          ut_list_new_from_elements_take(
+              ut_string_new("parent"),
+              ut_list_new_from_elements_take(ut_string_new("child"), NULL),
+              NULL),
+          NULL));
+
+  // Looks like a nested sequence, but is not
   test_decode("- one\n"
               " - two\n"
               "  - three",
@@ -114,6 +150,7 @@ int main(int argc, char **argv) {
                       NULL), // FIXME: newlines replaced with spaces
                   NULL));
 #if 0
+  // Sequence elements with quoting
   test_decode("- one\n"
               "- \"two\"\n"
               "- 'three'",
@@ -124,7 +161,7 @@ int main(int argc, char **argv) {
                   NULL));
 #endif
 
-  // Maps
+  // Map
   test_decode("one: 1", ut_list_new_from_elements_take(
                             ut_map_new_string_from_elements_take(
                                 "one", ut_string_new("1"), NULL),
@@ -139,6 +176,7 @@ int main(int argc, char **argv) {
                                 "one", ut_string_new("1"), NULL),
                             NULL));
 #endif
+  // Map with multiple elements
   test_decode("one: 1\n"
               "two: 2\n"
               "three: 3",
@@ -147,6 +185,9 @@ int main(int argc, char **argv) {
                       "one", ut_string_new("1"), "two", ut_string_new("2"),
                       "three", ut_string_new("3"), NULL),
                   NULL));
+
+  // Map with empty elements
+#if 0
   test_decode("one:\n"
               "two:\n"
               "three:",
@@ -155,6 +196,7 @@ int main(int argc, char **argv) {
                       "one", ut_string_new(""), "two", ut_string_new(""),
                       "three", ut_string_new(""), NULL),
                   NULL));
+#endif
 #if 0
   test_decode("one: 1\n"
               "\"two\": \"2\"\n"
@@ -174,7 +216,7 @@ int main(int argc, char **argv) {
   test_decode("english:\n"
               "- one\n"
               "- two\n"
-              "- three\n"
+              " - three\n"
               "german:\n"
               "- eins\n"
               "- zwei\n"

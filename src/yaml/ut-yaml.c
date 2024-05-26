@@ -101,6 +101,10 @@ static bool get_next_mapping_item(const char *text, size_t *offset,
     return false;
   }
 
+  if (text[o] == '\0') {
+    return false;
+  }
+
   *offset = o;
   return true;
 }
@@ -178,7 +182,6 @@ static UtObject *decode_node(const char *text, size_t *offset,
   // Check if mapping key
   // FIXME: Abort if parent is map of the same indent
   if (text[*offset] == ':') {
-    printf("mapping\n");
     UtObjectRef key = get_node_value(text + start, *offset - start);
     (*offset)++;
     UtObjectRef value = decode_node(text, offset, PARENT_TYPE_MAPPING, indent);
@@ -199,7 +202,7 @@ static UtObject *decode_node(const char *text, size_t *offset,
       *offset = o;
       UtObjectRef key2 =
           get_node_value(text + key2_start, *offset - key2_start);
-      (*offset++);
+      (*offset)++;
       UtObjectRef value2 =
           decode_node(text, offset, PARENT_TYPE_MAPPING, indent);
       ut_map_insert(mapping, key2, value2);
@@ -211,6 +214,8 @@ static UtObject *decode_node(const char *text, size_t *offset,
   // Read remaining data
   if (!quoted) {
     while (text[*offset] != '\0') {
+      // If newline, check enough indent.
+
       size_t o = *offset;
       if (parent_type == PARENT_TYPE_SEQUENCE &&
           get_next_sequence_item(text, &o, parent_indent)) {
@@ -229,7 +234,7 @@ static UtObject *decode_node(const char *text, size_t *offset,
 }
 
 UtObject *ut_yaml_decode(const char *text) {
-  printf("yaml_decode '%s'\n", text);
+  printf("yaml_decode:\n---\n%s\n---\n", text);
   UtObjectRef documents = ut_list_new();
 
   size_t offset = 0;
