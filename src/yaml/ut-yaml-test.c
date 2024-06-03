@@ -166,6 +166,10 @@ int main(int argc, char **argv) {
                             ut_map_new_string_from_elements_take(
                                 "one", ut_string_new("1"), NULL),
                             NULL));
+  test_decode("hello world: 1", ut_list_new_from_elements_take(
+                            ut_map_new_string_from_elements_take(
+                                "hello world", ut_string_new("1"), NULL),
+                            NULL));
 #if 0
   test_decode("\"one\": \"1\"", ut_list_new_from_elements_take(
                             ut_map_new_string_from_elements_take(
@@ -216,7 +220,7 @@ int main(int argc, char **argv) {
   test_decode("english:\n"
               "- one\n"
               "- two\n"
-              " - three\n"
+              "- three\n"
               "german:\n"
               "- eins\n"
               "- zwei\n"

@@ -1,7 +1,7 @@
 #include "ut.h"
 
 typedef enum {
-  PARENT_TYPE_NONE,
+  PARENT_TYPE_DOCUMENT,
   PARENT_TYPE_SEQUENCE,
   PARENT_TYPE_MAPPING
 } ParentType;
@@ -28,6 +28,12 @@ static size_t get_indent(const char *text, size_t offset) {
     offset--;
   }
 
+  // Go to first non-whitespace character
+  while (is_whitespace(text[offset])) {
+    offset++;
+  }
+
+  // Count spaces to the start of the line / document.
   size_t indent = 0;
   while (offset > 0) {
     if (text[offset - 1] == '\n') {
@@ -91,6 +97,7 @@ static bool get_next_sequence_item(const char *text, size_t *offset,
 static bool get_next_mapping_item(const char *text, size_t *offset,
                                   size_t indent) {
   size_t o = *offset;
+   printf("gnmi %zi\n", indent);
 
   // Skip leading whitespace
   while (text[o] != '\0' && is_whitespace_or_newline(text[o])) {
@@ -214,7 +221,9 @@ static UtObject *decode_node(const char *text, size_t *offset,
   // Read remaining data
   if (!quoted) {
     while (text[*offset] != '\0') {
-      // If newline, check enough indent.
+      if (get_indent(text, *offset) < indent) {
+        break;
+      }
 
       size_t o = *offset;
       if (parent_type == PARENT_TYPE_SEQUENCE &&
@@ -239,7 +248,7 @@ UtObject *ut_yaml_decode(const char *text) {
 
   size_t offset = 0;
   ut_list_append_take(documents,
-                      decode_node(text, &offset, PARENT_TYPE_NONE, 0));
+                      decode_node(text, &offset, PARENT_TYPE_DOCUMENT, 0));
 
   return ut_object_ref(documents);
 }
