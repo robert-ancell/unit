@@ -8,6 +8,12 @@ executable('http',
            include_directories: ut_include,
            link_with: ut_lib)
 
+executable('http-client-loop',
+           'http-client-loop.c',
+           include_directories: ut_include,
+           link_with: ut_lib)
+
+
 executable('http-server',
            'http-server.c',
            include_directories: ut_include,
