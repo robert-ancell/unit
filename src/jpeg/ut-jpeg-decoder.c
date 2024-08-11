@@ -1030,7 +1030,7 @@ static size_t decode_expand_reference_component(UtJpegDecoder *self,
 
   if (expand_horizontal > 1 || expand_vertical > 1) {
     set_error(self,
-              "Invalid expand value %dx%d in JPEG expand refrence component",
+              "Invalid expand value %dx%d in JPEG expand reference component",
               expand_horizontal, expand_vertical);
     return 0;
   }
