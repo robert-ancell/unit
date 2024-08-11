@@ -54,7 +54,7 @@ typedef struct {
   // The quantization table used by this component.
   UtObject *quantization_table;
 
-  // The Huffman decoders this component uses.
+  // The Huffman/Arithmetic decoders this component uses.
   UtObject *dc_decoder;
   UtObject *dc_table;
   UtObject *ac_decoder;
@@ -114,13 +114,13 @@ typedef struct {
   // Height of an MCU in data units.
   size_t mcu_height;
 
-  // Huffman decoders for DC coefficients.
+  // Huffman/Arithmetic decoders for DC coefficients.
   UtObject *dc_decoders[4];
 
   // Maps from DC Huffman symbols to coefficent values.
   UtObject *dc_tables[4];
 
-  // Huffman decoders for AC coefficients.
+  // Huffman/Arithmentic decoders for AC coefficients.
   UtObject *ac_decoders[4];
 
   // Maps from AC Huffman symbols to coefficent values.
@@ -1045,6 +1045,33 @@ static size_t decode_expand_reference_component(UtJpegDecoder *self,
   return length;
 }
 
+static bool supported_dc_table(UtJpegDecoder *self, uint8_t dc_table) {
+  switch (self->mode) {
+  case DECODE_MODE_BASELINE_DCT:
+    return dc_table <= 1;
+  case DECODE_MODE_EXTENDED_DCT:
+  case DECODE_MODE_PROGRESSIVE_DCT:
+  case DECODE_MODE_LOSSLESS:
+    return dc_table <= 3;
+  default:
+    return false;
+  }
+}
+
+static bool supported_ac_table(UtJpegDecoder *self, uint8_t ac_table) {
+  switch (self->mode) {
+  case DECODE_MODE_BASELINE_DCT:
+    return ac_table <= 1;
+  case DECODE_MODE_EXTENDED_DCT:
+  case DECODE_MODE_PROGRESSIVE_DCT:
+    return ac_table <= 3;
+  case DECODE_MODE_LOSSLESS:
+    return ac_table == 0;
+  default:
+    return false;
+  }
+}
+
 static bool supported_scan_selection(UtJpegDecoder *self,
                                      uint8_t selection_start,
                                      uint8_t selection_end) {
@@ -1117,11 +1144,11 @@ static size_t decode_start_of_scan(UtJpegDecoder *self, UtObject *data) {
     }
     self->scan_components[i] = component;
 
-    if (dc_table > 3) {
+    if (!supported_dc_table(self, dc_table)) {
       set_error(self, "Invalid DC table selector in JPEG start of scan");
       return length;
     }
-    if (ac_table > 3) {
+    if (!supported_ac_table(self, ac_table)) {
       set_error(self, "Invalid AC table selector in JPEG start of scan");
       return length;
     }
