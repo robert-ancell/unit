@@ -14,6 +14,8 @@ typedef struct {
 
   uint8_t mps;
 
+  uint8_t st;
+
   uint8_t output[32];
   size_t output_length;
 } ArithmeticEncoder;
@@ -81,9 +83,38 @@ static uint8_t switch_mps[113] = {
 
 static void byte_out(ArithmeticEncoder *self) {
   uint32_t t = self->c >> 19;
-  self->output[self->output_length++] = t;
-  if (t == 0xff) {
-    self->output[self->output_length++] = 0;
+  if (t > 0xff) {
+    self->output[self->output_length - 1]++;
+
+    // Stuff zero
+    if (self->output[self->output_length - 1] == 0xff) {
+      self->output_length++;
+      self->output[self->output_length] = 0x00;
+    }
+
+    // Output stacked zeros
+    while (self->st > 0) {
+      self->output[self->output_length] = 0x00;
+      self->output_length++;
+      self->st--;
+    }
+
+    self->output[self->output_length] = t & 0xff;
+    self->output_length++;
+  } else if (t == 0xff) {
+    self->st++;
+  } else {
+    // Output stacked ffs
+    while (self->st > 0) {
+      self->output[self->output_length] = 0xff;
+      self->output_length++;
+      self->output[self->output_length] = 0x00;
+      self->output_length++;
+      self->st--;
+    }
+
+    self->output[self->output_length] = t;
+    self->output_length++;
   }
   self->c &= 0x7ffff;
 }
@@ -154,6 +185,19 @@ static void flush(ArithmeticEncoder *self) {
 
   self->c <<= self->ct;
   byte_out(self);
+
+  self->c <<= 8;
+  byte_out(self);
+
+  // Discard final zeros FIXME
+  while (self->output_length > 0 &&
+         self->output[self->output_length - 1] == 0) {
+    self->output_length--;
+  }
+  if (self->output_length > 0 &&
+      self->output[self->output_length - 1] == 0xff) {
+    self->output_length++;
+  }
 }
 
 void jpeg_encode_arithmetic(const uint8_t *data, size_t data_length) {
@@ -163,16 +207,39 @@ void jpeg_encode_arithmetic(const uint8_t *data, size_t data_length) {
   self.c = 0;
   self.ct = 11;
   self.mps = 0;
+  self.st = 0;
   self.output_length = 0;
+  self.output[0] = 0x00;
 
-  // printf(" EC   D MPS    Qe     A         C  CT\n");
+  //printf(" EC   D MPS    Qe     A         C  CT ST Bx B\n");
+  //size_t last_output_length = 0;
   for (size_t i = 0; i < data_length * 8; i++) {
     uint8_t d = data[i / 8] >> (7 - (i % 8)) & 0x1;
-    // printf("%3zi   %d   %d  %04X  %04X  %08X  %2zi\n", i + 1, d, self.mps,
-    // qe_values[self.s], self.a & 0xffff, self.c, self.ct);
+    //printf("%3zi   %d   %d  %04X  %04X  %08X  %2zi %2d  ?", i + 1, d, self.mps,
+    //       qe_values[self.s], self.a & 0xffff, self.c, self.ct, self.st);
+    //for (size_t i = last_output_length; i < self.output_length; i++) {
+    //  printf(" %02x", self.output[i]);
+    //}
+    //last_output_length = self.output_length;
+    //printf("\n");
     encode_bit(&self, d);
   }
+
+  //uint32_t c = self.c;
   flush(&self);
+  //printf("Fsh                %04X  %08X  %2zi %2d  ?", self.a & 0xffff, c,
+  //       self.ct, self.st);
+  //for (size_t i = last_output_length; i < self.output_length; i++) {
+  //  printf(" %02x", self.output[i]);
+  //}
+  //last_output_length = self.output_length;
+  //printf("\n");
+
+  // Add marker
+  self.output[self.output_length] = 0xff;
+  self.output_length++;
+  self.output[self.output_length] = 0xd9;
+  self.output_length++;
 
   for (size_t i = 0; i < self.output_length; i++) {
     printf("%02x", self.output[i]);
@@ -319,11 +386,11 @@ int main(int argc, char **argv) {
   printf("\n");
   jpeg_encode_arithmetic(test_data, 32);
 
-  const uint8_t expected_data[32] = {
+  const uint8_t expected_data[31] = {
       0x65, 0x5B, 0x51, 0x44, 0xF7, 0x96, 0x9D, 0x51, 0x78, 0x55, 0xBF,
       0xFF, 0x00, 0xFC, 0x51, 0x84, 0xC7, 0xCE, 0xF9, 0x39, 0x00, 0x28,
-      0x7D, 0x46, 0x70, 0x8E, 0xCB, 0xC0, 0xF6, 0xFF, 0xD9, 0x00};
-  for (size_t i = 0; i < 32; i++) {
+      0x7D, 0x46, 0x70, 0x8E, 0xCB, 0xC0, 0xF6, 0xFF, 0xD9};
+  for (size_t i = 0; i < 31; i++) {
     printf("%02x", expected_data[i]);
   }
   printf("\n");
