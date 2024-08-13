@@ -369,7 +369,7 @@ void jpeg_decode_arithmetic(const uint8_t *data, size_t data_length) {
       shift--;
     }
   }
-  if (shift != 0) {
+  if (shift != 7) {
     printf("%02x", byte);
   }
   printf("\n");
