@@ -4,8 +4,11 @@
 #include <stdio.h>
 
 typedef struct {
-  // Encoder state.
   uint8_t s;
+} ArithmeticStateMachine;
+
+typedef struct {
+  ArithmeticStateMachine state_machine;
 
   uint32_t a;
   uint32_t c;
@@ -21,8 +24,7 @@ typedef struct {
 } ArithmeticEncoder;
 
 typedef struct {
-  // Decoder state.
-  uint8_t s;
+  ArithmeticStateMachine state_machine;
 
   uint16_t a;
   uint16_t c;
@@ -81,6 +83,24 @@ static uint8_t switch_mps[113] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0,
     0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1};
 
+static void init_state_machine(ArithmeticStateMachine *self) { self->s = 0; }
+
+static uint16_t get_qe(ArithmeticStateMachine *self) {
+  return qe_values[self->s];
+}
+
+static bool get_switch_mps(ArithmeticStateMachine *self) {
+  return switch_mps[self->s] != 0;
+}
+
+static void next_lps(ArithmeticStateMachine *self) {
+  self->s = lps_next_index[self->s];
+}
+
+static void next_mps(ArithmeticStateMachine *self) {
+  self->s = mps_next_index[self->s];
+}
+
 static void byte_out(ArithmeticEncoder *self) {
   uint32_t t = self->c >> 19;
   if (t > 0xff) {
@@ -134,35 +154,37 @@ static void renorm_e(ArithmeticEncoder *self) {
 
 // Code the least possible symbol.
 static void encode_lps(ArithmeticEncoder *self) {
-  self->a -= qe_values[self->s];
-  if (self->a >= qe_values[self->s]) {
+  uint16_t qe = get_qe(&self->state_machine);
+  self->a -= qe;
+  if (self->a >= qe) {
     self->c += self->a;
-    self->a = qe_values[self->s];
+    self->a = qe;
   }
 
   // Estimate Qe
-  if (switch_mps[self->s]) {
+  if (get_switch_mps(&self->state_machine)) {
     self->mps ^= 0x1;
   }
-  self->s = lps_next_index[self->s];
+  next_lps(&self->state_machine);
 
   renorm_e(self);
 }
 
 // Code the most possible symbol.
 static void encode_mps(ArithmeticEncoder *self) {
-  self->a -= qe_values[self->s];
+  uint16_t qe = get_qe(&self->state_machine);
+  self->a -= qe;
   if (self->a >= 0x8000) {
     return;
   }
 
-  if (self->a < qe_values[self->s]) {
+  if (self->a < qe) {
     self->c += self->a;
-    self->a = qe_values[self->s];
+    self->a = qe;
   }
 
   // Estimate Qe
-  self->s = mps_next_index[self->s];
+  next_mps(&self->state_machine);
 
   renorm_e(self);
 }
@@ -202,7 +224,7 @@ static void flush(ArithmeticEncoder *self) {
 
 void jpeg_encode_arithmetic(const uint8_t *data, size_t data_length) {
   ArithmeticEncoder self;
-  self.s = 0;
+  init_state_machine(&self.state_machine);
   self.a = 0x10000;
   self.c = 0;
   self.ct = 11;
@@ -211,29 +233,30 @@ void jpeg_encode_arithmetic(const uint8_t *data, size_t data_length) {
   self.output_length = 0;
   self.output[0] = 0x00;
 
-  //printf(" EC   D MPS    Qe     A         C  CT ST Bx B\n");
-  //size_t last_output_length = 0;
+  // printf(" EC   D MPS    Qe     A         C  CT ST Bx B\n");
+  // size_t last_output_length = 0;
   for (size_t i = 0; i < data_length * 8; i++) {
     uint8_t d = data[i / 8] >> (7 - (i % 8)) & 0x1;
-    //printf("%3zi   %d   %d  %04X  %04X  %08X  %2zi %2d  ?", i + 1, d, self.mps,
-    //       qe_values[self.s], self.a & 0xffff, self.c, self.ct, self.st);
-    //for (size_t i = last_output_length; i < self.output_length; i++) {
-    //  printf(" %02x", self.output[i]);
-    //}
-    //last_output_length = self.output_length;
-    //printf("\n");
+    // printf("%3zi   %d   %d  %04X  %04X  %08X  %2zi %2d  ?", i + 1, d,
+    // self.mps,
+    //        qe_values[self.s], self.a & 0xffff, self.c, self.ct, self.st);
+    // for (size_t i = last_output_length; i < self.output_length; i++) {
+    //   printf(" %02x", self.output[i]);
+    // }
+    // last_output_length = self.output_length;
+    // printf("\n");
     encode_bit(&self, d);
   }
 
-  //uint32_t c = self.c;
+  // uint32_t c = self.c;
   flush(&self);
-  //printf("Fsh                %04X  %08X  %2zi %2d  ?", self.a & 0xffff, c,
-  //       self.ct, self.st);
-  //for (size_t i = last_output_length; i < self.output_length; i++) {
-  //  printf(" %02x", self.output[i]);
-  //}
-  //last_output_length = self.output_length;
-  //printf("\n");
+  // printf("Fsh                %04X  %08X  %2zi %2d  ?", self.a & 0xffff, c,
+  //        self.ct, self.st);
+  // for (size_t i = last_output_length; i < self.output_length; i++) {
+  //   printf(" %02x", self.output[i]);
+  // }
+  // last_output_length = self.output_length;
+  // printf("\n");
 
   // Add marker
   self.output[self.output_length] = 0xff;
@@ -286,15 +309,15 @@ static bool renorm_d(ArithmeticDecoder *self) {
 
 static uint8_t cond_mps_exchange(ArithmeticDecoder *self) {
   uint8_t d;
-  if (self->a < qe_values[self->s]) {
+  if (self->a < get_qe(&self->state_machine)) {
     d = self->mps ^ 0x1;
-    if (switch_mps[self->s]) {
+    if (get_switch_mps(&self->state_machine)) {
       self->mps ^= 0x1;
     }
-    self->s = lps_next_index[self->s];
+    next_lps(&self->state_machine);
   } else {
     d = self->mps;
-    self->s = mps_next_index[self->s];
+    next_mps(&self->state_machine);
   }
 
   return d;
@@ -303,17 +326,17 @@ static uint8_t cond_mps_exchange(ArithmeticDecoder *self) {
 static uint8_t cond_lps_exchange(ArithmeticDecoder *self) {
   self->c -= self->a;
 
-  uint16_t qe = qe_values[self->s];
+  uint16_t qe = get_qe(&self->state_machine);
   uint8_t d;
   if (self->a < qe) {
     d = self->mps;
-    self->s = mps_next_index[self->s];
+    next_mps(&self->state_machine);
   } else {
     d = self->mps ^ 0x1;
-    if (switch_mps[self->s]) {
+    if (get_switch_mps(&self->state_machine)) {
       self->mps ^= 0x1;
     }
-    self->s = lps_next_index[self->s];
+    next_lps(&self->state_machine);
   }
 
   self->a = qe;
@@ -322,7 +345,7 @@ static uint8_t cond_lps_exchange(ArithmeticDecoder *self) {
 }
 
 static bool decode_bit(ArithmeticDecoder *self, uint8_t *d) {
-  self->a -= qe_values[self->s];
+  self->a -= get_qe(&self->state_machine);
   if (self->c < self->a) {
     if (self->a < 0x8000) {
       *d = cond_mps_exchange(self);
@@ -340,7 +363,7 @@ static bool decode_bit(ArithmeticDecoder *self, uint8_t *d) {
 void jpeg_decode_arithmetic(const uint8_t *data, size_t data_length) {
   ArithmeticDecoder self;
 
-  self.s = 0;
+  init_state_machine(&self.state_machine);
   self.a = 0;
   self.c = 0;
   self.ct = 0;
