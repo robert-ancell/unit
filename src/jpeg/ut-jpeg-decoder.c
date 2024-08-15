@@ -2,6 +2,7 @@
 #include <math.h>
 #include <stdint.h>
 
+#include "ut-jpeg-arithmetic-decoder.h"
 #include "ut-jpeg.h"
 #include "ut.h"
 
@@ -30,7 +31,9 @@ typedef enum {
 typedef enum {
   SCAN_DECODER_STATE_COEFFICIENT_MAGNITUDE,
   SCAN_DECODER_STATE_COEFFICIENT_AMPLITUDE,
-  SCAN_DECODER_STATE_COEFFICIENT_END_OF_BLOCK_COUNT
+  SCAN_DECODER_STATE_COEFFICIENT_END_OF_BLOCK_COUNT,
+  SCAN_DECODER_STATE_ARITHMETIC,
+  SCAN_DECODER_STATE_ARITHMETIC_V
 } ScanDecoderState;
 
 typedef enum {
@@ -944,11 +947,19 @@ static size_t decode_define_arithmetic_coding(UtJpegDecoder *self,
       set_error(self, "Unsupported JPEG Arithmetic conditioning table value");
       return offset;
     }
-  }
 
-  if (true) {
-    set_error(self, "JPEG arithmetic coding not supported");
-    return 0;
+    UtObjectRef decoder = ut_jpeg_arithmetic_decoder_new();
+    if (class == 0) {
+      ut_object_unref(self->dc_decoders[destination]);
+      self->dc_decoders[destination] = ut_object_ref(decoder);
+      ut_object_unref(self->dc_tables[destination]);
+      self->dc_tables[destination] = NULL;
+    } else {
+      ut_object_unref(self->ac_decoders[destination]);
+      self->ac_decoders[destination] = ut_object_ref(decoder);
+      ut_object_unref(self->ac_tables[destination]);
+      self->ac_tables[destination] = NULL;
+    }
   }
 
   self->state = DECODER_STATE_MARKER;
@@ -1182,10 +1193,7 @@ static size_t decode_start_of_scan(UtJpegDecoder *self, UtObject *data) {
     return length;
   }
 
-  if (self->mode == DECODE_MODE_EXTENDED_DCT) {
-    set_error(self, "Extended DCT JPEG not supported");
-    return length;
-  }
+  // FIXME: Not all extended functionality supported
   if (self->mode == DECODE_MODE_PROGRESSIVE_DCT) {
     set_error(self, "Progressive DCT JPEG not supported");
     return length;
@@ -1199,10 +1207,6 @@ static size_t decode_start_of_scan(UtJpegDecoder *self, UtObject *data) {
     set_error(self, "Differential JPEG not supported");
     return length;
   }
-  if (self->arithmetic_coding) {
-    set_error(self, "Arithmetic JPEG not supported");
-    return length;
-  }
 
   self->scan_coefficient_start = selection_start;
   self->scan_coefficient_end = selection_end;
@@ -1214,6 +1218,12 @@ static size_t decode_start_of_scan(UtJpegDecoder *self, UtObject *data) {
     self->components[i].data_unit_count = 0;
   }
   self->state = DECODER_STATE_SCAN;
+
+  if (self->arithmetic_coding) {
+    self->scan_decoder_state = SCAN_DECODER_STATE_ARITHMETIC;
+  } else {
+    self->scan_decoder_state = SCAN_DECODER_STATE_COEFFICIENT_MAGNITUDE;
+  }
 
   return offset;
 }
@@ -1331,6 +1341,64 @@ static bool decode_coefficient_end_of_block_count(UtJpegDecoder *self,
   return true;
 }
 
+static bool decode_arithmetic(UtJpegDecoder *self, UtObject *data,
+                              size_t *offset) {
+  if (self->data_unit_coefficient_index == 0) {
+    uint8_t d;
+    if (!ut_jpeg_arithmetic_decoder_read_bit(, data, offset, &d)) {
+      return false;
+    }
+
+    if (d == 0) {
+      // uint8_t index =
+      // self->data_unit_order[self->data_unit_coefficient_index];
+      // encoded_data_unit[index] = 0;
+      self->data_unit_coefficient_index++;
+      return true;
+    }
+
+    self->scan_decoder_state = SCAN_DECODER_STATE_ARITHMETIC_V;
+    return true;
+  } else {
+    uint8_t d;
+    if (!ut_jpeg_arithmetic_decoder_read_bit(, data, offset, &d)) {
+      return false;
+    }
+
+    if (d == 1) {
+      // FIXME: Finished
+      return true;
+    }
+
+    self->scan_decoder_state = SCAN_DECODER_STATE_ARITHMETIC_S0;
+    return true;
+  }
+
+  return true;
+}
+
+static bool decode_arithmetic_v(UtJpegDecoder *self, UtObject *data,
+                                size_t *offset) {
+  return true;
+}
+
+static bool decode_arithmetic_s0(UtJpegDecoder *self, UtObject *data,
+                                 size_t *offset) {
+  uint8_t d;
+  if (!ut_jpeg_arithmetic_decoder_read_bit(, data, offset, &d)) {
+    return false;
+  }
+
+  if (d == 0) {
+    self->scan_decoder_state = SCAN_DECODER_STATE_ARITHMETIC;
+    self->data_unit_coefficient_index++;
+    return true;
+  }
+
+  self->scan_decoder_state = SCAN_DECODER_STATE_ARITHMETIC_V;
+  return true;
+}
+
 static size_t decode_scan(UtJpegDecoder *self, UtObject *data) {
   size_t offset = 0;
 
@@ -1346,6 +1414,12 @@ static size_t decode_scan(UtJpegDecoder *self, UtObject *data) {
     case SCAN_DECODER_STATE_COEFFICIENT_END_OF_BLOCK_COUNT:
       have_coefficient =
           decode_coefficient_end_of_block_count(self, data, &offset);
+      break;
+    case SCAN_DECODER_STATE_ARITHMETIC:
+      have_coefficient = decode_arithmetic(self, data, &offset);
+      break;
+    case SCAN_DECODER_STATE_ARITHMETIC_V:
+      have_coefficient = decode_arithmetic_v(self, data, &offset);
       break;
     }
   } while (have_coefficient && self->state != DECODER_STATE_ERROR);

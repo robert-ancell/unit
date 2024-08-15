@@ -111,6 +111,7 @@ ut_sources = [
   'protobuf/ut-protobuf-referenced-type.c',
   'protobuf/ut-protobuf-service.c',
   'jpeg/ut-jpeg.c',
+  'jpeg/ut-jpeg-arithmetic-decoder.c',
   'jpeg/ut-jpeg-decoder.c',
   'jpeg/ut-jpeg-encoder.c',
   'jpeg/ut-jpeg-error.c',
