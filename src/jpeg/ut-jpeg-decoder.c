@@ -1416,7 +1416,7 @@ static size_t decode_marker(UtJpegDecoder *self, UtObject *data) {
   case 0xd5:
   case 0xd6:
   case 0xd7:
-    handle_restart(self, marker_id = 0xd0);
+    handle_restart(self, marker_id - 0xd0);
     break;
   case 0xd8:
     handle_start_of_image(self);
