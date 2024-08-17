@@ -52,8 +52,8 @@ typedef struct {
   uint8_t horizontal_sampling_factor;
   uint8_t vertical_sampling_factor;
 
-  // The quantization table used by this component.
-  UtObject *quantization_table;
+  // The index of the quantization table used by this component.
+  size_t quantization_table_selector;
 
   // The Huffman/Arithmetic decoders this component uses.
   UtObject *dc_decoder;
@@ -426,8 +426,16 @@ static void process_data_unit(UtJpegDecoder *self) {
 static void add_coefficient(UtJpegDecoder *self, size_t run_length,
                             int16_t value) {
   JpegComponent *component = self->scan_components[self->scan_component_index];
+
+  UtObject *quantization_table =
+      self->quantization_tables[component->quantization_table_selector];
+  if (quantization_table == NULL) {
+    set_error(self, "Missing JPEG quantization table %zi",
+              component->quantization_table_selector);
+    return;
+  }
   const uint8_t *quantization_table_data =
-      ut_uint8_list_get_data(component->quantization_table);
+      ut_uint8_list_get_data(quantization_table);
 
   if (self->data_unit_coefficient_index + run_length >
       self->scan_coefficient_end) {
@@ -711,12 +719,6 @@ static size_t decode_start_of_frame(UtJpegDecoder *self, UtObject *data) {
       set_error(self, "Invalid JPEG component quantization table");
       return length;
     }
-    UtObject *quantization_table =
-        self->quantization_tables[quantization_table_selector];
-    if (quantization_table == NULL) {
-      set_error(self, "Missing JPEG quantization table");
-      return length;
-    }
 
     if (horizontal_sampling_factor == 3 || vertical_sampling_factor == 3) {
       set_error(self, "Unsupported sampling factor %dx%d for component %zi",
@@ -734,7 +736,8 @@ static size_t decode_start_of_frame(UtJpegDecoder *self, UtObject *data) {
     self->components[i].index = i;
     self->components[i].horizontal_sampling_factor = horizontal_sampling_factor;
     self->components[i].vertical_sampling_factor = vertical_sampling_factor;
-    self->components[i].quantization_table = quantization_table;
+    self->components[i].quantization_table_selector =
+        quantization_table_selector;
 
     self->components[i].coefficients = ut_int16_array_new_sized(64);
   }
