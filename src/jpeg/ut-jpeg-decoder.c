@@ -94,6 +94,9 @@ typedef struct {
   // Mode used to decode image.
   DecodeMode mode;
 
+  // Number of bits of precision.
+  size_t precision;
+
   // True if using differential.
   bool differential;
 
@@ -365,6 +368,12 @@ static void process_data_unit(UtJpegDecoder *self) {
   // Check if this is the final component being written.
   bool last_component = self->scan_component_index == n_components - 1;
 
+  size_t sample_offset = 1 << (self->precision - 1);
+  size_t sample_max = (1 << self->precision) - 1;
+
+  // For now convert 12 bit samples to 8 bit.
+  size_t sample_shift = self->precision - 8;
+
   // Write values into image.
   size_t sample_width = self->mcu_width / component->horizontal_sampling_factor;
   size_t sample_height = self->mcu_height / component->vertical_sampling_factor;
@@ -373,11 +382,11 @@ static void process_data_unit(UtJpegDecoder *self) {
     for (size_t x = 0; x < 8; x++) {
       size_t sx = data_unit_x + x * sample_width;
 
-      int16_t sample = decoded_data_unit[(y * 8) + x] + 128;
+      int16_t sample = decoded_data_unit[(y * 8) + x] + sample_offset;
       if (sample < 0) {
         sample = 0;
-      } else if (sample > 255) {
-        sample = 255;
+      } else if (sample > sample_max) {
+        sample = sample_max;
       }
 
       for (size_t v = 0; v < sample_height; v++) {
@@ -392,7 +401,7 @@ static void process_data_unit(UtJpegDecoder *self) {
           }
 
           size_t pixel_index = (py * row_stride) + (px * n_components);
-          image_data[pixel_index + component->index] = sample;
+          image_data[pixel_index + component->index] = sample >> sample_shift;
           // Last channel placed - do color conversion.
           if (last_component && n_components == 3) {
             ycbcr_to_rgb(image_data + pixel_index);
@@ -748,10 +757,7 @@ static size_t decode_start_of_frame(UtJpegDecoder *self, UtObject *data) {
     set_error(self, "Unsupported JPEG precision %d", precision);
     return length;
   }
-  if (precision == 12) {
-    set_error(self, "12 bit JPEG precision not supported");
-    return length;
-  }
+  self->precision = precision;
 
   if (self->hierarchial_progression) {
     set_error(self, "Hierarchial progression JPEG not supported");
@@ -1202,10 +1208,6 @@ static size_t decode_start_of_scan(UtJpegDecoder *self, UtObject *data) {
     return length;
   }
 
-  if (self->mode == DECODE_MODE_EXTENDED_DCT) {
-    set_error(self, "Extended DCT JPEG not supported");
-    return length;
-  }
   if (self->mode == DECODE_MODE_PROGRESSIVE_DCT) {
     set_error(self, "Progressive DCT JPEG not supported");
     return length;
