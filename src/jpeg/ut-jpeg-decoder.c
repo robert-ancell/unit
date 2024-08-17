@@ -22,6 +22,7 @@ typedef enum {
   DECODER_STATE_START_OF_SCAN,
   DECODER_STATE_SCAN,
   DECODER_STATE_APP0,
+  DECODER_STATE_APPLICATION_DATA,
   DECODER_STATE_COMMENT,
   DECODER_STATE_DONE,
   DECODER_STATE_ERROR
@@ -561,6 +562,22 @@ static size_t decode_app0(UtJpegDecoder *self, UtObject *data) {
     decode_jfif(self, app0_data);
   } else if (ut_cstring_equal(identifier, "JFXX")) {
     decode_jfxx(self, app0_data);
+  }
+
+  self->state = DECODER_STATE_MARKER;
+
+  return length;
+}
+
+static size_t decode_application_data(UtJpegDecoder *self, UtObject *data) {
+  size_t data_length = ut_list_get_length(data);
+
+  if (data_length < 2) {
+    return 0;
+  }
+  uint16_t length = ut_uint8_list_get_uint16_be(data, 0);
+  if (data_length < length) {
+    return 0;
   }
 
   self->state = DECODER_STATE_MARKER;
@@ -1499,6 +1516,23 @@ static size_t decode_marker(UtJpegDecoder *self, UtObject *data) {
   case 0xe0:
     self->state = DECODER_STATE_APP0;
     break;
+  case 0xe1:
+  case 0xe2:
+  case 0xe3:
+  case 0xe4:
+  case 0xe5:
+  case 0xe6:
+  case 0xe7:
+  case 0xe8:
+  case 0xe9:
+  case 0xea:
+  case 0xeb:
+  case 0xec:
+  case 0xed:
+  case 0xee:
+  case 0xef:
+    self->state = DECODER_STATE_APPLICATION_DATA;
+    break;
   case 0xfe:
     self->state = DECODER_STATE_COMMENT;
     break;
@@ -1558,6 +1592,9 @@ static size_t read_cb(UtObject *object, UtObject *data, bool complete) {
       break;
     case DECODER_STATE_APP0:
       n_used = decode_app0(self, d);
+      break;
+    case DECODER_STATE_APPLICATION_DATA:
+      n_used = decode_application_data(self, d);
       break;
     case DECODER_STATE_COMMENT:
       n_used = decode_comment(self, d);
