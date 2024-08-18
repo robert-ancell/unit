@@ -1269,6 +1269,10 @@ static bool decode_coefficient_magnitude(UtJpegDecoder *self, UtObject *data,
   if (!read_huffman_symbol(self, data, offset, decoder, &symbol)) {
     return false;
   }
+  if (symbol >= ut_list_get_length(table)) {
+    set_error(self, "Huffman symbol received not in table");
+    return false;
+  }
   uint8_t value = ut_uint8_list_get_element(table, symbol);
 
   if (self->data_unit_coefficient_index == 0) {
