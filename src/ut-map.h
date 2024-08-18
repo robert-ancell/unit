@@ -51,14 +51,14 @@ UtObject *ut_map_new_string_from_elements_take(const char *key, UtObject *value,
 size_t ut_map_get_length(UtObject *object);
 
 /// Insert [key]/[value] into the map.
-/// If an existing entry containins this key it will be replaced.
+/// If an existing entry contains this key it will be replaced.
 ///
 /// !arg-type key UtObject
 /// !arg-type value UtObject
 void ut_map_insert(UtObject *object, UtObject *key, UtObject *value);
 
 /// Insert [key]/[value] into the map.
-/// If an existing entry containins this key it will be replaced.
+/// If an existing entry contains this key it will be replaced.
 /// Both [key] and [value] must pass in references.
 ///
 /// !arg-type key UtObject
@@ -66,13 +66,13 @@ void ut_map_insert(UtObject *object, UtObject *key, UtObject *value);
 void ut_map_insert_take(UtObject *object, UtObject *key, UtObject *value);
 
 /// Insert [key]/[value] into the map.
-/// If an existing entry containins this key it will be replaced.
+/// If an existing entry contains this key it will be replaced.
 ///
 /// !arg-type value UtObject
 void ut_map_insert_string(UtObject *object, const char *key, UtObject *value);
 
 /// Insert [key]/[value] into the map.
-/// If an existing entry containins this key it will be replaced.
+/// If an existing entry contains this key it will be replaced.
 /// [value] must pass in a reference.
 ///
 /// !arg-type value UtObject

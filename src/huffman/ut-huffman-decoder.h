@@ -19,7 +19,7 @@ UtObject *ut_huffman_decoder_new(UtObject *symbol_weights);
 /// !return-type UtHuffmanDecoder
 UtObject *ut_huffman_decoder_new_canonical(UtObject *code_widths);
 
-/// Returns true if [code] and [code_width] containins data that matches
+/// Returns true if [code] and [code_width] contains data that matches
 /// [symbol].
 bool ut_huffman_decoder_get_symbol(UtObject *object, uint16_t code,
                                    size_t code_width, uint16_t *symbol);
