@@ -1151,9 +1151,9 @@ static size_t decode_start_of_scan(UtJpegDecoder *self, UtObject *data) {
     set_error(self, "Insufficient data for JPEG start of scan");
     return length;
   }
-  if (n_scan_components != ut_jpeg_image_get_n_components(self->image)) {
-    set_error(self,
-              "Mismatched number of scan components in JPEG start of scan");
+  if (n_scan_components < 1 || n_scan_components > 4) {
+    set_error(self, "Unsupported number of JPEG scan components %d",
+              n_scan_components);
     return length;
   }
 
@@ -1180,16 +1180,8 @@ static size_t decode_start_of_scan(UtJpegDecoder *self, UtObject *data) {
     }
     component->dc_decoder = self->dc_decoders[dc_table];
     component->dc_table = self->dc_tables[dc_table];
-    if (component->dc_decoder == NULL) {
-      set_error(self, "Missing DC table in JPEG start of scan");
-      return length;
-    }
     component->ac_decoder = self->ac_decoders[ac_table];
     component->ac_table = self->ac_tables[ac_table];
-    if (component->ac_decoder == NULL) {
-      set_error(self, "Missing AC table in JPEG start of scan");
-      return length;
-    }
   }
   uint8_t selection_start = ut_uint8_list_get_element(data, offset++);
   uint8_t selection_end = ut_uint8_list_get_element(data, offset++);
@@ -1224,6 +1216,18 @@ static size_t decode_start_of_scan(UtJpegDecoder *self, UtObject *data) {
   if (self->arithmetic_coding) {
     set_error(self, "Arithmetic JPEG not supported");
     return length;
+  }
+
+  // Check have required decoders.
+  for (size_t i = 0; i < n_scan_components; i++) {
+    if (selection_start == 0 && self->components[i].dc_decoder == NULL) {
+      set_error(self, "Missing DC table in JPEG start of scan");
+      return length;
+    }
+    if (selection_end > 0 && self->components[i].ac_decoder == NULL) {
+      set_error(self, "Missing AC table in JPEG start of scan");
+      return length;
+    }
   }
 
   self->scan_coefficient_start = selection_start;
