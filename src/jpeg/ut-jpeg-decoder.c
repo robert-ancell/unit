@@ -32,6 +32,8 @@ typedef enum {
 
 typedef enum {
   SCAN_DECODER_STATE_COEFFICIENT_MAGNITUDE,
+  SCAN_DECODER_STATE_COEFFICIENT_SIGN,
+  SCAN_DECODER_STATE_COEFFICIENT_CORRECTION,
   SCAN_DECODER_STATE_COEFFICIENT_AMPLITUDE,
   SCAN_DECODER_STATE_COEFFICIENT_END_OF_BLOCK_COUNT
 } ScanDecoderState;
@@ -120,6 +122,12 @@ typedef struct {
   // Height of an MCU in data units.
   size_t mcu_height;
 
+  // Number of MCUs that make up the width of the image.
+  size_t width_in_mcus;
+
+  // Number of MCUs that make up the height of the image.
+  size_t height_in_mcus;
+
   // Huffman/Arithmetic decoders for DC coefficients.
   UtObject *dc_decoders[4];
 
@@ -160,6 +168,10 @@ typedef struct {
 
   // First coefficient to be received in current scan.
   size_t scan_coefficient_end;
+
+  // Point transforms.
+  size_t scan_previous_point_transform;
+  size_t scan_point_transform;
 
   // Index of current coefficient in current data unit.
   size_t data_unit_coefficient_index;
@@ -346,10 +358,8 @@ static void process_data_unit(UtJpegDecoder *self) {
       ut_uint8_list_get_writable_data(ut_jpeg_image_get_data(self->image));
 
   // Get position of current MCU in image.
-  size_t width_in_mcus =
-      (image_width + (self->mcu_width * 8) - 1) / (self->mcu_width * 8);
-  size_t mcu_x = (self->mcu_count % width_in_mcus) * self->mcu_width * 8;
-  size_t mcu_y = (self->mcu_count / width_in_mcus) * self->mcu_height * 8;
+  size_t mcu_x = (self->mcu_count % self->width_in_mcus) * self->mcu_width * 8;
+  size_t mcu_y = (self->mcu_count / self->width_in_mcus) * self->mcu_height * 8;
 
   // Get position of current data unit in image.
   JpegComponent *component = self->scan_components[self->scan_component_index];
@@ -491,7 +501,11 @@ static void handle_start_of_image(UtJpegDecoder *self) {
   self->state = DECODER_STATE_MARKER;
 }
 
-static void handle_end_of_image(UtJpegDecoder *self) { set_done(self); }
+static void handle_end_of_image(UtJpegDecoder *self) {
+  // FIXME: Check all scans complete
+
+  set_done(self);
+}
 
 static void decode_jfif(UtJpegDecoder *self, UtObject *data) {
   size_t data_length = ut_list_get_length(data);
@@ -752,11 +766,30 @@ static size_t decode_start_of_frame(UtJpegDecoder *self, UtObject *data) {
     self->components[i].vertical_sampling_factor = vertical_sampling_factor;
     self->components[i].quantization_table_selector =
         quantization_table_selector;
-
-    self->components[i].coefficients = ut_int16_array_new_sized(64);
   }
   self->mcu_width = mcu_width;
   self->mcu_height = mcu_height;
+  self->width_in_mcus = (width + (mcu_width * 8) - 1) / (mcu_width * 8);
+  self->height_in_mcus = (height + (mcu_height * 8) - 1) / (mcu_height * 8);
+
+  // Allocate arrays for DCT coefficients.
+  for (size_t i = 0; i < n_components; i++) {
+    JpegComponent *component = &self->components[i];
+
+    size_t width_in_data_units =
+        self->width_in_mcus * component->horizontal_sampling_factor;
+    size_t height_in_data_units =
+        self->height_in_mcus * component->vertical_sampling_factor;
+
+    // For progressive scans we need to keep all the coefficients around, for
+    // other scans we just need one data unit worth.
+    if (self->mode == DECODE_MODE_PROGRESSIVE_DCT) {
+      component->coefficients = ut_int16_array_new_sized(
+          64 * width_in_data_units * height_in_data_units);
+    } else {
+      component->coefficients = ut_int16_array_new_sized(64);
+    }
+  }
 
   if (!supported_precision(self, precision)) {
     set_error(self, "Unsupported JPEG precision %d", precision);
@@ -1151,13 +1184,13 @@ static size_t decode_start_of_scan(UtJpegDecoder *self, UtObject *data) {
     return 0;
   }
 
-  uint8_t n_scan_components = ut_uint8_list_get_element(data, offset++);
+  size_t n_scan_components = ut_uint8_list_get_element(data, offset++);
   if (length < 6 + 2 * n_scan_components) {
     set_error(self, "Insufficient data for JPEG start of scan");
     return length;
   }
   if (n_scan_components < 1 || n_scan_components > MAX_SCAN_COMPONENTS) {
-    set_error(self, "Unsupported number of JPEG scan components %d",
+    set_error(self, "Unsupported number of JPEG scan components %zi",
               n_scan_components);
     return length;
   }
@@ -1208,10 +1241,6 @@ static size_t decode_start_of_scan(UtJpegDecoder *self, UtObject *data) {
     return length;
   }
 
-  if (self->mode == DECODE_MODE_PROGRESSIVE_DCT) {
-    set_error(self, "Progressive JPEG not supported");
-    return length;
-  }
   if (self->mode == DECODE_MODE_LOSSLESS) {
     set_error(self, "Lossless JPEG not supported");
     return length;
@@ -1224,6 +1253,12 @@ static size_t decode_start_of_scan(UtJpegDecoder *self, UtObject *data) {
   if (self->arithmetic_coding) {
     set_error(self, "Arithmetic JPEG not supported");
     return length;
+  }
+
+  if (successive_approximation_high != 0 || successive_approximation_low != 0) {
+    // set_error(self, "JPEG successive approximation %d %d not supported",
+    // successive_approximation_high, successive_approximation_low); return
+    // length;
   }
 
   // Check have required decoders.
@@ -1243,6 +1278,13 @@ static size_t decode_start_of_scan(UtJpegDecoder *self, UtObject *data) {
   self->data_unit_coefficient_index = self->scan_coefficient_start;
   self->mcu_count = 0;
   self->scan_component_index = 0;
+  if (self->mode == DECODE_MODE_PROGRESSIVE_DCT) {
+    self->scan_previous_point_transform = 1 << successive_approximation_high;
+    self->scan_point_transform = 1 << successive_approximation_low;
+  } else {
+    self->scan_previous_point_transform = 1;
+    self->scan_point_transform = 1;
+  }
   for (size_t i = 0; i < n_scan_components; i++) {
     self->scan_components[i]->previous_dc = 0;
     self->scan_components[i]->data_unit_count = 0;
@@ -1277,6 +1319,12 @@ static bool decode_coefficient_magnitude(UtJpegDecoder *self, UtObject *data,
   } else {
     self->coefficient_magnitude = value & 0xf;
     self->run_length = value >> 4;
+
+    if (self->scan_previous_point_transform != 1) {
+      self->scan_decoder_state = SCAN_DECODER_STATE_COEFFICIENT_SIGN;
+      return true;
+    }
+
     if (self->coefficient_magnitude == 0 && self->run_length < 15) {
       self->scan_decoder_state =
           SCAN_DECODER_STATE_COEFFICIENT_END_OF_BLOCK_COUNT;
@@ -1287,6 +1335,25 @@ static bool decode_coefficient_magnitude(UtJpegDecoder *self, UtObject *data,
   self->scan_decoder_state = SCAN_DECODER_STATE_COEFFICIENT_AMPLITUDE;
 
   return true;
+}
+
+static bool decode_coefficient_sign(UtJpegDecoder *self, UtObject *data,
+                                    size_t *offset) {
+  // FIXME: sign (0=-ve, 1=+ve)
+  uint16_t value;
+  if (!read_int(self, data, offset, 1, &value)) {
+    return false;
+  }
+
+  self->scan_decoder_state = SCAN_DECODER_STATE_COEFFICIENT_CORRECTION;
+  return true;
+}
+
+static bool decode_coefficient_correction(UtJpegDecoder *self, UtObject *data,
+                                          size_t *offset) {
+  // FIXME: Need to count how many non-zero coefficients skipped over.
+
+  assert(false);
 }
 
 static bool decode_coefficient_amplitude(UtJpegDecoder *self, UtObject *data,
@@ -1327,6 +1394,7 @@ static bool decode_coefficient_amplitude(UtJpegDecoder *self, UtObject *data,
     run_length = self->run_length;
     coefficient = amplitude;
   }
+  //  FIXME: run_length only skips existing coefficients with zero value in
   add_coefficient(self, run_length, coefficient);
 
   self->scan_decoder_state = SCAN_DECODER_STATE_COEFFICIENT_MAGNITUDE;
@@ -1368,21 +1436,24 @@ static bool decode_coefficient_end_of_block_count(UtJpegDecoder *self,
 static size_t decode_scan(UtJpegDecoder *self, UtObject *data) {
   size_t offset = 0;
 
-  bool have_coefficient;
+  bool decoding;
   do {
     switch (self->scan_decoder_state) {
     case SCAN_DECODER_STATE_COEFFICIENT_MAGNITUDE:
-      have_coefficient = decode_coefficient_magnitude(self, data, &offset);
+      decoding = decode_coefficient_magnitude(self, data, &offset);
       break;
+    case SCAN_DECODER_STATE_COEFFICIENT_SIGN:
+      decoding = decode_coefficient_sign(self, data, &offset);
+    case SCAN_DECODER_STATE_COEFFICIENT_CORRECTION:
+      decoding = decode_coefficient_correction(self, data, &offset);
     case SCAN_DECODER_STATE_COEFFICIENT_AMPLITUDE:
-      have_coefficient = decode_coefficient_amplitude(self, data, &offset);
+      decoding = decode_coefficient_amplitude(self, data, &offset);
       break;
     case SCAN_DECODER_STATE_COEFFICIENT_END_OF_BLOCK_COUNT:
-      have_coefficient =
-          decode_coefficient_end_of_block_count(self, data, &offset);
+      decoding = decode_coefficient_end_of_block_count(self, data, &offset);
       break;
     }
-  } while (have_coefficient && self->state != DECODER_STATE_ERROR);
+  } while (decoding && self->state != DECODER_STATE_ERROR);
 
   return offset;
 }
