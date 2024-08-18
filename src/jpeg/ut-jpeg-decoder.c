@@ -10,6 +10,8 @@
 
 // Supports baseline process
 
+#define MAX_SCAN_COMPONENTS 4
+
 typedef enum {
   DECODER_STATE_MARKER,
   DECODER_STATE_DEFINE_QUANTIZATION_TABLE,
@@ -110,7 +112,7 @@ typedef struct {
   UtObject *quantization_tables[4];
 
   // Components provided in image.
-  JpegComponent components[4];
+  JpegComponent components[MAX_SCAN_COMPONENTS];
 
   // Width of an MCU in data units.
   size_t mcu_width;
@@ -366,7 +368,9 @@ static void process_data_unit(UtJpegDecoder *self) {
                    decoded_data_unit);
 
   // Check if this is the final component being written.
-  bool last_component = self->scan_component_index == n_components - 1;
+  bool last_component =
+      self->scan_component_index == n_components - 1 ||
+      self->scan_components[self->scan_component_index + 1] == NULL;
 
   size_t sample_offset = 1 << (self->precision - 1);
   size_t sample_max = (1 << self->precision) - 1;
@@ -421,7 +425,8 @@ static void process_data_unit(UtJpegDecoder *self) {
     self->scan_component_index++;
 
     // All components in the MCU complete, move to the next MCU.
-    if (self->scan_component_index >= n_components) {
+    if (self->scan_component_index >= n_components ||
+        self->scan_components[self->scan_component_index] == NULL) {
       self->scan_component_index = 0;
       self->mcu_count++;
     }
@@ -692,7 +697,7 @@ static size_t decode_start_of_frame(UtJpegDecoder *self, UtObject *data) {
     return length;
   }
 
-  if (n_components < 1 || n_components > 4) {
+  if (n_components < 1 || n_components > MAX_SCAN_COMPONENTS) {
     set_error(self, "Unsupported number of JPEG components %d", n_components);
     return length;
   }
@@ -1151,7 +1156,7 @@ static size_t decode_start_of_scan(UtJpegDecoder *self, UtObject *data) {
     set_error(self, "Insufficient data for JPEG start of scan");
     return length;
   }
-  if (n_scan_components < 1 || n_scan_components > 4) {
+  if (n_scan_components < 1 || n_scan_components > MAX_SCAN_COMPONENTS) {
     set_error(self, "Unsupported number of JPEG scan components %d",
               n_scan_components);
     return length;
@@ -1183,6 +1188,9 @@ static size_t decode_start_of_scan(UtJpegDecoder *self, UtObject *data) {
     component->ac_decoder = self->ac_decoders[ac_table];
     component->ac_table = self->ac_tables[ac_table];
   }
+  for (size_t i = n_scan_components; i < MAX_SCAN_COMPONENTS; i++) {
+    self->scan_components[i] = NULL;
+  }
   uint8_t selection_start = ut_uint8_list_get_element(data, offset++);
   uint8_t selection_end = ut_uint8_list_get_element(data, offset++);
   uint8_t successive_approximation = ut_uint8_list_get_element(data, offset++);
@@ -1201,7 +1209,7 @@ static size_t decode_start_of_scan(UtJpegDecoder *self, UtObject *data) {
   }
 
   if (self->mode == DECODE_MODE_PROGRESSIVE_DCT) {
-    set_error(self, "Progressive DCT JPEG not supported");
+    set_error(self, "Progressive JPEG not supported");
     return length;
   }
   if (self->mode == DECODE_MODE_LOSSLESS) {
@@ -1220,11 +1228,11 @@ static size_t decode_start_of_scan(UtJpegDecoder *self, UtObject *data) {
 
   // Check have required decoders.
   for (size_t i = 0; i < n_scan_components; i++) {
-    if (selection_start == 0 && self->components[i].dc_decoder == NULL) {
+    if (selection_start == 0 && self->scan_components[i]->dc_decoder == NULL) {
       set_error(self, "Missing DC table in JPEG start of scan");
       return length;
     }
-    if (selection_end > 0 && self->components[i].ac_decoder == NULL) {
+    if (selection_end > 0 && self->scan_components[i]->ac_decoder == NULL) {
       set_error(self, "Missing AC table in JPEG start of scan");
       return length;
     }
@@ -1236,8 +1244,8 @@ static size_t decode_start_of_scan(UtJpegDecoder *self, UtObject *data) {
   self->mcu_count = 0;
   self->scan_component_index = 0;
   for (size_t i = 0; i < n_scan_components; i++) {
-    self->components[i].previous_dc = 0;
-    self->components[i].data_unit_count = 0;
+    self->scan_components[i]->previous_dc = 0;
+    self->scan_components[i]->data_unit_count = 0;
   }
   self->state = DECODER_STATE_SCAN;
 
@@ -1646,6 +1654,8 @@ static void ut_jpeg_decoder_cleanup(UtObject *object) {
     ut_object_unref(self->dc_tables[i]);
     ut_object_unref(self->ac_decoders[i]);
     ut_object_unref(self->ac_tables[i]);
+  }
+  for (size_t i = 0; i < MAX_SCAN_COMPONENTS; i++) {
     ut_object_unref(self->components[i].coefficients);
   }
   free(self->comment);
