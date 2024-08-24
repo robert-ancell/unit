@@ -1372,21 +1372,20 @@ static bool decode_coefficient_end_of_block_count(UtJpegDecoder *self,
 static size_t decode_scan(UtJpegDecoder *self, UtObject *data) {
   size_t offset = 0;
 
-  bool have_coefficient;
+  bool decoding;
   do {
     switch (self->scan_decoder_state) {
     case SCAN_DECODER_STATE_COEFFICIENT_MAGNITUDE:
-      have_coefficient = decode_coefficient_magnitude(self, data, &offset);
+      decoding = decode_coefficient_magnitude(self, data, &offset);
       break;
     case SCAN_DECODER_STATE_COEFFICIENT_AMPLITUDE:
-      have_coefficient = decode_coefficient_amplitude(self, data, &offset);
+      decoding = decode_coefficient_amplitude(self, data, &offset);
       break;
     case SCAN_DECODER_STATE_COEFFICIENT_END_OF_BLOCK_COUNT:
-      have_coefficient =
-          decode_coefficient_end_of_block_count(self, data, &offset);
+      decoding = decode_coefficient_end_of_block_count(self, data, &offset);
       break;
     }
-  } while (have_coefficient && self->state != DECODER_STATE_ERROR);
+  } while (decoding && self->state != DECODER_STATE_ERROR);
 
   return offset;
 }
