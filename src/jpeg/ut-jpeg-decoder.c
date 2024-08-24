@@ -83,7 +83,7 @@ typedef struct {
   UtObject *callback_object;
   UtJpegDecodeCallback callback;
 
-  // Current bits being written.
+  // Current bits being read.
   uint8_t bit_buffer;
   uint8_t bit_count;
 
@@ -1247,9 +1247,14 @@ static size_t decode_start_of_scan(UtJpegDecoder *self, UtObject *data) {
     self->scan_components[i]->previous_dc = 0;
     self->scan_components[i]->data_unit_count = 0;
   }
+  self->bit_buffer = 0;
+  self->bit_count = 0;
+  self->code = 0;
+  self->code_width = 0;
   self->state = DECODER_STATE_SCAN;
+  self->scan_decoder_state = SCAN_DECODER_STATE_COEFFICIENT_MAGNITUDE;
 
-  return offset;
+  return length;
 }
 
 static bool decode_coefficient_magnitude(UtJpegDecoder *self, UtObject *data,
