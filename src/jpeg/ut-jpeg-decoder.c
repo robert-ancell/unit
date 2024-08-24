@@ -33,7 +33,9 @@ typedef enum {
 typedef enum {
   SCAN_DECODER_STATE_COEFFICIENT_MAGNITUDE,
   SCAN_DECODER_STATE_COEFFICIENT_AMPLITUDE,
-  SCAN_DECODER_STATE_COEFFICIENT_END_OF_BLOCK_COUNT
+  SCAN_DECODER_STATE_COEFFICIENT_AC_REFINE,
+  SCAN_DECODER_STATE_COEFFICIENT_AC_CORRECTION,
+  SCAN_DECODER_STATE_END_OF_BLOCK_COUNT
 } ScanDecoderState;
 
 typedef enum {
@@ -163,6 +165,16 @@ typedef struct {
 
   // Index of current coefficient in current data unit.
   size_t data_unit_coefficient_index;
+
+  // Transform (i.e. bit shift) that has been applied to the coefficients.
+  size_t point_transform;
+
+  // Transform applied in the previous scan.
+  // FIXME: Useless?
+  size_t previous_point_transform;
+
+  // Next AC coefficient to apply in progressive decoding.
+  int16_t next_ac_coefficient;
 
   // Number of MCUs processed.
   size_t mcu_count;
@@ -1208,10 +1220,6 @@ static size_t decode_start_of_scan(UtJpegDecoder *self, UtObject *data) {
     return length;
   }
 
-  if (self->mode == DECODE_MODE_PROGRESSIVE_DCT) {
-    set_error(self, "Progressive JPEG not supported");
-    return length;
-  }
   if (self->mode == DECODE_MODE_LOSSLESS) {
     set_error(self, "Lossless JPEG not supported");
     return length;
@@ -1241,6 +1249,7 @@ static size_t decode_start_of_scan(UtJpegDecoder *self, UtObject *data) {
   self->scan_coefficient_start = selection_start;
   self->scan_coefficient_end = selection_end;
   self->data_unit_coefficient_index = self->scan_coefficient_start;
+  self->point_transform = successive_approximation_low;
   self->mcu_count = 0;
   self->scan_component_index = 0;
   for (size_t i = 0; i < n_scan_components; i++) {
@@ -1263,6 +1272,13 @@ static bool decode_coefficient_magnitude(UtJpegDecoder *self, UtObject *data,
 
   UtObject *decoder, *table;
   if (self->data_unit_coefficient_index == 0) {
+    // For progressive just next bit of current index.
+    if (self->previous_point_transform != 0) {
+      // FIXME
+      set_error(self, "DC progressive not supported");
+      return false;
+    }
+
     decoder = component->dc_decoder;
     table = component->dc_table;
   } else {
@@ -1287,8 +1303,14 @@ static bool decode_coefficient_magnitude(UtJpegDecoder *self, UtObject *data,
     self->coefficient_magnitude = value & 0xf;
     self->run_length = value >> 4;
     if (self->coefficient_magnitude == 0 && self->run_length < 15) {
-      self->scan_decoder_state =
-          SCAN_DECODER_STATE_COEFFICIENT_END_OF_BLOCK_COUNT;
+      self->scan_decoder_state = SCAN_DECODER_STATE_END_OF_BLOCK_COUNT;
+      return true;
+    }
+
+    if (self->previous_point_transform != 0) {
+      // FIXME: coefficient_magnitude should always be 1, it's a warning if not.
+      // FIXME: point_transform should be one more than previous_point_transform
+      self->scan_decoder_state = SCAN_DECODER_STATE_COEFFICIENT_AC_REFINE;
       return true;
     }
   }
@@ -1323,6 +1345,10 @@ static bool decode_coefficient_amplitude(UtJpegDecoder *self, UtObject *data,
     } else {
       amplitude = value - (min_amplitude * 2) + 1;
     }
+
+    if (self->point_transform != 0) {
+      amplitude *= 1 << self->point_transform;
+    }
   }
 
   size_t run_length;
@@ -1343,9 +1369,67 @@ static bool decode_coefficient_amplitude(UtJpegDecoder *self, UtObject *data,
   return true;
 }
 
-static bool decode_coefficient_end_of_block_count(UtJpegDecoder *self,
-                                                  UtObject *data,
-                                                  size_t *offset) {
+static bool decode_coefficient_ac_refine(UtJpegDecoder *self, UtObject *data,
+                                         size_t *offset) {
+  uint8_t value;
+  if (!read_scan_bit(self, data, offset, &value)) {
+    return false;
+  }
+  self->next_ac_coefficient = 1 << self->point_transform;
+  if (value) {
+    self->next_ac_coefficient = -self->next_ac_coefficient;
+  }
+
+  self->scan_decoder_state = SCAN_DECODER_STATE_COEFFICIENT_AC_CORRECTION;
+  return true;
+}
+
+static bool decode_coefficient_ac_correction(UtJpegDecoder *self,
+                                             UtObject *data, size_t *offset) {
+  JpegComponent *component = self->scan_components[self->scan_component_index];
+  int16_t *encoded_data_unit =
+      ut_int16_list_get_writable_data(component->coefficients);
+
+  while (self->run_length > 0) {
+    uint8_t index = self->data_unit_order[self->data_unit_coefficient_index];
+    int64_t c = encoded_data_unit[index];
+
+    // If already set, then get correction.
+    if (c != 0) {
+      uint8_t value;
+      if (!read_scan_bit(self, data, offset, &value)) {
+        return false;
+      }
+      if (value) {
+        if (c < 0) {
+          c = -c;
+          c |= (1 << self->point_transform);
+          c = -c;
+        } else {
+          c |= (1 << self->point_transform);
+        }
+
+        encoded_data_unit[index] = c;
+      }
+    } else {
+      self->run_length--;
+    }
+
+    self->data_unit_coefficient_index++;
+  }
+
+  // Add new coefficient.
+  uint8_t index = self->data_unit_order[self->data_unit_coefficient_index];
+  encoded_data_unit[index] = self->next_ac_coefficient;
+  self->data_unit_coefficient_index++;
+
+  self->scan_decoder_state = SCAN_DECODER_STATE_COEFFICIENT_MAGNITUDE;
+
+  return true;
+}
+
+static bool decode_end_of_block_count(UtJpegDecoder *self, UtObject *data,
+                                      size_t *offset) {
   size_t length = self->run_length;
 
   size_t count;
@@ -1386,8 +1470,14 @@ static size_t decode_scan(UtJpegDecoder *self, UtObject *data) {
     case SCAN_DECODER_STATE_COEFFICIENT_AMPLITUDE:
       decoding = decode_coefficient_amplitude(self, data, &offset);
       break;
-    case SCAN_DECODER_STATE_COEFFICIENT_END_OF_BLOCK_COUNT:
-      decoding = decode_coefficient_end_of_block_count(self, data, &offset);
+    case SCAN_DECODER_STATE_COEFFICIENT_AC_REFINE:
+      decoding = decode_coefficient_ac_refine(self, data, &offset);
+      break;
+    case SCAN_DECODER_STATE_COEFFICIENT_AC_CORRECTION:
+      decoding = decode_coefficient_ac_correction(self, data, &offset);
+      break;
+    case SCAN_DECODER_STATE_END_OF_BLOCK_COUNT:
+      decoding = decode_end_of_block_count(self, data, &offset);
       break;
     }
   } while (decoding && self->state != DECODER_STATE_ERROR);
