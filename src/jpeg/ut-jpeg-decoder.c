@@ -2,15 +2,17 @@
 #include <math.h>
 #include <stdint.h>
 
+#include "ut-jpeg-huffman-decoder.h"
+#include "ut-jpeg-scan-component.h"
 #include "ut-jpeg.h"
 #include "ut.h"
 
 // https://www.w3.org/Graphics/JPEG/itu-t81.pdf
 // https://www.w3.org/Graphics/JPEG/jfif3.pdf
 
-// Supports baseline process
-
+#define MAX_QUANTIZATION_TABLES 4
 #define MAX_SCAN_COMPONENTS 4
+#define MAX_HUFFMAN_TABLES 4
 
 typedef enum {
   DECODER_STATE_MARKER,
@@ -29,12 +31,6 @@ typedef enum {
   DECODER_STATE_DONE,
   DECODER_STATE_ERROR
 } DecoderState;
-
-typedef enum {
-  SCAN_DECODER_STATE_COEFFICIENT_MAGNITUDE,
-  SCAN_DECODER_STATE_COEFFICIENT_AMPLITUDE,
-  SCAN_DECODER_STATE_COEFFICIENT_END_OF_BLOCK_COUNT
-} ScanDecoderState;
 
 typedef enum {
   DECODE_MODE_BASELINE_DCT,
@@ -57,18 +53,6 @@ typedef struct {
   // The index of the quantization table used by this component.
   size_t quantization_table_selector;
 
-  // The Huffman/Arithmetic decoders this component uses.
-  UtObject *dc_decoder;
-  UtObject *dc_table;
-  UtObject *ac_decoder;
-  UtObject *ac_table;
-
-  // DC value from previous data unit.
-  int16_t previous_dc;
-
-  // Number of data units decoded in the current MCU.
-  size_t data_unit_count;
-
   // Encoded image coefficients.
   UtObject *coefficients;
 } JpegComponent;
@@ -83,15 +67,8 @@ typedef struct {
   UtObject *callback_object;
   UtJpegDecodeCallback callback;
 
-  // Current bits being read.
-  uint8_t bit_buffer;
-  uint8_t bit_count;
-
   // Current state of the decoder.
   DecoderState state;
-
-  // Current state of the scan decoder.
-  ScanDecoderState scan_decoder_state;
 
   // Mode used to decode image.
   DecodeMode mode;
@@ -109,7 +86,7 @@ typedef struct {
   bool hierarchial_progression;
 
   // Tables for coefficient quantization values.
-  UtObject *quantization_tables[4];
+  UtObject *quantization_tables[MAX_QUANTIZATION_TABLES];
 
   // Components provided in image.
   JpegComponent components[MAX_SCAN_COMPONENTS];
@@ -127,16 +104,16 @@ typedef struct {
   size_t height_in_mcus;
 
   // Huffman/Arithmetic decoders for DC coefficients.
-  UtObject *dc_decoders[4];
+  UtObject *dc_decoders[MAX_HUFFMAN_TABLES];
 
   // Maps from DC Huffman symbols to coefficent values.
-  UtObject *dc_tables[4];
+  UtObject *dc_tables[MAX_HUFFMAN_TABLES];
 
   // Huffman/Arithmentic decoders for AC coefficients.
-  UtObject *ac_decoders[4];
+  UtObject *ac_decoders[MAX_HUFFMAN_TABLES];
 
   // Maps from AC Huffman symbols to coefficent values.
-  UtObject *ac_tables[4];
+  UtObject *ac_tables[MAX_HUFFMAN_TABLES];
 
   // Order that data unit values are written.
   uint8_t data_unit_order[64];
@@ -145,33 +122,11 @@ typedef struct {
   float dct_alpha[8];
   float dct_cos[64];
 
-  // Last read Huffman code.
-  uint16_t code;
-  uint8_t code_width;
+  // Stream of scan data.
+  UtObject *scan_stream;
 
-  // Magnitude of coefficient.
-  uint8_t coefficient_magnitude;
-
-  // Number of zeros before this coefficient.
-  size_t run_length;
-
-  // Components in the current scan.
-  JpegComponent *scan_components[4];
-
-  // Current component scan is processing.
-  size_t scan_component_index;
-
-  // First coefficient to be received in current scan.
-  size_t scan_coefficient_start;
-
-  // First coefficient to be received in current scan.
-  size_t scan_coefficient_end;
-
-  // Index of current coefficient in current data unit.
-  size_t data_unit_coefficient_index;
-
-  // Number of MCUs processed.
-  size_t mcu_count;
+  // Scan decoder (Huffman/Aritmetic).
+  UtObject *scan_decoder;
 
   // Density information;
   UtJpegDensityUnits density_units;
@@ -234,94 +189,7 @@ static JpegComponent *find_component(UtJpegDecoder *self, uint8_t id) {
   return NULL;
 }
 
-// Read a the next scan byte from [data] and write it to [value].
-static bool read_scan_byte(UtJpegDecoder *self, UtObject *data, size_t *offset,
-                           uint8_t *value) {
-  size_t data_length = ut_list_get_length(data);
-
-  size_t o = *offset;
-  if (o >= data_length) {
-    return false;
-  }
-
-  uint8_t byte1 = ut_uint8_list_get_element(data, o++);
-
-  // Scan data terminates on a marker. If 0xff is in the scan data, 0x00 is
-  // after it so it can't be a valid marker. The 0x00 is dropped.
-  if (byte1 == 0xff) {
-    if (o >= data_length) {
-      return false;
-    }
-    uint8_t byte2 = ut_uint8_list_get_element(data, o++);
-    if (byte2 != 0x00) {
-      self->state = DECODER_STATE_MARKER;
-      return false;
-    }
-  }
-
-  *offset = o;
-  *value = byte1;
-  return true;
-}
-
-// Read the next bit from [data] and write it to [value].
-static bool read_scan_bit(UtJpegDecoder *self, UtObject *data, size_t *offset,
-                          uint8_t *value) {
-  if (self->bit_count == 0) {
-    if (!read_scan_byte(self, data, offset, &self->bit_buffer)) {
-      return false;
-    }
-    self->bit_count = 8;
-  }
-
-  *value = self->bit_buffer >> 7;
-  self->bit_buffer <<= 1;
-  self->bit_count--;
-
-  return true;
-}
-
-// Read the next Huffman symbol from [data] using [decoder] and write it to
-// [symbol].
-static bool read_huffman_symbol(UtJpegDecoder *self, UtObject *data,
-                                size_t *offset, UtObject *decoder,
-                                uint16_t *symbol) {
-  while (true) {
-    uint8_t bit;
-    if (!read_scan_bit(self, data, offset, &bit)) {
-      return false;
-    }
-    self->code = self->code << 1 | bit;
-    self->code_width++;
-    if (ut_huffman_decoder_get_symbol(decoder, self->code, self->code_width,
-                                      symbol)) {
-      self->code = 0;
-      self->code_width = 0;
-      return true;
-    }
-  }
-}
-
-// Read an integer of [length] bits from [data].
-static bool read_int(UtJpegDecoder *self, UtObject *data, size_t *offset,
-                     size_t length, uint16_t *value) {
-  while (self->code_width < length) {
-    uint8_t bit;
-    if (!read_scan_bit(self, data, offset, &bit)) {
-      return false;
-    }
-    // FIXME: Use bit_buffer instead of self->code
-    self->code = self->code << 1 | bit;
-    self->code_width++;
-  }
-
-  *value = self->code;
-  self->code = 0;
-  self->code_width = 0;
-
-  return true;
-}
-
+#if 0
 static uint8_t clamp(float value) {
   if (value < 0.0) {
     return 0;
@@ -418,69 +286,8 @@ static void process_data_unit(UtJpegDecoder *self) {
       }
     }
   }
-
-  component->data_unit_count++;
-
-  // All data units for this component in this MCU complete, move to the next
-  // component.
-  if (component->data_unit_count >= component->horizontal_sampling_factor *
-                                        component->vertical_sampling_factor) {
-    component->data_unit_count = 0;
-    self->scan_component_index++;
-
-    // All components in the MCU complete, move to the next MCU.
-    if (self->scan_component_index >= n_components ||
-        self->scan_components[self->scan_component_index] == NULL) {
-      self->scan_component_index = 0;
-      self->mcu_count++;
-    }
-  }
-
-  self->data_unit_coefficient_index = self->scan_coefficient_start;
 }
-
-// Add a coefficient [value] to the current data unit. Add [run_length] zeros
-// before this coefficient.
-static void add_coefficient(UtJpegDecoder *self, size_t run_length,
-                            int16_t value) {
-  JpegComponent *component = self->scan_components[self->scan_component_index];
-
-  UtObject *quantization_table =
-      self->quantization_tables[component->quantization_table_selector];
-  if (quantization_table == NULL) {
-    set_error(self, "Missing JPEG quantization table %zi",
-              component->quantization_table_selector);
-    return;
-  }
-  const uint8_t *quantization_table_data =
-      ut_uint8_list_get_data(quantization_table);
-
-  if (self->data_unit_coefficient_index + run_length >
-      self->scan_coefficient_end) {
-    set_error(self, "Too many coefficients in data unit");
-    return;
-  }
-
-  int16_t *encoded_data_unit =
-      ut_int16_list_get_writable_data(component->coefficients);
-
-  // Pad with zeros.
-  for (size_t i = 0; i < run_length; i++) {
-    uint8_t index = self->data_unit_order[self->data_unit_coefficient_index];
-    encoded_data_unit[index] = 0;
-    self->data_unit_coefficient_index++;
-  }
-
-  // Put cofficient into data unit in zig-zag order.
-  uint8_t index = self->data_unit_order[self->data_unit_coefficient_index];
-  encoded_data_unit[index] = value * quantization_table_data[index];
-
-  if (self->data_unit_coefficient_index < self->scan_coefficient_end) {
-    self->data_unit_coefficient_index++;
-  } else {
-    process_data_unit(self);
-  }
-}
+#endif
 
 static void handle_restart(UtJpegDecoder *self, uint8_t count) {
   if (true) {
@@ -757,7 +564,8 @@ static size_t decode_start_of_frame(UtJpegDecoder *self, UtObject *data) {
     self->components[i].quantization_table_selector =
         quantization_table_selector;
 
-    self->components[i].coefficients = ut_int16_array_new_sized(64);
+    self->components[i].coefficients =
+        ut_int16_array_new_sized(64 * 1000 * 1000); // FIXME: scaling factor
   }
   self->mcu_width = mcu_width;
   self->mcu_height = mcu_height;
@@ -807,7 +615,7 @@ static bool supported_huffman_table_destination(UtJpegDecoder *self,
   case DECODE_MODE_EXTENDED_DCT:
   case DECODE_MODE_PROGRESSIVE_DCT:
   case DECODE_MODE_LOSSLESS:
-    return destination <= 3;
+    return destination < MAX_HUFFMAN_TABLES;
   default:
     return false;
   }
@@ -1168,6 +976,7 @@ static size_t decode_start_of_scan(UtJpegDecoder *self, UtObject *data) {
     return length;
   }
 
+  UtObjectRef components = ut_list_new();
   for (size_t i = 0; i < n_scan_components; i++) {
     uint8_t component_selector = ut_uint8_list_get_element(data, offset++);
     uint8_t table_selectors = ut_uint8_list_get_element(data, offset++);
@@ -1179,7 +988,6 @@ static size_t decode_start_of_scan(UtJpegDecoder *self, UtObject *data) {
       set_error(self, "Invalid component selector in JPEG start of scan");
       return length;
     }
-    self->scan_components[i] = component;
 
     if (!supported_dc_table(self, dc_table)) {
       set_error(self, "Invalid DC table selector in JPEG start of scan");
@@ -1189,13 +997,13 @@ static size_t decode_start_of_scan(UtJpegDecoder *self, UtObject *data) {
       set_error(self, "Invalid AC table selector in JPEG start of scan");
       return length;
     }
-    component->dc_decoder = self->dc_decoders[dc_table];
-    component->dc_table = self->dc_tables[dc_table];
-    component->ac_decoder = self->ac_decoders[ac_table];
-    component->ac_table = self->ac_tables[ac_table];
-  }
-  for (size_t i = n_scan_components; i < MAX_SCAN_COMPONENTS; i++) {
-    self->scan_components[i] = NULL;
+
+    UtObjectRef scan_component = ut_jpeg_scan_component_new(
+        self->dc_decoders[dc_table], self->dc_tables[dc_table],
+        self->ac_decoders[ac_table], self->ac_tables[ac_table],
+        self->quantization_tables[component->quantization_table_selector],
+        component->coefficients);
+    ut_list_append(components, scan_component);
   }
   uint8_t selection_start = ut_uint8_list_get_element(data, offset++);
   uint8_t selection_end = ut_uint8_list_get_element(data, offset++);
@@ -1233,6 +1041,7 @@ static size_t decode_start_of_scan(UtJpegDecoder *self, UtObject *data) {
   }
 
   // Check have required decoders.
+#if 0
   for (size_t i = 0; i < n_scan_components; i++) {
     if (selection_start == 0 && self->scan_components[i]->dc_decoder == NULL) {
       set_error(self, "Missing DC table in JPEG start of scan");
@@ -1243,162 +1052,50 @@ static size_t decode_start_of_scan(UtJpegDecoder *self, UtObject *data) {
       return length;
     }
   }
+#endif
 
-  self->scan_coefficient_start = selection_start;
-  self->scan_coefficient_end = selection_end;
-  self->data_unit_coefficient_index = self->scan_coefficient_start;
-  self->mcu_count = 0;
-  self->scan_component_index = 0;
-  for (size_t i = 0; i < n_scan_components; i++) {
-    self->scan_components[i]->previous_dc = 0;
-    self->scan_components[i]->data_unit_count = 0;
-  }
-  self->bit_buffer = 0;
-  self->bit_count = 0;
-  self->code = 0;
-  self->code_width = 0;
+  ut_object_unref(self->scan_stream);
+  self->scan_stream = ut_writable_input_stream_new();
+  self->scan_decoder = ut_jpeg_huffman_decoder_new(
+      self->scan_stream, components, selection_start, selection_end);
+  ut_jpeg_huffman_decoder_decode(self->scan_decoder);
   self->state = DECODER_STATE_SCAN;
-  self->scan_decoder_state = SCAN_DECODER_STATE_COEFFICIENT_MAGNITUDE;
 
   return length;
 }
 
-static bool decode_coefficient_magnitude(UtJpegDecoder *self, UtObject *data,
-                                         size_t *offset) {
-  JpegComponent *component = self->scan_components[self->scan_component_index];
-
-  UtObject *decoder, *table;
-  if (self->data_unit_coefficient_index == 0) {
-    decoder = component->dc_decoder;
-    table = component->dc_table;
-  } else {
-    decoder = component->ac_decoder;
-    table = component->ac_table;
-  }
-
-  uint16_t symbol;
-  if (!read_huffman_symbol(self, data, offset, decoder, &symbol)) {
-    return false;
-  }
-  if (symbol >= ut_list_get_length(table)) {
-    set_error(self, "Huffman symbol received not in table");
-    return false;
-  }
-  uint8_t value = ut_uint8_list_get_element(table, symbol);
-
-  if (self->data_unit_coefficient_index == 0) {
-    self->coefficient_magnitude = value;
-    self->run_length = 0;
-  } else {
-    self->coefficient_magnitude = value & 0xf;
-    self->run_length = value >> 4;
-    if (self->coefficient_magnitude == 0 && self->run_length < 15) {
-      self->scan_decoder_state =
-          SCAN_DECODER_STATE_COEFFICIENT_END_OF_BLOCK_COUNT;
-      return true;
+static size_t decode_scan(UtJpegDecoder *self, UtObject *data, bool complete) {
+  // Look for marker at end of scan.
+  size_t data_length = ut_list_get_length(data);
+  size_t scan_length = data_length;
+  bool scan_complete = false;
+  for (size_t i = 0; i < data_length; i++) {
+    if (ut_uint8_list_get_element(data, i) == 0xff) {
+      if (i == data_length - 1) {
+        if (complete) {
+          scan_complete = true;
+        } else {
+          // Don't process a trailing 0xff - it might be a marker.
+          scan_length = data_length - 1;
+        }
+      } else {
+        if (ut_uint8_list_get_element(data, i + 1) != 0x00) {
+          scan_length = i;
+          scan_complete = true;
+        }
+      }
     }
   }
 
-  self->scan_decoder_state = SCAN_DECODER_STATE_COEFFICIENT_AMPLITUDE;
-
-  return true;
-}
-
-static bool decode_coefficient_amplitude(UtJpegDecoder *self, UtObject *data,
-                                         size_t *offset) {
-  JpegComponent *component = self->scan_components[self->scan_component_index];
-
-  int16_t amplitude;
-  if (self->coefficient_magnitude == 0) {
-    amplitude = 0;
-  } else {
-    uint16_t value;
-    if (!read_int(self, data, offset, self->coefficient_magnitude, &value)) {
-      return false;
-    }
-
-    // Upper half of values are positive, lower half are negative, i.e.
-    // 0 bits:  0
-    // 1 bit:  -1, 1
-    // 2 bits: -3,-2, 2, 3
-    // 3 bits: -7,-6,-5,-4, 4, 5, 6, 7
-    // ...
-    int16_t min_amplitude = 1 << (self->coefficient_magnitude - 1);
-    if (value >= min_amplitude) {
-      amplitude = value;
-    } else {
-      amplitude = value - (min_amplitude * 2) + 1;
-    }
+  UtObjectRef scan_data = ut_list_get_sublist(data, 0, scan_length);
+  size_t n_used = ut_writable_input_stream_write(self->scan_stream, scan_data,
+                                                 scan_complete);
+  if (scan_complete) {
+    n_used = scan_length;
+    self->state = DECODER_STATE_MARKER;
   }
 
-  size_t run_length;
-  int16_t coefficient;
-  if (self->data_unit_coefficient_index == 0) {
-    int16_t dc = component->previous_dc + amplitude;
-    component->previous_dc = dc;
-    run_length = 0;
-    coefficient = dc;
-  } else {
-    run_length = self->run_length;
-    coefficient = amplitude;
-  }
-  add_coefficient(self, run_length, coefficient);
-
-  self->scan_decoder_state = SCAN_DECODER_STATE_COEFFICIENT_MAGNITUDE;
-
-  return true;
-}
-
-static bool decode_coefficient_end_of_block_count(UtJpegDecoder *self,
-                                                  UtObject *data,
-                                                  size_t *offset) {
-  size_t length = self->run_length;
-
-  size_t count;
-  if (length == 0) {
-    count = 1;
-  } else {
-    uint16_t value;
-    if (!read_int(self, data, offset, length, &value)) {
-      return false;
-    }
-    count = (1 << length) + value;
-  }
-
-  // Fill remaining coefficients on current data unit.
-  add_coefficient(
-      self, self->scan_coefficient_end - self->data_unit_coefficient_index, 0);
-
-  // Following data units are all empty.
-  for (size_t i = 1; i < count; i++) {
-    add_coefficient(
-        self, self->scan_coefficient_end - self->scan_coefficient_start, 0);
-  }
-
-  self->scan_decoder_state = SCAN_DECODER_STATE_COEFFICIENT_MAGNITUDE;
-
-  return true;
-}
-
-static size_t decode_scan(UtJpegDecoder *self, UtObject *data) {
-  size_t offset = 0;
-
-  bool decoding;
-  do {
-    switch (self->scan_decoder_state) {
-    case SCAN_DECODER_STATE_COEFFICIENT_MAGNITUDE:
-      decoding = decode_coefficient_magnitude(self, data, &offset);
-      break;
-    case SCAN_DECODER_STATE_COEFFICIENT_AMPLITUDE:
-      decoding = decode_coefficient_amplitude(self, data, &offset);
-      break;
-    case SCAN_DECODER_STATE_COEFFICIENT_END_OF_BLOCK_COUNT:
-      decoding = decode_coefficient_end_of_block_count(self, data, &offset);
-      break;
-    }
-  } while (decoding && self->state != DECODER_STATE_ERROR);
-
-  return offset;
+  return n_used;
 }
 
 static size_t decode_comment(UtJpegDecoder *self, UtObject *data) {
@@ -1619,7 +1316,7 @@ static size_t read_cb(UtObject *object, UtObject *data, bool complete) {
       n_used = decode_start_of_scan(self, d);
       break;
     case DECODER_STATE_SCAN:
-      n_used = decode_scan(self, d);
+      n_used = decode_scan(self, d, complete);
       break;
     case DECODER_STATE_APP0:
       n_used = decode_app0(self, d);
@@ -1662,16 +1359,21 @@ static void ut_jpeg_decoder_cleanup(UtObject *object) {
 
   ut_object_unref(self->input_stream);
   ut_object_weak_unref(&self->callback_object);
-  for (size_t i = 0; i < 4; i++) {
+  for (size_t i = 0; i < MAX_QUANTIZATION_TABLES; i++) {
     ut_object_unref(self->quantization_tables[i]);
+  }
+  for (size_t i = 0; i < MAX_HUFFMAN_TABLES; i++) {
     ut_object_unref(self->dc_decoders[i]);
     ut_object_unref(self->dc_tables[i]);
     ut_object_unref(self->ac_decoders[i]);
     ut_object_unref(self->ac_tables[i]);
   }
+  ut_object_unref(self->scan_stream);
+  ut_object_unref(self->scan_decoder);
   for (size_t i = 0; i < MAX_SCAN_COMPONENTS; i++) {
     ut_object_unref(self->components[i].coefficients);
   }
+  ut_object_unref(self->thumbnail_data);
   free(self->comment);
   ut_object_unref(self->image);
   ut_object_unref(self->error);

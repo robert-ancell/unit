@@ -21,7 +21,6 @@ UtObject *ut_object_list_new();
 
 /// Returns the value at [index] of this list.
 ///
-/// !return-ref
 /// !return-type UtObject
 UtObject *ut_object_list_get_element(UtObject *object, size_t index);
 
