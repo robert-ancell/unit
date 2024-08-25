@@ -1157,13 +1157,13 @@ static size_t decode_start_of_scan(UtJpegDecoder *self, UtObject *data) {
     return 0;
   }
 
-  uint8_t n_scan_components = ut_uint8_list_get_element(data, offset++);
+  size_t n_scan_components = ut_uint8_list_get_element(data, offset++);
   if (length < 6 + 2 * n_scan_components) {
     set_error(self, "Insufficient data for JPEG start of scan");
     return length;
   }
   if (n_scan_components < 1 || n_scan_components > MAX_SCAN_COMPONENTS) {
-    set_error(self, "Unsupported number of JPEG scan components %d",
+    set_error(self, "Unsupported number of JPEG scan components %zi",
               n_scan_components);
     return length;
   }
