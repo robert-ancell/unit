@@ -120,6 +120,12 @@ typedef struct {
   // Height of an MCU in data units.
   size_t mcu_height;
 
+  // Number of MCUs that make up the width of the image.
+  size_t width_in_mcus;
+
+  // Number of MCUs that make up the height of the image.
+  size_t height_in_mcus;
+
   // Huffman/Arithmetic decoders for DC coefficients.
   UtObject *dc_decoders[4];
 
@@ -346,10 +352,8 @@ static void process_data_unit(UtJpegDecoder *self) {
       ut_uint8_list_get_writable_data(ut_jpeg_image_get_data(self->image));
 
   // Get position of current MCU in image.
-  size_t width_in_mcus =
-      (image_width + (self->mcu_width * 8) - 1) / (self->mcu_width * 8);
-  size_t mcu_x = (self->mcu_count % width_in_mcus) * self->mcu_width * 8;
-  size_t mcu_y = (self->mcu_count / width_in_mcus) * self->mcu_height * 8;
+  size_t mcu_x = (self->mcu_count % self->width_in_mcus) * self->mcu_width * 8;
+  size_t mcu_y = (self->mcu_count / self->width_in_mcus) * self->mcu_height * 8;
 
   // Get position of current data unit in image.
   JpegComponent *component = self->scan_components[self->scan_component_index];
@@ -757,6 +761,8 @@ static size_t decode_start_of_frame(UtJpegDecoder *self, UtObject *data) {
   }
   self->mcu_width = mcu_width;
   self->mcu_height = mcu_height;
+  self->width_in_mcus = (width + (mcu_width * 8) - 1) / (mcu_width * 8);
+  self->height_in_mcus = (height + (mcu_height * 8) - 1) / (mcu_height * 8);
 
   if (!supported_precision(self, precision)) {
     set_error(self, "Unsupported JPEG precision %d", precision);
