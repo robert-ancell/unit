@@ -297,7 +297,7 @@ static void write_app0(UtJpegEncoder *self) {
   ut_output_stream_write(self->output_stream, app0);
 }
 
-static void write_define_quantization_table(UtJpegEncoder *self) {
+static void write_define_quantization_tables(UtJpegEncoder *self) {
   size_t length = 2;
   for (size_t i = 0; i < 4; i++) {
     if (self->quantization_tables[i] != NULL) {
@@ -388,7 +388,7 @@ static void write_huffman_table(UtObject *buffer, uint8_t class,
   }
 }
 
-static void write_define_huffman_table(UtJpegEncoder *self) {
+static void write_define_huffman_tables(UtJpegEncoder *self) {
   size_t length = 2;
   for (size_t i = 0; i < 2; i++) {
     if (self->dc_encoders[i] != NULL) {
@@ -555,9 +555,9 @@ void ut_jpeg_encoder_encode(UtObject *object) {
 
   write_start_of_image(self);
   write_app0(self);
-  write_define_quantization_table(self);
+  write_define_quantization_tables(self);
   write_start_of_frame(self);
-  write_define_huffman_table(self);
+  write_define_huffman_tables(self);
   write_start_of_scan(self);
   write_end_of_image(self);
 }

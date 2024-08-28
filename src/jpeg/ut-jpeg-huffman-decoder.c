@@ -336,6 +336,10 @@ static size_t read_cb(UtObject *object, UtObject *data, bool complete) {
     }
   } while (decoding);
 
+  if (complete) {
+     // FIXME: Validate have all coefficients
+  }
+
   return offset;
 }
 

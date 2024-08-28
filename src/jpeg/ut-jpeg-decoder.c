@@ -239,11 +239,6 @@ static void process_data_unit(UtJpegDecoder *self) {
   jpeg_inverse_dct(self->dct_alpha, self->dct_cos, encoded_data_unit,
                    decoded_data_unit);
 
-  // Check if this is the final component being written.
-  bool last_component =
-      self->scan_component_index == n_components - 1 ||
-      self->scan_components[self->scan_component_index + 1] == NULL;
-
   size_t sample_offset = 1 << (self->precision - 1);
   size_t sample_max = (1 << self->precision) - 1;
 
@@ -302,7 +297,14 @@ static void handle_start_of_image(UtJpegDecoder *self) {
   self->state = DECODER_STATE_MARKER;
 }
 
-static void handle_end_of_image(UtJpegDecoder *self) { set_done(self); }
+static void handle_end_of_image(UtJpegDecoder *self) {
+  size_t n_components = ut_jpeg_image_get_n_components(self->image);
+  for (size_t i = 0; i < n_components; i++) {
+     printf("%s\n", ut_object_to_string(self->components[i].coefficients));
+  }
+
+  set_done(self);
+}
 
 static void decode_jfif(UtJpegDecoder *self, UtObject *data) {
   size_t data_length = ut_list_get_length(data);
@@ -563,14 +565,22 @@ static size_t decode_start_of_frame(UtJpegDecoder *self, UtObject *data) {
     self->components[i].vertical_sampling_factor = vertical_sampling_factor;
     self->components[i].quantization_table_selector =
         quantization_table_selector;
-
-    self->components[i].coefficients =
-        ut_int16_array_new_sized(64 * 1000 * 1000); // FIXME: scaling factor
   }
   self->mcu_width = mcu_width;
   self->mcu_height = mcu_height;
   self->width_in_mcus = (width + (mcu_width * 8) - 1) / (mcu_width * 8);
   self->height_in_mcus = (height + (mcu_height * 8) - 1) / (mcu_height * 8);
+
+  // Allocate coefficients.
+  for (size_t i = 0; i < n_components; i++) {
+    size_t width =
+        self->mcu_width *
+        (self->width_in_mcus / self->components[i].horizontal_sampling_factor);
+    size_t height =
+        self->mcu_height *
+        (self->height_in_mcus / self->components[i].vertical_sampling_factor);
+    self->components[i].coefficients = ut_int16_array_new_sized(width * height);
+  }
 
   if (!supported_precision(self, precision)) {
     set_error(self, "Unsupported JPEG precision %d", precision);
