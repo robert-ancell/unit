@@ -28,6 +28,9 @@ typedef struct {
   // State of decoding.
   DecoderState state;
 
+  int http_version_major;
+  int http_version_minor;
+
   // Requested method.
   char *method;
 
@@ -141,7 +144,16 @@ static bool parse_request_line(UtHttpMessageDecoder *self, UtObject *data) {
   size_t protocol_version_end = ut_list_get_length(data);
   ut_cstring_ref protocol_version =
       get_string(data, protocol_version_start, protocol_version_end);
-  if (!ut_cstring_equal(protocol_version, "HTTP/1.1")) {
+
+  if (ut_cstring_equal(protocol_version, "HTTP/1.1")) {
+    self->http_version_major = 1;
+    self->http_version_minor = 0;
+
+  } else if (ut_cstring_equal(protocol_version, "HTTP/1.0")) {
+    self->http_version_major = 1;
+    self->http_version_minor = 1;
+
+  } else {
     set_error(self, "Invalid HTTP version");
     return false;
   }
@@ -527,7 +539,8 @@ UtObject *ut_http_message_decoder_get_body(UtObject *object) {
 
 bool ut_http_message_decoder_get_done(UtObject *object) {
   assert(ut_object_is_http_message_decoder(object));
-  return false;
+  UtHttpMessageDecoder *self = (UtHttpMessageDecoder *)object;
+  return self->state == DECODER_STATE_DONE || self->state == DECODER_STATE_ERROR;
 }
 
 UtObject *ut_http_message_decoder_get_error(UtObject *object) {

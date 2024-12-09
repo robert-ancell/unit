@@ -8,6 +8,7 @@
 
 typedef struct {
   UtObject object;
+  UtObject *client;
   UtObject *tcp_socket;
   char *host;
   uint16_t port;
@@ -53,11 +54,13 @@ static UtObjectInterface request_object_interface = {.type_name = "HttpRequest",
 
 UtObject *http_request_new(const char *host, uint16_t port, const char *method,
                            const char *path, UtObject *body,
+                           UtObject *client_object,
                            UtObject *callback_object,
                            UtHttpResponseCallback callback) {
   UtObject *object =
       ut_object_new(sizeof(HttpRequest), &request_object_interface);
   HttpRequest *self = (HttpRequest *)object;
+  self->client = client_object;
   self->host = ut_cstring_new(host);
   self->port = port;
   self->method = ut_cstring_new(method);
@@ -86,6 +89,30 @@ static void ut_http_client_cleanup(UtObject *object) {
   ut_object_unref(self->requests);
 }
 
+static void ut_request_unref(UtObject *req_object) {
+  HttpRequest *request = (HttpRequest *)req_object;
+  UtHttpClient* client = (UtHttpClient*)request->client;
+
+  for (size_t i = 0; i < ut_list_get_length(client->requests); i++) {
+    UtObject* req = ut_list_get_element(client->requests, i);
+    if (req == req_object) {
+      ut_list_remove(client->requests, i, 1);
+      break;
+    }
+  }
+
+  ut_object_unref(req_object);
+}
+
+static void ut_check_requests_for_unref(UtObject *object) {
+  HttpRequest *request = (HttpRequest *)object;
+
+  if (!ut_http_message_decoder_get_done(request->message_decoder))
+    return;
+
+  ut_request_unref(object);
+}
+
 static size_t read_cb(UtObject *object, UtObject *data, bool complete) {
   HttpRequest *request = (HttpRequest *)object;
 
@@ -95,15 +122,19 @@ static size_t read_cb(UtObject *object, UtObject *data, bool complete) {
       request->message_decoder_input_stream, data, complete);
   if (!headers_done &&
       ut_http_message_decoder_get_headers_done(request->message_decoder)) {
+
     UtObjectRef response = ut_http_response_new(
         ut_http_message_decoder_get_status_code(request->message_decoder),
         ut_http_message_decoder_get_reason_phrase(request->message_decoder),
         ut_http_message_decoder_get_headers(request->message_decoder),
         ut_http_message_decoder_get_body(request->message_decoder));
+
     if (request->callback_object != NULL && request->callback != NULL) {
       request->callback(request->callback_object, response);
     }
   }
+
+  ut_check_requests_for_unref(object);
 
   return n_used;
 }
@@ -115,11 +146,14 @@ static void connect_cb(UtObject *object, UtObject *error) {
     if (request->callback_object != NULL && request->callback != NULL) {
       request->callback(request->callback_object, error);
     }
+    ut_request_unref(object);
     return;
   }
 
   UtObjectRef headers = ut_list_new();
   ut_list_append_take(headers, ut_http_header_new("Host", request->host));
+  // we only do one connection per / requests currently.
+  ut_list_append_take(headers, ut_http_header_new("Connection", "close"));
   request->message_encoder = ut_http_message_encoder_new_request(
       request->tcp_socket, request->method, request->path, headers,
       request->body);
@@ -130,7 +164,6 @@ static void connect_cb(UtObject *object, UtObject *error) {
 
 static void lookup_cb(UtObject *object, UtObject *addresses) {
   HttpRequest *request = (HttpRequest *)object;
-
   UtObjectRef address = ut_list_get_first(addresses);
   request->tcp_socket = ut_tcp_socket_new(address, request->port);
   ut_tcp_socket_connect(request->tcp_socket, object, connect_cb);
@@ -150,7 +183,6 @@ void ut_http_client_send_request(UtObject *object, const char *method,
                                  UtHttpResponseCallback callback) {
   assert(ut_object_is_http_client(object));
   UtHttpClient *self = (UtHttpClient *)object;
-
   UtObjectRef uri_object = ut_uri_new_from_string(uri);
   assert(!ut_object_implements_error(uri_object));
   assert(ut_cstring_equal(ut_uri_get_scheme(uri_object), "http"));
@@ -166,7 +198,8 @@ void ut_http_client_send_request(UtObject *object, const char *method,
   }
 
   UtObjectRef request = http_request_new(host, port, method, path, body,
-                                         callback_object, callback);
+                               object, callback_object, callback);
+
   ut_list_append(self->requests, request);
   ut_ip_address_resolver_lookup(self->ip_address_resolver, host, request,
                                 lookup_cb);
