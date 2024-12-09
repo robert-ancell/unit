@@ -120,6 +120,7 @@ static void connect_cb(UtObject *object, UtObject *error) {
 
   UtObjectRef headers = ut_list_new();
   ut_list_append_take(headers, ut_http_header_new("Host", request->host));
+  ut_list_append_take(headers, ut_http_header_new("Connection", "close"));
   request->message_encoder = ut_http_message_encoder_new_request(
       request->tcp_socket, request->method, request->path, headers,
       request->body);

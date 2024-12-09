@@ -122,6 +122,11 @@ static char *get_string(UtObject *data, size_t start, size_t end) {
   return ut_string_take_text(string);
 }
 
+static bool valid_http_version(ut_cstring_ref protocol_version) {
+  return ut_cstring_equal(protocol_version, "HTTP/1.1") ||
+         ut_cstring_equal(protocol_version, "HTTP/1.0");
+}
+
 static bool parse_request_line(UtHttpMessageDecoder *self, UtObject *data) {
   size_t method_start = 0;
   ssize_t method_end = find_character(data, method_start, ' ');
@@ -141,7 +146,7 @@ static bool parse_request_line(UtHttpMessageDecoder *self, UtObject *data) {
   size_t protocol_version_end = ut_list_get_length(data);
   ut_cstring_ref protocol_version =
       get_string(data, protocol_version_start, protocol_version_end);
-  if (!ut_cstring_equal(protocol_version, "HTTP/1.1")) {
+  if (!valid_http_version(protocol_version)) {
     set_error(self, "Invalid HTTP version");
     return false;
   }
@@ -162,7 +167,7 @@ static bool parse_status_line(UtHttpMessageDecoder *self, UtObject *data) {
   }
   ut_cstring_ref protocol_version =
       get_string(data, protocol_version_start, protocol_version_end);
-  if (!ut_cstring_equal(protocol_version, "HTTP/1.1")) {
+  if (!valid_http_version(protocol_version)) {
     set_error(self, "Invalid HTTP version");
     return false;
   }
